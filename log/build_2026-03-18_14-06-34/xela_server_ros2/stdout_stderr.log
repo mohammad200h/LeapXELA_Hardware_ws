@@ -1,0 +1,49 @@
+-- Found rclcpp: 29.6.0 (/opt/ros/rolling/share/rclcpp/cmake)
+-- Found rosidl_generator_c: 4.10.0 (/opt/ros/rolling/share/rosidl_generator_c/cmake)
+-- Found rosidl_generator_cpp: 4.10.0 (/opt/ros/rolling/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+-- Found rmw_implementation_cmake: 7.9.0 (/opt/ros/rolling/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 4.1.0 (/opt/ros/rolling/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Found rclpy: 9.2.0 (/opt/ros/rolling/share/rclpy/cmake)
+-- Found std_msgs: 5.7.0 (/opt/ros/rolling/share/std_msgs/cmake)
+-- Found geometry_msgs: 5.7.0 (/opt/ros/rolling/share/geometry_msgs/cmake)
+-- Found rosidl_default_generators: 1.8.0 (/opt/ros/rolling/share/rosidl_default_generators/cmake)
+-- Found rosidl_adapter: 4.10.0 (/opt/ros/rolling/share/rosidl_adapter/cmake)
+[31mCMake Error at /opt/ros/rolling/share/rosidl_adapter/cmake/rosidl_adapt_interfaces.cmake:57 (message):
+  execute_process(/home/mamad/miniconda3/bin/python3 -m rosidl_adapter
+  --package-name xela_server_ros2 --arguments-file
+  /home/mamad/PhD/LeapXELA_Hardware_ws/build/xela_server_ros2/rosidl_adapter__arguments__xela_server_ros2.json
+  --output-dir
+  /home/mamad/PhD/LeapXELA_Hardware_ws/build/xela_server_ros2/rosidl_adapter/xela_server_ros2
+  --output-file
+  /home/mamad/PhD/LeapXELA_Hardware_ws/build/xela_server_ros2/rosidl_adapter/xela_server_ros2.idls)
+  returned error code 1:
+
+  Traceback (most recent call last):
+
+    File "<frozen runpy>", line 198, in _run_module_as_main
+    File "<frozen runpy>", line 88, in _run_code
+    File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/__main__.py", line 19, in <module>
+      main()
+      ~~~~^^
+    File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/main.py", line 54, in main
+      abs_idl_file = convert_to_idl(
+          pathlib.Path(basepath), args.package_name,
+          pathlib.Path(relative_path), output_dir)
+    File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/__init__.py", line 21, in convert_to_idl
+      from rosidl_adapter.msg import convert_msg_to_idl
+    File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/msg/__init__.py", line 19, in <module>
+      from rosidl_adapter.resource import expand_template, MsgData
+    File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/resource/__init__.py", line 21, in <module>
+      import em
+
+  ModuleNotFoundError: No module named 'em'
+
+Call Stack (most recent call first):
+  /opt/ros/rolling/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:132 (rosidl_adapt_interfaces)
+  CMakeLists.txt:22 (rosidl_generate_interfaces)
+
+[0m
+-- Configuring incomplete, errors occurred!

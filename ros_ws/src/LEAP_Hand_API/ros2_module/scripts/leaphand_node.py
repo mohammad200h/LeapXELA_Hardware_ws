@@ -25,6 +25,7 @@ class LeapNode(Node):
         self.create_subscription(JointState, 'cmd_leap', self._receive_pose, 10)
         self.create_subscription(JointState, 'cmd_allegro', self._receive_allegro, 10)
         self.create_subscription(JointState, 'cmd_ones', self._receive_ones, 10)
+        self.create_subscription(JointState, 'cmd_xela', self._receive_xela, 10)
 
         # Creates services that can give information about the hand out
         self.create_service(LeapPosition, 'leap_position', self.pos_srv)
@@ -72,10 +73,19 @@ class LeapNode(Node):
 
     # Sim compatibility, first read the sim publisher and then convert to leap
     def _receive_ones(self, msg):
+        self.get_logger().info(f"msg.position: {msg.position}")
         pose = lhu.sim_ones_to_LEAPhand(np.array(msg.position))
+        self.get_logger().info(f"pose: {pose}")
         self.prev_pos = self.curr_pos
+        self.get_logger().info(f"prev_pos: {self.prev_pos}")
         self.curr_pos = np.array(pose)
+        self.get_logger().info(f"curr_pos: {self.curr_pos}")
         self.dxl_client.write_desired_pos(self.motors, self.curr_pos)
+
+    def _receive_xela(self, msg):
+        self.dxl_client.write_desired_pos(self.motors, np.array(msg.position))
+        self.get_logger().info(f"xela_pos: {np.array(msg.position)}")
+        self.get_logger().info(f"xela_pos: {self.dxl_client.read_pos()}")
 
     # Service that reads and returns the pos of the robot in regular LEAP Embodiment scaling.
     def pos_srv(self, request, response):

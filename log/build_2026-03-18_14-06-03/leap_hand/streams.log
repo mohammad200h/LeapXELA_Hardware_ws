@@ -1,0 +1,60 @@
+[0.016s] Invoking command in '/home/mamad/PhD/LeapXELA_Hardware_ws/build/leap_hand': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/rolling CONDA_PROMPT_MODIFIER=(base) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/mamad/PhD/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module -DCMAKE_INSTALL_PREFIX=/home/mamad/PhD/LeapXELA_Hardware_ws/install/leap_hand
+[0.256s] -- The C compiler identification is GNU 13.3.0
+[0.447s] -- The CXX compiler identification is GNU 13.3.0
+[0.480s] -- Detecting C compiler ABI info
+[0.639s] -- Detecting C compiler ABI info - done
+[0.660s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.660s] -- Detecting C compile features
+[0.661s] -- Detecting C compile features - done
+[0.675s] -- Detecting CXX compiler ABI info
+[0.864s] -- Detecting CXX compiler ABI info - done
+[0.881s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.881s] -- Detecting CXX compile features
+[0.882s] -- Detecting CXX compile features - done
+[0.887s] -- Found ament_cmake: 2.8.2 (/opt/ros/rolling/share/ament_cmake/cmake)
+[1.075s] -- Found Python3: /home/mamad/miniconda3/bin/python3 (found version "3.13.11") found components: Interpreter 
+[1.250s] -- Found rclpy: 9.2.0 (/opt/ros/rolling/share/rclpy/cmake)
+[1.253s] -- Found std_msgs: 5.7.0 (/opt/ros/rolling/share/std_msgs/cmake)
+[1.317s] -- Found rosidl_generator_c: 4.10.0 (/opt/ros/rolling/share/rosidl_generator_c/cmake)
+[1.343s] -- Found rosidl_generator_cpp: 4.10.0 (/opt/ros/rolling/share/rosidl_generator_cpp/cmake)
+[1.380s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.429s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.490s] -- Found rosidl_default_generators: 1.8.0 (/opt/ros/rolling/share/rosidl_default_generators/cmake)
+[1.516s] -- Found rosidl_adapter: 4.10.0 (/opt/ros/rolling/share/rosidl_adapter/cmake)
+[1.793s] [31mCMake Error at /opt/ros/rolling/share/rosidl_adapter/cmake/rosidl_adapt_interfaces.cmake:57 (message):
+[1.793s]   execute_process(/home/mamad/miniconda3/bin/python3 -m rosidl_adapter
+[1.793s]   --package-name leap_hand --arguments-file
+[1.793s]   /home/mamad/PhD/LeapXELA_Hardware_ws/build/leap_hand/rosidl_adapter__arguments__leap_hand.json
+[1.793s]   --output-dir
+[1.793s]   /home/mamad/PhD/LeapXELA_Hardware_ws/build/leap_hand/rosidl_adapter/leap_hand
+[1.794s]   --output-file
+[1.794s]   /home/mamad/PhD/LeapXELA_Hardware_ws/build/leap_hand/rosidl_adapter/leap_hand.idls)
+[1.794s]   returned error code 1:
+[1.794s] 
+[1.794s]   Traceback (most recent call last):
+[1.794s] 
+[1.794s]     File "<frozen runpy>", line 198, in _run_module_as_main
+[1.794s]     File "<frozen runpy>", line 88, in _run_code
+[1.794s]     File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/__main__.py", line 19, in <module>
+[1.795s]       main()
+[1.795s]       ~~~~^^
+[1.795s]     File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/main.py", line 54, in main
+[1.795s]       abs_idl_file = convert_to_idl(
+[1.795s]           pathlib.Path(basepath), args.package_name,
+[1.795s]           pathlib.Path(relative_path), output_dir)
+[1.795s]     File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/__init__.py", line 26, in convert_to_idl
+[1.795s]       from rosidl_adapter.srv import convert_srv_to_idl
+[1.795s]     File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/srv/__init__.py", line 18, in <module>
+[1.796s]       from rosidl_adapter.resource import expand_template, SrvData
+[1.796s]     File "/opt/ros/rolling/lib/python3.12/site-packages/rosidl_adapter/resource/__init__.py", line 21, in <module>
+[1.796s]       import em
+[1.796s] 
+[1.796s]   ModuleNotFoundError: No module named 'em'
+[1.796s] 
+[1.796s] Call Stack (most recent call first):
+[1.796s]   /opt/ros/rolling/share/rosidl_cmake/cmake/rosidl_generate_interfaces.cmake:132 (rosidl_adapt_interfaces)
+[1.796s]   CMakeLists.txt:15 (rosidl_generate_interfaces)
+[1.796s] 
+[1.797s] [0m
+[1.797s] -- Configuring incomplete, errors occurred!
+[1.806s] Invoked command in '/home/mamad/PhD/LeapXELA_Hardware_ws/build/leap_hand' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/rolling CONDA_PROMPT_MODIFIER=(base) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/mamad/PhD/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module -DCMAKE_INSTALL_PREFIX=/home/mamad/PhD/LeapXELA_Hardware_ws/install/leap_hand
