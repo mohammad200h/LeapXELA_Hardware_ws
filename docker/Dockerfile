@@ -59,6 +59,7 @@ RUN apt-get update && apt-get install -y \
 #### Install dependencies
 RUN apt-get install -y python3-pip curl
 RUN pip install websocket-client
+RUN pip3 install dynamixel-sdk
 ##### Terminator ####
 RUN apt-get update && apt-get install -y terminator
 
