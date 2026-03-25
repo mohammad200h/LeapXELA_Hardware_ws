@@ -1,9 +1,11 @@
 import os
 import sys
 import time
-import curses
+import threading
+import termios
 
 import numpy as np
+from pynput import keyboard
 
 # Ensure we can import the sibling script when run directly.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -34,10 +36,12 @@ JOINT_LABELS = [
 
 
 def clamp(x, lo, hi):
-    return max(lo, min(hi, x))
+    low = min(lo, hi)
+    high = max(lo, hi)
+    return max(low, min(high, x))
 
 
-FORBIDDEN_JOINT_INDICES = [4, 5, 6, 7]
+FORBIDDEN_JOINT_INDICES = [] #[4, 5, 6, 7]
 
 
 def sync_forbidden_joints_to_current(leap_hand, desired_joint_degrees):
@@ -48,83 +52,112 @@ def sync_forbidden_joints_to_current(leap_hand, desired_joint_degrees):
     overwrite the forbidden indices with the motors' current measured angles
     right before each write.
     """
+    if not FORBIDDEN_JOINT_INDICES:
+        return
+
     current_degrees = leap_hand.read_pos_degrees()
     for idx in FORBIDDEN_JOINT_INDICES:
         desired_joint_degrees[idx] = current_degrees[idx]
 
+def get_current_joint_degree_for_active_joint(leap_hand, active_joint):
+    current_degrees = leap_hand.read_pos_degrees()
+    return current_degrees[active_joint]
 
-def run_curses(leap_hand, desired_joint_degrees, min_angle, max_angle, step_degrees):
+def run_pynput(leap_hand, desired_joint_degrees, min_angle, max_angle, step_degrees):
     # Active joint index in range [0..15].
     # Left/Right changes this index; Up/Down changes only this joint's degree value.
-    active_joint = [3]  # Match the original thumb-phalanx index used in leapXela_keyboard.py
+    state = {
+        "active_joint": 4,  # Match the original thumb-phalanx index used in leapXela_keyboard.py
+        "last_msg": "Use arrows to control joints, 'q' to quit.",
+        "running": True,
+    }
+    lock = threading.Lock()
 
-    stdscr = curses.initscr()
-    try:
-        curses.noecho()
-        curses.cbreak()
-        stdscr.keypad(True)
-        stdscr.nodelay(True)
-
-        last_msg = "Use arrows to control joints, 'q' to quit."
-
-        while True:
-            key = stdscr.getch()
+    def on_press(key):
+        with lock:
             did_change = False
+            is_adjustment = False
 
-            if key != -1:
-                if key in (ord("q"), ord("Q")):
-                    break
-                elif key == curses.KEY_LEFT:
-                    active_joint = (active_joint - 1) % 16
-                    did_change = True
-                    last_msg = f"Selected joint {active_joint[0]}: {JOINT_LABELS[active_joint[0]]}"
-                elif key == curses.KEY_RIGHT:
-                    active_joint = (active_joint + 1) % 16
-                    did_change = True
-                    last_msg = f"Selected joint {active_joint[0]}: {JOINT_LABELS[active_joint[0]]}"
-                elif key == curses.KEY_UP:
-                    new_val = desired_joint_degrees[active_joint[0]] + step_degrees
-                    for joint in active_joint:
-                        desired_joint_degrees[joint] = clamp(new_val, min_angle, max_angle)
-                    did_change = True
-                    last_msg = (
-                        f"Increased joint {active_joint[0]} -> {desired_joint_degrees[active_joint[0]]:.1f} deg"
-                    )
-                elif key == curses.KEY_DOWN:
-                    new_val = desired_joint_degrees[active_joint[0]] - step_degrees
-                    for joint in active_joint:
-                        desired_joint_degrees[joint] = clamp(new_val, min_angle, max_angle)
-                    did_change = True
-                    last_msg = (
-                        f"Decreased joint {active_joint[0]} -> {desired_joint_degrees[active_joint[0]]:.1f} deg"
-                    )
+            if key == keyboard.Key.left:
+                state["active_joint"] = (state["active_joint"] - 1) % 16
+                did_change = True
+                state["last_msg"] = (
+                    f"Selected joint {state['active_joint']}: {JOINT_LABELS[state['active_joint']]}"
+                )
+            elif key == keyboard.Key.right:
+                state["active_joint"] = (state["active_joint"] + 1) % 16
+                did_change = True
+                state["last_msg"] = (
+                    f"Selected joint {state['active_joint']}: {JOINT_LABELS[state['active_joint']]}"
+                )
+            elif key == keyboard.Key.up:
+                joint = state["active_joint"]
+                new_val = desired_joint_degrees[joint] + step_degrees
+                # desired_joint_degrees[joint] = clamp(new_val, min_angle, max_angle)
+                desired_joint_degrees[joint] = new_val
+
+                did_change = True
+                is_adjustment = True
+                state["last_msg"] = (
+                    f"Increased joint {joint} -> {desired_joint_degrees[joint]:.1f} deg"
+                )
+            elif key == keyboard.Key.down:
+                joint = state["active_joint"]
+                new_val = desired_joint_degrees[joint] - step_degrees
+                # desired_joint_degrees[joint] = clamp(new_val, min_angle, max_angle)
+                desired_joint_degrees[joint] = new_val
+                did_change = True
+                is_adjustment = True
+                state["last_msg"] = (
+                    f"Decreased joint {joint} -> {desired_joint_degrees[joint]:.1f} deg"
+                )
+            else:
+                try:
+                    if key.char and key.char.lower() == "q":
+                        state["running"] = False
+                        return False
+                except AttributeError:
+                    pass
 
             # Only write to motors on value changes (Up/Down).
-            if did_change and key in (curses.KEY_UP, curses.KEY_DOWN):
+            if did_change and is_adjustment:
                 sync_forbidden_joints_to_current(leap_hand, desired_joint_degrees)
                 leap_hand.set_joints_degrees(desired_joint_degrees)
 
-            stdscr.erase()
-            stdscr.addstr(0, 0, "LEAP Hand Joint Control (Arrow Keys)")
-            stdscr.addstr(2, 0, f"Selected joint: {active_joint[0]} / 15")
-            stdscr.addstr(3, 0, f"Label: {JOINT_LABELS[active_joint[0]]}")
-            stdscr.addstr(4, 0, f"Desired value: {desired_joint_degrees[active_joint[0]]:.1f} deg")
-            stdscr.addstr(6, 0, f"Step: +/- {step_degrees:.1f} deg")
-            stdscr.addstr(7, 0, f"Clamp range: {min_angle:.1f} .. {max_angle:.1f} deg")
-            stdscr.addstr(9, 0, last_msg)
-            stdscr.addstr(11, 0, "Controls: Left/Right select joint, Up/Down adjust value, q to quit")
-            stdscr.refresh()
+    print("LEAP Hand Joint Control (pynput)")
+    print("Controls: Left/Right select joint, Up/Down adjust value, q to quit")
 
-            time.sleep(0.02)
+    stdin_fd = sys.stdin.fileno()
+    old_attrs = None
+    if sys.stdin.isatty():
+        old_attrs = termios.tcgetattr(stdin_fd)
+        new_attrs = termios.tcgetattr(stdin_fd)
+        new_attrs[3] = new_attrs[3] & ~termios.ECHO  # lflags: disable local echo
+        termios.tcsetattr(stdin_fd, termios.TCSADRAIN, new_attrs)
+
+    try:
+        with keyboard.Listener(on_press=on_press) as listener:
+            current_degree = get_current_joint_degree_for_active_joint(leap_hand, state["active_joint"])
+            print(f"Current degree: {current_degree}")
+            while state["running"]:
+                with lock:
+                    joint = state["active_joint"]
+                    status = (
+                        f"Selected joint: {joint}/15 | "
+                        f"Label: {JOINT_LABELS[joint]} | "
+                        f"Desired: {desired_joint_degrees[joint]:.1f} deg | "
+                        f"Step: +/- {step_degrees:.1f} deg | "
+                        f"Clamp: {min_angle:.1f}..{max_angle:.1f} deg"
+                    )
+                    msg = state["last_msg"]
+                print(f"\r{status} | {msg}    ", end="", flush=True)
+                time.sleep(0.05)
+
+            listener.join()
     finally:
-        # Always attempt to restore terminal settings.
-        try:
-            curses.nocbreak()
-            stdscr.keypad(False)
-            curses.echo()
-            curses.endwin()
-        except Exception:
-            pass
+        if old_attrs is not None:
+            termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_attrs)
+    print()
 
 
 def main():
@@ -134,6 +167,41 @@ def main():
     step_degrees = 5.0
 
     leap_hand = LeapNode()
+
+
+    figers = {
+        "joints_name":["mcp","rot","pip","dip"],
+        "ll":[270,185,195,180],
+        "ul":[150,90,165,85]
+    }
+    thumb = {
+        "joints_name":["cmc","axl","mcp","ipl"],
+        "ll":[105,110,215,155],
+        "ul":[15,5,35,295]
+    }
+
+    limits = {
+        "if":{
+            "id":[4,5,6,7],
+            "ll":figers["ll"],
+            "ul":figers["ul"],
+        },
+        "mf":{
+            "id":[8,9,10,11],
+            "ll":figers["ll"],
+            "ul":figers["ul"],
+        },
+        "rf":{
+            "id":[12,13,14,15],
+            "ll":figers["ll"],
+            "ul":figers["ul"],
+        },
+        "th":{
+            "id":[0,1,2,3],
+            "ll":thumb["ll"],
+            "ul":thumb["ul"],
+        },
+    }
 
     # Base joint configuration (16 joints total), matching leapXela_keyboard.py.
     desired_joint_degrees = [
@@ -161,8 +229,7 @@ def main():
     time.sleep(0.5)
 
     try:
-        # Curses must own the terminal while we listen for arrow keys.
-        run_curses(leap_hand, desired_joint_degrees, min_angle, max_angle, step_degrees)
+        run_pynput(leap_hand, desired_joint_degrees, min_angle, max_angle, step_degrees)
     except KeyboardInterrupt:
         pass
     finally:

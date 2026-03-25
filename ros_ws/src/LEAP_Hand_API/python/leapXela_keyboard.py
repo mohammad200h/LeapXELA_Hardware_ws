@@ -20,7 +20,7 @@ class LeapNode:
             try:
                 self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB0', 57600)
                 self.dxl_client.connect()
-                print("Connected via /dev/ttyUSB4")
+                print("Connected via /dev/ttyUSB0")
             except Exception as e2:
                 try:
                     self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB1', 4000000)
@@ -38,7 +38,7 @@ class LeapNode:
         self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kD, 80, 2)
         self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kD * 0.75), 80, 2)
         self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.curr_lim, 102, 2)
-        self.dxl_client.write_desired_pos(self.motors, self.curr_pos)
+        # self.dxl_client.write_desired_pos(self.motors, self.curr_pos)
  
     def set_joints_degrees(self, degrees_array):
         """Set all 16 joints using degree values (list or np.array of length 16)."""
