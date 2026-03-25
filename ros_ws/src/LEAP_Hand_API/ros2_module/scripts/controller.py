@@ -9,6 +9,10 @@ from leap_hand_utils.dynamixel_client import *
 import leap_hand_utils.leap_hand_utils as lhu
 from pynput import keyboard
 
+import rclpy
+from rclpy.node import Node
+from sensor_msgs.msg import JointState
+
 
 
 JOINT_LABELS = [
@@ -29,6 +33,30 @@ JOINT_LABELS = [
     "Thumb MCP Forward",
     "Thumb Phalange",
 ]
+
+
+def float_seconds_to_nanoseconds(float_seconds: float) -> int:
+    """Convert floating-point seconds to canonical integer nanoseconds (matching logger requirements)."""
+    NS_PER_SEC = 1_000_000_000
+    return int(round(float(float_seconds) * NS_PER_SEC))
+
+
+def create_joint_state_msg(desired_joint_degrees):
+    """Create a JointState message with proper timestamp for logger alignment."""
+    msg = JointState()
+    
+    # Get current time and convert to nanoseconds using logger's conversion
+    current_time_sec = time.time()
+    timestamp_ns = float_seconds_to_nanoseconds(current_time_sec)
+    
+    # Convert back to sec/nanosec format for ROS2 header
+    msg.header.stamp.sec = int(timestamp_ns // 1_000_000_000)
+    msg.header.stamp.nanosec = int(timestamp_ns % 1_000_000_000)
+    
+    # Set joint positions (all 16 joints in degrees)
+    msg.position = [float(deg) for deg in desired_joint_degrees]
+    
+    return msg
 
 class LeapNode:
     def __init__(self):
@@ -144,7 +172,7 @@ def get_joint_limits(joint_idx, limits):
     ul = limits[group]['ul'][subidx]
     return (min(ll, ul), max(ll, ul))
 
-def run_pynput(leap_hand, desired_joint_degrees, limits, step_degrees):
+def run_pynput(leap_hand, desired_joint_degrees, limits, step_degrees, joint_publisher):
     state = {
         "active_joint": 4,
         "last_msg": "Use arrows to control joints, 'q' to quit.",
@@ -227,6 +255,11 @@ def run_pynput(leap_hand, desired_joint_degrees, limits, step_degrees):
                         # f"Clamp: {min_lim:.1f}..{max_lim:.1f} deg"
                     )
                     msg = state["last_msg"]
+                    
+                    # Publish joint state at each iteration
+                    joint_msg = create_joint_state_msg(desired_joint_degrees)
+                    joint_publisher.publish(joint_msg)
+                
                 print(f"\r{status} | {msg}    ", end="", flush=True)
                 time.sleep(0.05)
 
@@ -237,6 +270,13 @@ def run_pynput(leap_hand, desired_joint_degrees, limits, step_degrees):
     print()
 
 def main():
+    # Initialize ROS2
+    rclpy.init(args=None)
+    
+    # Create a minimal ROS2 node for publishing
+    node = rclpy.create_node('leap_hand_controller')
+    joint_publisher = node.create_publisher(JointState, '/leap_joint_states', 10)
+    
     # Same style of constraints as the original sinusoidal script.
     min_angle = 120.0
     max_angle = 40.0
@@ -307,7 +347,7 @@ def main():
 
     # Keyboard control
     try:
-        run_pynput(leap_node, default, limits, step_degrees)
+        run_pynput(leap_node, default, limits, step_degrees, joint_publisher)
     except KeyboardInterrupt:
         pass
     finally:
@@ -316,6 +356,10 @@ def main():
             leap_node.safe_disconnect()
         except Exception:
             pass
+        finally:
+            # Cleanup ROS2 resources
+            node.destroy_publisher(joint_publisher)
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":
