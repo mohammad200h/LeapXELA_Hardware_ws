@@ -169,7 +169,7 @@ def main():
     leap_hand = LeapNode()
 
 
-    figers = {
+    fingers = {
         "joints_name":["mcp","rot","pip","dip"],
         "ll":[270,185,195,180],
         "ul":[150,90,165,85]
@@ -183,18 +183,18 @@ def main():
     limits = {
         "if":{
             "id":[4,5,6,7],
-            "ll":figers["ll"],
-            "ul":figers["ul"],
+            "ll":fingers["ll"],
+            "ul":fingers["ul"],
         },
         "mf":{
             "id":[8,9,10,11],
-            "ll":figers["ll"],
-            "ul":figers["ul"],
+            "ll":fingers["ll"],
+            "ul":fingers["ul"],
         },
         "rf":{
             "id":[12,13,14,15],
-            "ll":figers["ll"],
-            "ul":figers["ul"],
+            "ll":fingers["ll"],
+            "ul":fingers["ul"],
         },
         "th":{
             "id":[0,1,2,3],
@@ -205,19 +205,18 @@ def main():
 
     # Base joint configuration (16 joints total), matching leapXela_keyboard.py.
     desired_joint_degrees = [
-        180,  # : 
+        180,  # 
         180,  
         180,  # Thumb: th_mcp_active
-        90,  # Thumb: th_ipl_act
-        265,
+        180,  # Thumb: th_ipl_act
         180,
         180,
         180,  # Middle finger
-        265,
+        180,
         180,
         180,
         180,  # Ring finger
-        265,
+        180,
         180,
         180,
         180,  # Thumb (indices 12..15)
