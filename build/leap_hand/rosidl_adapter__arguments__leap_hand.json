@@ -1,8 +1,0 @@
-{
-  "package_name": "leap_hand",
-  "non_idl_tuples": [
-    "/home/mamad/PhD/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module:srv/LeapVelocity.srv",
-    "/home/mamad/PhD/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module:srv/LeapPosition.srv",
-    "/home/mamad/PhD/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module:srv/LeapEffort.srv"
-  ]
-}

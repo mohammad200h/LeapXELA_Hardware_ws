@@ -1,1 +1,0 @@
-Invoking command in '/home/mamad/PhD/LeapXELA_Hardware_ws/build/xela_server_ros2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/rolling CONDA_PROMPT_MODIFIER=(base) DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/mamad/PhD/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2 -DCMAKE_INSTALL_PREFIX=/home/mamad/PhD/LeapXELA_Hardware_ws/install/xela_server_ros2

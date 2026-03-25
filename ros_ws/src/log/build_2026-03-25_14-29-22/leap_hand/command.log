@@ -1,2 +1,0 @@
-Invoking command in '/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand': /usr/bin/cmake /workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module -DCMAKE_INSTALL_PREFIX=/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/install/leap_hand
-Invoked command in '/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand' returned '1': /usr/bin/cmake /workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module -DCMAKE_INSTALL_PREFIX=/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/install/leap_hand
