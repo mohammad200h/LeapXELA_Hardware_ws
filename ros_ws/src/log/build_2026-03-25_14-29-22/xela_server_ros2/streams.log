@@ -1,0 +1,21 @@
+[0.011s] Invoking command in '/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/build/xela_server_ros2': /usr/bin/cmake /workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2 -DCMAKE_INSTALL_PREFIX=/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/install/xela_server_ros2
+[0.064s] [31mCMake Error at CMakeLists.txt:11 (find_package):
+[0.065s]   By not providing "Findrclcpp.cmake" in CMAKE_MODULE_PATH this project has
+[0.066s]   asked CMake to find a package configuration file provided by "rclcpp", but
+[0.066s]   CMake did not find one.
+[0.066s] 
+[0.067s]   Could not find a package configuration file provided by "rclcpp" with any
+[0.067s]   of the following names:
+[0.067s] 
+[0.067s]     rclcppConfig.cmake
+[0.067s]     rclcpp-config.cmake
+[0.067s] 
+[0.067s]   Add the installation prefix of "rclcpp" to CMAKE_PREFIX_PATH or set
+[0.068s]   "rclcpp_DIR" to a directory containing one of the above files.  If "rclcpp"
+[0.068s]   provides a separate development package or SDK, be sure it has been
+[0.068s]   installed.
+[0.068s] 
+[0.068s] [0m
+[0.068s] -- Configuring incomplete, errors occurred!
+[0.068s] See also "/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/build/xela_server_ros2/CMakeFiles/CMakeOutput.log".
+[0.074s] Invoked command in '/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/build/xela_server_ros2' returned '1': /usr/bin/cmake /workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2 -DCMAKE_INSTALL_PREFIX=/workspace/xela_ws/LeapXELA_Hardware_ws/ros_ws/src/install/xela_server_ros2

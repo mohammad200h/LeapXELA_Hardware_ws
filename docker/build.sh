@@ -1,4 +1,4 @@
-USER=mamad
+USER=xela
 USER_ID=1000
 GROUP_ID=1000
 

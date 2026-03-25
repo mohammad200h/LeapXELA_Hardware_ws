@@ -1,5 +1,5 @@
 # FROM nvidia/cuda:12.6.3-cudnn-devel-ubuntu22.04
-FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04
+FROM ubuntu:22.04
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
@@ -8,6 +8,7 @@ RUN add-apt-repository universe
 
 RUN apt-get update && apt-get install -y git
 RUN apt-get update && apt install -y mesa-utils
+
 # Install EGL libraries for headless MuJoCo rendering
 RUN apt-get update && apt-get install -y libegl1-mesa libgl1-mesa-glx libglib2.0-0
 RUN apt-get update && apt install -y libfuse2
@@ -60,6 +61,7 @@ RUN apt-get update && apt-get install -y \
 RUN apt-get install -y python3-pip curl
 RUN pip install websocket-client
 RUN pip3 install dynamixel-sdk
+
 ##### Terminator ####
 RUN apt-get update && apt-get install -y terminator
 
