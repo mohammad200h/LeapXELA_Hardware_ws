@@ -1,9 +1,7 @@
 
 sudo xhost +local:root
 
-
-
-sudo docker run --runtime=nvidia -it --name leap_xela_hardware \
+sudo docker run -it --name leap_xela_hardware \
   -v $(pwd)/../../LeapXELA_Hardware_ws:/workspace/LeapXELA_Hardware_ws \
   -v /etc/xela:/etc/xela \
   --cap-add NET_ADMIN \
