@@ -10,96 +10,74 @@ from leap_hand_utils.dynamixel_client import DynamixelClient
 import leap_hand_utils.leap_hand_utils as lhu
 from leap_hand.srv import LeapPosition, LeapVelocity, LeapEffort
 
-class LeapNode(Node):
+class LeapNode:
     def __init__(self):
-        super().__init__('leaphand_node')
-        # Some parameters to control the hand
-        self.kP = self.declare_parameter('kP', 800.0).get_parameter_value().double_value
-        self.kI = self.declare_parameter('kI', 0.0).get_parameter_value().double_value
-        self.kD = self.declare_parameter('kD', 200.0).get_parameter_value().double_value
-        self.curr_lim = self.declare_parameter('curr_lim', 350.0).get_parameter_value().double_value
-        self.ema_amount = 0.2
+        self.kP = 600
+        self.kI = 0
+        self.kD = 200
+        self.curr_lim = 550
         self.prev_pos = self.pos = self.curr_pos = lhu.allegro_to_LEAPhand(np.zeros(16))
-
-        # Subscribes to a variety of sources that can command the hand
-        self.create_subscription(JointState, 'cmd_leap', self._receive_pose, 10)
-        self.create_subscription(JointState, 'cmd_ones', self._receive_ones, 10)
-        self.create_subscription(JointState, 'cmd_xela', self._receive_xela, 10)
-
-        # Creates services that can give information about the hand out
-        self.create_service(LeapPosition, 'leap_position', self.pos_srv)
-        self.create_service(LeapVelocity, 'leap_velocity', self.vel_srv)
-        self.create_service(LeapEffort, 'leap_effort', self.eff_srv)
-
-        # You can put the correct port here or have the node auto-search for a hand at the first 3 ports.
-        self.motors = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]
+        self.motors = motors = [i for i in range(16)]
         try:
-            self.dxl_client = DynamixelClient(self.motors, '/dev/ttyUSB0', 57600)
+            self.dxl_client = DynamixelClient(motors, '/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U1HJ-if00-port0', 4000000)
             self.dxl_client.connect()
-        except Exception:
+            print("Connected via /dev/serial/by-id (ttyUSB4)")
+        except Exception as e:
             try:
-                self.dxl_client = DynamixelClient(self.motors, '/dev/ttyUSB1', 57600)
+                self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB0', 57600)
                 self.dxl_client.connect()
-            except Exception:
-                self.dxl_client = DynamixelClient(self.motors, '/dev/ttyUSB2', 57600)
-                self.dxl_client.connect()
-
-        # Enables position-current control mode and the default parameters
-        self.dxl_client.sync_write(self.motors, np.ones(len(self.motors)) * 5, 11, 1)
-        self.dxl_client.set_torque_enabled(self.motors, True)
-        self.dxl_client.sync_write(self.motors, np.ones(len(self.motors)) * self.kP, 84, 2)  # Pgain stiffness     
-        self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kP * 0.75), 84, 2)  # Pgain stiffness for side to side should be a bit less
-        self.dxl_client.sync_write(self.motors, np.ones(len(self.motors)) * self.kI, 82, 2)  # Igain
-        self.dxl_client.sync_write(self.motors, np.ones(len(self.motors)) * self.kD, 80, 2)  # Dgain damping
-        self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kD * 0.75), 80, 2)  # Dgain damping for side to side should be a bit less
-        # Max at current (in unit 1ma) so don't overheat and grip too hard
-        self.dxl_client.sync_write(self.motors, np.ones(len(self.motors)) * self.curr_lim, 102, 2)
+                print("Connected via /dev/ttyUSB0")
+            except Exception as e2:
+                try:
+                    self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB1', 4000000)
+                    self.dxl_client.connect()
+                    print("Connected via /dev/ttyUSB1")
+                except Exception as e3:
+                    self.dxl_client = DynamixelClient(motors, 'COM13', 4000000)
+                    self.dxl_client.connect()
+                    print("Connected via COM13")
+        self.dxl_client.sync_write(motors, np.ones(len(motors))*5, 11, 1)
+        self.dxl_client.set_torque_enabled(motors, True)
+        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kP, 84, 2)
+        self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kP * 0.75), 84, 2)
+        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kI, 82, 2)
+        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kD, 80, 2)
+        self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kD * 0.75), 80, 2)
+        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.curr_lim, 102, 2)
         # self.dxl_client.write_desired_pos(self.motors, self.curr_pos)
-
-    # Receive LEAP pose and directly control the robot
-    def _receive_pose(self, msg):
-        pose = msg.position
-        self.prev_pos = self.curr_pos
-        self.curr_pos = np.array(pose)
-        self.dxl_client.write_desired_pos(self.motors, self.curr_pos)
-
-    # Sim compatibility, first read the sim publisher and then convert to leap
-    def _receive_ones(self, msg):
-        self.get_logger().info(f"msg.position: {msg.position}")
-        pose = lhu.sim_ones_to_LEAPhand(np.array(msg.position))
-        self.get_logger().info(f"pose: {pose}")
-        self.prev_pos = self.curr_pos
-        self.get_logger().info(f"prev_pos: {self.prev_pos}")
-        self.curr_pos = np.array(pose)
-        self.get_logger().info(f"curr_pos: {self.curr_pos}")
-        self.dxl_client.write_desired_pos(self.motors, self.curr_pos)
-
-    def _receive_xela(self, msg):
-        self.dxl_client.write_desired_pos(self.motors, np.array(msg.position))
-        self.get_logger().info(f"xela_pos: {np.array(msg.position)}")
-        self.get_logger().info(f"xela_pos: {self.dxl_client.read_pos()}")
-
-    # Service that reads and returns the pos of the robot in regular LEAP Embodiment scaling.
-    def pos_srv(self, request, response):
-        response.position = self.dxl_client.read_pos().tolist()
-        return response
-
-    # Service that reads and returns the vel of the robot in LEAP Embodiment
-    def vel_srv(self, request, response):
-        response.velocity = self.dxl_client.read_vel().tolist()
-        return response
-
-    # Service that reads and returns the effort/current of the robot in LEAP Embodiment
-    def eff_srv(self, request, response):
-        response.effort = self.dxl_client.read_cur().tolist()
-        return response
-
-def main(args=None):
-    rclpy.init(args=args)
-    leaphand_node = LeapNode()
-    rclpy.spin(leaphand_node)
-    leaphand_node.destroy_node()
-    rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()
+ 
+    def set_joints_degrees(self, degrees_array):
+        """Set all 16 joints using degree values (list or np.array of length 16)."""
+        if len(degrees_array) != 16:
+            print("Error: Please provide exactly 16 values (one per joint).")
+            return
+        try:
+            radians_array = np.radians(degrees_array)
+            self.dxl_client.write_desired_pos(self.motors, radians_array)
+        except Exception as e:
+            print(f"Warning: Failed to write joint positions: {e}")
+    
+    def safe_disconnect(self):
+        """Safely disconnect from Dynamixel motors, handling I/O errors gracefully."""
+        if hasattr(self, 'dxl_client') and self.dxl_client:
+            try:
+                # Try to disable torque first
+                if self.dxl_client.is_connected:
+                    self.dxl_client.port_handler.is_using = False
+                    try:
+                        self.dxl_client.set_torque_enabled(self.motors, False, retries=0)
+                    except:
+                        pass  # Ignore errors during torque disable
+            except:
+                pass  # Ignore errors during cleanup
+            finally:
+                try:
+                    if self.dxl_client.is_connected:
+                        self.dxl_client.port_handler.closePort()
+                except:
+                    pass  # Ignore I/O errors during port close
+ 
+    def read_pos_degrees(self):
+        """Read current joint positions and return in degrees."""
+        pos_rad = self.dxl_client.read_pos()
+        return np.degrees(pos_rad)
