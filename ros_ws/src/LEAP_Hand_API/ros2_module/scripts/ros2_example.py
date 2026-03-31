@@ -9,6 +9,7 @@ import time
 import numpy as np
 import leap_hand_utils.leap_hand_utils as lhu
 
+from base import load_pose
 class MinimalClientAsync(Node):
 
     def __init__(self):
@@ -24,27 +25,13 @@ class MinimalClientAsync(Node):
         rclpy.spin_until_future_complete(self, self.future)
         return self.future.result()
 
+
+
 def main(args=None):
     rclpy.init(args=args)
     minimal_client = MinimalClientAsync()
-    initial_joint_degrees = [
-        180,  # : 
-        180,  
-        180,  # Thumb: th_mcp_active
-        90,  # Thumb: th_ipl_act
-        265,
-        180,
-        180,
-        180,  # Middle finger
-        265,
-        180,
-        180,
-        180,  # Ring finger
-        265,
-        180,
-        180,
-        180,  # Thumb (indices 12..15)
-    ]
+    initial_joint_degrees = load_pose('open')
+    stater = JointState()
     while True:
         
         # JointState fields require a Python sequence of Python floats (numpy scalars fail ROS type checks).

@@ -12,6 +12,7 @@
   <depend>std_msgs</depend>
   <depend>leap_hand_interfaces</depend>
   <exec_depend>dynamixel_sdk</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <build_depend>ament_cmake_python</build_depend>

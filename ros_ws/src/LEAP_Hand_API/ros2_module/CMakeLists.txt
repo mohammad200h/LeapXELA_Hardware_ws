@@ -32,6 +32,7 @@ ament_package()
 install(PROGRAMS
   scripts/leaphand_node.py
   scripts/ros2_example.py
+  scripts/keyboard_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -39,6 +40,12 @@ install(PROGRAMS
 install(FILES
   scripts/base.py
   DESTINATION lib/${PROJECT_NAME}
+)
+
+# Install non-code assets (config)
+install(FILES
+  scripts/pose.json
+  DESTINATION share/${PROJECT_NAME}/config
 )
 
 # Install Python helper modules (importable by scripts)

@@ -2,6 +2,16 @@
 import numpy as np
 from leap_hand_utils.dynamixel_client import *
 import leap_hand_utils.leap_hand_utils as lhu
+from pathlib import Path
+from ament_index_python.packages import get_package_share_directory
+import json
+
+def load_pose(pose_name):
+    pose_path = Path(get_package_share_directory('leap_hand')) / 'config' / 'pose.json'
+    with pose_path.open('r', encoding='utf-8') as f:
+        pose = json.load(f)
+
+    return pose[pose_name]
 
 class LeapXelaBase:
     def __init__(self):
