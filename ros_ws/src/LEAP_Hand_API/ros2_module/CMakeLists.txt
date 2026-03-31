@@ -35,6 +35,12 @@ install(PROGRAMS
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# Install Python modules used by scripts in-place
+install(FILES
+  scripts/base.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 # Install Python helper modules (importable by scripts)
 install(DIRECTORY scripts/leap_hand_utils
   DESTINATION lib/${PROJECT_NAME}
