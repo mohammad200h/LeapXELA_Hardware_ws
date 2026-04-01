@@ -17,14 +17,10 @@ import rclpy
 from rclpy.node import Node
 from rclpy.executors import SingleThreadedExecutor
 import argparse
-import functools
 import importlib
 
 from xela_server_ros2.msg import SensStream, SensorFull, Taxel, Forces
 from xela_server_ros2.srv import XelaSensorStream
-
-
-SENSOR_ID_OFFSET = 1
 
 __version__ = "1.7.6_137302"
 logging.basicConfig(level=logging.INFO)
@@ -379,12 +375,6 @@ class ServiceNode(Node):
         info("Starting ServiceNode")
         super().__init__(name)
         self.data = {}
-
-
-        self.first_chunk = False
-        self.last_chunk = False
-        self.assembled_data = SensStream()
-
         self.__lock = threading.Lock()
         self.publisher_ = None
         self.msg = None
@@ -430,7 +420,6 @@ class ServiceNode(Node):
         Returns:
             XelaSensorStream.Response: The response message containing sensor data.
         """
-        info(f"request::{request}")
         with self.__lock:
             if request.sensor == 0:
                 if self.data:
@@ -441,31 +430,18 @@ class ServiceNode(Node):
                 response.data = [self.data.get(str(request.sensor), not_avail)]
         return response
 
-
-    def store_data(self,data,first_chunk: bool = False,last_chunk: bool = False):
-        with self.__lock:
-            if first_chunk:
-                self.first_chunk = True
-                self.assembled_data.sensors = list(data.values())
-            elif self.first_chunk and last_chunk:
-                self.last_chunk = True
-                self.assembled_data.sensors += list(data.values())
-        
-                self.publish(self.assembled_data)
-                self.first_chunk = False
-                self.last_chunk = False
-                self.assembled_data = SensStream()
-                    
-            
     def publish(self, data):
         """
-        Publish sensor data.d
+        Publish sensor data.
 
         Args:
             data (dict): A dictionary containing sensor data.
         """
-       
-        self.publisher_.publish(data)
+        with self.__lock:
+            self.data = data
+        obj = SensStream()
+        obj.sensors = tuple(data.values())
+        self.publisher_.publish(obj)
 
     def reset(self):
         """Reset the node by clearing all stored data"""
@@ -513,6 +489,7 @@ def message_parser(msg_obj, msg_no: int = 0):
     sensor.taxels = taxels_val
     force_vals = msg_obj.get("calibrated", None)
     if force_vals is None:
+        warn("No force values found")
         force_vals = []
     for i in range(0, len(force_vals), 3):
         forces.append(Forces())
@@ -544,18 +521,18 @@ def get_numeric(element_list):
     return return_list
 
 
-def on_message(wsapp, message, offset_flag=False):
+def on_message(wsapp, message):
     """
     Callback function for handling WebSocket messages.
 
     Args:
         wsapp: The WebSocket application.
         message (str): The incoming WebSocket message.
-        offset_flag (bool, optional): When True, indicates message came from the offset websocket (port 5001). Default is False.
     """
-    # info("offset_flag: {}".format(offset_flag))
     try:
         data = json.loads(message)
+        info(f"data::keys {data.keys()}")
+        info(f"data::message {data['message']}")
     except Exception:
         warn(f"JSON Error for `{message}`")
     else:
@@ -564,7 +541,6 @@ def on_message(wsapp, message, offset_flag=False):
                 pass
             else:
                 elements = get_numeric(data.keys())
-                # info("elements: {}".format(elements))
                 data_container = {}
                 for key in elements:
                     try:
@@ -572,22 +548,12 @@ def on_message(wsapp, message, offset_flag=False):
                         if resp is None:
                             continue
                         pos, returned_data = resp
-                        if offset_flag:
-                            pos = int(pos) + SENSOR_ID_OFFSET
-                            returned_data.sensor_pos = pos
-                        # info(f"POS: {pos}")
-                        # info(f"RETURNED_DATA: {returned_data}")
-                        # info(f"OFFSET_FLAG: {offset_flag}")
                         data_container[pos] = returned_data
                     except Exception as e:
                         error(f"Parser failure: {e2t(e)}")
                         traceback.print_exception(e)
                         pass
-                if not offset_flag:
-                    the_node.store_data(data_container,first_chunk=True)
-                else:
-                    the_node.store_data(data_container,last_chunk=True)
-                
+                the_node.publish(data_container)
         except Exception as e:
             warn(f"Message parsing failed: {e2t(e)}")
             pass  # ignore message as it's probably invalid
@@ -698,9 +664,6 @@ def on_close(wsapp, *args):
     the_node.reset()
 
 
-wsapp_offset = None
-
-
 def start_server():
     """
     Start the WebSocket server and handle incoming messages.
@@ -708,11 +671,10 @@ def start_server():
     global wsapp
     ip = get_ip(CONFIG.ip)
     sys.stderr.write("\033[31mws://{}:{}\033[0m\n".format(ip, CONFIG.port))
-    on_msg = functools.partial(on_message, offset_flag=False)
     while ME_ONLINE:
         try:
             wsapp = websocket.WebSocketApp("ws://{}:{}".format(ip, CONFIG.port),
-                                           on_message=on_msg,
+                                           on_message=on_message,
                                            on_close=on_close,
                                            on_error=on_error)  # set up WebSockets
             wsapp.run_forever()  # Run until connection dies
@@ -724,35 +686,6 @@ def start_server():
         except Exception as exp:
             error(f"EXCEPTION: {e2t(exp)}")
             warn("Ending")
-            time.sleep(2)
-
-
-def start_server_offset():
-    """
-    Start the WebSocket server on port 5001 and handle incoming messages with offset_flag=True.
-    """
-    global wsapp_offset
-    ip = get_ip(CONFIG.ip)
-    port_offset = 5001
-    sys.stderr.write("\033[31mws://{}:{} (offset)\033[0m\n".format(ip, port_offset))
-    on_msg = functools.partial(on_message, offset_flag=True)
-    while ME_ONLINE:
-        try:
-            wsapp_offset = websocket.WebSocketApp("ws://{}:{}".format(ip, port_offset),
-                                                  on_message=on_msg,
-                                                  on_close=on_close,
-                                                  on_error=on_error)
-            wsapp_offset.run_forever()
-        except KeyboardInterrupt:
-            ME_ONLINE.set(False)
-            try:
-                wsapp_offset.close()
-            except NameError:
-                pass
-            info("Offset websocket finished")
-        except Exception as exp:
-            error(f"OFFSET WS EXCEPTION: {e2t(exp)}")
-            warn("Offset websocket ending")
             time.sleep(2)
 
 
@@ -823,7 +756,6 @@ def main():
     setup_shutdown_handler()
     print("Starting WebSocket server...")
     _threader(start_server)
-    _threader(start_server_offset)
     try:
         srv_thread = _threader(spin_srv, executor)
         srv_thread.join()
@@ -834,12 +766,8 @@ def main():
     ME_ONLINE.set(False)
     time.sleep(2)
     try:
-        wsapp.close()
-    except (NameError, AttributeError):
-        pass
-    try:
-        wsapp_offset.close()
-    except (NameError, AttributeError):
+        wsapp.close()  # asyncio.run_coroutine_threadsafe(sio.disconnect(),loop)
+    except:
         pass
 
 

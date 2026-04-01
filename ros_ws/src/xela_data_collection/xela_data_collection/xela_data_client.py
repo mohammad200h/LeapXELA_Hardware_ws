@@ -6,6 +6,8 @@ from rclpy.node import Node
 from xela_server_ros2.srv import XelaSensorStream
 from xela_server_ros2.msg import SensStream
 
+import numpy as np
+
 
 class XelaSimpleClient(Node):
     def __init__(self):
@@ -41,7 +43,11 @@ class XelaSimpleClient(Node):
         # self.get_logger().info(f"times {times}")
         number_of_texels_in_sensor_1 = len(msg.sensors[0].taxels)
         self.get_logger().info(f"number_of_texels_in_sensor_1 {number_of_texels_in_sensor_1}")
-        # self.get_logger().info(f"data {msg.sensors[0].taxels[0].x}")
+        self.get_logger().info(f"number_of_forces_in_sensor_1 {len(msg.sensors[0].forces)}")
+
+        self.get_logger().info(f"taxels::1::x {msg.sensors[0].taxels[29]}")
+
+        
 
 
 def main(args=None):

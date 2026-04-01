@@ -20,7 +20,8 @@ setup(
     entry_points={
         "console_scripts": [
             "xela_data_client = xela_data_collection.xela_data_client:main",
-            "xela_visulizer = xela_data_collection.xela_visulizer:main",
+            "xela_taxel_visulizer = xela_data_collection.xela_taxel_visulizer:main",
+            "xela_qt_taxel_visualizer = xela_data_collection.xela_qt_taxel_visualizer:main",
         ],
     },
 )

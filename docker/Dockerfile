@@ -62,6 +62,9 @@ RUN pip install websocket-client
 RUN pip3 install dynamixel-sdk
 ##### Terminator ####
 RUN apt-get update && apt-get install -y terminator
+##### PyQt5 ######
+RUN apt-get install -y libxcb-cursor0
+RUN pip install pyqtgraph PySide6
 
 ###### WorkDir #######
 WORKDIR workspace
