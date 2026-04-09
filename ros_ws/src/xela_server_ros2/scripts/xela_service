@@ -489,7 +489,7 @@ def message_parser(msg_obj, msg_no: int = 0):
     sensor.taxels = taxels_val
     force_vals = msg_obj.get("calibrated", None)
     if force_vals is None:
-        warn("No force values found")
+        # warn("No force values found")
         force_vals = []
     for i in range(0, len(force_vals), 3):
         forces.append(Forces())
@@ -531,8 +531,8 @@ def on_message(wsapp, message):
     """
     try:
         data = json.loads(message)
-        info(f"data::keys {data.keys()}")
-        info(f"data::message {data['message']}")
+        # info(f"data::keys {data.keys()}")
+        # info(f"data::message {data['message']}")
     except Exception:
         warn(f"JSON Error for `{message}`")
     else:

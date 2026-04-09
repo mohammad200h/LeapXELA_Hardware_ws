@@ -1,3 +1,5 @@
+import os
+
 from setuptools import setup
 
 package_name = "xela_data_collection"
@@ -9,6 +11,10 @@ setup(
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
         ("share/" + package_name, ["package.xml"]),
+        (
+            os.path.join("share", package_name, "launch"),
+            ["launch/xela_server_and_client.launch.py"],
+        ),
     ],
     install_requires=["setuptools"],
     zip_safe=True,
@@ -19,7 +25,7 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "xela_data_client = xela_data_collection.xela_data_client:main",
+            "xela_image_publisher = xela_data_collection.xela_image_publisher:main",
             "xela_taxel_visulizer = xela_data_collection.xela_taxel_visulizer:main",
             "xela_qt_taxel_visualizer = xela_data_collection.xela_qt_taxel_visualizer:main",
         ],

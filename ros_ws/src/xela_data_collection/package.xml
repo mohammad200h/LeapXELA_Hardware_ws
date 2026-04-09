@@ -11,6 +11,8 @@
   <buildtool_depend>ament_python</buildtool_depend>
 
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>python3-matplotlib</exec_depend>
   <exec_depend>xela_server_ros2</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
