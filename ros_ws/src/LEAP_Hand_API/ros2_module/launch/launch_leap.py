@@ -18,12 +18,5 @@ def generate_launch_description():
                 {'kD': 200.0},
                 {'curr_lim': 500.0}
             ]
-        ),
-        Node(
-            package='leap_hand',
-            executable='ros2_example.py',
-            name='ros2_example',
-            emulate_tty=True,
-            output='screen'
         )
     ])

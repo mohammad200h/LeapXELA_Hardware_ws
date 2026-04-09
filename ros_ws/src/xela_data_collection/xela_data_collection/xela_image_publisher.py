@@ -74,9 +74,11 @@ class XelaSimpleClient(Node):
         self.leap_image.fill_image(msg)
         self.leap_image.normalize_image()
 
+
+        timestamp = self.get_clock().now().to_msg()
         # Pumblish Image
         out = Image()
-        out.header.stamp = self.get_clock().now().to_msg()
+        out.header.stamp = timestamp
         out.header.frame_id = "leap_image"
 
         img = self.leap_image.get_image()  # (26, 31, 3) int32
@@ -90,7 +92,7 @@ class XelaSimpleClient(Node):
 
         # Publish Normalized Image
         out = Image()
-        out.header.stamp = self.get_clock().now().to_msg()
+        out.header.stamp = timestamp
         out.header.frame_id = "leap_image"
 
         img = self.leap_image.get_normalized_image()  # (26, 31, 3) float32

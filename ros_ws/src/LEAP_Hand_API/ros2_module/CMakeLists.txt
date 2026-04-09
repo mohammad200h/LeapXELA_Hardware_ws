@@ -16,6 +16,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/LeapVelocity.srv"
   "srv/LeapPosition.srv"
   "srv/LeapEffort.srv"
+  "srv/LeapState.srv"
   DEPENDENCIES std_msgs
 )
 
