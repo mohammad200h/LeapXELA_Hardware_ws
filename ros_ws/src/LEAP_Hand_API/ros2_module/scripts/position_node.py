@@ -16,11 +16,11 @@ class PositionNode(Node):
 
         self.declare_parameter("csv_path", "")
         self.declare_parameter("source_units", "radians")
-        self.declare_parameter("sample_stride", 20)
-        self.declare_parameter("interpolation_steps", 5)
-        self.declare_parameter("publish_period_sec", 0.1)
+        self.declare_parameter("sample_stride", 1)
+        self.declare_parameter("interpolation_steps", 25)
+        self.declare_parameter("publish_period_sec", 0.02)
 
-        self.pub = self.create_publisher(JointState, "cmd_xela", 10)
+        self.pub = self.create_publisher(JointState, "cmd_xela", 50)
 
         csv_path = self._resolve_csv_path(str(self.get_parameter("csv_path").value).strip())
         source_units = str(self.get_parameter("source_units").value).strip().lower()
@@ -54,17 +54,17 @@ class PositionNode(Node):
             return path
 
         installed_path = (
-            Path(get_package_share_directory("leap_hand")) / "config" / "leap_state_output.csv"
+            Path(get_package_share_directory("leap_hand")) / "config" / "beer_bottle.csv"
         )
         if installed_path.exists():
             return installed_path
 
-        source_path = Path(__file__).resolve().with_name("leap_state_output.csv")
+        source_path = Path(__file__).resolve().with_name("beer_bottle.csv")
         if source_path.exists():
             return source_path
 
         raise FileNotFoundError(
-            "Could not find leap_state_output.csv in the installed package or source tree."
+            "Could not find beer_bottle.csv in the installed package or source tree."
         )
 
     def load_csv(self, path: Path, *, source_units: str) -> list[np.ndarray]:

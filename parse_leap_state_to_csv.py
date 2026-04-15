@@ -1,7 +1,14 @@
 import csv
+import sys
+import os
 
-input_file = 'leap_state_output.txt'
-output_file = 'leap_state_output.csv'
+if len(sys.argv) > 1:
+    input_file = sys.argv[1]
+else:
+    input_file = 'leap_state_output.txt'
+
+base, _ = os.path.splitext(input_file)
+output_file = base + '.csv'
 
 rows = []
 current_block = []

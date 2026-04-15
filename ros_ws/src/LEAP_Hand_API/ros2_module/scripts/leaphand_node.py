@@ -27,10 +27,10 @@ class LeapXELANode(Node):
         self.create_service(LeapState, 'leap_state', self.state_srv)
 
         self._leapXela = LeapXelaBase()
-        self.create_subscription(JointState, 'cmd_xela', self._receive_pose, 10)
+        self.create_subscription(JointState, 'cmd_xela', self._receive_pose, 50)
 
         #self.pub = self.create_publisher(JointState, 'leap_state', 10)
-        self.pub = self.create_publisher(Float64MultiArray, 'leap_state', 10)
+        self.pub = self.create_publisher(Float64MultiArray, 'leap_state', 50)
         self.timer = self.create_timer(0.1, self.publish_state)
 
     def publish_state(self):
@@ -56,8 +56,8 @@ class LeapXELANode(Node):
         pose = msg.position
         self.curr_pos = np.array(pose)
         
-        with self._hw_mutex:
-            self._leapXela.set_joints_degrees(self.curr_pos)
+        # with self._hw_mutex:
+        self._leapXela.set_joints_degrees(self.curr_pos)
 
     # Service that reads and returns the pos of the robot in regular LEAP Embodiment scaling.
     def pos_srv(self, request, response):

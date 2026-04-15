@@ -13,9 +13,9 @@ def generate_launch_description():
             emulate_tty=True,
             output='screen',
             parameters=[
-                {'kP': 800.0},
+                {'kP': 1.0},
                 {'kI': 0.0},
-                {'kD': 200.0},
+                {'kD': 500.0},
                 {'curr_lim': 500.0}
             ]
         ),
