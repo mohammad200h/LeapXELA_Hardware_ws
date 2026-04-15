@@ -47,6 +47,7 @@ install(FILES
 # Install non-code assets (config)
 install(FILES
   scripts/pose.json
+  scripts/leap_state_output.csv
   DESTINATION share/${PROJECT_NAME}/config
 )
 

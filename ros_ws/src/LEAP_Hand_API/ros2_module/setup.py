@@ -12,6 +12,13 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name] if os.path.exists('resource/' + package_name) else []),
         ('share/' + package_name, ['package.xml'] if os.path.exists('package.xml') else []),
+        (
+            os.path.join('share', package_name, 'config'),
+            [
+                os.path.join('scripts', 'pose.json'),
+                os.path.join('scripts', 'leap_state_output.csv'),
+            ] if os.path.exists('scripts') else []
+        ),
         (os.path.join('share', package_name, 'launch'),
             [os.path.join('launch', f) for f in os.listdir('launch')] if os.path.exists('launch') else []),
     ],
