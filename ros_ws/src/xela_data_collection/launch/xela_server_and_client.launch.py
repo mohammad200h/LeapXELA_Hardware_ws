@@ -1,6 +1,6 @@
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.launch_description_sources import AnyLaunchDescriptionSource
+from launch.launch_description_sources import AnyLaunchDescriptionSource, PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -45,10 +45,25 @@ def generate_launch_description():
         }.items(),
     )
 
+    included_leap = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution(
+                [FindPackageShare("leap_hand"), "launch", "launch_leap.py"]
+            )
+        )
+    )
+
     client_node = Node(
         package="xela_data_collection",
         executable="xela_image_publisher",
         name="xela_simple_client",
+        output="screen",
+    )
+
+    collector_node = Node(
+        package="xela_data_collection",
+        executable="xela_data_collector",
+        name="xela_data_collector",
         output="screen",
     )
 
@@ -58,8 +73,10 @@ def generate_launch_description():
             port_arg,
             ip_arg,
             d_arg,
+            included_leap,
             included_server,
             client_node,
+            collector_node,
         ]
     )
 

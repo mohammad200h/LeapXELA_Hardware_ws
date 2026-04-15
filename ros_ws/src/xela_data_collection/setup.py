@@ -13,7 +13,10 @@ setup(
         ("share/" + package_name, ["package.xml"]),
         (
             os.path.join("share", package_name, "launch"),
-            ["launch/xela_server_and_client.launch.py"],
+            [
+                "launch/xela_server_and_client.launch.py",
+                "launch/xela_dataset_visulizer.launch.py",
+            ],
         ),
     ],
     install_requires=["setuptools"],
@@ -28,6 +31,8 @@ setup(
             "xela_image_publisher = xela_data_collection.xela_image_publisher:main",
             "xela_taxel_visulizer = xela_data_collection.xela_taxel_visulizer:main",
             "xela_qt_taxel_visualizer = xela_data_collection.xela_qt_taxel_visualizer:main",
+            "xela_data_collector = xela_data_collection.xela_data_collector:main",
+            "xela_dataset_visulizer = xela_data_collection.xela_dataset_visulizer:main",
         ],
     },
 )

@@ -21,9 +21,9 @@ def generate_launch_description():
         ),
         Node(
             package='leap_hand',
-            executable='ros2_example.py',
-            name='ros2_example',
+            executable='position_node.py',
+            name='position_node',
             emulate_tty=True,
-            output='screen'
+            output='screen',
         )
     ])

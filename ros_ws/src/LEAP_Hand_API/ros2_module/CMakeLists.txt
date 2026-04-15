@@ -16,6 +16,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/LeapVelocity.srv"
   "srv/LeapPosition.srv"
   "srv/LeapEffort.srv"
+  "srv/LeapState.srv"
   DEPENDENCIES std_msgs
 )
 
@@ -33,6 +34,7 @@ install(PROGRAMS
   scripts/leaphand_node.py
   scripts/ros2_example.py
   scripts/keyboard_node.py
+  scripts/position_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

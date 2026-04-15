@@ -39,14 +39,14 @@ class LeapXelaBase:
                     self.dxl_client = DynamixelClient(motors, 'COM13', 4000000)
                     self.dxl_client.connect()
                     print("Connected via COM13")
-        self.dxl_client.sync_write(motors, np.ones(len(motors))*5, 11, 1)
-        self.dxl_client.set_torque_enabled(motors, True)
-        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kP, 84, 2)
-        self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kP * 0.75), 84, 2)
-        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kI, 82, 2)
-        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kD, 80, 2)
-        self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kD * 0.75), 80, 2)
-        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.curr_lim, 102, 2)
+        # self.dxl_client.sync_write(motors, np.ones(len(motors))*5, 11, 1)
+        # self.dxl_client.set_torque_enabled(motors, False)
+        # self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kP, 84, 2)
+        # self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kP * 0.75), 84, 2)
+        # self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kI, 82, 2)
+        # self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kD, 80, 2)
+        # self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kD * 0.75), 80, 2)
+        # self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.curr_lim, 102, 2)
  
     def set_joints_degrees(self, degrees_array):
         """Set all 16 joints using degree values (list or np.array of length 16)."""
