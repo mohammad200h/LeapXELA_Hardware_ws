@@ -77,9 +77,13 @@ RUN apt-get update && apt-get install -y libxcb-cursor0
 RUN pip install pyqtgraph PySide6
 
 ##### realsense ######
-# Install RealSense
+# Install RealSense (CUDA-accelerated processing: align, pointcloud, etc.).
+# Base image supplies CUDA toolkit; runtime still needs NVIDIA driver + nvidia-container-toolkit (--gpus all).
+ENV CUDA_HOME=/usr/local/cuda
+ENV PATH=${CUDA_HOME}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
 RUN \
-    apt-get install -y libssl-dev libusb-1.0-0-dev libudev-dev pkg-config libgtk-3-dev \
+    apt-get update && apt-get install -y cmake libssl-dev libusb-1.0-0-dev libudev-dev pkg-config libgtk-3-dev \
     &&                                                             \
     apt-get install -y libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
     &&                                                             \
@@ -91,12 +95,17 @@ RUN \
     &&                                                             \
     mkdir build && cd build                                        \
     &&                                                             \
-    cmake .. -DBUILD_PYTHON_BINDINGS=ON -DPYTHON_EXECUTABLE=/usr/bin/python3                            \
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DBUILD_WITH_CUDA=ON \
+        -DBUILD_PYTHON_BINDINGS=ON \
+        -DPYTHON_EXECUTABLE=/usr/bin/python3 \
     &&                                                             \
     cmake --build .     -j$(nproc)                                 \
     &&                                                             \
-    cmake --install .
-ENV PYTHONPATH=$PYTHONPATH:/librealsense/build/Release
+    cmake --install .                                              \
+    && cd / && rm -rf /librealsense
+ENV PYTHONPATH=$PYTHONPATH:/usr/local/lib
 ##### Dex-retargeting ######
 # matplotlib from pip (NumPy 2 ABI). Apt python3-matplotlib targets system NumPy 1.x and breaks when pip installs NumPy 2 (mediapipe imports matplotlib).
 RUN python3 -m pip install --no-cache-dir \
