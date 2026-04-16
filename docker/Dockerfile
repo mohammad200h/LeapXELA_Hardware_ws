@@ -11,6 +11,16 @@ RUN apt-get update && apt install -y mesa-utils
 # Install EGL libraries for headless MuJoCo rendering
 RUN apt-get update && apt-get install -y libegl1-mesa libgl1-mesa-glx libglib2.0-0
 RUN apt-get update && apt install -y libfuse2
+#
+# SAPIEN uses Vulkan for rendering. In containers you often need either:
+# - NVIDIA Vulkan ICD from the host (GPU path), or
+# - Mesa's lavapipe (CPU Vulkan path) as a fallback.
+RUN apt-get update && apt-get install -y \
+    libglvnd0 \
+    libvulkan1 \
+    mesa-vulkan-drivers \
+    vulkan-validationlayers \
+    && rm -rf /var/lib/apt/lists/*
 
 #### ROS2 Humble ######
 ENV ROS_DISTRO=humble
@@ -86,8 +96,43 @@ RUN \
     cmake --build .     -j$(nproc)                                 \
     &&                                                             \
     cmake --install .
-RUN pip install numpy==1.26.4
 ENV PYTHONPATH=$PYTHONPATH:/librealsense/build/Release
+##### Dex-retargeting ######
+# matplotlib from pip (NumPy 2 ABI). Apt python3-matplotlib targets system NumPy 1.x and breaks when pip installs NumPy 2 (mediapipe imports matplotlib).
+RUN python3 -m pip install --no-cache-dir \
+    "numpy>=2.0.0" \
+    "matplotlib>=3.8.0" \
+    "pytransform3d>=3.5.0" \
+    "pin>=3.3.1" \
+    "nlopt>=2.8.0" \
+    "anytree>=2.12.0" \
+    "pyyaml>=6.0.0" \
+    "lxml>=5.2.2" \
+    "tyro" \
+    "tqdm" \
+    "opencv-python" \
+    "mediapipe==0.10.14" \
+    "protobuf<5" \
+    "sapien==3.0.0b0" \
+    "loguru" \
+    "torch"
+
+###### Sapian #####
+ARG VULKAN_SDK_VERSION=1.4.341.1
+RUN cd /tmp && \
+    curl -fSL -o "vulkansdk-linux-x86_64-${VULKAN_SDK_VERSION}.tar.xz" \
+    "https://sdk.lunarg.com/sdk/download/${VULKAN_SDK_VERSION}/linux/vulkansdk-linux-x86_64-${VULKAN_SDK_VERSION}.tar.xz" && \
+    tar -xJf "vulkansdk-linux-x86_64-${VULKAN_SDK_VERSION}.tar.xz" && \
+    rm -f "vulkansdk-linux-x86_64-${VULKAN_SDK_VERSION}.tar.xz"
+ENV VULKAN_SDK=/tmp/${VULKAN_SDK_VERSION}/x86_64 \
+    LD_LIBRARY_PATH=/tmp/${VULKAN_SDK_VERSION}/x86_64/lib \
+    VK_LAYER_PATH=/tmp/${VULKAN_SDK_VERSION}/x86_64/etc/vulkan/explicit_layer.d \
+    PATH=/tmp/${VULKAN_SDK_VERSION}/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+
+# Vulkan & GLVND Support
+RUN apt-get update && apt-get install -y vulkan-tools 
+
 ###### WorkDir #######
 WORKDIR workspace
 
