@@ -63,9 +63,31 @@ RUN pip3 install dynamixel-sdk
 ##### Terminator ####
 RUN apt-get update && apt-get install -y terminator
 ##### PyQt5 ######
-RUN apt-get install -y libxcb-cursor0
+RUN apt-get update && apt-get install -y libxcb-cursor0
 RUN pip install pyqtgraph PySide6
 
+##### realsense ######
+# Install RealSense
+RUN \
+    apt-get install -y libssl-dev libusb-1.0-0-dev libudev-dev pkg-config libgtk-3-dev \
+    &&                                                             \
+    apt-get install -y libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev at \
+    &&                                                             \
+    git clone https://github.com/IntelRealSense/librealsense.git   \
+    &&                                                             \
+    cd librealsense                                                \
+    &&                                                             \
+    git checkout -b development                                    \
+    &&                                                             \
+    mkdir build && cd build                                        \
+    &&                                                             \
+    cmake .. -DBUILD_PYTHON_BINDINGS=ON -DPYTHON_EXECUTABLE=/usr/bin/python3                            \
+    &&                                                             \
+    cmake --build .     -j$(nproc)                                 \
+    &&                                                             \
+    cmake --install .
+RUN pip install numpy==1.26.4
+ENV PYTHONPATH=$PYTHONPATH:/librealsense/build/Release
 ###### WorkDir #######
 WORKDIR workspace
 
