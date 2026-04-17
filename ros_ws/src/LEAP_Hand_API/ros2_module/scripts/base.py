@@ -8,7 +8,6 @@ import json
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from leap_globals import (
     CURRENT_LIMIT_MA,
     DEFAULT_ZERO_STATE_RAD,

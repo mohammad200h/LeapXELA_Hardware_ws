@@ -9,7 +9,7 @@ import sys
 import termios
 import time
 from pynput import keyboard
-from leap_globals import COMMAND_QUEUE_DEPTH, COMMAND_TOPIC
+from ros_ws.src.LEAP_Hand_API.ros2_module.scripts.leap_globals import COMMAND_QUEUE_DEPTH, COMMAND_TOPIC
 
 min_angle = 120.0
 max_angle = 40.0

@@ -22,7 +22,7 @@ class LeapImage():
     def fill_image(self, msg: SensStream):
         for idx, taxel in enumerate(msg.sensors[0].taxels):
             
-            rows, cols = np.where(self.ids == idx)
+            rows, cols = np.wherue(self.ids == idx)
             row,col = rows[0], cols[0]
             self.image[row,col,:] = [taxel.x, taxel.y, taxel.z]
     

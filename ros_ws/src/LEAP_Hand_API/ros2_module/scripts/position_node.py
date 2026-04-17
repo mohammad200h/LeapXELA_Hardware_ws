@@ -11,8 +11,6 @@ from ament_index_python.packages import get_package_share_directory
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from leap_globals import (
     COMMAND_QUEUE_DEPTH,
     COMMAND_TOPIC,
@@ -112,27 +110,66 @@ class PositionNode(Node):
         return data
 
     def build_command_sequence(
-        self,
-        joint_positions_deg: list[np.ndarray],
-        *,
-        sample_stride: int,
-        interpolation_steps: int,
-    ) -> list[np.ndarray]:
-        sampled = joint_positions_deg[::sample_stride]
-        if len(sampled) < 2:
-            sampled = joint_positions_deg
-        if len(sampled) < 2:
-            return [joint_positions_deg[0]]
 
+        self,
+
+        joint_positions_deg: list[np.ndarray],
+
+        *,
+
+        sample_stride: int,
+
+        interpolation_steps: int,
+
+    ) -> list[np.ndarray]:
+
+        sampled = joint_positions_deg[::sample_stride]
+
+        if len(sampled) < 2:
+
+            sampled = joint_positions_deg
+
+        if len(sampled) < 2:
+
+            return [joint_positions_deg[0]]
+    
         command_sequence = [sampled[0]]
+    
         for i in range(len(sampled) - 1):
-            start = sampled[i]
-            end = sampled[i + 1]
+
+            p0 = sampled[max(i - 1, 0)]
+
+            p1 = sampled[i]
+
+            p2 = sampled[i + 1]
+
+            p3 = sampled[min(i + 2, len(sampled) - 1)]
+    
             for j in range(1, interpolation_steps + 1):
-                alpha = j / float(interpolation_steps)
-                interp = start + (end - start) * alpha
+
+                t = j / float(interpolation_steps)
+
+                t2 = t * t
+
+                t3 = t2 * t
+    
+                interp = 0.5 * (
+
+                    (2.0 * p1)
+
+                    + (-p0 + p2) * t
+
+                    + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2
+
+                    + (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3
+
+                )
+
                 command_sequence.append(interp)
+    
         return command_sequence
+
+ 
 
     def _on_timer(self) -> None:
         if self.count_subscribers(COMMAND_TOPIC) <= 0:

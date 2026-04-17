@@ -41,7 +41,7 @@ install(PROGRAMS
 # Install Python modules used by scripts in-place
 install(FILES
   scripts/base.py
-  leap_globals.py
+  scripts/leap_globals.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

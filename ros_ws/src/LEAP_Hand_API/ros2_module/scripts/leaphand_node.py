@@ -11,8 +11,8 @@ import os
 from leap_hand.srv import LeapPosition, LeapVelocity, LeapEffort, LeapState
 from base import LeapXelaBase
 from std_msgs.msg import Float64MultiArray
+from pathlib import Path
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from leap_globals import (
     COMMAND_QUEUE_DEPTH,
     COMMAND_TOPIC,
@@ -42,15 +42,22 @@ class LeapXELANode(Node):
             COMMAND_QUEUE_DEPTH,
         )
 
-        self.pub = self.create_publisher(Float64MultiArray, STATE_TOPIC, STATE_QUEUE_DEPTH)
+        # self.pub = self.create_publisher(Float64MultiArray, STATE_TOPIC, STATE_QUEUE_DEPTH)
+        self.pub = self.create_publisher(JointState, STATE_TOPIC, STATE_QUEUE_DEPTH)
         self.timer = self.create_timer(LEAPHAND_STATE_PUBLISH_PERIOD_SEC, self.publish_state)
 
     def publish_state(self):
         with self._hw_mutex:
             pos, vel, cur = self._leapXela.read_pos_vel_cur()
 
-        msg = Float64MultiArray()
-        msg.data = pos.tolist()
+        # msg = Float64MultiArray()
+        # msg.data = pos.tolist()
+        # self.pub.publish(msg)
+
+        msg = JointState()
+        msg.position = pos.tolist()
+        msg.velocity = vel.tolist()
+        msg.effort = cur.tolist()
         self.pub.publish(msg)
 
     # Receive LEAP pose and directly control the robot
