@@ -26,7 +26,7 @@ def _default_data_dir() -> Path:
             return candidate
     except Exception:
         pass
-    return Path.cwd() / "data"
+    return Path.cwd() / "ros_ws/data"
 
 
 def _resolve_in_data_dir(p: str | Path, data_dir: Path) -> Path:
@@ -222,7 +222,7 @@ def visulize_dataset() -> None:
     data_files = _list_data_files(data_dir)
 
     # Back-compat default: prefer xela_data.h5 if present, otherwise first file in data/.
-    default_h5 = data_dir / "xela_data.h5"
+    default_h5 = data_dir / "xela_data_20260417_161844.h5"
     if not default_h5.exists() and data_files:
         default_h5 = data_files[0]
 

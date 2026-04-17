@@ -150,9 +150,9 @@ def _get_stream_and_count(h5_path: Path) -> Tuple[str, int]:
 
 
 def main() -> None:
-    default_h5 = Path(__file__).resolve().parent / "xela_data.h5"
+    default_h5 = Path(__file__).resolve().parent / "ros_ws/data/xela_data_20260417_161844.h5"
     if not default_h5.exists():
-        default_h5 = Path.cwd() / "xela_data.h5"
+        default_h5 = Path.cwd() / "xela_data_20260417_161844.h5"
 
     stream, n = _get_stream_and_count(default_h5)
     if n <= 0:
