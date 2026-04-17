@@ -25,7 +25,7 @@ POSITION_NODE_DEFAULT_PUBLISH_PERIOD_SEC = 0.02
 
 
 # LEAP hand hardware configuration
-MOTOR_IDS = list(range(16))
+MOTOR_IDS = [i for i in range(16)]
 SIDE_TO_SIDE_MOTOR_IDS = [0, 4, 8]
 DEFAULT_ZERO_STATE_RAD = np.zeros(16)
 
