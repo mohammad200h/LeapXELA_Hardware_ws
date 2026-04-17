@@ -8,19 +8,29 @@ import rclpy
 from ament_index_python.packages import get_package_share_directory
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
+from leap_globals import (
+    COMMAND_QUEUE_DEPTH,
+    COMMAND_TOPIC,
+    POSITION_NODE_DEFAULT_CSV_FILENAME,
+    POSITION_NODE_DEFAULT_CSV_PATH,
+    POSITION_NODE_DEFAULT_INTERPOLATION_STEPS,
+    POSITION_NODE_DEFAULT_PUBLISH_PERIOD_SEC,
+    POSITION_NODE_DEFAULT_SAMPLE_STRIDE,
+    POSITION_NODE_DEFAULT_SOURCE_UNITS,
+)
 
 
 class PositionNode(Node):
     def __init__(self):
         super().__init__("position_node")
 
-        self.declare_parameter("csv_path", "")
-        self.declare_parameter("source_units", "radians")
-        self.declare_parameter("sample_stride", 1)
-        self.declare_parameter("interpolation_steps", 25)
-        self.declare_parameter("publish_period_sec", 0.02)
+        self.declare_parameter("csv_path", POSITION_NODE_DEFAULT_CSV_PATH)
+        self.declare_parameter("source_units", POSITION_NODE_DEFAULT_SOURCE_UNITS)
+        self.declare_parameter("sample_stride", POSITION_NODE_DEFAULT_SAMPLE_STRIDE)
+        self.declare_parameter("interpolation_steps", POSITION_NODE_DEFAULT_INTERPOLATION_STEPS)
+        self.declare_parameter("publish_period_sec", POSITION_NODE_DEFAULT_PUBLISH_PERIOD_SEC)
 
-        self.pub = self.create_publisher(JointState, "cmd_xela", 50)
+        self.pub = self.create_publisher(JointState, COMMAND_TOPIC, COMMAND_QUEUE_DEPTH)
 
         csv_path = self._resolve_csv_path(str(self.get_parameter("csv_path").value).strip())
         source_units = str(self.get_parameter("source_units").value).strip().lower()
@@ -54,17 +64,17 @@ class PositionNode(Node):
             return path
 
         installed_path = (
-            Path(get_package_share_directory("leap_hand")) / "config" / "beer_bottle.csv"
+            Path(get_package_share_directory("leap_hand")) / "config" / POSITION_NODE_DEFAULT_CSV_FILENAME
         )
         if installed_path.exists():
             return installed_path
 
-        source_path = Path(__file__).resolve().with_name("beer_bottle.csv")
+        source_path = Path(__file__).resolve().with_name(POSITION_NODE_DEFAULT_CSV_FILENAME)
         if source_path.exists():
             return source_path
 
         raise FileNotFoundError(
-            "Could not find beer_bottle.csv in the installed package or source tree."
+            f"Could not find {POSITION_NODE_DEFAULT_CSV_FILENAME} in the installed package or source tree."
         )
 
     def load_csv(self, path: Path, *, source_units: str) -> list[np.ndarray]:
@@ -120,17 +130,17 @@ class PositionNode(Node):
         return command_sequence
 
     def _on_timer(self) -> None:
-        if self.count_subscribers("cmd_xela") <= 0:
+        if self.count_subscribers(COMMAND_TOPIC) <= 0:
             if self._started:
                 self.get_logger().warn(
-                    "Lost all subscribers on cmd_xela while replaying; waiting to resume."
+                    f"Lost all subscribers on {COMMAND_TOPIC} while replaying; waiting to resume."
                 )
                 self._started = False
             return
 
         if not self._started:
             self._started = True
-            self.get_logger().info("cmd_xela subscriber detected. Starting replay.")
+            self.get_logger().info(f"{COMMAND_TOPIC} subscriber detected. Starting replay.")
 
         if self._next_index >= len(self.command_sequence):
             self.get_logger().info("Replay complete. Holding final pose.")

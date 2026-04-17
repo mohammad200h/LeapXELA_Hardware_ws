@@ -9,6 +9,8 @@ import sys
 import termios
 import time
 from pynput import keyboard
+from leap_globals import COMMAND_QUEUE_DEPTH, COMMAND_TOPIC
+
 min_angle = 120.0
 max_angle = 40.0
 step_degrees = 5.0
@@ -36,7 +38,7 @@ class KeyboardNode(Node):
     def __init__(self):
         super().__init__('keyboard_node')
    
-        self.pub_hand = self.create_publisher(JointState, '/cmd_xela', 10) 
+        self.pub_hand = self.create_publisher(JointState, COMMAND_TOPIC, COMMAND_QUEUE_DEPTH)
 
     def run_pynput(self, desired_joint_degrees, min_angle=min_angle, max_angle=max_angle, step_degrees=step_degrees):
         # Active joint index in range [0..15].

@@ -7,7 +7,7 @@ setup(
     name=package_name,
     version='0.0.1',
     packages=[package_name],
-    py_modules=['leaphand_node', 'position_node'],
+    py_modules=['leaphand_node', 'position_node', 'keyboard_node', 'ros2_example', 'base', 'leap_globals'],
     package_dir={'': 'scripts'},
     data_files=[
         ('share/ament_index/resource_index/packages', ['resource/' + package_name] if os.path.exists('resource/' + package_name) else []),
