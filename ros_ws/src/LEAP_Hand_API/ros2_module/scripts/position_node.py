@@ -2,12 +2,17 @@
 
 import csv
 from pathlib import Path
+import os
+import sys
 
 import numpy as np
 import rclpy
 from ament_index_python.packages import get_package_share_directory
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
 from leap_globals import (
     COMMAND_QUEUE_DEPTH,
     COMMAND_TOPIC,

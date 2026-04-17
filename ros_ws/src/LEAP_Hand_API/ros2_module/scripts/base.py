@@ -5,6 +5,10 @@ import leap_hand_utils.leap_hand_utils as lhu
 from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 import json
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from leap_globals import (
     CURRENT_LIMIT_MA,
     DEFAULT_ZERO_STATE_RAD,

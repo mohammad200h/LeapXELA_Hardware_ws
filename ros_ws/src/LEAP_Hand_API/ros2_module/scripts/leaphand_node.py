@@ -5,10 +5,14 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from threading import RLock
+import sys
+import os
 
 from leap_hand.srv import LeapPosition, LeapVelocity, LeapEffort, LeapState
 from base import LeapXelaBase
 from std_msgs.msg import Float64MultiArray
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from leap_globals import (
     COMMAND_QUEUE_DEPTH,
     COMMAND_TOPIC,
@@ -83,7 +87,6 @@ class LeapXELANode(Node):
         response.velocity = vel.tolist()
         response.effort = cur.tolist()
         return response
-
 
     def safe_disconnect(self):
         self._leapXela.safe_disconnect()
