@@ -61,10 +61,12 @@ class LeapXelaBase:
             self.dxl_client.sync_write(motors, np.ones(len(motors)) * 5, 11, 1)
             self.dxl_client.set_torque_enabled(motors, True)
             self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kP, 84, 2)
-            self.dxl_client.sync_write(SIDE_TO_SIDE_MOTOR_IDS, np.ones(len(SIDE_TO_SIDE_MOTOR_IDS)) * (self.kP * SIDE_TO_SIDE_KP_SCALE), 84, 2)
+            self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kP * 0.75), 84, 2)
+            # self.dxl_client.sync_write(SIDE_TO_SIDE_MOTOR_IDS, np.ones(len(SIDE_TO_SIDE_MOTOR_IDS)) * (self.kP * SIDE_TO_SIDE_KP_SCALE), 84, 2)
             self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kI, 82, 2)
             self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kD, 80, 2)
-            self.dxl_client.sync_write(SIDE_TO_SIDE_MOTOR_IDS, np.ones(len(SIDE_TO_SIDE_MOTOR_IDS)) * (self.kD * SIDE_TO_SIDE_KD_SCALE), 80, 2)
+            self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kD * 0.75), 80, 2)
+            # self.dxl_client.sync_write(SIDE_TO_SIDE_MOTOR_IDS, np.ones(len(SIDE_TO_SIDE_MOTOR_IDS)) * (self.kD * SIDE_TO_SIDE_KD_SCALE), 80, 2)
             self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.curr_lim, 102, 2)
         else:
             print("LEAP hardware initialization disabled in leap_globals.py")
@@ -114,26 +116,26 @@ class LeapXelaBase:
         pos_rad = self.dxl_client.read_pos()
         return np.degrees(pos_rad)
 
-    # def read_pos(self):
-    #     if self.dxl_client is None:
-    #         return np.radians(np.array(self.curr_pos, dtype=float))
-    #     return self.dxl_client.read_pos()
+    def read_pos(self):
+        if self.dxl_client is None:
+            return np.radians(np.array(self.curr_pos, dtype=float))
+        return self.dxl_client.read_pos()
 
-    # def read_vel(self):
-    #     if self.dxl_client is None:
-    #         return np.zeros(len(self.motors), dtype=float)
-    #     return self.dxl_client.read_vel()
+    def read_vel(self):
+        if self.dxl_client is None:
+            return np.zeros(len(self.motors), dtype=float)
+        return self.dxl_client.read_vel()
 
-    # def read_cur(self):
-    #     if self.dxl_client is None:
-    #         return np.zeros(len(self.motors), dtype=float)
-    #     return self.dxl_client.read_cur()
+    def read_cur(self):
+        if self.dxl_client is None:
+            return np.zeros(len(self.motors), dtype=float)
+        return self.dxl_client.read_cur()
 
-    # def read_pos_vel_cur(self):
-    #     if self.dxl_client is None:
-    #         pos = np.radians(np.array(self.curr_pos, dtype=float))
-    #         vel = np.zeros(len(self.motors), dtype=float)
-    #         cur = np.zeros(len(self.motors), dtype=float)
-    #         return pos, vel, cur
-    #     return self.dxl_client.read_pos_vel_cur()
+    def read_pos_vel_cur(self):
+        if self.dxl_client is None:
+            pos = np.radians(np.array(self.curr_pos, dtype=float))
+            vel = np.zeros(len(self.motors), dtype=float)
+            cur = np.zeros(len(self.motors), dtype=float)
+            return pos, vel, cur
+        return self.dxl_client.read_pos_vel_cur()
  
