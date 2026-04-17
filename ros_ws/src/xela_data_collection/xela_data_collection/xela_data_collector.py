@@ -200,8 +200,9 @@ class XelaDataCollector(Node):
         # Note: xela_image_publisher sets encoding "32FC3" for both topics, but
         # /leap_image is currently filled from an int32 array. We decode raw as int32
         # and normalized as float32 to match the actual byte content.
-
+        print("Storing synced data...")
         self.storage.store(raw_msg, norm_msg, state_msg)
+        print("Data stored.")
         try:
             raw = self._decode_image(raw_msg, dtype=np.int32)
             norm = self._decode_image(norm_msg, dtype=np.float32)

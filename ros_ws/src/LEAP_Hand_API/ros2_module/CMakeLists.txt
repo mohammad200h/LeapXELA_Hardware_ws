@@ -48,7 +48,7 @@ install(FILES
 # Install non-code assets (config)
 install(FILES
   scripts/pose.json
-  scripts/beer_bottle.csv
+  scripts/flat.csv
   DESTINATION share/${PROJECT_NAME}/config
 )
 
