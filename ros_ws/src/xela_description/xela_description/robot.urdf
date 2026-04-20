@@ -6,7 +6,7 @@
   <link name="leap_hand_xela_back_cover">
     <inertial>
       <origin xyz="-0.000780549 -0.00686016 0.0718797" rpy="0 0 0"/>
-      <mass value="1.50836"/>
+      <mass value="0.237"/>
       <inertia ixx="0.00330843" ixy="6.79303e-05" ixz="-0.000176923" iyy="0.00420899" iyz="0.000182026" izz="0.00177685"/>
     </inertial>
     <!-- Part leap_hand_xela_motorholder -->
@@ -222,7 +222,7 @@
   <link name="p4_unified">
     <inertial>
       <origin xyz="0.0342889 -0.0265621 -0.0145004" rpy="0 0 0"/>
-      <mass value="0.0353104"/>
+      <mass value="0.044"/>
       <inertia ixx="6.90801e-06" ixy="2.26365e-06" ixz="1.79475e-07" iyy="1.04766e-05" iyz="-1.82708e-07" izz="1.10431e-05"/>
     </inertial>
     <!-- Part p4_unified -->
@@ -246,7 +246,7 @@
   <link name="p3_unified">
     <inertial>
       <origin xyz="-0.000258994 0.00848001 0.0133488" rpy="0 0 0"/>
-      <mass value="0.0241611"/>
+      <mass value="0.032"/>
       <inertia ixx="3.54425e-06" ixy="-1.6457e-08" ixz="-1.5221e-08" iyy="2.67248e-06" iyz="-1.71388e-07" izz="3.5384e-06"/>
     </inertial>
     <!-- Part p3_unified -->
@@ -270,7 +270,7 @@
   <link name="p2_unified">
     <inertial>
       <origin xyz="0.0304899 -0.00688132 -0.0146269" rpy="0 0 0"/>
-      <mass value="0.0355531"/>
+      <mass value="0.037"/>
       <inertia ixx="8.11059e-06" ixy="5.66349e-07" ixz="1.88699e-07" iyy="6.98155e-06" iyz="-9.6344e-08" izz="9.0141e-06"/>
     </inertial>
     <!-- Part p2_unified -->
@@ -294,7 +294,7 @@
   <link name="fingertop_unfied">
     <inertial>
       <origin xyz="-0.00193531 -0.0359351 0.0145854" rpy="0 0 0"/>
-      <mass value="0.0384693"/>
+      <mass value="0.016"/>
       <inertia ixx="1.0779e-05" ixy="1.57487e-07" ixz="-2.8587e-08" iyy="5.55855e-06" iyz="-1.64744e-07" izz="1.00656e-05"/>
     </inertial>
     <!-- Part fingertop_unfied -->
@@ -350,7 +350,7 @@
   <link name="p4_unified_2">
     <inertial>
       <origin xyz="0.0342889 -0.0265621 -0.0145004" rpy="0 0 0"/>
-      <mass value="0.0353104"/>
+      <mass value="0.044"/>
       <inertia ixx="6.90801e-06" ixy="2.26365e-06" ixz="1.79475e-07" iyy="1.04766e-05" iyz="-1.82708e-07" izz="1.10431e-05"/>
     </inertial>
     <!-- Part p4_unified_2 -->
@@ -374,7 +374,7 @@
   <link name="p3_unified_2">
     <inertial>
       <origin xyz="-0.000258994 0.00848001 0.0133488" rpy="0 0 0"/>
-      <mass value="0.0241611"/>
+      <mass value="0.032"/>
       <inertia ixx="3.54425e-06" ixy="-1.6457e-08" ixz="-1.5221e-08" iyy="2.67248e-06" iyz="-1.71388e-07" izz="3.5384e-06"/>
     </inertial>
     <!-- Part p3_unified_2 -->
@@ -398,7 +398,7 @@
   <link name="p2_unified_2">
     <inertial>
       <origin xyz="0.0304899 -0.00688132 -0.0146269" rpy="0 0 0"/>
-      <mass value="0.0355531"/>
+      <mass value="0.037"/>
       <inertia ixx="8.11059e-06" ixy="5.66349e-07" ixz="1.88699e-07" iyy="6.98155e-06" iyz="-9.6344e-08" izz="9.0141e-06"/>
     </inertial>
     <!-- Part p2_unified_2 -->
@@ -422,7 +422,7 @@
   <link name="fingertop_unfied_2">
     <inertial>
       <origin xyz="-0.00193531 -0.0359351 0.0145854" rpy="0 0 0"/>
-      <mass value="0.0384693"/>
+      <mass value="0.016"/>
       <inertia ixx="1.0779e-05" ixy="1.57487e-07" ixz="-2.8587e-08" iyy="5.55855e-06" iyz="-1.64744e-07" izz="1.00656e-05"/>
     </inertial>
     <!-- Part fingertop_unfied_2 -->
@@ -478,7 +478,7 @@
   <link name="p4_unified_3">
     <inertial>
       <origin xyz="0.0342889 -0.0265621 -0.0145004" rpy="0 0 0"/>
-      <mass value="0.0353104"/>
+      <mass value="0.044"/>
       <inertia ixx="6.90801e-06" ixy="2.26365e-06" ixz="1.79475e-07" iyy="1.04766e-05" iyz="-1.82708e-07" izz="1.10431e-05"/>
     </inertial>
     <!-- Part p4_unified_3 -->
@@ -502,7 +502,7 @@
   <link name="p3_unified_3">
     <inertial>
       <origin xyz="-0.000258994 0.00848001 0.0133488" rpy="0 0 0"/>
-      <mass value="0.0241611"/>
+      <mass value="0.032"/>
       <inertia ixx="3.54425e-06" ixy="-1.6457e-08" ixz="-1.5221e-08" iyy="2.67248e-06" iyz="-1.71388e-07" izz="3.5384e-06"/>
     </inertial>
     <!-- Part p3_unified_3 -->
@@ -526,7 +526,7 @@
   <link name="p2_unified_3">
     <inertial>
       <origin xyz="0.0304899 -0.00688132 -0.0146269" rpy="0 0 0"/>
-      <mass value="0.0355531"/>
+      <mass value="0.037"/>
       <inertia ixx="8.11059e-06" ixy="5.66349e-07" ixz="1.88699e-07" iyy="6.98155e-06" iyz="-9.6344e-08" izz="9.0141e-06"/>
     </inertial>
     <!-- Part p2_unified_3 -->
@@ -550,7 +550,7 @@
   <link name="fingertop_unfied_3">
     <inertial>
       <origin xyz="-0.00193531 -0.0359351 0.0145854" rpy="0 0 0"/>
-      <mass value="0.0384693"/>
+      <mass value="0.016"/>
       <inertia ixx="1.0779e-05" ixy="1.57487e-07" ixz="-2.8587e-08" iyy="5.55855e-06" iyz="-1.64744e-07" izz="1.00656e-05"/>
     </inertial>
     <!-- Part fingertop_unfied_3 -->
@@ -606,7 +606,7 @@
   <link name="thp2_unified">
     <inertial>
       <origin xyz="-0.000232587 0.00882444 0.0117326" rpy="0 0 0"/>
-      <mass value="0.0247742"/>
+      <mass value="0.032"/>
       <inertia ixx="3.63585e-06" ixy="2.0599e-08" ixz="8.412e-09" iyy="2.65288e-06" iyz="-1.4817e-08" izz="4.33226e-06"/>
     </inertial>
     <!-- Part thp2_unified -->
@@ -630,7 +630,7 @@
   <link name="clipper">
     <inertial>
       <origin xyz="0.000911557 -0.00108086 0.00811114" rpy="0 0 0"/>
-      <mass value="0.00468118"/>
+      <mass value="0.003"/>
       <inertia ixx="4.40805e-07" ixy="-4.612e-09" ixz="-4.6465e-08" iyy="1.184e-06" iyz="4.476e-09" izz="1.12942e-06"/>
     </inertial>
     <!-- Part thconnector -->
@@ -670,7 +670,7 @@
   <link name="thp1_unified">
     <inertial>
       <origin xyz="0.00144426 0.0112332 0.0144179" rpy="0 0 0"/>
-      <mass value="0.0325393"/>
+      <mass value="0.038"/>
       <inertia ixx="7.98976e-06" ixy="8.1084e-08" ixz="-9.5788e-08" iyy="4.90108e-06" iyz="1.43138e-07" izz="7.77953e-06"/>
     </inertial>
     <!-- Part thp1_unified -->
@@ -694,7 +694,7 @@
   <link name="thfingertip_unified">
     <inertial>
       <origin xyz="-0.00210586 -0.0274158 0.0145397" rpy="0 0 0"/>
-      <mass value="0.062548"/>
+      <mass value="0.049"/>
       <inertia ixx="3.16029e-05" ixy="2.85926e-07" ixz="1.022e-07" iyy="8.51257e-06" iyz="-8.066e-08" izz="3.25689e-05"/>
     </inertial>
     <!-- Part thfingertip_unified -->
