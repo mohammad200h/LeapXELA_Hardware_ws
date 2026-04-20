@@ -143,7 +143,7 @@ ENV VULKAN_SDK=/tmp/${VULKAN_SDK_VERSION}/x86_64 \
 
 # Vulkan & GLVND Support
 RUN apt-get update && apt-get install -y vulkan-tools 
-
+RUN pip install pybullet
 ###### WorkDir #######
 WORKDIR workspace
 
