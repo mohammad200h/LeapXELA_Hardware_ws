@@ -35,14 +35,14 @@ class LeapXELANode(Node):
     def publish_state(self):
         with self._hw_mutex:
             pos, vel, cur = self._leapXela.dxl_client.read_pos_vel_cur()
-        msg = JointState()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.name = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'joint7', 'joint8', 
-                    'joint9', 'joint10', 'joint11', 'joint12', 'joint13', 'joint14', 'joint15', 'joint16']
-        msg.position = pos.tolist()
-        msg.velocity = vel.tolist()
-        msg.effort = cur.tolist()
-        self.pub.publish(msg)
+            msg = JointState()
+            msg.header.stamp = self.get_clock().now().to_msg()
+            msg.name = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'joint7', 'joint8', 
+                        'joint9', 'joint10', 'joint11', 'joint12', 'joint13', 'joint14', 'joint15', 'joint16']
+            msg.position = pos.tolist()
+            msg.velocity = vel.tolist()
+            msg.effort = cur.tolist()
+            self.pub.publish(msg)
 
     # Receive LEAP pose and directly control the robot
     def _receive_pose(self, msg):

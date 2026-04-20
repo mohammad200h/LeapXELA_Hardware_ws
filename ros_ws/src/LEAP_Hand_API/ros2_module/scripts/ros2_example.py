@@ -19,7 +19,26 @@ class MinimalClientAsync(Node):
             self.get_logger().info('service not available, waiting again...')
         self.req = LeapPosition.Request()
         self.pub_hand = self.create_publisher(JointState, '/cmd_xela', 10) 
+
+
+        self.subscription = self.create_subscription(
+            JointState,
+            '/leap_state',
+            self.listener_callback,
+            10)
+
+        initial_joint_degrees = load_pose('closed')
+        self._cmd_msg = JointState()
+        # JointState fields require a Python sequence of Python floats (numpy scalars fail ROS type checks).
+        self._cmd_msg.position = [float(x) for x in initial_joint_degrees]
+        self._cmd_timer = self.create_timer(0.1, self._publish_cmd)
         
+    def listener_callback(self, msg):
+        self.get_logger().info('Received leap state: %s' % msg)
+
+    def _publish_cmd(self):
+        self.pub_hand.publish(self._cmd_msg)
+
     def send_request(self):
         self.future = self.cli.call_async(self.req)
         rclpy.spin_until_future_complete(self, self.future)
@@ -30,16 +49,11 @@ class MinimalClientAsync(Node):
 def main(args=None):
     rclpy.init(args=args)
     minimal_client = MinimalClientAsync()
-    initial_joint_degrees = load_pose('open')
-    stater = JointState()
-    while True:
-        
-        # JointState fields require a Python sequence of Python floats (numpy scalars fail ROS type checks).
-        stater.position = [float(x) for x in initial_joint_degrees]
-        #minimal_client.pub_hand.publish(stater)  # Choose the right embodiment here
-        minimal_client.pub_hand.publish(stater)
-    minimal_client.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.spin(minimal_client)
+    finally:
+        minimal_client.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':

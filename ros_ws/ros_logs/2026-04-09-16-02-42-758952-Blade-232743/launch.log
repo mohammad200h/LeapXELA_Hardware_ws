@@ -1,4 +1,0 @@
-1775750562.7605927 [INFO] [launch]: All log files can be found below /workspace/LeapXELA_Hardware_ws/ros_ws/ros_logs/2026-04-09-16-02-42-758952-Blade-232743
-1775750562.7608216 [INFO] [launch]: Default logging verbosity is set to INFO
-1775750562.8083498 [INFO] [xela_dataset_visulizer-1]: process started with pid [232773]
-1775750567.5186329 [ERROR] [xela_dataset_visulizer-1]: process has died [pid 232773, exit code 1, cmd '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection/lib/xela_data_collection/xela_dataset_visulizer --ros-args -r __node:=xela_dataset_visulizer'].

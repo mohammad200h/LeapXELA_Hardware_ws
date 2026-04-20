@@ -27,7 +27,9 @@ class LeapXelaBase:
             print("Connected via /dev/serial/by-id (ttyUSB4)")
         except Exception as e:
             try:
-                self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB0', 57600)
+                # self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB0', 57600)
+                self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB0', 4000000)
+
                 self.dxl_client.connect()
                 print("Connected via /dev/ttyUSB0")
             except Exception as e2:

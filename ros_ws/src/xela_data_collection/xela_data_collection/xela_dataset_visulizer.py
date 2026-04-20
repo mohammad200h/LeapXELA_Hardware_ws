@@ -333,7 +333,13 @@ def visulize_dataset() -> None:
 
         dataset_file_in.change(set_path_from_dropdown, inputs=[dataset_file_in], outputs=[h5_path_in])
 
-    demo.launch()
+    # Bind to all interfaces so it's reachable from other machines on the LAN.
+    server_port = 7860
+    server_name = "0.0.0.0"
+    rclpy.logging.get_logger("xela_dataset_visulizer").info(
+        f"Gradio hosted at:  {server_name}:{server_port})"
+    )
+    demo.launch(server_name=server_name, server_port=server_port)
 
 
 

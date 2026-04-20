@@ -1,2 +1,0 @@
-[INFO] [1775734037.416008957] [xela_data_collector]: Using approximate time sync for image topics.
-[INFO] [1775734037.670350084] [xela_data_collector]: Synced images: raw[(26, 31, 3)] norm[(26, 31, 3)] t_raw=1775734037.580264212 t_norm=1775734037.580264212
