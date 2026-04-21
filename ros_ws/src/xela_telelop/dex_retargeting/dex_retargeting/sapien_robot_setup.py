@@ -62,6 +62,8 @@ def create_viewer_with_robot(
         loader.scale = 0.9
     elif "bhand" in robot_name:
         loader.scale = 1.5
+    elif "leap_xela" in robot_name:
+        loader.scale = 1.4
     elif "leap" in robot_name:
         loader.scale = 1.4
     elif "svh" in robot_name:
@@ -84,6 +86,10 @@ def create_viewer_with_robot(
         robot.set_pose(sapien.Pose([0, 0, -0.05]))
     elif "bhand" in robot_name:
         robot.set_pose(sapien.Pose([0, 0, -0.2]))
+    # elif "leap_xela" in robot_name:
+    #     yaw = np.deg2rad(90.0)
+    #     q = [np.cos(yaw / 2), 0.0, 0.0, np.sin(yaw / 2)]  # w,x,y,z
+    #     robot.set_pose(sapien.Pose([0, 0, -0.15], q))
     elif "leap" in robot_name:
         robot.set_pose(sapien.Pose([0, 0, -0.15]))
     elif "svh" in robot_name:

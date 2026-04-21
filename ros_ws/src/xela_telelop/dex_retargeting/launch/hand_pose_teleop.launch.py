@@ -21,8 +21,11 @@ def generate_launch_description():
         [
             DeclareLaunchArgument(
                 "robot_name",
-                default_value="leap",
-                description="RobotName enum key, e.g. leap, allegro, shadow",
+                default_value="leap_xela",
+                description=(
+                    "RobotName enum key, e.g. leap, leap_xela, allegro, shadow. "
+                    "Note: leap_xela configs in this package are right-hand only."
+                ),
             ),
             DeclareLaunchArgument(
                 "retargeting_type",
@@ -32,7 +35,7 @@ def generate_launch_description():
             DeclareLaunchArgument(
                 "hand_type",
                 default_value="right",
-                description="HandType enum key: right or left",
+                description="HandType enum key: right or left (leap_xela supports right only in this package)",
             ),
             DeclareLaunchArgument(
                 "topic",

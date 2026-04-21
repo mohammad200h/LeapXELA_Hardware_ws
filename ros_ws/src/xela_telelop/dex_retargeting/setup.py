@@ -59,6 +59,8 @@ setup(
         'console_scripts': [
             'hand_pose_publisher = dex_retargeting.hand_pose_publisher:main',
             'hand_viewer = dex_retargeting.hand_viewer:main',
+            'leap_realsense = dex_retargeting.leap_realsense:main',
+            'leap_xela_realsense = dex_retargeting.leap_xela_realsense:main',
         ],
     },
 )

@@ -1,4 +1,5 @@
 """ROS 2 node: Sapien viewer that applies JointState from hand_pose_publisher."""
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -43,9 +44,21 @@ class HandViewer(Node):
         topic = self.get_parameter("topic").value
         render_hz = float(self.get_parameter("render_hz").value)
 
+        # leap_xela assets/configs in this repo are right-hand only.
+        if robot_name is RobotName.leap_xela and hand_type is HandType.left:
+            self.get_logger().warn(
+                "robot_name=leap_xela only provides right-hand configs; falling back to hand_type=right."
+            )
+            hand_type = HandType.right
+
         config_path = get_default_config_path(robot_name, retargeting_type, hand_type)
         if config_path is None:
             raise RuntimeError("Could not resolve retargeting config path.")
+        if not Path(config_path).exists():
+            raise RuntimeError(
+                f"Retargeting config does not exist: {str(config_path)} "
+                f"(robot_name={robot_name.name}, retargeting_type={retargeting_type.name}, hand_type={hand_type.name})"
+            )
 
         robot_dir = get_robot_hand_urdf_dir()
         RetargetingConfig.set_default_urdf_dir(str(robot_dir))

@@ -26,6 +26,7 @@ class RobotName(enum.Enum):
     shadow = enum.auto()
     svh = enum.auto()
     leap = enum.auto()
+    leap_xela = enum.auto()
     ability = enum.auto()
     inspire = enum.auto()
     panda = enum.auto()
@@ -49,6 +50,7 @@ ROBOT_NAME_MAP = {
     RobotName.shadow: "shadow_hand",
     RobotName.svh: "schunk_svh_hand",
     RobotName.leap: "leap_hand",
+    RobotName.leap_xela: "leap_xela",
     RobotName.ability: "ability_hand",
     RobotName.inspire: "inspire_hand",
     RobotName.panda: "panda_gripper",

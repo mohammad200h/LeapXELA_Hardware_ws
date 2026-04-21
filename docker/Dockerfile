@@ -143,7 +143,14 @@ ENV VULKAN_SDK=/tmp/${VULKAN_SDK_VERSION}/x86_64 \
 
 # Vulkan & GLVND Support
 RUN apt-get update && apt-get install -y vulkan-tools 
+######pybullet ######
 RUN pip install pybullet
+######onshape-to-robot ######
+RUN python3 -m pip install --no-cache-dir "uv>=0.5" "uv-build>=0.5"
+RUN cd /tmp && \
+    git clone https://github.com/Rhoban/onshape-to-robot.git && \
+    cd onshape-to-robot && \
+    python3 -m pip install --no-cache-dir --no-build-isolation .
 ###### WorkDir #######
 WORKDIR workspace
 
