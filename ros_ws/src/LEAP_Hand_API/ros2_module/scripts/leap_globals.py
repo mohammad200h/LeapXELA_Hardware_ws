@@ -50,7 +50,7 @@ DYNAMIXEL_CONNECTION_CANDIDATES = [
     },
     {
         "port": "/dev/ttyUSB0",
-        "baudrate": 57600,
+        "baudrate": 4000000,
         "label": "/dev/ttyUSB0",
     },
     {
