@@ -49,6 +49,7 @@ install(FILES
 install(FILES
   scripts/pose.json
   scripts/flat.csv
+  scripts/beer_bottle.csv
   DESTINATION share/${PROJECT_NAME}/config
 )
 

@@ -255,6 +255,12 @@ class PositionNode(Node):
         plt.close(fig)
 
     def _on_timer(self) -> None:
+        if self._next_index >= len(self.command_sequence):
+            self.get_logger().info("Replay complete. Requesting position_node shutdown.")
+            self._timer.cancel()
+            self._shutdown_requested = True
+            return
+ 
         if self.count_subscribers(COMMAND_TOPIC) <= 0:
             if self._started:
                 self.get_logger().warn(
@@ -262,24 +268,21 @@ class PositionNode(Node):
                 )
                 self._started = False
             return
-
+ 
         if not self._started:
             self._started = True
             self.get_logger().info(f"{COMMAND_TOPIC} subscriber detected. Starting replay.")
-
-        if self._next_index >= len(self.command_sequence):
-            self.get_logger().info("Replay complete. Shutting down position_node.")
-            self._timer.cancel()
-            self._shutdown_requested = True
-            if rclpy.ok():
-                rclpy.shutdown()
-            return
-
+ 
         msg = JointState()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.position = [float(x) for x in self.command_sequence[self._next_index]]
         self.pub.publish(msg)
         self._next_index += 1
+ 
+        if self._next_index >= len(self.command_sequence):
+            self.get_logger().info("Replay complete. Requesting position_node shutdown.")
+            self._timer.cancel()
+            self._shutdown_requested = True
 
 
 def main(args=None):
