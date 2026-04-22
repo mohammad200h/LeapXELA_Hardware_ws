@@ -1,10 +1,12 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, RegisterEventHandler, EmitEvent
 from launch.launch_description_sources import AnyLaunchDescriptionSource, PythonLaunchDescriptionSource
 from launch.substitutions import PathJoinSubstitution
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch.event_handlers import OnProcessExit
+from launch.events import Shutdown
 
 
 def generate_launch_description():
@@ -45,11 +47,38 @@ def generate_launch_description():
         }.items(),
     )
 
-    included_leap = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            PathJoinSubstitution(
-                [FindPackageShare("leap_hand"), "launch", "launch_leap.py"]
-            )
+    leaphand_node = Node(
+        package="leap_hand",
+        executable="leaphand_node.py",
+        name="leaphand_node",
+        emulate_tty=True,
+        output="screen",
+        parameters=[
+            {"kP": 500},
+            {"kI": 0},
+            {"kD": 300},
+            {"curr_lim": 550},
+        ],
+    )
+ 
+    position_node = Node(
+        package="leap_hand",
+        executable="position_node.py",
+        name="position_node",
+        emulate_tty=True,
+        output="screen",
+    )
+ 
+    shutdown_when_position_done = RegisterEventHandler(
+        OnProcessExit(
+            target_action=position_node,
+            on_exit=[
+                EmitEvent(
+                    event=Shutdown(
+                        reason="position_node completed one trajectory replay"
+                    )
+                )
+            ],
         )
     )
 
@@ -73,7 +102,9 @@ def generate_launch_description():
             port_arg,
             ip_arg,
             d_arg,
-            included_leap,
+            leaphand_node,
+            position_node,
+            shutdown_when_position_done,
             included_server,
             client_node,
             collector_node,
