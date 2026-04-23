@@ -1,0 +1,1 @@
+erb finger.erb > finger.urdf

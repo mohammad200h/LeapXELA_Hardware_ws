@@ -151,6 +151,8 @@ RUN cd /tmp && \
     git clone https://github.com/Rhoban/onshape-to-robot.git && \
     cd onshape-to-robot && \
     python3 -m pip install --no-cache-dir --no-build-isolation .
+####### Ruby ######
+RUN apt-get update && apt-get install -y ruby
 ###### WorkDir #######
 WORKDIR workspace
 
