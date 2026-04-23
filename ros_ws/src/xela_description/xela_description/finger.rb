@@ -314,3 +314,93 @@ class Finger
   end
 end
 
+def generate_finger(prefix, offset)
+  p4 = LinkP4.new(prefix)
+  p3 = LinkP3.new(prefix)
+  p2 = LinkP2.new(prefix)
+  fingertop = LinkFingertop.new(prefix)
+
+  links = [p4, p3, p2, fingertop]
+  joints = [
+    JointP4P3.new(prefix, offset),
+    JointP3P2.new(prefix, offset),
+    JointP2Fingertop.new(prefix, offset)
+  ]
+
+  Finger.new(prefix, links, joints)
+end
+
+def link_urdf(link)
+  inertial = link.inertial
+  visual = link.visual
+  collision = link.collision
+
+  %Q{
+  <link name="#{link.link_name}">
+    <inertial>
+      <origin xyz="#{list_to_string(inertial[:origin][:xyz])}" rpy="#{list_to_string(inertial[:origin][:rpy])}"/>
+      <mass value="#{inertial[:mass]}"/>
+      <inertia ixx="#{inertial[:inertia][:ixx]}" ixy="#{inertial[:inertia][:ixy]}" ixz="#{inertial[:inertia][:ixz]}" iyy="#{inertial[:inertia][:iyy]}" iyz="#{inertial[:inertia][:iyz]}" izz="#{inertial[:inertia][:izz]}"/>
+    </inertial>
+    <visual>
+      <origin xyz="#{list_to_string(visual[:origin][:xyz])}" rpy="#{list_to_string(visual[:origin][:rpy])}"/>
+      <geometry>
+        <mesh filename="#{visual[:geometry][:mesh][:filename]}"/>
+      </geometry>
+      <material name="#{visual[:material][:name]}">
+        <color rgba="#{list_to_string(visual[:material][:color][:rgba])}"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="#{list_to_string(collision[:origin][:xyz])}" rpy="#{list_to_string(collision[:origin][:rpy])}"/>
+      <geometry>
+        <mesh filename="#{collision[:geometry][:mesh][:filename]}"/>
+      </geometry>
+    </collision>
+  </link>
+  }
+end
+
+def joint_urdf(joint)
+  limit = joint.limit
+  %Q{
+  <joint name="#{joint.joint_name}" type="#{joint.joint_type}">
+    <origin xyz="#{list_to_string(joint.origin[:xyz])}" rpy="#{list_to_string(joint.origin[:rpy])}"/>
+    <parent link="#{joint.parent_link_name}"/>
+    <child link="#{joint.child_link_name}"/>
+    <axis xyz="#{list_to_string(joint.axis)}"/>
+    <limit effort="#{limit[:effort]}" velocity="#{limit[:velocity]}" lower="#{limit[:lower]}" upper="#{limit[:upper]}"/>
+  </joint>
+  }
+end
+
+def render_finger_urdf(finger)
+  links_xml = finger.links.map { |l| link_urdf(l) }.join("\n")
+  joints_xml = finger.joints.map { |j| joint_urdf(j) }.join("\n")
+
+  %Q{<?xml version="1.0" ?>
+<robot name="xela_finger_generated">
+#{links_xml}
+#{joints_xml}
+
+<link name="base"/>
+<joint name="base" type="fixed">
+  <origin xyz="0 0 0.2" rpy="1.57 0 0"/>
+  <parent link="base"/>
+  <child link="#{finger.links[0].link_name}"/>
+</joint>
+</robot>
+}
+end
+
+def write_finger_urdf(file_path, finger)
+  File.write(file_path, render_finger_urdf(finger))
+end
+
+
+if __FILE__ == $0
+  finger = generate_finger('rf', 0.0)
+  out_path = ENV['OUT'] || 'finger.urdf'
+  write_finger_urdf(out_path, finger)
+  puts "Wrote #{out_path}"
+end
