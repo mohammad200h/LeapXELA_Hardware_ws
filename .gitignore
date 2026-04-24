@@ -8,3 +8,5 @@ linux_1.8.0_208601/
 install/
 build/
 log/
+
+**/*.pyc
