@@ -18,6 +18,8 @@ from leap_globals import (
     POSITION_NODE_DEFAULT_PUBLISH_PERIOD_SEC,
     POSITION_NODE_DEFAULT_SAMPLE_STRIDE,
     POSITION_NODE_DEFAULT_SOURCE_UNITS,
+    STATE_QUEUE_DEPTH,
+    STATE_TOPIC,
 )
 
 
@@ -34,8 +36,17 @@ class PositionNode(Node):
         self.declare_parameter("trajectory_output_dir", "trajectory_outputs")
         self.declare_parameter("trajectory_csv_filename", "joint_trajectory.csv")
         self.declare_parameter("trajectory_plot_filename", "joint_trajectory.png")
+        self.declare_parameter("use_effort_gating", True)
+        self.declare_parameter("effort_threshold", 100.0)
+        self.declare_parameter("debug_log_effort", False)
 
         self.pub = self.create_publisher(JointState, COMMAND_TOPIC, COMMAND_QUEUE_DEPTH)
+        self.state_sub = self.create_subscription(
+            JointState,
+            STATE_TOPIC,
+            self._on_state,
+            STATE_QUEUE_DEPTH,
+        )
 
         csv_path = self._resolve_csv_path(str(self.get_parameter("csv_path").value).strip())
         source_units = str(self.get_parameter("source_units").value).strip().lower()
@@ -56,6 +67,9 @@ class PositionNode(Node):
         trajectory_plot_filename = str(
             self.get_parameter("trajectory_plot_filename").value
         ).strip()
+        self.use_effort_gating = bool(self.get_parameter("use_effort_gating").value)
+        self.effort_threshold = float(self.get_parameter("effort_threshold").value)
+        self.debug_log_effort = bool(self.get_parameter("debug_log_effort").value)
 
         self.joint_names, self.joint_positions_deg = self.load_csv(
             csv_path, source_units=source_units
@@ -66,6 +80,7 @@ class PositionNode(Node):
             interpolation_steps=interpolation_steps,
         )
         self.command_sequence_array = np.asarray(self.command_sequence, dtype=float)
+        self.trajectory = self.command_sequence_array
         self.trajectory_time_sec = self.build_time_vector(
             len(self.command_sequence), publish_period_sec
         )
@@ -80,7 +95,11 @@ class PositionNode(Node):
                 self.joint_names,
             )
 
-        self._next_index = 0
+        self._joint_step_idx = np.zeros(self.trajectory.shape[1], dtype=int)
+        self._joint_blocked = np.zeros(self.trajectory.shape[1], dtype=bool)
+        self._latest_effort = np.zeros(self.trajectory.shape[1], dtype=float)
+        self._effort_ready = not self.use_effort_gating
+        self._blocked_joint_names: set[str] = set()
         self._started = False
         self._timer = self.create_timer(publish_period_sec, self._on_timer)
 
@@ -88,6 +107,10 @@ class PositionNode(Node):
             f"Loaded {len(self.joint_positions_deg)} source poses from {csv_path} "
             f"and built {len(self.command_sequence)} replay commands."
         )
+        if self.use_effort_gating:
+            self.get_logger().info(
+                f"Effort gating enabled with threshold {self.effort_threshold} on {STATE_TOPIC}."
+            )
 
     def _resolve_csv_path(self, configured_path: str) -> Path:
         if configured_path:
@@ -262,6 +285,20 @@ class PositionNode(Node):
         fig.savefig(output_path, dpi=150)
         plt.close(fig)
 
+    def _on_state(self, msg: JointState) -> None:
+        if not msg.effort:
+            return
+
+        effort = np.asarray(msg.effort, dtype=float)
+        if effort.shape[0] < self.trajectory.shape[1]:
+            self.get_logger().warn(
+                f"Received only {effort.shape[0]} effort values; expected {self.trajectory.shape[1]}."
+            )
+            return
+
+        self._latest_effort = np.abs(effort[: self.trajectory.shape[1]])
+        self._effort_ready = True
+
     def _on_timer(self) -> None:
         if self.count_subscribers(COMMAND_TOPIC) <= 0:
             if self._started:
@@ -275,16 +312,48 @@ class PositionNode(Node):
             self._started = True
             self.get_logger().info(f"{COMMAND_TOPIC} subscriber detected. Starting replay.")
 
-        if self._next_index >= len(self.command_sequence):
+        if self.use_effort_gating and not self._effort_ready:
+            return
+
+        if self.debug_log_effort and self.use_effort_gating:
+            effort_str = ", ".join(f"{value:.2f}" for value in self._latest_effort)
+            self.get_logger().info(f"Current motor effort: [{effort_str}]")
+
+        movable_joints = ~self._joint_blocked
+        if self.use_effort_gating:
+            over_threshold = self._latest_effort >= self.effort_threshold
+            newly_blocked = movable_joints & over_threshold
+            if np.any(newly_blocked):
+                for joint_idx in np.flatnonzero(newly_blocked):
+                    joint_name = self.joint_names[joint_idx]
+                    if joint_name not in self._blocked_joint_names:
+                        self.get_logger().info(
+                            f"Blocking {joint_name} at step {self._joint_step_idx[joint_idx]} "
+                            f"with effort {self._latest_effort[joint_idx]:.2f}."
+                        )
+                        self._blocked_joint_names.add(joint_name)
+                self._joint_blocked |= newly_blocked
+
+        msg = JointState()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.position = [
+            float(self.trajectory[self._joint_step_idx[joint_idx], joint_idx])
+            for joint_idx in range(self.trajectory.shape[1])
+        ]
+        self.pub.publish(msg)
+
+        if np.all(
+            self._joint_blocked | (self._joint_step_idx >= self.trajectory.shape[0] - 1)
+        ):
             self.get_logger().info("Replay complete. Holding final pose.")
             self._timer.cancel()
             return
 
-        msg = JointState()
-        msg.header.stamp = self.get_clock().now().to_msg()
-        msg.position = [float(x) for x in self.command_sequence[self._next_index]]
-        self.pub.publish(msg)
-        self._next_index += 1
+        for joint_idx in range(self.trajectory.shape[1]):
+            if self._joint_blocked[joint_idx]:
+                continue
+            if self._joint_step_idx[joint_idx] < self.trajectory.shape[0] - 1:
+                self._joint_step_idx[joint_idx] += 1
 
 
 def main(args=None):
