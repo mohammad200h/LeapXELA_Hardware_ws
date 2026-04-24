@@ -6,9 +6,15 @@ from typing import Any
 try:
     # When imported as part of the `xela_description` Python package.
     from .list_to_string import list_to_string
+    from .finger import generate_finger, joint_urdf as finger_joint_urdf, link_urdf as finger_link_urdf
+    from .thumb import generate_thumb, joint_urdf as thumb_joint_urdf, link_urdf as thumb_link_urdf
+    from .palm import get_palm_constant
 except ImportError:  # pragma: no cover
     # When executed directly as a script.
     from list_to_string import list_to_string
+    from finger import generate_finger, joint_urdf as finger_joint_urdf, link_urdf as finger_link_urdf
+    from thumb import generate_thumb, joint_urdf as thumb_joint_urdf, link_urdf as thumb_link_urdf
+    from palm import get_palm_constant
 
 
 class BasePalmJoint:
@@ -27,7 +33,7 @@ class RFPalmJoint(BasePalmJoint):
         return "rf_mcp"
 
     def child_link_name(self) -> str:
-        return "p4_unified"
+        return "rf_p4_unified"
 
     def origin(self) -> dict[str, Any]:
         return {"xyz": [-0.02317, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
@@ -41,7 +47,7 @@ class MFPalmJoint(BasePalmJoint):
         return "mf_mcp"
 
     def child_link_name(self) -> str:
-        return "p4_unified_2"
+        return "mf_p4_unified"
 
     def origin(self) -> dict[str, Any]:
         return {"xyz": [0.02228, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
@@ -55,7 +61,7 @@ class IFPalmJoint(BasePalmJoint):
         return "if_mcp"
 
     def child_link_name(self) -> str:
-        return "p4_unified_3"
+        return "if_p4_unified"
 
     def origin(self) -> dict[str, Any]:
         return {"xyz": [0.06773, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
@@ -79,16 +85,23 @@ class ThumbPalmJoint(BasePalmJoint):
 
 
 
-def generate_mf_rf_if_links_and_joints():
-  # Data
-  rf_finger = generate_finger("rf", 0.0)
-  mf_finger = generate_finger("mf", 0.0)
-  if_finger = generate_finger("if", 0.0)
-  figngers = [rf_finger, mf_finger, if_finger]
-  fingers_links = "\n".join(link_urdf(l) for l in fingers.links)
-  joints_urdf = "\n".join(joint_urdf(j) for j in fingers.joints)
-  
-  return fingers_links, joints_urdf
+def generate_mf_rf_if_links_and_joints() -> tuple[str, str]:
+    rf_finger = generate_finger("rf", 0.0)
+    mf_finger = generate_finger("mf", 0.0)
+    if_finger = generate_finger("if", 0.0)
+
+    fingers = [rf_finger, mf_finger, if_finger]
+
+    fingers_links = "\n".join(finger_link_urdf(link) for finger in fingers for link in finger.links)
+    joints_urdf = "\n".join(finger_joint_urdf(joint) for finger in fingers for joint in finger.joints)
+
+    return fingers_links, joints_urdf
+
+def generate_thumb_links_and_joints() -> tuple[str, str]:
+    thumb = generate_thumb()
+    thumb_links = "\n".join(thumb_link_urdf(link) for link in thumb.links)
+    thumb_joints = "\n".join(thumb_joint_urdf(joint) for joint in thumb.joints)
+    return thumb_links, thumb_joints
 
 def joint_urdf(joint: Any) -> str:
     limit = joint.limit()
@@ -103,24 +116,36 @@ def joint_urdf(joint: Any) -> str:
   </joint>
 """.rstrip("\n")
 
+def generate_palm_joints() -> str:
+    palm_joints = [RFPalmJoint(), MFPalmJoint(), IFPalmJoint(), ThumbPalmJoint()]
+    return "\n".join(joint_urdf(j) for j in palm_joints)
+
 def render_hand_joints_urdf() -> str:
-  fingers_links, joints_urdf = generate_mf_rf_if()
-  palm_link = get_palm_constant()
+    fingers_links, finger_joints = generate_mf_rf_if_links_and_joints()
+    thumb_links, thumb_joints = generate_thumb_links_and_joints()
+    palm_link = get_palm_constant()
+    palm_joints = generate_palm_joints()
     return f"""
   <?xml version="1.0" ?>
   <robot name="xela_palm_generated">
   {palm_link}
   {fingers_links}
-  {joints_urdf}
-
+  {thumb_links}
+  {thumb_joints}
+  {finger_joints}
+  {palm_joints}
 
   </robot>
   """.rstrip("\n")
 
-
-
+def write_hand_urdf(file_path: str) -> None:
+    with open(file_path, "w", encoding="utf-8") as f:
+        f.write(render_hand_joints_urdf())
 
 
 if __name__ == "__main__":
-    print(palm_joints_urdf())
+    import os
+
+    out_path = os.environ.get("OUT") or "hand.urdf"
+    write_hand_urdf(out_path)
 

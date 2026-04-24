@@ -40,7 +40,9 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name, ['xela_description/robot.urdf']),
         ('share/' + package_name, ['xela_description/finger.urdf']),
+        ('share/' + package_name, ['xela_description/thumb.urdf']),
         ('share/' + package_name, ['xela_description/palm.urdf']),
+        ('share/' + package_name, ['xela_description/hand.urdf']),
     ]
     + _data_files_under("launch", "launch")
     + _data_files_under("xela_description/assets", "assets"),
@@ -59,7 +61,9 @@ setup(
         'console_scripts': [
             'visulize = xela_description.visulize_node:main',
             'visulize_finger = xela_description.visulize_finger_node:main',
+            'visulize_thumb = xela_description.visulize_thumb_node:main',
             'visulize_palm = xela_description.visulize_palm_node:main',
+            'visulize_hand = xela_description.visulize_hand_node:main',
         ],
     },
 )

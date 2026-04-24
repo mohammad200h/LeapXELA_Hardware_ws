@@ -223,16 +223,8 @@ def get_palm_constant() -> str:
     </collision>
   </link>"""
 
-
-
-
-def generate_fingers_connection_to_palm():
-  pass
-
-
 def render_palm_joints_urdf() -> str:
-  fingers_links, joints_urdf = generate_mf_rf_if()
-  palm_link = get_palm_constant()
+    palm_link = get_palm_constant()
     return f"""
   <?xml version="1.0" ?>
   <robot name="xela_palm_generated">
