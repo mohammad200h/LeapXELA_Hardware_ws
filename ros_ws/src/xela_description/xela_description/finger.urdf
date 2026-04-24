@@ -1,5 +1,4 @@
-Wrote finger.urdf
-" ?>
+<?xml version="1.0" ?>
 <robot name="xela_finger_generated">
 
   <link name="rf_p4_unified">
@@ -24,7 +23,6 @@ Wrote finger.urdf
       </geometry>
     </collision>
   </link>
-  
 
   <link name="rf_p3_unified">
     <inertial>
@@ -48,7 +46,6 @@ Wrote finger.urdf
       </geometry>
     </collision>
   </link>
-  
 
   <link name="rf_p2_unified">
     <inertial>
@@ -72,7 +69,6 @@ Wrote finger.urdf
       </geometry>
     </collision>
   </link>
-  
 
   <link name="rf_fingertop_unfied">
     <inertial>
@@ -96,7 +92,6 @@ Wrote finger.urdf
       </geometry>
     </collision>
   </link>
-  
 
   <joint name="rf_rot" type="revolute">
     <origin xyz="0.0326 -0.0123 -0.0145" rpy="-1.5708 -1.5708 0.0"/>
@@ -105,7 +100,6 @@ Wrote finger.urdf
     <axis xyz="0.0 0.0 1.0"/>
     <limit effort="10" velocity="10" lower="-1.0472" upper="1.0472"/>
   </joint>
-  
 
   <joint name="rf_pip" type="revolute">
     <origin xyz="0.0145 0.015 0.013" rpy="1.5708 0.0 1.5708"/>
@@ -114,7 +108,6 @@ Wrote finger.urdf
     <axis xyz="0.0 0.0 1.0"/>
     <limit effort="10" velocity="10" lower="-0.506145" upper="1.88496"/>
   </joint>
-  
 
   <joint name="rf_dip" type="revolute">
     <origin xyz="0.0361 0.0 -0.0291" rpy="0.0 0.0 1.5708"/>
@@ -123,7 +116,6 @@ Wrote finger.urdf
     <axis xyz="0.0 0.0 1.0"/>
     <limit effort="10" velocity="10" lower="-0.366519" upper="2.04204"/>
   </joint>
-  
 
 <link name="base"/>
 <joint name="base" type="fixed">
