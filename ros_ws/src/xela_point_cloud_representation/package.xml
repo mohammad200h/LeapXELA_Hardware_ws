@@ -10,8 +10,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>ament_index_cpp</depend>
+  <exec_depend>rclpy</exec_depend>
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
+  <exec_depend>python3-pyqt5</exec_depend>
   <depend>xela_description</depend>
 
   <test_depend>ament_lint_auto</test_depend>

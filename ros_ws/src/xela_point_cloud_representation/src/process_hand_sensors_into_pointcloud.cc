@@ -1,6 +1,9 @@
 // ROS 2
 #include <rclcpp/rclcpp.hpp>
 
+// msgs
+#include <sensor_msgs/msg/joint_state.hpp>
+
 // ament
 #include <ament_index_cpp/get_package_share_directory.hpp>
 
@@ -13,6 +16,8 @@
 #include <cstdio>
 #include <dlfcn.h>
 #include <filesystem>
+#include <mutex>
+#include <unordered_map>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -27,7 +32,9 @@ struct MujocoApi
   mjData * (*mj_makeData)(const mjModel *){nullptr};
   void (*mj_deleteModel)(mjModel *){nullptr};
   void (*mj_deleteData)(mjData *){nullptr};
-  void (*mj_step)(const mjModel *, mjData *){nullptr};
+  void (*mj_forward)(const mjModel *, mjData *){nullptr};
+  int (*mj_name2id)(const mjModel *, int, const char *){nullptr};
+  const char * (*mj_id2name)(const mjModel *, int, int){nullptr};
 
   void (*mjv_defaultCamera)(mjvCamera *){nullptr};
   void (*mjv_defaultOption)(mjvOption *){nullptr};
@@ -77,7 +84,9 @@ struct MujocoApi
     mj_makeData = load_symbol<decltype(mj_makeData)>(handle, "mj_makeData");
     mj_deleteModel = load_symbol<decltype(mj_deleteModel)>(handle, "mj_deleteModel");
     mj_deleteData = load_symbol<decltype(mj_deleteData)>(handle, "mj_deleteData");
-    mj_step = load_symbol<decltype(mj_step)>(handle, "mj_step");
+    mj_forward = load_symbol<decltype(mj_forward)>(handle, "mj_forward");
+    mj_name2id = load_symbol<decltype(mj_name2id)>(handle, "mj_name2id");
+    mj_id2name = load_symbol<decltype(mj_id2name)>(handle, "mj_id2name");
 
     mjv_defaultCamera = load_symbol<decltype(mjv_defaultCamera)>(handle, "mjv_defaultCamera");
     mjv_defaultOption = load_symbol<decltype(mjv_defaultOption)>(handle, "mjv_defaultOption");
@@ -112,12 +121,12 @@ public:
     RCLCPP_INFO(get_logger(), "Loading MuJoCo MJCF: %s", scene_path.c_str());
 
     load_mujoco_model(scene_path);
+    build_qpos_index_map();
 
-    const int64_t step_hz = declare_parameter<int64_t>("step_hz", 1000);
-    if (step_hz <= 0) {
-      throw std::runtime_error("Parameter 'step_hz' must be > 0");
-    }
-    step_hz_ = static_cast<double>(step_hz);
+    const std::string joint_topic = declare_parameter<std::string>("joint_topic", "xela_joint_publisher");
+    joint_sub_ = create_subscription<sensor_msgs::msg::JointState>(
+      joint_topic, rclcpp::QoS(10),
+      [this](sensor_msgs::msg::JointState::ConstSharedPtr msg) { this->on_joint_state(std::move(msg)); });
 
     const int64_t render_hz = declare_parameter<int64_t>("render_hz", 60);
     if (render_hz <= 0) {
@@ -126,6 +135,11 @@ public:
     render_hz_ = static_cast<double>(render_hz);
 
     init_rendering();
+    // Initialize derived quantities so the first frame renders a consistent pose.
+    {
+      std::lock_guard<std::mutex> lk(mj_mutex_);
+      api_.mj_forward(model_, data_);
+    }
 
     const auto period = std::chrono::duration<double>(1.0 / render_hz_);
     render_timer_ = create_wall_timer(
@@ -148,6 +162,60 @@ public:
   }
 
 private:
+  void build_qpos_index_map()
+  {
+    qpos_index_by_joint_name_.clear();
+    if (!model_) {
+      return;
+    }
+
+    // Build mapping from joint name -> qpos address for 1-DoF joints.
+    // (This matches how your Python publisher uses MuJoCo joint names.)
+    for (int j = 0; j < model_->njnt; ++j) {
+      const char * name = api_.mj_id2name(model_, mjOBJ_JOINT, j);
+      if (!name) {
+        continue;
+      }
+      qpos_index_by_joint_name_[name] = static_cast<int>(model_->jnt_qposadr[j]);
+    }
+  }
+
+  void on_joint_state(sensor_msgs::msg::JointState::ConstSharedPtr msg)
+  {
+    if (!msg || msg->name.empty() || msg->position.empty() || !data_) {
+      return;
+    }
+    const size_t n = std::min(msg->name.size(), msg->position.size());
+
+    std::lock_guard<std::mutex> lk(mj_mutex_);
+    bool updated_any = false;
+    for (size_t i = 0; i < n; ++i) {
+      const auto it = qpos_index_by_joint_name_.find(msg->name[i]);
+      if (it == qpos_index_by_joint_name_.end()) {
+        continue;
+      }
+
+      const int qpos_i = it->second;
+      double v = msg->position[i];
+      // Clamp to joint range if available (same semantics as Python side).
+      // MuJoCo stores joint range in model_->jnt_range for joint index.
+      const int jid = api_.mj_name2id(model_, mjOBJ_JOINT, msg->name[i].c_str());
+      if (jid >= 0) {
+        const double lo = model_->jnt_range[jid * 2 + 0];
+        const double hi = model_->jnt_range[jid * 2 + 1];
+        if (v < lo) v = lo;
+        if (v > hi) v = hi;
+      }
+
+      data_->qpos[qpos_i] = v;
+      updated_any = true;
+    }
+
+    if (updated_any) {
+      api_.mj_forward(model_, data_);
+    }
+  }
+
   std::string resolve_scene_xml_path()
   {
     const std::string xela_description_share =
@@ -261,17 +329,21 @@ private:
       return;
     }
 
-    // Step physics a few times per render tick to approximate requested step_hz.
-    const int steps_per_render = std::max<int>(1, static_cast<int>(step_hz_ / render_hz_));
-    for (int i = 0; i < steps_per_render; ++i) {
-      api_.mj_step(model_, data_);
+    {
+      std::lock_guard<std::mutex> lk(mj_mutex_);
+      // Viewer-only mode: do NOT advance simulation time. Just refresh derived quantities
+      // in case external code updated qpos/qvel/ctrl since the last render.
+      api_.mj_forward(model_, data_);
     }
 
     mjrRect viewport{0, 0, 0, 0};
     glfwGetFramebufferSize(window_, &viewport.width, &viewport.height);
 
-    api_.mjv_updateScene(model_, data_, &opt_, /*pert=*/nullptr, &cam_, mjCAT_ALL, &scn_);
-    api_.mjr_render(viewport, &scn_, &con_);
+    {
+      std::lock_guard<std::mutex> lk(mj_mutex_);
+      api_.mjv_updateScene(model_, data_, &opt_, /*pert=*/nullptr, &cam_, mjCAT_ALL, &scn_);
+      api_.mjr_render(viewport, &scn_, &con_);
+    }
 
     glfwSwapBuffers(window_);
     glfwPollEvents();
@@ -280,8 +352,10 @@ private:
   MujocoApi api_;
   mjModel * model_{nullptr};
   mjData * data_{nullptr};
+  std::mutex mj_mutex_;
+  std::unordered_map<std::string, int> qpos_index_by_joint_name_;
+  rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_sub_;
 
-  double step_hz_{1000.0};
   double render_hz_{60.0};
   rclcpp::TimerBase::SharedPtr render_timer_;
 

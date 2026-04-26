@@ -39,6 +39,11 @@ install(TARGETS process_hand_sensors_into_pointcloud
   DESTINATION lib/${PROJECT_NAME}
 )
 
+install(PROGRAMS
+  src/hand_controller.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 install(DIRECTORY include/
   DESTINATION include/
 )

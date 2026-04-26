@@ -151,8 +151,18 @@ RUN cd /tmp && \
     git clone https://github.com/Rhoban/onshape-to-robot.git && \
     cd onshape-to-robot && \
     python3 -m pip install --no-cache-dir --no-build-isolation .
-####### Ruby ######
-RUN apt-get update && apt-get install -y ruby
+####### Mujoco ######
+ARG MUJOCO_VERSION=3.8.0
+RUN cd /tmp && \
+    git clone https://github.com/google-deepmind/mujoco.git && \
+    cd mujoco && \
+    git checkout "${MUJOCO_VERSION}" && \
+    cmake -S . -B build \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/local && \
+    cmake --build build -j"$(nproc)" && \
+    cmake --install build
+RUN pip install mujoco==${MUJOCO_VERSION}
 ###### WorkDir #######
 WORKDIR workspace
 
