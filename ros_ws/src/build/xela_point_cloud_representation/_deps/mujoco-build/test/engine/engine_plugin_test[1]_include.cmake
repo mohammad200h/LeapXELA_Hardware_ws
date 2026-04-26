@@ -1,0 +1,5 @@
+if(EXISTS "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/_deps/mujoco-build/test/engine/engine_plugin_test[1]_tests.cmake")
+  include("/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/_deps/mujoco-build/test/engine/engine_plugin_test[1]_tests.cmake")
+else()
+  add_test(engine_plugin_test_NOT_BUILT engine_plugin_test_NOT_BUILT)
+endif()

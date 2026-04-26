@@ -1,0 +1,10 @@
+libdir=/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/xela_point_cloud_representation/lib
+includedir=/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/xela_point_cloud_representation/include
+
+Name: gmock
+Description: GoogleMock (without main() function)
+Version: 1.17.0
+URL: https://github.com/google/googletest
+Requires: gtest = 1.17.0
+Libs: -L${libdir} -lgmock 
+Cflags: -I${includedir} -DGTEST_HAS_PTHREAD=1

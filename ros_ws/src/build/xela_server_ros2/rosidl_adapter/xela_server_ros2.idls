@@ -1,0 +1,5 @@
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_server_ros2/rosidl_adapter/xela_server_ros2:msg/SensorFull.idl
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_server_ros2/rosidl_adapter/xela_server_ros2:msg/SensStream.idl
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_server_ros2/rosidl_adapter/xela_server_ros2:msg/Taxel.idl
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_server_ros2/rosidl_adapter/xela_server_ros2:msg/Forces.idl
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_server_ros2/rosidl_adapter/xela_server_ros2:srv/XelaSensorStream.idl

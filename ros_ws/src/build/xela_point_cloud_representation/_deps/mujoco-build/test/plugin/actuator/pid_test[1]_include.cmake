@@ -1,0 +1,5 @@
+if(EXISTS "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/_deps/mujoco-build/test/plugin/actuator/pid_test[1]_tests.cmake")
+  include("/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/_deps/mujoco-build/test/plugin/actuator/pid_test[1]_tests.cmake")
+else()
+  add_test(pid_test_NOT_BUILT pid_test_NOT_BUILT)
+endif()

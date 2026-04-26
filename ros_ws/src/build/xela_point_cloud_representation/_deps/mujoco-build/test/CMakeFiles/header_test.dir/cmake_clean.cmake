@@ -1,0 +1,12 @@
+file(REMOVE_RECURSE
+  "../../../bin/header_test"
+  "../../../bin/header_test.pdb"
+  "CMakeFiles/header_test.dir/header_test.cc.o"
+  "CMakeFiles/header_test.dir/header_test.cc.o.d"
+  "header_test[1]_tests.cmake"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/header_test.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

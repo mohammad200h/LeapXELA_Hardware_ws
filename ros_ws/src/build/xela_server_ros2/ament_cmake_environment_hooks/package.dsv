@@ -1,0 +1,4 @@
+source;share/xela_server_ros2/local_setup.bash
+source;share/xela_server_ros2/local_setup.dsv
+source;share/xela_server_ros2/local_setup.sh
+source;share/xela_server_ros2/local_setup.zsh

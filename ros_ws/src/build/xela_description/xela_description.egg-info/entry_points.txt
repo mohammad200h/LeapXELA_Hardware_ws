@@ -1,0 +1,7 @@
+[console_scripts]
+visulize = xela_description.visulize_node:main
+visulize_finger = xela_description.visulize_finger_node:main
+visulize_hand = xela_description.visulize_hand_node:main
+visulize_palm = xela_description.visulize_palm_node:main
+visulize_thumb = xela_description.visulize_thumb_node:main
+

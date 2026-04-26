@@ -1,0 +1,12 @@
+prefix=/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/xela_point_cloud_representation
+exec_prefix=${prefix}
+libdir=/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/xela_point_cloud_representation/lib
+includedir=/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/xela_point_cloud_representation/include
+
+Name: benchmark
+Description: Google microbenchmark framework
+Version: 1.9.4.98
+
+Libs: -L${libdir} -lbenchmark
+Libs.private: -lpthread -lrt
+Cflags: -I${includedir}

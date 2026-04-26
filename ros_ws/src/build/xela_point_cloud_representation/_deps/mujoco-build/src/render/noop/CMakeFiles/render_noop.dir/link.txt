@@ -1,0 +1,2 @@
+"/usr/bin/gcc-ar-11" cr ../../../../../lib/librender_noop.a CMakeFiles/render_noop.dir/render_noop.c.o
+"/usr/bin/gcc-ranlib-11" ../../../../../lib/librender_noop.a

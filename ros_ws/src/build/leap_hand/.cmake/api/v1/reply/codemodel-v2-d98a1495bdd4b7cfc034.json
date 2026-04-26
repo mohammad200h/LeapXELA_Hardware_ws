@@ -1,0 +1,258 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-cda145d0236debc0dc91.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						17,
+						18
+					]
+				},
+				{
+					"build" : "leap_hand__py",
+					"jsonFile" : "directory-leap_hand__py-a446bddce3a6b5687691.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand/leap_hand__py",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "leap_hand__rs",
+					"jsonFile" : "directory-leap_hand__rs-89ac07bbe849db710469.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand/leap_hand__rs",
+					"targetIndexes" : 
+					[
+						16
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "leap_hand",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_leap_hand_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_leap_hand_egg-48c2443fa20eb56da670.json",
+					"name" : "ament_cmake_python_build_leap_hand_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_leap_hand::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_leap_hand-f2eeeeecb9ec9ae8712b.json",
+					"name" : "ament_cmake_python_copy_leap_hand",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand-3656081e0feb2e535b89.json",
+					"name" : "leap_hand",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__cpp-7252bc42fb45d8517979.json",
+					"name" : "leap_hand__cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "leap_hand__py::@60ce8a36969963afabea",
+					"jsonFile" : "target-leap_hand__py-184aad0b3f6b099dab96.json",
+					"name" : "leap_hand__py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_generator_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_generator_c-87a49d2de4d322f4e0da.json",
+					"name" : "leap_hand__rosidl_generator_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_generator_py::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_generator_py-a7897cab6bdfeccf4ca7.json",
+					"name" : "leap_hand__rosidl_generator_py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_c-386f3cdad6ea483d230b.json",
+					"name" : "leap_hand__rosidl_typesupport_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_c__pyext-e4f6f8976f00b75a383b.json",
+					"name" : "leap_hand__rosidl_typesupport_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_cpp-ce006be30beadc06b9bb.json",
+					"name" : "leap_hand__rosidl_typesupport_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_fastrtps_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_fastrtps_c-b40efcf09806182922d6.json",
+					"name" : "leap_hand__rosidl_typesupport_fastrtps_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_fastrtps_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_fastrtps_c__pyext-70317148fd99a3882707.json",
+					"name" : "leap_hand__rosidl_typesupport_fastrtps_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_fastrtps_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_fastrtps_cpp-d91b5e5929b660eb753f.json",
+					"name" : "leap_hand__rosidl_typesupport_fastrtps_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_introspection_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_introspection_c-1b818511bb87c88c1fa9.json",
+					"name" : "leap_hand__rosidl_typesupport_introspection_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_introspection_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_introspection_c__pyext-adb641280d608b48097b.json",
+					"name" : "leap_hand__rosidl_typesupport_introspection_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand__rosidl_typesupport_introspection_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand__rosidl_typesupport_introspection_cpp-dd67b299b61b700db9ef.json",
+					"name" : "leap_hand__rosidl_typesupport_introspection_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "leap_hand__rs::@31a3872a2f9754ec6dd9",
+					"jsonFile" : "target-leap_hand__rs-b52d74e2a4ec068435ca.json",
+					"name" : "leap_hand__rs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "leap_hand_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-leap_hand_uninstall-3c57fb57543769383e40.json",
+					"name" : "leap_hand_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-60f877ab084ff515162c.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand",
+		"source" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

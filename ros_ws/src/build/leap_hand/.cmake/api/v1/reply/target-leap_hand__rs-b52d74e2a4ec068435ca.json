@@ -1,0 +1,73 @@
+{
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_custom_target"
+		],
+		"files" : 
+		[
+			"/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand/leap_hand__rs/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 35,
+				"parent" : 0
+			}
+		]
+	},
+	"id" : "leap_hand__rs::@31a3872a2f9754ec6dd9",
+	"name" : "leap_hand__rs",
+	"paths" : 
+	{
+		"build" : "leap_hand__rs",
+		"source" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand/leap_hand__rs"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		},
+		{
+			"name" : "CMake Rules",
+			"sourceIndexes" : 
+			[
+				1,
+				2
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"isGenerated" : true,
+			"path" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand/leap_hand__rs/CMakeFiles/leap_hand__rs",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand/leap_hand__rs/CMakeFiles/leap_hand__rs.rule",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/leap_hand/rosidl_generator_rs/leap_hand/rust/src/lib.rs.rule",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "UTILITY"
+}

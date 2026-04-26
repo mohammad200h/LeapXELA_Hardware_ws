@@ -1,0 +1,5 @@
+if(EXISTS "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/_deps/mujoco-build/test/user/user_mesh_test[1]_tests.cmake")
+  include("/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/_deps/mujoco-build/test/user/user_mesh_test[1]_tests.cmake")
+else()
+  add_test(user_mesh_test_NOT_BUILT user_mesh_test_NOT_BUILT)
+endif()

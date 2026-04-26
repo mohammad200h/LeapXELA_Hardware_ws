@@ -1,0 +1,29 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/forces__type_support.c.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/forces__type_support.c.o.d"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/sens_stream__type_support.c.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/sens_stream__type_support.c.o.d"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/sensor_full__type_support.c.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/sensor_full__type_support.c.o.d"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/taxel__type_support.c.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/taxel__type_support.c.o.d"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/srv/detail/xela_sensor_stream__type_support.c.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_server_ros2/srv/detail/xela_sensor_stream__type_support.c.o.d"
+  "libxela_server_ros2__rosidl_typesupport_introspection_c.pdb"
+  "libxela_server_ros2__rosidl_typesupport_introspection_c.so"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/forces__rosidl_typesupport_introspection_c.h"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/forces__type_support.c"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/sens_stream__rosidl_typesupport_introspection_c.h"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/sens_stream__type_support.c"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/sensor_full__rosidl_typesupport_introspection_c.h"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/sensor_full__type_support.c"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/taxel__rosidl_typesupport_introspection_c.h"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/msg/detail/taxel__type_support.c"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/srv/detail/xela_sensor_stream__rosidl_typesupport_introspection_c.h"
+  "rosidl_typesupport_introspection_c/xela_server_ros2/srv/detail/xela_sensor_stream__type_support.c"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C)
+  include(CMakeFiles/xela_server_ros2__rosidl_typesupport_introspection_c.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

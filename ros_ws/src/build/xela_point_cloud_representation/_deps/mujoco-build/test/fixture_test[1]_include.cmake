@@ -1,0 +1,5 @@
+if(EXISTS "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/_deps/mujoco-build/test/fixture_test[1]_tests.cmake")
+  include("/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/_deps/mujoco-build/test/fixture_test[1]_tests.cmake")
+else()
+  add_test(fixture_test_NOT_BUILT fixture_test_NOT_BUILT)
+endif()

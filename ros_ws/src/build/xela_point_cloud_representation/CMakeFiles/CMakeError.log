@@ -1,0 +1,51 @@
+Performing C SOURCE FILE Test SUPPORTS_LLD failed with the following output:
+Change Dir: /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_c13c3/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_c13c3.dir/build.make CMakeFiles/cmTC_c13c3.dir/build
+gmake[1]: Entering directory '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_c13c3.dir/src.c.o
+/usr/bin/cc -DSUPPORTS_LLD  -fuse-ld=lld -fPIE -std=c11 -o CMakeFiles/cmTC_c13c3.dir/src.c.o -c /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp/src.c
+Linking C executable cmTC_c13c3
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_c13c3.dir/link.txt --verbose=1
+/usr/bin/cc  -fuse-ld=lld CMakeFiles/cmTC_c13c3.dir/src.c.o -o cmTC_c13c3 
+collect2: fatal error: cannot find ‘ld’
+compilation terminated.
+gmake[1]: *** [CMakeFiles/cmTC_c13c3.dir/build.make:99: cmTC_c13c3] Error 1
+gmake[1]: Leaving directory '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_c13c3/fast] Error 2
+
+
+Source file was:
+int main() {}
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WSHORTEN_64_TO_32 failed with the following output:
+Change Dir: /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_21d13/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_21d13.dir/build.make CMakeFiles/cmTC_21d13.dir/build
+gmake[1]: Entering directory '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_21d13.dir/src.cxx.o
+/usr/bin/c++ -DHAVE_CXX_FLAG_WSHORTEN_64_TO_32  -Wall  -Wextra  -Wshadow  -Wfloat-equal  -Wold-style-cast  -Wconversion  -Wformat=2  -Werror  -Wsuggest-override  -pedantic  -pedantic-errors  -Wshorten-64-to-32 -fPIE   -Wshorten-64-to-32 -std=c++17 -o CMakeFiles/cmTC_21d13.dir/src.cxx.o -c /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp/src.cxx
+c++: error: unrecognized command-line option '-Wshorten-64-to-32'
+c++: error: unrecognized command-line option '-Wshorten-64-to-32'
+gmake[1]: *** [CMakeFiles/cmTC_21d13.dir/build.make:78: CMakeFiles/cmTC_21d13.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_21d13/fast] Error 2
+
+
+Source file was:
+int main() { return 0; }
+Performing C++ SOURCE FILE Test HAVE_CXX_FLAG_WTHREAD_SAFETY failed with the following output:
+Change Dir: /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_2c009/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_2c009.dir/build.make CMakeFiles/cmTC_2c009.dir/build
+gmake[1]: Entering directory '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_2c009.dir/src.cxx.o
+/usr/bin/c++ -DHAVE_CXX_FLAG_WTHREAD_SAFETY  -Wall  -Wextra  -Wshadow  -Wfloat-equal  -Wold-style-cast  -Wconversion  -Wformat=2  -Werror  -Wsuggest-override  -pedantic  -pedantic-errors  -fstrict-aliasing  -Wno-deprecated-declarations  -Wno-deprecated  -Wstrict-aliasing  -Wthread-safety -fPIE   -Wthread-safety -std=c++17 -o CMakeFiles/cmTC_2c009.dir/src.cxx.o -c /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp/src.cxx
+c++: error: unrecognized command-line option '-Wthread-safety'
+c++: error: unrecognized command-line option '-Wthread-safety'
+gmake[1]: *** [CMakeFiles/cmTC_2c009.dir/build.make:78: CMakeFiles/cmTC_2c009.dir/src.cxx.o] Error 1
+gmake[1]: Leaving directory '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/xela_point_cloud_representation/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_2c009/fast] Error 2
+
+
+Source file was:
+int main() { return 0; }

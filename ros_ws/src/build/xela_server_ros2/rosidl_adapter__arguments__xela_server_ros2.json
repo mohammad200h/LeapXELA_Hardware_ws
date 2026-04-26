@@ -1,0 +1,10 @@
+{
+  "package_name": "xela_server_ros2",
+  "non_idl_tuples": [
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2:msg/SensorFull.msg",
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2:msg/SensStream.msg",
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2:msg/Taxel.msg",
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2:msg/Forces.msg",
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2:srv/XelaSensorStream.srv"
+  ]
+}

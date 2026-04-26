@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/load_only.dir/load_only.cc.o -o load_only  -Wl,-rpath,/usr/local/lib /usr/local/lib/libmujoco.so.3.8.1 

@@ -1,0 +1,4 @@
+source;share/leap_hand/local_setup.bash
+source;share/leap_hand/local_setup.dsv
+source;share/leap_hand/local_setup.sh
+source;share/leap_hand/local_setup.zsh
