@@ -74,7 +74,7 @@
       <!-- touch grid finger links -->
       <default class="uspa44">
         <geom type="box" group="3"  material="orange" size="0.011 0.011 0.011" />
-        <site group="4" size="0.001" />
+        <site group="3" size="0.001" />
         <default class="px_uspa44">
           <geom pos="0.00 0.012 0.017"  />
           <site pos="0.006 0.020 0.028" />
@@ -92,7 +92,11 @@
           <geom pos="-0.004 0.053 0.0145"/>
           <site pos="-0.015 0.0605 0.008"/>
         </default>
-         <!-- Construction lines for fingertips -->
+      </default>
+
+      <default class="uSCuALHA_construction_lines">
+        <site group="4" size="0.001" />
+       <!-- Construction lines for fingertips -->
          <!-- Vertical Construction Line -->
          <default class="construction_line_0">
           <site pos="0.015 -0.025 0.0145"  />
@@ -176,7 +180,7 @@
 
        <!-- touch grid fingertips -->
       <default class="uSCuALHA">
-        <geom  group="3" type="mesh" mesh="outer_skin_v1_3_1" pos="-0.0009 -0.025 0.0145"
+        <geom  group="4" type="mesh" mesh="outer_skin_v1_3_1" pos="-0.0009 -0.025 0.0145"
                  euler="-1.57 0 -1.57" friction="0.5" material="orange" />
         <site group="4" pos="0.014 -0.045 0.015" size="0.001" />
         <default class="outer_skin_collision_1">
