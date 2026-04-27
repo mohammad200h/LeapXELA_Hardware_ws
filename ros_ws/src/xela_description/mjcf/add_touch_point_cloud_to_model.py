@@ -6,6 +6,12 @@ SLIDER_JOINT_LIMITS = [(-0.0025, 0.0025), (-0.0025, 0.0025), (-0.0025, 0.0025)]
 
 
 
+def remove_contact_detection_between_grid_elements_of_sensor(spec,geoms_name):
+    for geom_name in geoms_name:
+        for other_geom_name in geoms_name:
+            if geom_name != other_geom_name:
+                spec.add_exclude(bodyname1 = geom_name, bodyname2 = other_geom_name)
+
 def make_visual_geoms_of_the_hand_transparent(spec):
     m = spec.material("black")
     rgba = m.rgba
@@ -105,6 +111,8 @@ def add_sensor_patch_defaults_for_if_mf_rf(spec,sensor_patch_default):
     return sensor_patch_default_dict, sensor_patch_params
 
 def add_sensor_patch_to_if_mf_rf(spec, finger_name = "if", sensor_patch_default_dict = None, sensor_patch_params = None):
+    # TODO get accurate position from CAD
+    # TODO remove contact detection between grid elements of sensor
     body = spec.body(f"{finger_name}_ds")
     
     # top surface
@@ -190,6 +198,8 @@ def add_sensor_patch_to_if_mf_rf(spec, finger_name = "if", sensor_patch_default_
             axis=axis,range=limit)
 
 def add_sensor_patch_to_th(spec, sensor_default = None):
+     # TODO get accurate position from CAD
+    # TODO remove contact detection between grid elements of sensor
     # (pos,euler)
     locations =[
         ([0.01, -0.040, 0.0145],[0,0,0]),
@@ -225,8 +235,8 @@ def add_sensor_patch_to_th(spec, sensor_default = None):
 
 
 def add_uspa44(spec, site_name,link_name,sensor_default):
-    print("add_uspa44::site_name",site_name)
-    print("add_uspa44::link_name",link_name)
+    contacts_bodies = []
+
     site_x0_y0 = spec.site(site_name)
     sites_parent_body = site_x0_y0.parent
     x,y,z = site_x0_y0.pos
@@ -256,10 +266,8 @@ def add_uspa44(spec, site_name,link_name,sensor_default):
             elif link_name =="px":
                 pos = [x - offset * j , y - offset * i, z ]
             elif link_name == "th_px":
-                print("tx_px::offset")
                 pos = [x  , y - offset * i, z - offset * j]       
             elif link_name == "th_ds":
-                print("tx_ds::offset")
                 pos = [x  , y + offset * i, z - offset * j]
 
             name = f"{site_name}_sensor_patch_{i}_{j}"
@@ -281,6 +289,10 @@ def add_uspa44(spec, site_name,link_name,sensor_default):
                 else:
                     raise ValueError(f"Invalid axis: {axis}")
                 child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis[0]}_{axis[1]}_{axis[2]}",axis=axis,range=limit)
+        
+            contacts_bodies.append(child.name)
+    # remove contact detection between grid elements of sensor
+    remove_contact_detection_between_grid_elements_of_sensor(spec,contacts_bodies)
 
 
 def add_uspa46(spec, site_name,sensor_default):
@@ -293,6 +305,7 @@ def add_uspa46(spec, site_name,sensor_default):
     y += 0.0025
 
     size=[0.0025, 0.0025, 0.0035]
+    contacts_bodies = []
     for j in range(4):
         for i in range(6):
             name = f"{site_name}_sensor_patch_{i}_{j}"
@@ -314,6 +327,9 @@ def add_uspa46(spec, site_name,sensor_default):
                 else:
                     raise ValueError(f"Invalid axis: {axis}")
                 child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis[0]}_{axis[1]}_{axis[2]}",axis=axis,range=limit)
+            contacts_bodies.append(child.name)
+    # remove contact detection between grid elements of sensor
+    remove_contact_detection_between_grid_elements_of_sensor(spec,contacts_bodies)
 
 def write_xml_model(spec):
   xml = spec.to_xml()
