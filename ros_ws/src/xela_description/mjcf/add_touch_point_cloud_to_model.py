@@ -1,8 +1,11 @@
 
 import mujoco as mj
+import pprint
+import json
 
 # [x_min, x_max, y_min, y_max, z_min, z_max]
 SLIDER_JOINT_LIMITS = [(-0.0025, 0.0025), (-0.0025, 0.0025), (-0.0025, 0.0025)]
+
 
 
 
@@ -231,11 +234,13 @@ def add_sensor_patch_to_th(spec, sensor_default = None):
                 limit = SLIDER_JOINT_LIMITS[2]
             else:
                 raise ValueError(f"Invalid axis: {axis}")
-            child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis[0]}_{axis[1]}_{axis[2]}",axis=axis,range=limit)
+            j = child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis[0]}_{axis[1]}_{axis[2]}",axis=axis,range=limit)
 
 
 def add_uspa44(spec, site_name,link_name,sensor_default):
     contacts_bodies = []
+    joints = {}
+    joints[site_name] = {}
 
     site_x0_y0 = spec.site(site_name)
     sites_parent_body = site_x0_y0.parent
@@ -260,6 +265,8 @@ def add_uspa44(spec, site_name,link_name,sensor_default):
     offset = 0.0025*2
     for j in range(4):
         for i in range(4):
+            loc = str(i)+"_"+str(j)
+            joints[site_name][loc] = {}
             pos = None
             if link_name in ["bs", "md"]:
                 pos = [x - offset * i, y, z - offset * j]
@@ -279,23 +286,34 @@ def add_uspa44(spec, site_name,link_name,sensor_default):
                 pos=[0,0,0],
                 default=sensor_default
             )
+            axis_name = "not_set"
             for axis in [[1,0,0],[0,1,0],[0,0,1]]:
                 if axis[0] == 1:
                     limit = SLIDER_JOINT_LIMITS[0]
+                    axis_name = "x"
                 elif axis[1] == 1:
                     limit = SLIDER_JOINT_LIMITS[1]
+                    axis_name = "y"
                 elif axis[2] == 1:
                     limit = SLIDER_JOINT_LIMITS[2]
+                    axis_name = "z"
                 else:
                     raise ValueError(f"Invalid axis: {axis}")
-                child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis[0]}_{axis[1]}_{axis[2]}",axis=axis,range=limit)
-        
+                joint = child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis_name}",axis=axis,range=limit)
+                joints[site_name][loc][axis_name] = joint.name
             contacts_bodies.append(child.name)
     # remove contact detection between grid elements of sensor
     remove_contact_detection_between_grid_elements_of_sensor(spec,contacts_bodies)
 
+    return joints
+
 
 def add_uspa46(spec, site_name,sensor_default):
+    link_name = site_name
+    contacts_bodies = []
+    joints = {}
+    joints[link_name] = {}
+
     site_x0_y0 = spec.site(site_name)
     sites_parent_body = site_x0_y0.parent
     x,y,z = site_x0_y0.pos
@@ -308,6 +326,8 @@ def add_uspa46(spec, site_name,sensor_default):
     contacts_bodies = []
     for j in range(4):
         for i in range(6):
+            loc = str(i)+"_"+str(j)
+            joints[link_name][loc] = {}
             name = f"{site_name}_sensor_patch_{i}_{j}"
             child = sites_parent_body.add_body(name=name,pos=[x - x_offset * i, y , z - z_offset * j],euler=[1.57,0,0])
             child.add_geom(
@@ -317,19 +337,26 @@ def add_uspa46(spec, site_name,sensor_default):
                 pos=[0,0,0],
                 default=sensor_default
             )
+            axis_name = "not_set"
             for axis in [[1,0,0],[0,1,0],[0,0,1]]:
                 if axis[0] == 1:
                     limit = SLIDER_JOINT_LIMITS[0]
+                    axis_name = "x"
                 elif axis[1] == 1:
                     limit = SLIDER_JOINT_LIMITS[1]
+                    axis_name = "y"
                 elif axis[2] == 1:
                     limit = SLIDER_JOINT_LIMITS[2]
+                    axis_name = "z"
                 else:
                     raise ValueError(f"Invalid axis: {axis}")
-                child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis[0]}_{axis[1]}_{axis[2]}",axis=axis,range=limit)
+                joint = child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis_name}",axis=axis,range=limit)
+                joints[link_name][loc][axis_name] = joint.name
             contacts_bodies.append(child.name)
     # remove contact detection between grid elements of sensor
     remove_contact_detection_between_grid_elements_of_sensor(spec,contacts_bodies)
+
+    return joints
 
 def write_xml_model(spec):
   xml = spec.to_xml()
@@ -368,6 +395,10 @@ def write_scene_xml(spec):
     with open("scene_touch_point_cloud.xml", "w") as f:
         f.write(template)
 
+def wrtie_sensor_joints_to_json(joints):
+    with open("sensor_joints.json", "w") as f:
+        json.dump(joints, f)
+
 if __name__ == "__main__":
     spec = mj.MjSpec.from_file("leapXela_base_model.xml")
     site_names = ["if_bs_uspa44", "mf_bs_uspa44" ,"rf_bs_uspa44",
@@ -379,26 +410,29 @@ if __name__ == "__main__":
     palm_site_names = ["uspa46_1", "uspa46_2" ,"uspa46_3"]
 
     collision_default = spec.geom("if_ds_collision_1").classname
+    
 
     # add sensor_patch to collision default
     sensor_patch_default = spec.add_default("sensor_patch",collision_default)
     sensor_patch_default.geom.size=[0.005, 0.005, 0.005]
     sensor_patch_default.geom.rgba=[1, 0, 0, 1]
-    sensor_patch_default.geom.group=4
+    sensor_patch_default.geom.group=2
 
     make_visual_geoms_of_the_hand_transparent(spec)
 
     remove_collsions_geom_convering_sensors_except_for_finger(spec)
     remove_collision_geoms_of_the_hand(spec)
+
+    joints = {}
  
     # add sensor_patch to finger links
     for site_name in site_names:
         if "bs" in site_name:
-            add_uspa44(spec, site_name,"bs",sensor_patch_default)
+            joints[site_name] = add_uspa44(spec, site_name,"bs",sensor_patch_default)[site_name]
         elif "md" in site_name:
-            add_uspa44(spec, site_name,"md",sensor_patch_default)
+            joints[site_name] = add_uspa44(spec, site_name,"md",sensor_patch_default)[site_name]
         elif "px" in site_name:
-            add_uspa44(spec, site_name,"px",sensor_patch_default)
+            joints[site_name] = add_uspa44(spec, site_name,"px",sensor_patch_default)[site_name]
     sensor_patch_default_dict, sensor_patch_params = add_sensor_patch_defaults_for_if_mf_rf(spec,sensor_patch_default)
     for finger in ["if", "mf", "rf"]:
         add_sensor_patch_to_if_mf_rf(spec, finger, sensor_patch_default_dict, sensor_patch_params)
@@ -406,14 +440,16 @@ if __name__ == "__main__":
     # add sensor_patch to thumb links
     for site_name in th_site_names:
         if "th_ds" in site_name:
-            add_uspa44(spec, site_name,"th_ds",sensor_patch_default)
+            joints[site_name] = add_uspa44(spec, site_name,"th_ds",sensor_patch_default)[site_name]
         elif "th_px" in site_name:
-            add_uspa44(spec, site_name,"th_px",sensor_patch_default)
+            joints[site_name] = add_uspa44(spec, site_name,"th_px",sensor_patch_default)[site_name]
     add_sensor_patch_to_th(spec,sensor_patch_default)
     
     # add sensor_patch to palm
     for site_name in palm_site_names:
-        add_uspa46(spec, site_name,sensor_patch_default)
-
+        joints[site_name] = add_uspa46(spec, site_name,sensor_patch_default)[site_name]
+    # print(joints.keys())
+    # pprint.pprint(joints["if_bs_uspa44"])
+    wrtie_sensor_joints_to_json(joints)
     write_xml_model(spec)
     write_scene_xml(spec)

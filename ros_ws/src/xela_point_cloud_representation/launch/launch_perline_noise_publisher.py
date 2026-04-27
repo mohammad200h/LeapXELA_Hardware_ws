@@ -6,33 +6,32 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description() -> LaunchDescription:
-    robot_description_path = LaunchConfiguration("robot_description_path")
     node_name = LaunchConfiguration("node_name")
-    default_robot_description_path = PathJoinSubstitution(
-        [FindPackageShare("xela_description"), "mjcf", "scene_touch_point_cloud.xml"]
+    sensor_joints_path = LaunchConfiguration("sensor_joints_path")
+
+    default_sensor_joints_path = PathJoinSubstitution(
+        [FindPackageShare("xela_description"), "mjcf", "sensor_joints.json"]
     )
 
     return LaunchDescription(
         [
             DeclareLaunchArgument(
-                "robot_description_path",
-                default_value=default_robot_description_path,
-                description=(
-                    "Path to the MuJoCo XML (MJCF) used by the pointcloud processing node."
-                ),
+                "node_name",
+                default_value="sensor_value_publisher_fake",
+                description="ROS node name.",
             ),
             DeclareLaunchArgument(
-                "node_name",
-                default_value="process_hand_sensors_into_pointcloud",
-                description="ROS node name.",
+                "sensor_joints_path",
+                default_value=default_sensor_joints_path,
+                description="Path to `sensor_joints.json` (installed in xela_description).",
             ),
             Node(
                 package="xela_point_cloud_representation",
-                executable="process_hand_sensors_into_pointcloud",
+                executable="sensor_value_publisher_fake.py",
                 name=node_name,
                 output="screen",
                 parameters=[
-                    {"robot_description_path": robot_description_path},
+                    {"sensor_joints_path": sensor_joints_path},
                 ],
             ),
         ]

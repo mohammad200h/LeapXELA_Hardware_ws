@@ -218,12 +218,13 @@ private:
 
   std::string resolve_scene_xml_path()
   {
+    //Note to self: The file path is not comming from launch file. This is a fuckup
     const std::string xela_description_share =
       ament_index_cpp::get_package_share_directory("xela_description");
-    fs::path scene = fs::path(xela_description_share) / "mjcf" / "scene.xml";
+    fs::path scene = fs::path(xela_description_share) / "mjcf" / "scene_touch_point_cloud.xml";
 
     if (!fs::exists(scene)) {
-      throw std::runtime_error("scene.xml not found at: " + scene.string());
+      throw std::runtime_error("scene_touch_point_cloud.xml not found at: " + scene.string());
     }
     return scene.string();
   }

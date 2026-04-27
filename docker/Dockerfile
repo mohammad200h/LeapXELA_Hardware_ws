@@ -163,6 +163,9 @@ RUN cd /tmp && \
     cmake --build build -j"$(nproc)" && \
     cmake --install build
 RUN pip install mujoco==${MUJOCO_VERSION}
+####### perline noise ######
+# https://github.com/salaxieb/perlin_noise
+RUN pip install perlin-noise
 ###### WorkDir #######
 WORKDIR workspace
 
