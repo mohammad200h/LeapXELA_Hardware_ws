@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import time
 
 import rclpy
 from rclpy.node import Node
@@ -10,7 +11,7 @@ from ament_index_python.packages import get_package_share_directory
 
 from xela_point_cloud_representation.msg import Sensor, Texel
 
-def generate_perlin_noise(dim = (4,6)):
+def generate_perlin_noise(dim=(4, 6), seed=None):
     """
     Generate a 2D Perlin noise field with shape (height, width).
 
@@ -18,11 +19,15 @@ def generate_perlin_noise(dim = (4,6)):
     so we sample a regular grid in [0, 1]x[0, 1].
     """
     height, width = dim
-    noise = PerlinNoise(octaves=6, seed=42)
+    if seed is None:
+        seed = int(time.time_ns() % (2**32))
+    noise = PerlinNoise(octaves=6, seed=seed)
     field = np.zeros((height, width), dtype=float)
     for y in range(height):
         for x in range(width):
-            field[y, x] = noise([x / max(1, width - 1), y / max(1, height - 1)])
+            # Sample at cell centers to avoid "special" grid-aligned coordinates
+            # that can collapse to exactly 0.0 for some octave/seed combinations.
+            field[y, x] = noise([(x + 0.5) / width, (y + 0.5) / height])
     return field
 
 
@@ -30,14 +35,14 @@ def generate_sensor_msg_for_uspa46(sensor_joints, sensor_name):
     sensor_msg = Sensor()
     sensor_msg.name = sensor_name
     sensor_locations = sensor_joints[sensor_name]
-    noise = generate_perlin_noise(dim=(4,6))
+    noise = generate_perlin_noise(dim=(4,6))*-1
     for y in range(4):
         for x in range(6):
             texel = Texel()
             texel.loc = str(x)+"_"+str(y)
-            texel.x = 0
-            texel.y = 0
-            texel.z = noise[y, x]
+            texel.x = 0.0
+            texel.y = 0.0
+            texel.z = float(noise[y, x])
             texel.joint_x = sensor_locations[str(x)+"_"+str(y)]["x"]
             texel.joint_y = sensor_locations[str(x)+"_"+str(y)]["y"]
             texel.joint_z = sensor_locations[str(x)+"_"+str(y)]["z"]
@@ -48,14 +53,16 @@ def generate_sensor_msg_for_uspa44(sensor_joints, sensor_name):
     sensor_msg = Sensor()
     sensor_msg.name = sensor_name
     sensor_locations = sensor_joints[sensor_name]
-    noise = generate_perlin_noise(dim=(4,6))
+    noise = generate_perlin_noise(dim=(4,4))
+    rclpy.logging.get_logger("sensor_value_publisher_fake").info(f"noise: {noise}")
     for y in range(4):
         for x in range(4):
             texel = Texel()
             texel.loc = str(x)+"_"+str(y)
-            texel.x = 0
-            texel.y = 0
-            texel.z = noise[y, x]
+            texel.x = 0.0
+            texel.y = 0.0
+            texel.z = float(noise[y, x])
+            # rclpy.logging.get_logger("sensor_value_publisher_fake").info(f"texel.z: {texel.z}")
             texel.joint_x = sensor_locations[str(x)+"_"+str(y)]["x"]
             texel.joint_y = sensor_locations[str(x)+"_"+str(y)]["y"]
             texel.joint_z = sensor_locations[str(x)+"_"+str(y)]["z"]
@@ -84,11 +91,10 @@ class SensorValuePublisherFake(Node):
             return json.load(f)
 
     def publish_sensor_values(self):
-        sensor_msg = generate_sensor_msg_for_uspa46(self.sensor_joints, "if_bs_uspa46")
+        # sensor_msg = generate_sensor_msg_for_uspa44(self.sensor_joints, "if_bs_uspa44")
+        sensor_msg = generate_sensor_msg_for_uspa44(self.sensor_joints, "if_md_uspa44")
         self.publisher_.publish(sensor_msg)
-        sensor_msg = generate_sensor_msg_for_uspa44(self.sensor_joints, "if_bs_uspa44")
-        # TODO add reset of the sensors
-        self.publisher_.publish(sensor_msg)
+    
 def main(args=None) -> None:
     rclpy.init(args=args)
     node = SensorValuePublisherFake()

@@ -3,6 +3,7 @@
 
 // msgs
 #include <sensor_msgs/msg/joint_state.hpp>
+#include <xela_point_cloud_representation/msg/sensor.hpp>
 
 // ament
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -12,6 +13,7 @@
 
 #include <GLFW/glfw3.h>
 
+#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <dlfcn.h>
@@ -128,6 +130,13 @@ public:
       joint_topic, rclcpp::QoS(10),
       [this](sensor_msgs::msg::JointState::ConstSharedPtr msg) { this->on_joint_state(std::move(msg)); });
 
+    // Subscribe to per-texel sensor values that include the MuJoCo joint names
+    // controlling each texel patch (see `sensor_joints.json`).
+    const std::string sensor_topic = declare_parameter<std::string>("sensor_topic", "fake_sensor_values");
+    sensor_sub_ = create_subscription<xela_point_cloud_representation::msg::Sensor>(
+      sensor_topic, rclcpp::QoS(10),
+      [this](xela_point_cloud_representation::msg::Sensor::ConstSharedPtr msg) { this->on_sensor(std::move(msg)); });
+
     const int64_t render_hz = declare_parameter<int64_t>("render_hz", 60);
     if (render_hz <= 0) {
       throw std::runtime_error("Parameter 'render_hz' must be > 0");
@@ -190,30 +199,62 @@ private:
     std::lock_guard<std::mutex> lk(mj_mutex_);
     bool updated_any = false;
     for (size_t i = 0; i < n; ++i) {
-      const auto it = qpos_index_by_joint_name_.find(msg->name[i]);
-      if (it == qpos_index_by_joint_name_.end()) {
-        continue;
-      }
-
-      const int qpos_i = it->second;
-      double v = msg->position[i];
-      // Clamp to joint range if available (same semantics as Python side).
-      // MuJoCo stores joint range in model_->jnt_range for joint index.
-      const int jid = api_.mj_name2id(model_, mjOBJ_JOINT, msg->name[i].c_str());
-      if (jid >= 0) {
-        const double lo = model_->jnt_range[jid * 2 + 0];
-        const double hi = model_->jnt_range[jid * 2 + 1];
-        if (v < lo) v = lo;
-        if (v > hi) v = hi;
-      }
-
-      data_->qpos[qpos_i] = v;
-      updated_any = true;
+      updated_any |= set_joint_qpos_locked(msg->name[i], msg->position[i]);
     }
 
     if (updated_any) {
       api_.mj_forward(model_, data_);
     }
+  }
+
+  void on_sensor(xela_point_cloud_representation::msg::Sensor::ConstSharedPtr msg)
+  {
+    if (!msg || msg->texels.empty() || !data_) {
+      return;
+    }
+
+    std::lock_guard<std::mutex> lk(mj_mutex_);
+    bool updated_any = false;
+
+    // Each texel carries the MuJoCo joint names to drive for x/y/z.
+    // We treat incoming x/y/z as desired positions for those joints.
+    for (const auto & texel : msg->texels) {
+      if (!texel.joint_x.empty()) {
+        updated_any |= set_joint_qpos_locked(texel.joint_x, static_cast<double>(texel.x));
+      }
+      if (!texel.joint_y.empty()) {
+        updated_any |= set_joint_qpos_locked(texel.joint_y, static_cast<double>(texel.y));
+      }
+      if (!texel.joint_z.empty()) {
+        updated_any |= set_joint_qpos_locked(texel.joint_z, static_cast<double>(texel.z));
+      }
+    }
+
+    if (updated_any) {
+      api_.mj_forward(model_, data_);
+    }
+  }
+
+  bool set_joint_qpos_locked(const std::string & joint_name, double desired_qpos)
+  {
+    if (!model_ || !data_) {
+      return false;
+    }
+    const auto it = qpos_index_by_joint_name_.find(joint_name);
+    if (it == qpos_index_by_joint_name_.end()) {
+      return false;
+    }
+
+    double v = desired_qpos;
+    const int jid = api_.mj_name2id(model_, mjOBJ_JOINT, joint_name.c_str());
+    if (jid >= 0) {
+      const double lo = model_->jnt_range[jid * 2 + 0];
+      const double hi = model_->jnt_range[jid * 2 + 1];
+      v = std::clamp(v, lo, hi);
+    }
+
+    data_->qpos[it->second] = v;
+    return true;
   }
 
   std::string resolve_scene_xml_path()
@@ -356,6 +397,7 @@ private:
   std::mutex mj_mutex_;
   std::unordered_map<std::string, int> qpos_index_by_joint_name_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_sub_;
+  rclcpp::Subscription<xela_point_cloud_representation::msg::Sensor>::SharedPtr sensor_sub_;
 
   double render_hz_{60.0};
   rclcpp::TimerBase::SharedPtr render_timer_;
