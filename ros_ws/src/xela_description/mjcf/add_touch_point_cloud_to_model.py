@@ -4,6 +4,14 @@ import mujoco as mj
 # [x_min, x_max, y_min, y_max, z_min, z_max]
 SLIDER_JOINT_LIMITS = [(-0.0025, 0.0025), (-0.0025, 0.0025), (-0.0025, 0.0025)]
 
+
+
+def make_visual_geoms_of_the_hand_transparent(spec):
+    m = spec.material("black")
+    rgba = m.rgba
+    rgba[3] = 0.2
+    print(spec.material("black").rgba)
+
 def remove_collsions_geom_convering_sensors_except_for_finger(spec):
     for idx in range(3):
         name = f"uspa46_{idx+1}"
@@ -21,6 +29,37 @@ def remove_collsions_geom_convering_sensors_except_for_finger(spec):
         geom = spec.geom(name)
         spec.delete(geom)
     
+    # thumb
+    name = "th_px_uspa44"
+    geom = spec.geom(name)
+    spec.delete(geom)
+    name = "th_ds_uspa44"
+    geom = spec.geom(name)
+    spec.delete(geom)
+
+    ####thumb fingertips####
+    name = "th_ds_tip"
+    geom = spec.geom(name)
+    spec.delete(geom)
+    for idx in range(2,7):
+        name = f"th_ds_tip_{idx}"
+        geom = spec.geom(name)
+        spec.delete(geom)
+    ####fingers fingertips####
+    for finger in ["if", "mf", "rf"]:
+        name = f"{finger}_ds_tip"
+        geom = spec.geom(name)
+        spec.delete(geom)
+        for idx in range(2,7):
+            name = f"{finger}_ds_tip_{idx}"
+            geom = spec.geom(name)
+            spec.delete(geom)
+
+def remove_collision_geoms_of_the_hand(spec):
+    for geom in spec.geoms:
+        if "collision" in geom.name:
+            spec.delete(geom)
+
 def add_sensor_patch_defaults_for_if_mf_rf(spec,sensor_patch_default):
 
     sensor_patch_default_dict = {}
@@ -186,35 +225,45 @@ def add_sensor_patch_to_th(spec, sensor_default = None):
 
 
 def add_uspa44(spec, site_name,link_name,sensor_default):
-
+    print("add_uspa44::site_name",site_name)
+    print("add_uspa44::link_name",link_name)
     site_x0_y0 = spec.site(site_name)
     sites_parent_body = site_x0_y0.parent
     x,y,z = site_x0_y0.pos
     if link_name == "bs":
         y += 0.0025
+        euler=[1.57,0,0]    
     elif link_name == "px":
         z -= 0.0025
+        euler=[0,0,0] 
     elif link_name == "md":
         y -= 0.0025
-    elif link_name == "th_bs":
-        y -= 0.0025
+        euler=[-1.57,0,-1.57] 
     elif link_name == "th_px":
+        y -= 0.0025
+        euler=[0,-1.57,0] 
+    elif link_name == "th_ds":
         x += 0.0025
+        euler=[0,0,0] 
 
     
     offset = 0.0025*2
     for j in range(4):
         for i in range(4):
             pos = None
-            if link_name in ["bs", "md","th_bs"]:
+            if link_name in ["bs", "md"]:
                 pos = [x - offset * i, y, z - offset * j]
             elif link_name =="px":
                 pos = [x - offset * j , y - offset * i, z ]
             elif link_name == "th_px":
-                pos = [x  , y - offset * i, z + offset * j]
+                print("tx_px::offset")
+                pos = [x  , y - offset * i, z - offset * j]       
+            elif link_name == "th_ds":
+                print("tx_ds::offset")
+                pos = [x  , y + offset * i, z - offset * j]
 
             name = f"{site_name}_sensor_patch_{i}_{j}"
-            child = sites_parent_body.add_body(name=name,pos=pos,euler=[0,0,0])
+            child = sites_parent_body.add_body(name=name,pos=pos,euler=euler)
             child.add_geom(
                 name=f"{site_name}_sensor_patch_{i}_{j}",
                 type=mj.mjtGeom.mjGEOM_SPHERE,
@@ -239,15 +288,15 @@ def add_uspa46(spec, site_name,sensor_default):
     sites_parent_body = site_x0_y0.parent
     x,y,z = site_x0_y0.pos
 
-    x_offset = 0.0025*2
+    x_offset = 0.004*2
     z_offset = 0.0035*2
     y += 0.0025
 
     size=[0.0025, 0.0025, 0.0035]
     for j in range(4):
-        for i in range(8):
+        for i in range(6):
             name = f"{site_name}_sensor_patch_{i}_{j}"
-            child = sites_parent_body.add_body(name=name,pos=[x - x_offset * i, y , z - z_offset * j],euler=[0,0,0])
+            child = sites_parent_body.add_body(name=name,pos=[x - x_offset * i, y , z - z_offset * j],euler=[1.57,0,0])
             child.add_geom(
                 name=f"{site_name}_sensor_patch_{i}_{j}",
                 type=mj.mjtGeom.mjGEOM_SPHERE,
@@ -272,6 +321,37 @@ def write_xml_model(spec):
   with open("leapXela_touch_point_cloud.xml", "w") as f:
     f.write(xml)
 
+def write_scene_xml(spec):
+    template = f"""
+    <mujoco model="scene_touch_point_cloud">
+        <include file="leapXela_touch_point_cloud.xml"/>
+        <statistic extent=".6" />
+        <visual>
+            <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+            <rgba haze="0.15 0.25 0.35 1" />
+            <global azimuth="180" elevation="-50"/>
+        </visual>
+
+        <asset>
+            <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512"
+                height="3072" />
+            <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4"
+                rgb2="0.1 0.2 0.3"
+                markrgb="0.8 0.8 0.8" width="300" height="300" />
+            <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5"
+                reflectance="0.2" />
+        </asset>
+
+        <worldbody>
+            <light pos="0 0 3.5" dir="0 0 -1" directional="true" />
+            <geom name="floor" size="0 0 0.05" pos="0 0 0" type="plane" material="groundplane" />
+        </worldbody>
+
+    </mujoco>
+    """
+    with open("scene_touch_point_cloud.xml", "w") as f:
+        f.write(template)
+
 if __name__ == "__main__":
     spec = mj.MjSpec.from_file("leapXela_base_model.xml")
     site_names = ["if_bs_uspa44", "mf_bs_uspa44" ,"rf_bs_uspa44",
@@ -279,7 +359,7 @@ if __name__ == "__main__":
                   "if_px_uspa44", "mf_px_uspa44" ,"rf_px_uspa44",
                   
      ]
-    th_site_names = ["th_bs_uspa44","th_px_uspa44"]
+    th_site_names = ["th_px_uspa44","th_ds_uspa44"]
     palm_site_names = ["uspa46_1", "uspa46_2" ,"uspa46_3"]
 
     collision_default = spec.geom("if_ds_collision_1").classname
@@ -290,7 +370,10 @@ if __name__ == "__main__":
     sensor_patch_default.geom.rgba=[1, 0, 0, 1]
     sensor_patch_default.geom.group=4
 
+    make_visual_geoms_of_the_hand_transparent(spec)
+
     remove_collsions_geom_convering_sensors_except_for_finger(spec)
+    remove_collision_geoms_of_the_hand(spec)
  
     # add sensor_patch to finger links
     for site_name in site_names:
@@ -306,8 +389,8 @@ if __name__ == "__main__":
        
     # add sensor_patch to thumb links
     for site_name in th_site_names:
-        if "th_bs" in site_name:
-            add_uspa44(spec, site_name,"th_bs",sensor_patch_default)
+        if "th_ds" in site_name:
+            add_uspa44(spec, site_name,"th_ds",sensor_patch_default)
         elif "th_px" in site_name:
             add_uspa44(spec, site_name,"th_px",sensor_patch_default)
     add_sensor_patch_to_th(spec,sensor_patch_default)
@@ -317,3 +400,4 @@ if __name__ == "__main__":
         add_uspa46(spec, site_name,sensor_patch_default)
 
     write_xml_model(spec)
+    write_scene_xml(spec)
