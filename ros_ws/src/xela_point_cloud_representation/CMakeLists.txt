@@ -16,6 +16,7 @@ find_package(OpenGL REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Texel.msg"
   "msg/Sensor.msg"
+  "msg/HandSensors.msg"
 )
 
 

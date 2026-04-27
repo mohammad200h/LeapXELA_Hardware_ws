@@ -4,6 +4,7 @@
 // msgs
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <xela_point_cloud_representation/msg/sensor.hpp>
+#include <xela_point_cloud_representation/msg/hand_sensors.hpp>
 
 // ament
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -133,9 +134,9 @@ public:
     // Subscribe to per-texel sensor values that include the MuJoCo joint names
     // controlling each texel patch (see `sensor_joints.json`).
     const std::string sensor_topic = declare_parameter<std::string>("sensor_topic", "fake_sensor_values");
-    sensor_sub_ = create_subscription<xela_point_cloud_representation::msg::Sensor>(
+    sensor_sub_ = create_subscription<xela_point_cloud_representation::msg::HandSensors>(
       sensor_topic, rclcpp::QoS(10),
-      [this](xela_point_cloud_representation::msg::Sensor::ConstSharedPtr msg) { this->on_sensor(std::move(msg)); });
+      [this](xela_point_cloud_representation::msg::HandSensors::ConstSharedPtr msg) { this->on_sensors(std::move(msg)); });
 
     const int64_t render_hz = declare_parameter<int64_t>("render_hz", 60);
     if (render_hz <= 0) {
@@ -207,18 +208,9 @@ private:
     }
   }
 
-  void on_sensor(xela_point_cloud_representation::msg::Sensor::ConstSharedPtr msg)
+  void apply_sensor_locked(const xela_point_cloud_representation::msg::Sensor & sensor, bool & updated_any)
   {
-    if (!msg || msg->texels.empty() || !data_) {
-      return;
-    }
-
-    std::lock_guard<std::mutex> lk(mj_mutex_);
-    bool updated_any = false;
-
-    // Each texel carries the MuJoCo joint names to drive for x/y/z.
-    // We treat incoming x/y/z as desired positions for those joints.
-    for (const auto & texel : msg->texels) {
+    for (const auto & texel : sensor.texels) {
       if (!texel.joint_x.empty()) {
         updated_any |= set_joint_qpos_locked(texel.joint_x, static_cast<double>(texel.x));
       }
@@ -229,6 +221,35 @@ private:
         updated_any |= set_joint_qpos_locked(texel.joint_z, static_cast<double>(texel.z));
       }
     }
+  }
+
+  void on_sensors(xela_point_cloud_representation::msg::HandSensors::ConstSharedPtr msg)
+  {
+    if (!msg || !data_) {
+      return;
+    }
+
+    std::lock_guard<std::mutex> lk(mj_mutex_);
+    bool updated_any = false;
+
+    apply_sensor_locked(msg->if_bs_uspa44, updated_any);
+    apply_sensor_locked(msg->mf_bs_uspa44, updated_any);
+    apply_sensor_locked(msg->rf_bs_uspa44, updated_any);
+
+    apply_sensor_locked(msg->if_md_uspa44, updated_any);
+    apply_sensor_locked(msg->mf_md_uspa44, updated_any);
+    apply_sensor_locked(msg->rf_md_uspa44, updated_any);
+
+    apply_sensor_locked(msg->if_px_uspa44, updated_any);
+    apply_sensor_locked(msg->mf_px_uspa44, updated_any);
+    apply_sensor_locked(msg->rf_px_uspa44, updated_any);
+
+    apply_sensor_locked(msg->th_px_uspa44, updated_any);
+    apply_sensor_locked(msg->th_ds_uspa44, updated_any);
+
+    apply_sensor_locked(msg->uspa46_1, updated_any);
+    apply_sensor_locked(msg->uspa46_2, updated_any);
+    apply_sensor_locked(msg->uspa46_3, updated_any);
 
     if (updated_any) {
       api_.mj_forward(model_, data_);
@@ -397,7 +418,7 @@ private:
   std::mutex mj_mutex_;
   std::unordered_map<std::string, int> qpos_index_by_joint_name_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_sub_;
-  rclcpp::Subscription<xela_point_cloud_representation::msg::Sensor>::SharedPtr sensor_sub_;
+  rclcpp::Subscription<xela_point_cloud_representation::msg::HandSensors>::SharedPtr sensor_sub_;
 
   double render_hz_{60.0};
   rclcpp::TimerBase::SharedPtr render_timer_;

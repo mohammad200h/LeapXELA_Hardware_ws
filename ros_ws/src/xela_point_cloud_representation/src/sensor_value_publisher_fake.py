@@ -9,7 +9,7 @@ from perlin_noise import PerlinNoise
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
 
-from xela_point_cloud_representation.msg import Sensor, Texel
+from xela_point_cloud_representation.msg import Sensor, Texel, HandSensors
 
 def generate_perlin_noise(dim=(4, 6), seed=None):
     """
@@ -75,7 +75,7 @@ class SensorValuePublisherFake(Node):
         self.declare_parameter("sensor_joints_path", "")
         self.sensor_joints = self.load_sensor_joints()
 
-        self.publisher_ = self.create_publisher(Sensor, "fake_sensor_values", 10)
+        self.publisher_ = self.create_publisher(HandSensors, "fake_sensor_values", 10)
 
         self.timer = self.create_timer(1.0, self.publish_sensor_values)
 
@@ -92,8 +92,22 @@ class SensorValuePublisherFake(Node):
 
     def publish_sensor_values(self):
         # sensor_msg = generate_sensor_msg_for_uspa44(self.sensor_joints, "if_bs_uspa44")
-        sensor_msg = generate_sensor_msg_for_uspa44(self.sensor_joints, "if_md_uspa44")
-        self.publisher_.publish(sensor_msg)
+        hand_sensors_msg = HandSensors()
+        hand_sensors_msg.if_bs_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "if_bs_uspa44")
+        hand_sensors_msg.mf_bs_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "mf_bs_uspa44")
+        hand_sensors_msg.rf_bs_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "rf_bs_uspa44")
+        hand_sensors_msg.if_md_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "if_md_uspa44")
+        hand_sensors_msg.mf_md_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "mf_md_uspa44")
+        hand_sensors_msg.rf_md_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "rf_md_uspa44")
+        hand_sensors_msg.if_px_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "if_px_uspa44")
+        hand_sensors_msg.mf_px_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "mf_px_uspa44")
+        hand_sensors_msg.rf_px_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "rf_px_uspa44")
+        hand_sensors_msg.th_px_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "th_px_uspa44")
+        hand_sensors_msg.th_ds_uspa44 = generate_sensor_msg_for_uspa44(self.sensor_joints, "th_ds_uspa44")
+        hand_sensors_msg.uspa46_1 = generate_sensor_msg_for_uspa46(self.sensor_joints, "uspa46_1")
+        hand_sensors_msg.uspa46_2 = generate_sensor_msg_for_uspa46(self.sensor_joints, "uspa46_2")
+        hand_sensors_msg.uspa46_3 = generate_sensor_msg_for_uspa46(self.sensor_joints, "uspa46_3")
+        self.publisher_.publish(hand_sensors_msg)
     
 def main(args=None) -> None:
     rclpy.init(args=args)
