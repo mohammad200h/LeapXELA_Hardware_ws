@@ -14,6 +14,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include <xela_point_cloud_representation/camera_control.hpp>
+
 #include <algorithm>
 #include <chrono>
 #include <cstdio>
@@ -45,6 +47,7 @@ struct MujocoApi
   void (*mjr_defaultContext)(mjrContext *){nullptr};
   void (*mjv_makeScene)(const mjModel *, mjvScene *, int){nullptr};
   void (*mjr_makeContext)(const mjModel *, mjrContext *, int){nullptr};
+  void (*mjv_moveCamera)(const mjModel *, mjtMouse, mjtNum, mjtNum, const mjvScene *, mjvCamera *){nullptr};
   void (*mjv_updateScene)(
     const mjModel *, const mjData *, const mjvOption *, const mjvPerturb *, const mjvCamera *, int, mjvScene *){nullptr};
   void (*mjr_render)(mjrRect, const mjvScene *, const mjrContext *){nullptr};
@@ -97,6 +100,7 @@ struct MujocoApi
     mjr_defaultContext = load_symbol<decltype(mjr_defaultContext)>(handle, "mjr_defaultContext");
     mjv_makeScene = load_symbol<decltype(mjv_makeScene)>(handle, "mjv_makeScene");
     mjr_makeContext = load_symbol<decltype(mjr_makeContext)>(handle, "mjr_makeContext");
+    mjv_moveCamera = load_symbol<decltype(mjv_moveCamera)>(handle, "mjv_moveCamera");
     mjv_updateScene = load_symbol<decltype(mjv_updateScene)>(handle, "mjv_updateScene");
     mjr_render = load_symbol<decltype(mjr_render)>(handle, "mjr_render");
     mjr_freeContext = load_symbol<decltype(mjr_freeContext)>(handle, "mjr_freeContext");
@@ -365,6 +369,10 @@ private:
     api_.mjv_makeScene(model_, &scn_, 2000);
     api_.mjr_makeContext(model_, &con_, mjFONTSCALE_150);
 
+    camera_control_ = std::make_unique<xela_point_cloud_representation::CameraControl>(
+      window_, model_, &scn_, &cam_, api_.mjv_moveCamera, api_.mjv_defaultCamera, &mj_mutex_);
+    camera_control_->install();
+
     cam_.azimuth = 0;
     cam_.elevation = -50.0;
     cam_.distance = 1.0;
@@ -428,6 +436,7 @@ private:
   mjvOption opt_{};
   mjvScene scn_{};
   mjrContext con_{};
+  std::unique_ptr<xela_point_cloud_representation::CameraControl> camera_control_;
 };
 
 int main(int argc, char ** argv)

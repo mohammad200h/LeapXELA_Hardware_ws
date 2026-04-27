@@ -22,6 +22,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 add_executable(process_hand_sensors_into_pointcloud
   src/process_hand_sensors_into_pointcloud.cc
+  src/camera_control.cc
 )
 
 target_include_directories(process_hand_sensors_into_pointcloud PUBLIC

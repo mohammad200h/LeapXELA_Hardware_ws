@@ -54,7 +54,7 @@ def generate_sensor_msg_for_uspa44(sensor_joints, sensor_name):
     sensor_msg.name = sensor_name
     sensor_locations = sensor_joints[sensor_name]
     noise = generate_perlin_noise(dim=(4,4))
-    rclpy.logging.get_logger("sensor_value_publisher_fake").info(f"noise: {noise}")
+    # rclpy.logging.get_logger("sensor_value_publisher_fake").info(f"noise: {noise}")
     for y in range(4):
         for x in range(4):
             texel = Texel()
