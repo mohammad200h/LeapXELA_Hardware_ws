@@ -3,6 +3,8 @@
 
 // msgs
 #include <sensor_msgs/msg/joint_state.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/point_cloud2_iterator.hpp>
 #include <xela_point_cloud_representation/msg/sensor.hpp>
 #include <xela_point_cloud_representation/msg/hand_sensors.hpp>
 
@@ -17,12 +19,16 @@
 #include <xela_point_cloud_representation/camera_control.hpp>
 
 #include <algorithm>
+#include <array>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
 #include <dlfcn.h>
 #include <filesystem>
 #include <mutex>
+#include <optional>
 #include <unordered_map>
+#include <vector>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -142,6 +148,8 @@ public:
       sensor_topic, rclcpp::QoS(10),
       [this](xela_point_cloud_representation::msg::HandSensors::ConstSharedPtr msg) { this->on_sensors(std::move(msg)); });
 
+    touch_point_cloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("hand_touch_point_cloud", rclcpp::QoS(10));
+
     const int64_t render_hz = declare_parameter<int64_t>("render_hz", 60);
     if (render_hz <= 0) {
       throw std::runtime_error("Parameter 'render_hz' must be > 0");
@@ -176,6 +184,90 @@ public:
   }
 
 private:
+  struct BodyWorldPose
+  {
+    int joint_id{-1};
+    int body_id{-1};
+    std::string body_name;
+    std::array<double, 3> pos{0.0, 0.0, 0.0};
+    std::array<double, 4> quat{1.0, 0.0, 0.0, 0.0};  // (w,x,y,z) in MuJoCo convention
+  };
+
+  std::optional<BodyWorldPose> get_body_world_pose_from_texel_joint_locked(const std::string & joint_name) const
+  {
+    if (!model_ || !data_ || joint_name.empty()) {
+      return std::nullopt;
+    }
+
+    const int jid = api_.mj_name2id(model_, mjOBJ_JOINT, joint_name.c_str());
+    if (jid < 0 || jid >= model_->njnt) {
+      return std::nullopt;
+    }
+
+    const int body_id = model_->jnt_bodyid[jid];
+    if (body_id < 0 || body_id >= model_->nbody) {
+      return std::nullopt;
+    }
+
+    BodyWorldPose out;
+    out.joint_id = jid;
+    out.body_id = body_id;
+    if (const char * bname = api_.mj_id2name(model_, mjOBJ_BODY, body_id)) {
+      out.body_name = bname;
+    }
+
+    const mjtNum * p = &data_->xpos[3 * body_id];
+    out.pos = {static_cast<double>(p[0]), static_cast<double>(p[1]), static_cast<double>(p[2])};
+
+    const mjtNum * q = &data_->xquat[4 * body_id];
+    out.quat = {static_cast<double>(q[0]), static_cast<double>(q[1]), static_cast<double>(q[2]), static_cast<double>(q[3])};
+    RCLCPP_DEBUG(
+      get_logger(),
+      "texel_joint='%s' -> body='%s' (jid=%d body_id=%d) pos=[%.6f %.6f %.6f] quat(wxyz)=[%.6f %.6f %.6f %.6f]",
+      joint_name.c_str(),
+      out.body_name.empty() ? "<unnamed>" : out.body_name.c_str(),
+      out.joint_id, out.body_id,
+      out.pos[0], out.pos[1], out.pos[2],
+      out.quat[0], out.quat[1], out.quat[2], out.quat[3]);
+    return out;
+  }
+
+  void publish_touch_point_cloud_locked()
+  {
+    if (!touch_point_cloud_pub_) {
+      return;
+    }
+
+    sensor_msgs::msg::PointCloud2 msg;
+    msg.header.stamp = now();
+    msg.header.frame_id = "world";
+
+    sensor_msgs::PointCloud2Modifier mod(msg);
+    mod.setPointCloud2FieldsByString(1, "xyz");
+    mod.resize(latest_body_pose_by_body_name_.size());
+
+    sensor_msgs::PointCloud2Iterator<float> iter_x(msg, "x");
+    sensor_msgs::PointCloud2Iterator<float> iter_y(msg, "y");
+    sensor_msgs::PointCloud2Iterator<float> iter_z(msg, "z");
+
+    for (const auto & kv : latest_body_pose_by_body_name_) {
+      const auto & p = kv.second.pos;
+      RCLCPP_DEBUG(
+        get_logger(),
+        "publishing body='%s' pos=[%.6f %.6f %.6f]",
+        kv.second.body_name.empty() ? "<unnamed>" : kv.second.body_name.c_str(),
+        p[0], p[1], p[2]);
+      *iter_x = static_cast<float>(p[0]);
+      *iter_y = static_cast<float>(p[1]);
+      *iter_z = static_cast<float>(p[2]);
+      ++iter_x;
+      ++iter_y;
+      ++iter_z;
+    }
+
+    touch_point_cloud_pub_->publish(std::move(msg));
+  }
+
   void build_qpos_index_map()
   {
     qpos_index_by_joint_name_.clear();
@@ -203,26 +295,56 @@ private:
 
     std::lock_guard<std::mutex> lk(mj_mutex_);
     bool updated_any = false;
+    std::vector<std::string> changed_joints;
+    changed_joints.reserve(n);
     for (size_t i = 0; i < n; ++i) {
-      updated_any |= set_joint_qpos_locked(msg->name[i], msg->position[i]);
+      const bool changed = set_joint_qpos_locked(msg->name[i], msg->position[i]);
+      updated_any |= changed;
+      if (changed) {
+        changed_joints.push_back(msg->name[i]);
+      }
     }
 
     if (updated_any) {
       api_.mj_forward(model_, data_);
+
+      std::sort(changed_joints.begin(), changed_joints.end());
+      changed_joints.erase(std::unique(changed_joints.begin(), changed_joints.end()), changed_joints.end());
+      for (const auto & jname : changed_joints) {
+        if (auto pose = get_body_world_pose_from_texel_joint_locked(jname)) {
+          const std::string key = !pose->body_name.empty() ? pose->body_name : jname;
+          latest_body_pose_by_body_name_[key] = *pose;
+        }
+      }
+      publish_touch_point_cloud_locked();
     }
   }
 
-  void apply_sensor_locked(const xela_point_cloud_representation::msg::Sensor & sensor, bool & updated_any)
+  void apply_sensor_locked(
+    const xela_point_cloud_representation::msg::Sensor & sensor, bool & updated_any,
+    std::vector<std::string> & changed_joints)
   {
     for (const auto & texel : sensor.texels) {
       if (!texel.joint_x.empty()) {
-        updated_any |= set_joint_qpos_locked(texel.joint_x, static_cast<double>(texel.x));
+        const bool changed = set_joint_qpos_locked(texel.joint_x, static_cast<double>(texel.x));
+        updated_any |= changed;
+        if (changed) {
+          changed_joints.push_back(texel.joint_x);
+        }
       }
       if (!texel.joint_y.empty()) {
-        updated_any |= set_joint_qpos_locked(texel.joint_y, static_cast<double>(texel.y));
+        const bool changed = set_joint_qpos_locked(texel.joint_y, static_cast<double>(texel.y));
+        updated_any |= changed;
+        if (changed) {
+          changed_joints.push_back(texel.joint_y);
+        }
       }
       if (!texel.joint_z.empty()) {
-        updated_any |= set_joint_qpos_locked(texel.joint_z, static_cast<double>(texel.z));
+        const bool changed = set_joint_qpos_locked(texel.joint_z, static_cast<double>(texel.z));
+        updated_any |= changed;
+        if (changed) {
+          changed_joints.push_back(texel.joint_z);
+        }
       }
     }
   }
@@ -235,28 +357,40 @@ private:
 
     std::lock_guard<std::mutex> lk(mj_mutex_);
     bool updated_any = false;
+    std::vector<std::string> changed_joints;
+    changed_joints.reserve(256);
 
-    apply_sensor_locked(msg->if_bs_uspa44, updated_any);
-    apply_sensor_locked(msg->mf_bs_uspa44, updated_any);
-    apply_sensor_locked(msg->rf_bs_uspa44, updated_any);
+    apply_sensor_locked(msg->if_bs_uspa44, updated_any, changed_joints);
+    apply_sensor_locked(msg->mf_bs_uspa44, updated_any, changed_joints);
+    apply_sensor_locked(msg->rf_bs_uspa44, updated_any, changed_joints);
 
-    apply_sensor_locked(msg->if_md_uspa44, updated_any);
-    apply_sensor_locked(msg->mf_md_uspa44, updated_any);
-    apply_sensor_locked(msg->rf_md_uspa44, updated_any);
+    apply_sensor_locked(msg->if_md_uspa44, updated_any, changed_joints);
+    apply_sensor_locked(msg->mf_md_uspa44, updated_any, changed_joints);
+    apply_sensor_locked(msg->rf_md_uspa44, updated_any, changed_joints);
 
-    apply_sensor_locked(msg->if_px_uspa44, updated_any);
-    apply_sensor_locked(msg->mf_px_uspa44, updated_any);
-    apply_sensor_locked(msg->rf_px_uspa44, updated_any);
+    apply_sensor_locked(msg->if_px_uspa44, updated_any, changed_joints);
+    apply_sensor_locked(msg->mf_px_uspa44, updated_any, changed_joints);
+    apply_sensor_locked(msg->rf_px_uspa44, updated_any, changed_joints);
 
-    apply_sensor_locked(msg->th_px_uspa44, updated_any);
-    apply_sensor_locked(msg->th_ds_uspa44, updated_any);
+    apply_sensor_locked(msg->th_px_uspa44, updated_any, changed_joints);
+    apply_sensor_locked(msg->th_ds_uspa44, updated_any, changed_joints);
 
-    apply_sensor_locked(msg->uspa46_1, updated_any);
-    apply_sensor_locked(msg->uspa46_2, updated_any);
-    apply_sensor_locked(msg->uspa46_3, updated_any);
+    apply_sensor_locked(msg->uspa46_1, updated_any, changed_joints);
+    apply_sensor_locked(msg->uspa46_2, updated_any, changed_joints);
+    apply_sensor_locked(msg->uspa46_3, updated_any, changed_joints);
 
     if (updated_any) {
       api_.mj_forward(model_, data_);
+
+      std::sort(changed_joints.begin(), changed_joints.end());
+      changed_joints.erase(std::unique(changed_joints.begin(), changed_joints.end()), changed_joints.end());
+      for (const auto & jname : changed_joints) {
+        if (auto pose = get_body_world_pose_from_texel_joint_locked(jname)) {
+          const std::string key = !pose->body_name.empty() ? pose->body_name : jname;
+          latest_body_pose_by_body_name_[key] = *pose;
+        }
+      }
+      publish_touch_point_cloud_locked();
     }
   }
 
@@ -278,6 +412,10 @@ private:
       v = std::clamp(v, lo, hi);
     }
 
+    const double prev = static_cast<double>(data_->qpos[it->second]);
+    if (std::isfinite(prev) && std::abs(prev - v) < 1e-12) {
+      return false;
+    }
     data_->qpos[it->second] = v;
     return true;
   }
@@ -425,8 +563,10 @@ private:
   mjData * data_{nullptr};
   std::mutex mj_mutex_;
   std::unordered_map<std::string, int> qpos_index_by_joint_name_;
+  std::unordered_map<std::string, BodyWorldPose> latest_body_pose_by_body_name_;
   rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joint_sub_;
   rclcpp::Subscription<xela_point_cloud_representation::msg::HandSensors>::SharedPtr sensor_sub_;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr touch_point_cloud_pub_;
 
   double render_hz_{60.0};
   rclcpp::TimerBase::SharedPtr render_timer_;

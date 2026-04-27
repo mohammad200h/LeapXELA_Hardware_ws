@@ -53,6 +53,7 @@ install(TARGETS process_hand_sensors_into_pointcloud
 
 install(PROGRAMS
   src/hand_controller.py
+  src/hand_touch_point_cloud.py
   src/sensor_value_publisher_fake.py
   DESTINATION lib/${PROJECT_NAME}
 )

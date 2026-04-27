@@ -14,6 +14,9 @@ def generate_launch_description() -> LaunchDescription:
     pointcloud_processing_node_name = LaunchConfiguration(
         "pointcloud_processing_node_name"
     )
+    pointcloud_processing_log_level = LaunchConfiguration(
+        "pointcloud_processing_log_level"
+    )
 
     sensor_joints_path = LaunchConfiguration("sensor_joints_path")
     robot_description_path = LaunchConfiguration("robot_description_path")
@@ -56,6 +59,11 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="process_hand_sensors_into_pointcloud",
                 description="Node name for the pointcloud processing node.",
             ),
+            DeclareLaunchArgument(
+                "pointcloud_processing_log_level",
+                default_value="info",
+                description="Log level for the pointcloud processing node (debug, info, warn, error, fatal).",
+            ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     PathJoinSubstitution([xela_pcr_launch_dir, "launch_hand_controller.py"])
@@ -84,7 +92,15 @@ def generate_launch_description() -> LaunchDescription:
                 launch_arguments={
                     "node_name": pointcloud_processing_node_name,
                     "robot_description_path": robot_description_path,
+                    "log_level": pointcloud_processing_log_level,
                 }.items(),
+            ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution(
+                        [xela_pcr_launch_dir, "launch_hand_touch_point_cloud.py"]
+                    )
+                ),
             ),
         ]
     )
