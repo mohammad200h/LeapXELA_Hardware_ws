@@ -375,6 +375,11 @@ private:
     apply_sensor_locked(msg->th_px_uspa44, updated_any, changed_joints);
     apply_sensor_locked(msg->th_ds_uspa44, updated_any, changed_joints);
 
+    apply_sensor_locked(msg->if_ds, updated_any, changed_joints);
+    apply_sensor_locked(msg->mf_ds, updated_any, changed_joints);
+    apply_sensor_locked(msg->rf_ds, updated_any, changed_joints);
+    apply_sensor_locked(msg->th_ds, updated_any, changed_joints);
+
     apply_sensor_locked(msg->uspa46_1, updated_any, changed_joints);
     apply_sensor_locked(msg->uspa46_2, updated_any, changed_joints);
     apply_sensor_locked(msg->uspa46_3, updated_any, changed_joints);

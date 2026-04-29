@@ -69,6 +69,24 @@ def generate_sensor_msg_for_uspa44(sensor_joints, sensor_name):
             sensor_msg.texels.append(texel)
     return sensor_msg
 
+def generate_sensor_msg_for_fingertip_30(sensor_joints, sensor_name):
+    sensor_msg = Sensor()
+    sensor_msg.name = sensor_name
+    sensor_locations = sensor_joints[sensor_name]
+    noise = generate_perlin_noise(dim=(3,10))
+    noise = noise.flatten()
+    for idx in range(0,30):
+        texel = Texel()
+        texel.loc = str(idx+1)
+        texel.x = 0.0
+        texel.y = 0.0
+        texel.z = float(noise[idx])
+        texel.joint_x = sensor_locations[str(idx+1)]["x"]
+        texel.joint_y = sensor_locations[str(idx+1)]["y"]
+        texel.joint_z = sensor_locations[str(idx+1)]["z"]
+        sensor_msg.texels.append(texel)
+    return sensor_msg
+
 class SensorValuePublisherFake(Node):
     def __init__(self) -> None:
         super().__init__("sensor_value_publisher_fake")
@@ -107,6 +125,10 @@ class SensorValuePublisherFake(Node):
         hand_sensors_msg.uspa46_1 = generate_sensor_msg_for_uspa46(self.sensor_joints, "uspa46_1")
         hand_sensors_msg.uspa46_2 = generate_sensor_msg_for_uspa46(self.sensor_joints, "uspa46_2")
         hand_sensors_msg.uspa46_3 = generate_sensor_msg_for_uspa46(self.sensor_joints, "uspa46_3")
+        hand_sensors_msg.if_ds = generate_sensor_msg_for_fingertip_30(self.sensor_joints, "if_ds")
+        hand_sensors_msg.mf_ds = generate_sensor_msg_for_fingertip_30(self.sensor_joints, "mf_ds")
+        hand_sensors_msg.rf_ds = generate_sensor_msg_for_fingertip_30(self.sensor_joints, "rf_ds")
+        hand_sensors_msg.th_ds = generate_sensor_msg_for_fingertip_30(self.sensor_joints, "th_ds")
         self.publisher_.publish(hand_sensors_msg)
     
 def main(args=None) -> None:

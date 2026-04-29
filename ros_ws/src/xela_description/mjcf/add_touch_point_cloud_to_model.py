@@ -116,11 +116,14 @@ def add_sensor_patch_defaults_for_if_mf_rf(spec,sensor_patch_default):
 
     return sensor_patch_default_dict, sensor_patch_params
 
-
 def add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose, finger_name, sensor_default = None):
     contacts_bodies = []
+    joints = {}
+    link_name = f"{finger_name}_ds"
+    joints[link_name] = {}
     
     for idx in range(0,30):
+        joints[link_name][str(idx+1)] = {}
         pos,quat = fingertip_magnet_pose[str(idx+1)]["pos"],fingertip_magnet_pose[str(idx+1)]["quat"]
         name = f"{finger_name}_sensor_{idx+1}"
         child = spec.body(f"{finger_name}_ds").add_body(name=name,pos=pos,
@@ -132,19 +135,26 @@ def add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose, finger_name, senso
             type=mj.mjtGeom.mjGEOM_SPHERE,
             default=sensor_default
         )
+        axis_name = "not_set"
         for axis in [[1,0,0],[0,1,0],[0,0,1]]:
             if axis[0] == 1:
                 limit = SLIDER_JOINT_LIMITS[0]
+                axis_name = "x"
             elif axis[1] == 1:
                 limit = SLIDER_JOINT_LIMITS[1]
+                axis_name = "y"
             elif axis[2] == 1:
                 limit = SLIDER_JOINT_LIMITS[2]
+                axis_name = "z"
             else:
                 raise ValueError(f"Invalid axis: {axis}")
-            j = child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis[0]}_{axis[1]}_{axis[2]}",axis=axis,range=limit)
+            joint = child.add_joint(type=mj.mjtJoint.mjJNT_SLIDE,name=name+f"_slide_{axis_name}",axis=axis,range=limit)
+            joints[link_name][str(idx+1)][axis_name] = joint.name
+        
         contacts_bodies.append(child.name)
     # remove contact detection between grid elements of sensor
     remove_contact_detection_between_grid_elements_of_sensor(spec,contacts_bodies)
+    return joints
 
 def add_uspa44(spec, site_name,link_name,sensor_default):
     contacts_bodies = []
@@ -344,7 +354,7 @@ if __name__ == "__main__":
             joints[site_name] = add_uspa44(spec, site_name,"px",sensor_patch_default)[site_name]
     sensor_patch_default_dict, sensor_patch_params = add_sensor_patch_defaults_for_if_mf_rf(spec,sensor_patch_default)
     for finger in ["if", "mf", "rf","th"]:
-         add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose,finger,sensor_patch_default)
+        joints[f"{finger}_ds"] = add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose,finger,sensor_patch_default)[f"{finger}_ds"]
     # add sensor_patch to thumb links
     for site_name in th_site_names:
         if "th_ds" in site_name:
