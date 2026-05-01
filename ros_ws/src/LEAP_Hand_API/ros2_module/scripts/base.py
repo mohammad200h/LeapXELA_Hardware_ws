@@ -76,6 +76,7 @@ class LeapXelaBase:
  
     def set_joints_degrees(self, degrees_array):
         """Set all 16 joints using degree values (list or np.array of length 16)."""
+
         if len(degrees_array) != 16:
             print("Error: Please provide exactly 16 values (one per joint).")
             return
@@ -135,15 +136,15 @@ class LeapXelaBase:
         return self.dxl_client.read_cur()
 
     def read_pos_vel_cur(self):
-        # if self.dxl_client is None:
-        #     pos = np.radians(np.array(self.curr_pos, dtype=float))
-        #     vel = np.zeros(len(self.motors), dtype=float)
-        #     cur = np.zeros(len(self.motors), dtype=float)
-        #     return pos, vel, cur
-        # return self.dxl_client.read_pos_vel_cur()
-        pos = np.radians(np.array(self.curr_pos, dtype=float))
-        vel = np.zeros(len(self.motors), dtype=float)
-        cur = np.zeros(len(self.motors), dtype=float)
-        return pos, vel, cur
+        if self.dxl_client is None:
+            pos = np.radians(np.array(self.curr_pos, dtype=float))
+            vel = np.zeros(len(self.motors), dtype=float)
+            cur = np.zeros(len(self.motors), dtype=float)
+            return pos, vel, cur
+        return self.dxl_client.read_pos_vel_cur()
+        # pos = np.radians(np.array(self.curr_pos, dtype=float))
+        # vel = np.zeros(len(self.motors), dtype=float)
+        # cur = np.zeros(len(self.motors), dtype=float)
+        # return pos, vel, cur
 
  

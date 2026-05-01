@@ -35,7 +35,7 @@ class PositionNode(Node):
         self.declare_parameter("trajectory_csv_filename", "joint_trajectory.csv")
         self.declare_parameter("trajectory_plot_filename", "joint_trajectory.png")
 
-        self.pub = self.create_publisher(JointState, COMMAND_TOPIC, COMMAND_QUEUE_DEPTH)
+        self.pub = self.create_publisher(JointState, COMMAND_TOPIC, COMMAND_QUEUE_DEPTH) # cmd_xela
 
         csv_path = self._resolve_csv_path(str(self.get_parameter("csv_path").value).strip())
         source_units = str(self.get_parameter("source_units").value).strip().lower()
@@ -153,23 +153,18 @@ class PositionNode(Node):
         command_sequence = [sampled[0]]
 
         for i in range(len(sampled) - 1):
-            p0 = sampled[max(i - 1, 0)]
-            p1 = sampled[i]
-            p2 = sampled[i + 1]
-            p3 = sampled[min(i + 2, len(sampled) - 1)]
+            start = sampled[i]
+            end = sampled[i+1]
 
-            for j in range(1, interpolation_steps + 1):
-                t = j / float(interpolation_steps)
-                t2 = t * t
-                t3 = t2 * t
+            for j in range(1, interpolation_steps+1):
+                t = j/float(interpolation_steps)
+                t2 = t*t
+                t3 = t2*t
+                t4 = t3*t
+                t5 = t4*t
 
-                interp = 0.5 * (
-                    (2.0 * p1)
-                    + (-p0 + p2) * t
-                    + (2.0 * p0 - 5.0 * p1 + 4.0 * p2 - p3) * t2
-                    + (-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3
-                )
-
+                blend = 10.0 * t3 - 15.0 * t4 + 6.0 *t5
+                interp = start + (end-start) * blend
                 command_sequence.append(interp)
 
         return command_sequence

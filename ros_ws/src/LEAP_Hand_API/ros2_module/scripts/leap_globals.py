@@ -12,16 +12,19 @@ STATE_TOPIC = "leap_state"
 # PositionNode publisher -> LeapXELANode subscriber use the same queue depth.
 COMMAND_QUEUE_DEPTH = 50
 STATE_QUEUE_DEPTH = 10
-LEAPHAND_STATE_PUBLISH_PERIOD_SEC = 0.1
+LEAPHAND_STATE_PUBLISH_PERIOD_SEC = 0.01
 
 
 # PositionNode declared parameter defaults
 POSITION_NODE_DEFAULT_CSV_PATH = ""
-POSITION_NODE_DEFAULT_CSV_FILENAME = "beer_bottle.csv"
-POSITION_NODE_DEFAULT_SOURCE_UNITS = "radians"
+POSITION_NODE_DEFAULT_CSV_FILENAME = "flat_hand.csv"
+POSITION_NODE_DEFAULT_SOURCE_UNITS = "radians" 
 POSITION_NODE_DEFAULT_SAMPLE_STRIDE = 1
-POSITION_NODE_DEFAULT_INTERPOLATION_STEPS = 5
+POSITION_NODE_DEFAULT_INTERPOLATION_STEPS = 10
 POSITION_NODE_DEFAULT_PUBLISH_PERIOD_SEC = 0.01
+
+#Total timesteps = 1 + ((original timesteps/sample stride) - 1) * interpolation steps
+#POSITION_NODE_TOTAL_TIMESTEPS = 1 + ((POSITION_NODE_DEFAULT_INTERPOLATION_STEPS / POSITION_NODE_DEFAULT_SAMPLE_STRIDE) - 1) * POSITION_NODE_DEFAULT_INTERPOLATION_STEPS
 
 
 # LEAP hand hardware configuration
@@ -42,6 +45,7 @@ SIDE_TO_SIDE_KD_SCALE = 0.9
 # Dynamixel bring-up toggle and connection candidates.
 # Set to False to skip all real hardware connection/configuration in LeapXelaBase.__init__.
 ENABLE_DXL_CLIENT_INIT = True
+DISABLE_LOGS = True
 DYNAMIXEL_CONNECTION_CANDIDATES = [
     {
         "port": "/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U1HJ-if00-port0",

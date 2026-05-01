@@ -13,6 +13,8 @@ from sensor_msgs.msg import JointState
 
 from datetime import datetime
 
+disable_logs = True
+
 class Storage:
     def __init__(self, stream_name: str):
         date = datetime.now().strftime("%Y%m%d")
@@ -200,9 +202,9 @@ class XelaDataCollector(Node):
         # Note: xela_image_publisher sets encoding "32FC3" for both topics, but
         # /leap_image is currently filled from an int32 array. We decode raw as int32
         # and normalized as float32 to match the actual byte content.
-        print("Storing synced data...")
+        self.get_logger().debug("Storing synced data...")
         self.storage.store(raw_msg, norm_msg, state_msg)
-        print("Data stored.")
+        self.get_logger().debug("Data stored.")
         try:
             raw = self._decode_image(raw_msg, dtype=np.int32)
             norm = self._decode_image(norm_msg, dtype=np.float32)
@@ -210,14 +212,12 @@ class XelaDataCollector(Node):
             self.get_logger().error(f"Failed to decode images: {e}")
             return
 
-        self.get_logger().info(
+        self.get_logger().debug(
             f"Synced images: raw[{raw.shape}] norm[{norm.shape}] "
             f"t_raw={raw_msg.header.stamp.sec}.{raw_msg.header.stamp.nanosec:09d} "
-            f"t_norm={norm_msg.header.stamp.sec}.{norm_msg.header.stamp.nanosec:09d}"
+            f"t_norm={norm_msg.header.stamp.sec}.{norm_msg.header.stamp.nanosec:09d} "
             f"t_state={state_msg.header.stamp.sec}.{state_msg.header.stamp.nanosec:09d}"
         )
-
-     
 
     def _on_raw(self, msg: Image):
         self._last_raw = msg

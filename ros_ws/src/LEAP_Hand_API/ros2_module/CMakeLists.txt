@@ -48,8 +48,14 @@ install(FILES
 # Install non-code assets (config)
 install(FILES
   scripts/pose.json
-  scripts/flat.csv
   scripts/beer_bottle.csv
+  scripts/flat_hand.csv
+  scripts/petting.csv
+  scripts/squeeze.csv
+  scripts/contour.csv
+  scripts/enclosure.csv
+  scripts/enclosure2.csv
+  scripts/enclosure_pet.csv
   DESTINATION share/${PROJECT_NAME}/config
 )
 

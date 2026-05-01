@@ -45,28 +45,28 @@ class LeapXELANode(Node):
                 COMMAND_QUEUE_DEPTH,
             )
             self.pub = self.create_publisher(JointState, STATE_TOPIC, STATE_QUEUE_DEPTH)
+            self.timer = self.create_timer(LEAPHAND_STATE_PUBLISH_PERIOD_SEC, self.publish_state_jointstate)
         else:
-            self.pub = self.create_publisher(Float64MultiArray, STATE_TOPIC, STATE_QUEUE_DEPTH)
+            self.pub = self.create_publisher(Float64MultiArray, STATE_TOPIC + '_array', STATE_QUEUE_DEPTH)
+            self.timer = self.create_timer(LEAPHAND_STATE_PUBLISH_PERIOD_SEC, self.publish_state_floatarray)
 
-        self.timer = self.create_timer(LEAPHAND_STATE_PUBLISH_PERIOD_SEC, self.publish_state)
-
-    def publish_state(self):
+    def publish_state_jointstate(self):
         with self._hw_mutex:
             pos, vel, cur = self._leapXela.read_pos_vel_cur()
+        msg = JointState()
+        msg.header.stamp = self.get_clock().now().to_msg()
+        msg.name = [f'joint_{i}' for i in range(len(pos))]
+        msg.position = pos.tolist()
+        msg.velocity = vel.tolist()
+        msg.effort = cur.tolist()
+        self.pub.publish(msg)
 
-        if not ENABLE_DXL_CLIENT_INIT:
-            msg = Float64MultiArray()
-            msg.data = pos.tolist()
-            self.pub.publish(msg)
-        else:
-            msg = JointState()
-            msg.header.stamp = self.get_clock().now().to_msg()
-            msg.name = [f'joint_{i}' for i in range(len(pos))]
-
-            msg.position = pos.tolist()
-            msg.velocity = vel.tolist()
-            msg.effort = cur.tolist()
-            self.pub.publish(msg)
+    def publish_state_floatarray(self):
+        with self._hw_mutex:
+            pos, vel, cur = self._leapXela.read_pos_vel_cur()
+        msg = Float64MultiArray()
+        msg.data = pos.tolist()
+        self.pub.publish(msg)
 
     # Receive LEAP pose and directly control the robot
     def _receive_pose(self, msg):

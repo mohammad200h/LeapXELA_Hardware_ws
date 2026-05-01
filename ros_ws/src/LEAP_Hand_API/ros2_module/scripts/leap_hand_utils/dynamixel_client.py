@@ -7,6 +7,9 @@ from typing import Optional, Sequence, Union, Tuple
 
 import numpy as np
 
+# Log disabling manually added to original code
+DISABLE_LOGS = True
+
 PROTOCOL_VERSION = 2.0
 
 # The following addresses assume XH motors.
@@ -209,7 +212,8 @@ class DynamixelClient:
 
     def read_pos_vel_cur(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Returns the current positions and velocities."""
-        print("*****READING read_pos_vel_cur**********")
+        if DISABLE_LOGS==False:
+            print("*****READING read_pos_vel_cur**********")
         return self._pos_vel_cur_reader.read()
     def read_pos(self) -> np.ndarray:
         """Returns the current positions and velocities."""
@@ -229,7 +233,8 @@ class DynamixelClient:
             motor_ids: The motor IDs to write to.
             positions: The joint angles in radians to write.
         """
-        print("*****WRITING write_desired_pos**********")
+        if DISABLE_LOGS==False:
+            print("*****WRITING write_desired_pos**********")
         assert len(motor_ids) == len(positions)
 
         # Convert to Dynamixel position space.
