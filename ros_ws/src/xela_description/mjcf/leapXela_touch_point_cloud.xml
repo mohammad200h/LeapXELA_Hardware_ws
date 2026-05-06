@@ -219,181 +219,181 @@
               <site name="if_uSCuALHA_h2_construction_line_4" class="h2_construction_line_4" pos="0.013 -0.045 0.008"/>
               <site name="if_uSCuALHA_h2_construction_line_5" class="h2_construction_line_5" pos="0.01 -0.045 0.004"/>
               <site name="if_uSCuALHA_h2_construction_line_6" class="h2_construction_line_6" pos="0.002 -0.045 -0.0001"/>
-              <body name="if_sensor_1" pos="0 -0.04313 0.00255" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_1" pos="0.0118199 -0.0288 0.0184">
                 <joint name="if_sensor_1_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_1_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_1_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_1" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_2" pos="0.01181 -0.03 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_2" pos="-0.00138014 -0.0288 0.0288" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_2_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_2_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_2_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_2" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_3" pos="0 -0.03 0.02701" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_3" pos="0.00762986 -0.0546 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_3_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_3_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_3_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_3" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_4" pos="0.0106 -0.04953 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_4" pos="-0.00138014 -0.0556 0.0044" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_4_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_4_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_4_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_4" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_5" pos="0.00678 -0.0365 0.0038" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_5" pos="0.00607986 -0.0353 0.026" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_5_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_5_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_5_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_5" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_6" pos="0 -0.05574 0.00625" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_6" pos="0.0118199 -0.0353 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_6_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_6_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_6_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_6" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_7" pos="0 -0.05574 0.02275" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_7" pos="0.00607986 -0.0288 0.026" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_7_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_7_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_7_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_7" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_8" pos="0.01157 -0.0365 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_8" pos="-0.00138014 -0.0556 0.0246" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_8_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_8_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_8_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_8" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_9" pos="0 -0.0365 0.00199" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_9" pos="-0.00138014 -0.0423 0.0283" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_9_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_9_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_9_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_9" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_10" pos="0.00826 -0.05593 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_10" pos="0.00607986 -0.0417 0.0255" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_10_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_10_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_10_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_10" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_11" pos="0.01181 -0.03 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_11" pos="0.00762986 -0.0546 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_11_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_11_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_11_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_11" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_12" pos="0 -0.04939 0.02479" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_12" pos="-0.00138014 -0.0423 0.0007" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_12_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_12_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_12_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_12" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_13" pos="0.0106 -0.04953 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_13" pos="-0.00138014 -0.0486 0.0271" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_13_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_13_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_13_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_13" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_14" pos="0.00678 -0.04313 0.0044" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_14" pos="0.0115199 -0.0419 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_14_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_14_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_14_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_14" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_15" pos="0 -0.0365 0.02701" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_15" pos="0.0118199 -0.0353 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_15_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_15_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_15_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_15" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_16" pos="0.00374 -0.05996 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_16" pos="-0.00138014 -0.0353 0.0288" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_16_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_16_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_16_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_16" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_17" pos="0.01157 -0.0365 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_17" pos="0.00607986 -0.048 0.0243" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_17_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_17_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_17_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_17" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_18" pos="0.01149 -0.04313 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_18" pos="-0.00138014 -0.0353 0.0002" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_18_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_18_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_18_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_18" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_19" pos="0.00374 -0.05996 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_19" pos="-0.00138014 -0.0486 0.0019" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_19_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_19_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_19_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_19" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_20" pos="0 -0.03 0.00199" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_20" pos="0.00607986 -0.0353 0.003" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_20_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_20_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_20_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_20" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_21" pos="0.00678 -0.03 0.02524" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_21" pos="0.00607986 -0.048 0.0047" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_21_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_21_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_21_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_21" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_22" pos="0.01149 -0.04313 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_22" pos="0.0105199 -0.048 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_22_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_22_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_22_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_22" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_23" pos="0.00678 -0.04313 0.0246" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_23" pos="-0.00138014 -0.0288 0.0002" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_23_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_23_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_23_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_23" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_24" pos="0.00678 -0.04953 0.0233" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_24" pos="0.00607986 -0.0417 0.0035" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_24_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_24_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_24_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_24" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_25" pos="0.00678 -0.03 0.00376" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_25" pos="0.0115199 -0.0419 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_25_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_25_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_25_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_25" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_26" pos="0 -0.04939 0.00431" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_26" pos="0.00337986 -0.0588 0.0108" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_26_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_26_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_26_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_26" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_27" pos="0.00826 -0.05593 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_27" pos="0.0118199 -0.0288 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_27_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_27_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_27_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_27" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_28" pos="0.00678 -0.0365 0.0252" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_28" pos="0.0105199 -0.048 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_28_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_28_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_28_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_28" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_29" pos="0 -0.04313 0.02645" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_29" pos="0.00337986 -0.0588 0.0182" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_29_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_29_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_29_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="if_sensor_29" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="if_sensor_30" pos="0.00678 -0.04953 0.0057" quat="0 0.707107 0 0.707107">
+              <body name="if_sensor_30" pos="0.00607986 -0.0288 0.003" quat="0 0.707107 0 0.707107">
                 <joint name="if_sensor_30_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_30_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="if_sensor_30_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
@@ -613,181 +613,181 @@
               <inertial pos="-0.00193531 -0.0359351 0.0145854" quat="0.694152 0.719273 0.0276433 -0.00591063" mass="0.016" diaginertia="7.05616e-05 6.58815e-05 3.62962e-05"/>
               <joint name="mf_dip" class="dip" pos="0 0 0" axis="0 0 1"/>
               <geom name="mf_ds_visual" class="visual" pos="-0.00135925 -0.025 0.0145" quat="0.5 -0.5 -0.5 -0.5" material="black" mesh="fingertop_unfied"/>
-              <body name="mf_sensor_1" pos="0 -0.04313 0.00255" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_1" pos="0.0118199 -0.0288 0.0184">
                 <joint name="mf_sensor_1_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_1_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_1_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_1" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_2" pos="0.01181 -0.03 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_2" pos="-0.00138014 -0.0288 0.0288" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_2_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_2_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_2_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_2" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_3" pos="0 -0.03 0.02701" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_3" pos="0.00762986 -0.0546 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_3_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_3_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_3_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_3" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_4" pos="0.0106 -0.04953 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_4" pos="-0.00138014 -0.0556 0.0044" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_4_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_4_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_4_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_4" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_5" pos="0.00678 -0.0365 0.0038" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_5" pos="0.00607986 -0.0353 0.026" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_5_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_5_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_5_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_5" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_6" pos="0 -0.05574 0.00625" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_6" pos="0.0118199 -0.0353 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_6_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_6_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_6_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_6" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_7" pos="0 -0.05574 0.02275" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_7" pos="0.00607986 -0.0288 0.026" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_7_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_7_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_7_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_7" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_8" pos="0.01157 -0.0365 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_8" pos="-0.00138014 -0.0556 0.0246" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_8_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_8_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_8_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_8" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_9" pos="0 -0.0365 0.00199" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_9" pos="-0.00138014 -0.0423 0.0283" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_9_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_9_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_9_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_9" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_10" pos="0.00826 -0.05593 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_10" pos="0.00607986 -0.0417 0.0255" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_10_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_10_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_10_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_10" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_11" pos="0.01181 -0.03 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_11" pos="0.00762986 -0.0546 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_11_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_11_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_11_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_11" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_12" pos="0 -0.04939 0.02479" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_12" pos="-0.00138014 -0.0423 0.0007" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_12_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_12_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_12_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_12" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_13" pos="0.0106 -0.04953 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_13" pos="-0.00138014 -0.0486 0.0271" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_13_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_13_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_13_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_13" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_14" pos="0.00678 -0.04313 0.0044" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_14" pos="0.0115199 -0.0419 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_14_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_14_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_14_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_14" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_15" pos="0 -0.0365 0.02701" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_15" pos="0.0118199 -0.0353 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_15_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_15_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_15_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_15" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_16" pos="0.00374 -0.05996 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_16" pos="-0.00138014 -0.0353 0.0288" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_16_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_16_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_16_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_16" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_17" pos="0.01157 -0.0365 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_17" pos="0.00607986 -0.048 0.0243" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_17_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_17_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_17_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_17" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_18" pos="0.01149 -0.04313 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_18" pos="-0.00138014 -0.0353 0.0002" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_18_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_18_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_18_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_18" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_19" pos="0.00374 -0.05996 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_19" pos="-0.00138014 -0.0486 0.0019" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_19_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_19_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_19_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_19" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_20" pos="0 -0.03 0.00199" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_20" pos="0.00607986 -0.0353 0.003" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_20_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_20_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_20_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_20" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_21" pos="0.00678 -0.03 0.02524" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_21" pos="0.00607986 -0.048 0.0047" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_21_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_21_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_21_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_21" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_22" pos="0.01149 -0.04313 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_22" pos="0.0105199 -0.048 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_22_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_22_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_22_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_22" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_23" pos="0.00678 -0.04313 0.0246" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_23" pos="-0.00138014 -0.0288 0.0002" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_23_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_23_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_23_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_23" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_24" pos="0.00678 -0.04953 0.0233" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_24" pos="0.00607986 -0.0417 0.0035" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_24_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_24_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_24_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_24" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_25" pos="0.00678 -0.03 0.00376" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_25" pos="0.0115199 -0.0419 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_25_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_25_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_25_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_25" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_26" pos="0 -0.04939 0.00431" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_26" pos="0.00337986 -0.0588 0.0108" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_26_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_26_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_26_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_26" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_27" pos="0.00826 -0.05593 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_27" pos="0.0118199 -0.0288 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_27_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_27_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_27_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_27" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_28" pos="0.00678 -0.0365 0.0252" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_28" pos="0.0105199 -0.048 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_28_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_28_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_28_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_28" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_29" pos="0 -0.04313 0.02645" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_29" pos="0.00337986 -0.0588 0.0182" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_29_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_29_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_29_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="mf_sensor_29" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="mf_sensor_30" pos="0.00678 -0.04953 0.0057" quat="0 0.707107 0 0.707107">
+              <body name="mf_sensor_30" pos="0.00607986 -0.0288 0.003" quat="0 0.707107 0 0.707107">
                 <joint name="mf_sensor_30_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_30_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="mf_sensor_30_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
@@ -1007,181 +1007,181 @@
               <inertial pos="-0.00193531 -0.0359351 0.0145854" quat="0.694152 0.719273 0.0276433 -0.00591063" mass="0.016" diaginertia="7.05616e-05 6.58815e-05 3.62962e-05"/>
               <joint name="rf_dip" class="dip" pos="0 0 0" axis="0 0 1"/>
               <geom name="rf_ds_visual" class="visual" pos="-0.00135925 -0.025 0.0145" quat="0.5 -0.5 -0.5 -0.5" material="black" mesh="fingertop_unfied"/>
-              <body name="rf_sensor_1" pos="0 -0.04313 0.00255" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_1" pos="0.0118199 -0.0288 0.0184">
                 <joint name="rf_sensor_1_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_1_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_1_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_1" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_2" pos="0.01181 -0.03 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_2" pos="-0.00138014 -0.0288 0.0288" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_2_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_2_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_2_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_2" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_3" pos="0 -0.03 0.02701" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_3" pos="0.00762986 -0.0546 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_3_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_3_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_3_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_3" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_4" pos="0.0106 -0.04953 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_4" pos="-0.00138014 -0.0556 0.0044" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_4_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_4_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_4_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_4" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_5" pos="0.00678 -0.0365 0.0038" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_5" pos="0.00607986 -0.0353 0.026" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_5_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_5_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_5_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_5" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_6" pos="0 -0.05574 0.00625" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_6" pos="0.0118199 -0.0353 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_6_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_6_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_6_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_6" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_7" pos="0 -0.05574 0.02275" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_7" pos="0.00607986 -0.0288 0.026" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_7_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_7_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_7_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_7" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_8" pos="0.01157 -0.0365 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_8" pos="-0.00138014 -0.0556 0.0246" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_8_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_8_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_8_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_8" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_9" pos="0 -0.0365 0.00199" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_9" pos="-0.00138014 -0.0423 0.0283" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_9_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_9_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_9_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_9" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_10" pos="0.00826 -0.05593 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_10" pos="0.00607986 -0.0417 0.0255" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_10_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_10_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_10_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_10" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_11" pos="0.01181 -0.03 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_11" pos="0.00762986 -0.0546 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_11_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_11_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_11_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_11" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_12" pos="0 -0.04939 0.02479" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_12" pos="-0.00138014 -0.0423 0.0007" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_12_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_12_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_12_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_12" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_13" pos="0.0106 -0.04953 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_13" pos="-0.00138014 -0.0486 0.0271" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_13_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_13_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_13_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_13" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_14" pos="0.00678 -0.04313 0.0044" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_14" pos="0.0115199 -0.0419 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_14_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_14_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_14_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_14" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_15" pos="0 -0.0365 0.02701" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_15" pos="0.0118199 -0.0353 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_15_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_15_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_15_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_15" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_16" pos="0.00374 -0.05996 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_16" pos="-0.00138014 -0.0353 0.0288" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_16_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_16_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_16_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_16" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_17" pos="0.01157 -0.0365 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_17" pos="0.00607986 -0.048 0.0243" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_17_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_17_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_17_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_17" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_18" pos="0.01149 -0.04313 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_18" pos="-0.00138014 -0.0353 0.0002" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_18_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_18_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_18_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_18" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_19" pos="0.00374 -0.05996 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_19" pos="-0.00138014 -0.0486 0.0019" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_19_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_19_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_19_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_19" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_20" pos="0 -0.03 0.00199" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_20" pos="0.00607986 -0.0353 0.003" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_20_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_20_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_20_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_20" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_21" pos="0.00678 -0.03 0.02524" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_21" pos="0.00607986 -0.048 0.0047" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_21_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_21_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_21_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_21" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_22" pos="0.01149 -0.04313 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_22" pos="0.0105199 -0.048 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_22_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_22_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_22_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_22" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_23" pos="0.00678 -0.04313 0.0246" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_23" pos="-0.00138014 -0.0288 0.0002" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_23_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_23_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_23_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_23" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_24" pos="0.00678 -0.04953 0.0233" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_24" pos="0.00607986 -0.0417 0.0035" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_24_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_24_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_24_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_24" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_25" pos="0.00678 -0.03 0.00376" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_25" pos="0.0115199 -0.0419 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_25_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_25_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_25_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_25" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_26" pos="0 -0.04939 0.00431" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_26" pos="0.00337986 -0.0588 0.0108" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_26_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_26_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_26_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_26" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_27" pos="0.00826 -0.05593 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_27" pos="0.0118199 -0.0288 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_27_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_27_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_27_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_27" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_28" pos="0.00678 -0.0365 0.0252" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_28" pos="0.0105199 -0.048 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_28_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_28_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_28_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_28" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_29" pos="0 -0.04313 0.02645" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_29" pos="0.00337986 -0.0588 0.0182" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_29_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_29_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_29_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="rf_sensor_29" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="rf_sensor_30" pos="0.00678 -0.04953 0.0057" quat="0 0.707107 0 0.707107">
+              <body name="rf_sensor_30" pos="0.00607986 -0.0288 0.003" quat="0 0.707107 0 0.707107">
                 <joint name="rf_sensor_30_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_30_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="rf_sensor_30_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
@@ -1427,181 +1427,181 @@
               <site name="th_v2_construction_line_5" class="uSCuALHA" pos="0.01 -0.05 0.004"/>
               <site name="th_v2_construction_line_6" class="uSCuALHA" pos="0.002 -0.05 -0.0001"/>
               <site name="th_tip" class="marker" pos="-0.004 -0.067 0.0145"/>
-              <body name="th_sensor_1" pos="0 -0.04313 0.00255" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_1" pos="0.0118199 -0.0288 0.0184">
                 <joint name="th_sensor_1_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_1_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_1_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_1" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_2" pos="0.01181 -0.03 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_2" pos="-0.00138014 -0.0288 0.0288" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_2_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_2_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_2_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_2" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_3" pos="0 -0.03 0.02701" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_3" pos="0.00762986 -0.0546 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_3_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_3_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_3_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_3" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_4" pos="0.0106 -0.04953 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_4" pos="-0.00138014 -0.0556 0.0044" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_4_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_4_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_4_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_4" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_5" pos="0.00678 -0.0365 0.0038" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_5" pos="0.00607986 -0.0353 0.026" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_5_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_5_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_5_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_5" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_6" pos="0 -0.05574 0.00625" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_6" pos="0.0118199 -0.0353 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_6_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_6_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_6_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_6" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_7" pos="0 -0.05574 0.02275" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_7" pos="0.00607986 -0.0288 0.026" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_7_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_7_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_7_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_7" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_8" pos="0.01157 -0.0365 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_8" pos="-0.00138014 -0.0556 0.0246" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_8_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_8_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_8_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_8" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_9" pos="0 -0.0365 0.00199" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_9" pos="-0.00138014 -0.0423 0.0283" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_9_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_9_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_9_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_9" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_10" pos="0.00826 -0.05593 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_10" pos="0.00607986 -0.0417 0.0255" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_10_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_10_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_10_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_10" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_11" pos="0.01181 -0.03 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_11" pos="0.00762986 -0.0546 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_11_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_11_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_11_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_11" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_12" pos="0 -0.04939 0.02479" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_12" pos="-0.00138014 -0.0423 0.0007" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_12_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_12_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_12_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_12" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_13" pos="0.0106 -0.04953 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_13" pos="-0.00138014 -0.0486 0.0271" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_13_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_13_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_13_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_13" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_14" pos="0.00678 -0.04313 0.0044" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_14" pos="0.0115199 -0.0419 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_14_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_14_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_14_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_14" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_15" pos="0 -0.0365 0.02701" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_15" pos="0.0118199 -0.0353 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_15_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_15_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_15_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_15" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_16" pos="0.00374 -0.05996 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_16" pos="-0.00138014 -0.0353 0.0288" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_16_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_16_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_16_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_16" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_17" pos="0.01157 -0.0365 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_17" pos="0.00607986 -0.048 0.0243" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_17_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_17_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_17_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_17" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_18" pos="0.01149 -0.04313 0.01093" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_18" pos="-0.00138014 -0.0353 0.0002" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_18_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_18_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_18_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_18" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_19" pos="0.00374 -0.05996 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_19" pos="-0.00138014 -0.0486 0.0019" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_19_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_19_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_19_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_19" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_20" pos="0 -0.03 0.00199" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_20" pos="0.00607986 -0.0353 0.003" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_20_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_20_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_20_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_20" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_21" pos="0.00678 -0.03 0.02524" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_21" pos="0.00607986 -0.048 0.0047" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_21_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_21_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_21_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_21" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_22" pos="0.01149 -0.04313 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_22" pos="0.0105199 -0.048 0.0184" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_22_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_22_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_22_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_22" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_23" pos="0.00678 -0.04313 0.0246" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_23" pos="-0.00138014 -0.0288 0.0002" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_23_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_23_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_23_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_23" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_24" pos="0.00678 -0.04953 0.0233" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_24" pos="0.00607986 -0.0417 0.0035" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_24_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_24_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_24_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_24" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_25" pos="0.00678 -0.03 0.00376" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_25" pos="0.0115199 -0.0419 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_25_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_25_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_25_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_25" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_26" pos="0 -0.04939 0.00431" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_26" pos="0.00337986 -0.0588 0.0108" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_26_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_26_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_26_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_26" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_27" pos="0.00826 -0.05593 0.01807" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_27" pos="0.0118199 -0.0288 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_27_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_27_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_27_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_27" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_28" pos="0.00678 -0.0365 0.0252" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_28" pos="0.0105199 -0.048 0.0106" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_28_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_28_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_28_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_28" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_29" pos="0 -0.04313 0.02645" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_29" pos="0.00337986 -0.0588 0.0182" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_29_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_29_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_29_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
                 <geom name="th_sensor_29" class="sensor_patch" size="0.0025" type="sphere"/>
               </body>
-              <body name="th_sensor_30" pos="0.00678 -0.04953 0.0057" quat="0 0.707107 0 0.707107">
+              <body name="th_sensor_30" pos="0.00607986 -0.0288 0.003" quat="0 0.707107 0 0.707107">
                 <joint name="th_sensor_30_slide_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_30_slide_y" pos="0 0 0" axis="0 1 0" type="slide" range="-0.0025 0.0025"/>
                 <joint name="th_sensor_30_slide_z" pos="0 0 0" axis="0 0 1" type="slide" range="-0.0025 0.0025"/>
