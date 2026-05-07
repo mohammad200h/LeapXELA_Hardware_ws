@@ -121,13 +121,27 @@ def add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose, finger_name, senso
     joints = {}
     link_name = f"{finger_name}_ds"
     joints[link_name] = {}
+
+    print("finger_name: ", finger_name)
+   
+    site_pos,sit_quat = fingertip_magnet_pose[f"{finger_name}_pointcloud_base_frame"]["pos"],fingertip_magnet_pose[f"{finger_name}_pointcloud_base_frame"]["quat"]
+    parent = spec.body(f"{finger_name}_ds").add_body(
+            name=f"{finger_name}_pointcloud_base_frame",
+            pos=site_pos,
+            quat=sit_quat
+            )
     
     for idx in range(0,30):
         joints[link_name][str(idx+1)] = {}
         pos,quat = fingertip_magnet_pose[str(idx+1)]["pos"],fingertip_magnet_pose[str(idx+1)]["quat"]
         name = f"{finger_name}_sensor_{idx+1}"
-        child = spec.body(f"{finger_name}_ds").add_body(name=name,pos=pos,
-            quat=quat)
+        
+        
+        child = parent.add_body(name=name,pos=pos,quat=quat)
+       
+
+        # child = spec.body(f"{finger_name}_ds").add_body(name=name,pos=pos,
+        #     quat=quat)
         child.add_geom(
             name=f"{finger_name}_sensor_{idx+1}",
             size=[0.0025, 0.0025, 0.0025],

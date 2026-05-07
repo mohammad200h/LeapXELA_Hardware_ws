@@ -1,7 +1,8 @@
 import mujoco as mj
 
 
-SITES = ["rf_pointcloud", "mf_pointcloud", "if_pointcloud", "th_pointcloud"]
+SITES = ["rf_pointcloud_base_frame", "mf_pointcloud_base_frame",
+ "if_pointcloud_base_frame", "th_pointcloud_base_frame"]
 
 
 
@@ -10,7 +11,7 @@ def get_fingertip_spec():
     return spec
 
 def get_robot_spec():
-    spec = mj.MjSpec.from_file("robot.xml")
+    spec = mj.MjSpec.from_file("robot_with_sites.xml")
     return spec
 
 def attach_fingertip_to_sites(fingertip_spec, robot_spec):
