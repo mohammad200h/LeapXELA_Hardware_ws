@@ -16,7 +16,6 @@
 
   <asset>
     <material name="leap_hand_xela_motorholder_material" rgba="0.792157 0.819608 0.933333 1"/>
-    <material name="uspa46_material" rgba="0.792157 0.819608 0.933333 1"/>
     <material name="thp0_unified_material" rgba="0.498039 0.498039 0.498039 1"/>
     <material name="p5_unified_material" rgba="0.980392 0.713725 0.00392157 1"/>
     <material name="top_palm_material" rgba="0.792157 0.819608 0.933333 1"/>
@@ -24,6 +23,8 @@
     <material name="leap_hand_xela_side_cover_material" rgba="0.792157 0.819608 0.933333 1"/>
     <material name="leap_hand_xela_bottom_material" rgba="0.792157 0.819608 0.933333 1"/>
     <material name="palm_face_material" rgba="0.792157 0.819608 0.933333 1"/>
+    <material name="4_6_origin_material" rgba="0.615686 0.811765 0.929412 1"/>
+    <material name="uspa46_material" rgba="0.792157 0.819608 0.933333 1"/>
     <material name="p4_unified_material" rgba="0.972549 0.529412 0.00392157 1"/>
     <material name="p3_unified_material" rgba="0.972549 0.529412 0.00392157 1"/>
     <material name="p2_unified_material" rgba="0.768627 0.886275 0.952941 1"/>
@@ -36,37 +37,36 @@
     <material name="thp1_unified_material" rgba="0.647059 0.647059 0.647059 1"/>
     <material name="servo_unified_material" rgba="0.498039 0.498039 0.498039 1"/>
     <material name="part10_material" rgba="0.792157 0.819608 0.933333 1"/>
-    <mesh name="clipper" content_type="model/stl" file="clipper.stl"/>
-    <mesh name="leap_hand_xela_bottom" content_type="model/stl" file="leap_hand_xela_bottom.stl"/>
-    <mesh name="thconnector" content_type="model/stl" file="thconnector.stl"/>
-    <mesh name="p4_unified" content_type="model/stl" file="p4_unified.stl"/>
-    <mesh name="fingertip_fix" content_type="model/stl" file="fingertip_fix.stl"/>
-    <mesh name="uspa46" content_type="model/stl" file="uspa46.stl"/>
-    <mesh name="p2_unified" content_type="model/stl" file="p2_unified.stl"/>
-    <mesh name="servo_unified" content_type="model/stl" file="servo_unified.stl"/>
-    <mesh name="thp2_unified" content_type="model/stl" file="thp2_unified.stl"/>
-    <mesh name="part_2" content_type="model/stl" file="part_2.stl"/>
-    <mesh name="part10" content_type="model/stl" file="part10.stl"/>
-    <mesh name="thp0_unified" content_type="model/stl" file="thp0_unified.stl"/>
-    <mesh name="palm_face" content_type="model/stl" file="palm_face.stl"/>
-    <mesh name="leap_hand_xela_motorholder" content_type="model/stl" file="leap_hand_xela_motorholder.stl"/>
-    <mesh name="pointcloud" content_type="model/stl" file="pointcloud.stl"/>
     <mesh name="thp1_unified" content_type="model/stl" file="thp1_unified.stl"/>
-    <mesh name="top_palm" content_type="model/stl" file="top_palm.stl"/>
-    <mesh name="p3_unified" content_type="model/stl" file="p3_unified.stl"/>
-    <mesh name="p5_unified" content_type="model/stl" file="p5_unified.stl"/>
+    <mesh name="clipper" content_type="model/stl" file="clipper.stl"/>
+    <mesh name="fingertip_fix" content_type="model/stl" file="fingertip_fix.stl"/>
     <mesh name="leap_hand_xela_side_cover" content_type="model/stl" file="leap_hand_xela_side_cover.stl"/>
+    <mesh name="part10" content_type="model/stl" file="part10.stl"/>
+    <mesh name="palm_face" content_type="model/stl" file="palm_face.stl"/>
+    <mesh name="leap_hand_xela_bottom" content_type="model/stl" file="leap_hand_xela_bottom.stl"/>
+    <mesh name="part_2" content_type="model/stl" file="part_2.stl"/>
+    <mesh name="4_6_origin" content_type="model/stl" file="4_6_origin.stl"/>
+    <mesh name="thp0_unified" content_type="model/stl" file="thp0_unified.stl"/>
+    <mesh name="top_palm" content_type="model/stl" file="top_palm.stl"/>
+    <mesh name="pointcloud" content_type="model/stl" file="pointcloud.stl"/>
+    <mesh name="thconnector" content_type="model/stl" file="thconnector.stl"/>
+    <mesh name="leap_hand_xela_motorholder" content_type="model/stl" file="leap_hand_xela_motorholder.stl"/>
+    <mesh name="thp2_unified" content_type="model/stl" file="thp2_unified.stl"/>
+    <mesh name="p3_unified" content_type="model/stl" file="p3_unified.stl"/>
+    <mesh name="p2_unified" content_type="model/stl" file="p2_unified.stl"/>
+    <mesh name="uspa46" content_type="model/stl" file="uspa46.stl"/>
+    <mesh name="p4_unified" content_type="model/stl" file="p4_unified.stl"/>
+    <mesh name="servo_unified" content_type="model/stl" file="servo_unified.stl"/>
+    <mesh name="p5_unified" content_type="model/stl" file="p5_unified.stl"/>
     <mesh name="leap_hand_xela_back_cover" content_type="model/stl" file="leap_hand_xela_back_cover.stl"/>
   </asset>
 
   <worldbody>
     <body name="leap_hand_xela_back_cover" childclass="leapXela_pointcloud">
-      <inertial pos="-0.000780549 -0.00686016 0.0718797" quat="0.724984 0.0674342 0.0157021 0.685276" mass="1.50836" diaginertia="0.00422584 0.00332618 0.00174226"/>
+      <inertial pos="-0.000749197 -0.00686016 0.0718797" quat="0.725527 0.067245 0.0155364 0.684724" mass="1.50836" diaginertia="0.004221 0.00332588 0.00173741"/>
       <joint name="leap_hand_xela_back_cover_freejoint" type="free" armature="0" frictionloss="0"/>
       <geom class="visual" pos="0.0180627 0.023 0.0834096" quat="0 0.707107 0 -0.707107" material="leap_hand_xela_motorholder_material" mesh="leap_hand_xela_motorholder"/>
       <geom class="collision" pos="0.0180627 0.023 0.0834096" quat="0 0.707107 0 -0.707107" type="mesh" material="leap_hand_xela_motorholder_material" mesh="leap_hand_xela_motorholder"/>
-      <geom class="visual" pos="-0.005515 -0.027 0.0631" quat="0 0 0 -1" material="uspa46_material" mesh="uspa46"/>
-      <geom class="collision" pos="-0.005515 -0.027 0.0631" quat="0 0 0 -1" type="mesh" material="uspa46_material" mesh="uspa46"/>
       <geom class="visual" pos="0.0235627 -0.013 0.0845" quat="0.707107 0 0 0.707107" material="thp0_unified_material" mesh="thp0_unified"/>
       <geom class="collision" pos="0.0235627 -0.013 0.0845" quat="0.707107 0 0 0.707107" type="mesh" material="thp0_unified_material" mesh="thp0_unified"/>
       <geom class="visual" pos="-0.03767 -0.009 0.1306" quat="0.5 0.5 -0.5 0.5" material="p5_unified_material" mesh="p5_unified"/>
@@ -75,12 +75,8 @@
       <geom class="collision" pos="0.00785 -0.023 0.123706" quat="0 0 1 0" type="mesh" material="top_palm_material" mesh="top_palm"/>
       <geom class="visual" pos="0.00778 -0.009 0.1306" quat="0.5 0.5 -0.5 0.5" material="p5_unified_material" mesh="p5_unified"/>
       <geom class="collision" pos="0.00778 -0.009 0.1306" quat="0.5 0.5 -0.5 0.5" type="mesh" material="p5_unified_material" mesh="p5_unified"/>
-      <geom class="visual" pos="-0.005515 -0.027 0.0962" quat="0 0 0 -1" material="uspa46_material" mesh="uspa46"/>
-      <geom class="collision" pos="-0.005515 -0.027 0.0962" quat="0 0 0 -1" type="mesh" material="uspa46_material" mesh="uspa46"/>
       <geom class="visual" pos="0.05323 -0.009 0.1306" quat="0.5 0.5 -0.5 0.5" material="p5_unified_material" mesh="p5_unified"/>
       <geom class="collision" pos="0.05323 -0.009 0.1306" quat="0.5 0.5 -0.5 0.5" type="mesh" material="p5_unified_material" mesh="p5_unified"/>
-      <geom class="visual" pos="0.044015 -0.027 0.0962" quat="0 -1 0 0" material="uspa46_material" mesh="uspa46"/>
-      <geom class="collision" pos="0.044015 -0.027 0.0962" quat="0 -1 0 0" type="mesh" material="uspa46_material" mesh="uspa46"/>
       <geom class="visual" pos="-0.0293149 0.023 0.131221" quat="0.707107 0 -0.707107 0" material="leap_hand_xela_back_cover_material" mesh="leap_hand_xela_back_cover"/>
       <geom class="collision" pos="-0.0293149 0.023 0.131221" quat="0.707107 0 -0.707107 0" type="mesh" material="leap_hand_xela_back_cover_material" mesh="leap_hand_xela_back_cover"/>
       <geom class="visual" pos="-0.0503368 0 0.110009" quat="0.707104 0.707104 0.00183435 -0.00183435" material="leap_hand_xela_side_cover_material" mesh="leap_hand_xela_side_cover"/>
@@ -89,6 +85,15 @@
       <geom class="collision" pos="0 -0.023 0.0425" quat="0 0 -1 0" type="mesh" material="leap_hand_xela_bottom_material" mesh="leap_hand_xela_bottom"/>
       <geom class="visual" pos="-0.0283776 -0.029 0.131221" quat="0.707107 0 -0.707107 0" material="palm_face_material" mesh="palm_face"/>
       <geom class="collision" pos="-0.0283776 -0.029 0.131221" quat="0.707107 0 -0.707107 0" type="mesh" material="palm_face_material" mesh="palm_face"/>
+      <geom class="visual" pos="-0.00455 -0.027 0.0631" quat="0 0 0 1" material="uspa46_material" mesh="uspa46"/>
+      <geom class="collision" pos="-0.00455 -0.027 0.0631" quat="0 0 0 1" type="mesh" material="uspa46_material" mesh="uspa46"/>
+      <geom class="visual" pos="0.04305 -0.027 0.0962" quat="0 1 0 0" material="uspa46_material" mesh="uspa46"/>
+      <geom class="collision" pos="0.04305 -0.027 0.0962" quat="0 1 0 0" type="mesh" material="uspa46_material" mesh="uspa46"/>
+      <geom class="visual" pos="-0.00455 -0.027 0.0962" quat="0 0 0 1" material="uspa46_material" mesh="uspa46"/>
+      <geom class="collision" pos="-0.00455 -0.027 0.0962" quat="0 0 0 1" type="mesh" material="uspa46_material" mesh="uspa46"/>
+      <site name="4_6_1_base_frame" pos="-0.0271 -0.027 0.0478" quat="0.707107 0.707107 0 0"/>
+      <site name="4_6_2_base_frame" pos="0.0656 -0.027 0.1115" quat="0 0 0.707107 -0.707107"/>
+      <site name="4_6_3_base_frame" pos="-0.0271 -0.027 0.0809" quat="0.707107 0.707107 0 0"/>
       <body name="p4_unified" pos="-0.02317 -0.0165 0.1436" quat="0 0.707107 0 0.707107">
         <inertial pos="0.0342889 -0.0265621 -0.0145004" quat="0.612792 0.580476 0.43131 0.3186" mass="0.0353104" diaginertia="1.15885e-05 1.10404e-05 5.79888e-06"/>
         <joint name="rf_mcp" pos="0 0 0" axis="0 0 1" range="-0.314159 2.23402"/>
