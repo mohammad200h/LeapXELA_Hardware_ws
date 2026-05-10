@@ -9,6 +9,33 @@ map = {
 
 }
 
+reverse_map = {
+
+    "palm": "leap_hand_xela_back_cover",
+
+    "rf_bs": "p4_unified",
+    "mf_bs": "p4_unified_2",
+    "if_bs": "p4_unified_3",
+
+    "rf_px": "p3_unified",
+    "mf_px": "p3_unified_2",
+    "if_px": "p3_unified_3",
+
+    "rf_md": "p2_unified",
+    "mf_md": "p2_unified_2",
+    "if_md": "p2_unified_3",
+
+    "if_ds": "finger",
+    "mf_ds": "finger_2",
+    "rf_ds": "finger_3",
+
+    "th_mp": "thp2_unified",
+    "th_bs": "clipper",
+    "th_px": "thp1_unified",
+    "th_ds": "thfingertip_unified",
+
+}
+
 def add_figer_tip_sites(spec,map):
     delete_list = []
     for b_name,finger_name in map.items():
@@ -47,15 +74,18 @@ def add_4_6_sites(spec):
         spec.delete(geom)
 
 
-def add_4_4_sites(spec):
-    with open("4_4_sites.json", "r") as f:
-        sites = json.load(f)
-    for site_name, site_data in sites.items():
-        spec.body(site_data["parent"]).add_site(
-            name=site_name,
-            pos=site_data["pos"],
-            quat=site_data["quat"]
-        )
+# def add_4_4_sites(spec):
+#     with open("4_4_sites.json", "r") as f:
+#         sites = json.load(f)
+#     for site_name, site_data in sites.items():
+#         parent = reverse_map[site_data["parent"]]
+#         print(f"add_4_4_sites::parent: {parent}")
+
+#         spec.body(parent).add_site(
+#             name=site_name,
+#             pos=site_data["pos"],
+#             quat=site_data["quat"]
+#         )
     
 
 def write_xml(spec):
@@ -67,5 +97,5 @@ if __name__ == "__main__":
     spec = mj.MjSpec.from_file("robot.xml")
     add_figer_tip_sites(spec,map)
     add_4_6_sites(spec)
-    add_4_4_sites(spec)
+    # add_4_4_sites(spec)
     write_xml(spec)

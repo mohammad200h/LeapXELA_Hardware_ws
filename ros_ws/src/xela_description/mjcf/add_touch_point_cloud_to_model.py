@@ -5,12 +5,22 @@ import json
 
 # [x_min, x_max, y_min, y_max, z_min, z_max]
 SLIDER_JOINT_LIMITS = [(-0.0025, 0.0025), (-0.0025, 0.0025), (-0.0025, 0.0025)]
+_4_4_OFFSET = [4.70/1000, 4.25/1000]
+_4_6_OFFSET = [7.25/1000, 7.25/1000]
 
 
 def load_fingertip_magnet_pose():
     with open("fingertip_magnet_pose.json", "r") as f:
         return json.load(f)
     return None
+
+def load_4_4_sites():
+    with open("4_4_sites.json", "r") as f:
+        return json.load(f)
+
+def load_4_6_sites():
+    with open("4_6_sites.json", "r") as f:
+        return json.load(f)
 
 def remove_contact_detection_between_grid_elements_of_sensor(spec,geoms_name):
     for geom_name in geoms_name:
@@ -72,50 +82,6 @@ def remove_collision_geoms_of_the_hand(spec):
         if "collision" in geom.name:
             spec.delete(geom)
 
-def add_sensor_patch_defaults_for_if_mf_rf(spec,sensor_patch_default):
-
-    sensor_patch_default_dict = {}
-    sensor_patch_params = {}  # Store pos and euler for each default
-    
-    # top surface
-    locations = [([0.01, -0.035, 0.0145],[0,0,0]),
-                ([0.0100, -0.045, 0.0145],[0,0,0]),
-                ([0.004, -0.057, 0.0145],[0,0,0.7])]
-    for idx,loc in enumerate(locations):
-        pos,euler = loc
-        ref = spec.add_default(f"fingertip_sensor_top_surface_{idx+1}",sensor_patch_default)
-        ref.geom.pos = pos
-        # Note: euler cannot be set on geom defaults, will be set when adding geom
-
-        sensor_patch_default_dict[f"fingertip_sensor_top_surface_{idx+1}"] = ref
-        sensor_patch_params[f"fingertip_sensor_top_surface_{idx+1}"] = {"pos": pos, "euler": euler}
-    
-    # left surface
-    locations = [([0.007, -0.035, 0.023],[0,-0.9,0]),
-                ([0.007, -0.045, 0.023],[0,-0.9,0])]
-    for idx,loc in enumerate(locations):
-        pos,euler = loc
-        ref = spec.add_default(f"fingertip_sensor_left_surface_{idx+1}",sensor_patch_default)
-        ref.geom.pos = pos
-        # Note: euler cannot be set on geom defaults, will be set when adding geom
-
-        sensor_patch_default_dict[f"fingertip_sensor_left_surface_{idx+1}"] = ref
-        sensor_patch_params[f"fingertip_sensor_left_surface_{idx+1}"] = {"pos": pos, "euler": euler}
-    
-    # right surface
-    locations = [([0.007, -0.035, 0.006],[0,0.9,0]),
-                ([0.007, -0.045, 0.006],[0,0.9,0])]
-    for idx,loc in enumerate(locations):
-        pos,euler = loc
-        ref = spec.add_default(f"fingertip_sensor_right_surface_{idx+1}",sensor_patch_default)
-        ref.geom.pos = pos
-        # Note: euler cannot be set on geom defaults, will be set when adding geom
-
-        sensor_patch_default_dict[f"fingertip_sensor_right_surface_{idx+1}"] = ref
-        sensor_patch_params[f"fingertip_sensor_right_surface_{idx+1}"] = {"pos": pos, "euler": euler}
-
-    return sensor_patch_default_dict, sensor_patch_params
-
 def add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose, finger_name, sensor_default = None):
     contacts_bodies = []
     joints = {}
@@ -152,13 +118,13 @@ def add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose, finger_name, senso
         axis_name = "not_set"
         for axis in [[1,0,0],[0,1,0],[0,0,1]]:
             if axis[0] == 1:
-                limit = SLIDER_JOINT_LIMITS[0]
+                limit = fingertip_magnet_pose[str(idx+1)]["j_x_range"]
                 axis_name = "x"
             elif axis[1] == 1:
-                limit = SLIDER_JOINT_LIMITS[1]
+                limit = fingertip_magnet_pose[str(idx+1)]["j_y_range"]
                 axis_name = "y"
             elif axis[2] == 1:
-                limit = SLIDER_JOINT_LIMITS[2]
+                limit = fingertip_magnet_pose[str(idx+1)]["j_z_range"]
                 axis_name = "z"
             else:
                 raise ValueError(f"Invalid axis: {axis}")
@@ -170,7 +136,7 @@ def add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose, finger_name, senso
     remove_contact_detection_between_grid_elements_of_sensor(spec,contacts_bodies)
     return joints
 
-def add_uspa44(spec, site_name,link_name,sensor_default):
+def _add_uspa44(spec, site_name,link_name,sensor_default):
     contacts_bodies = []
     joints = {}
     joints[site_name] = {}
@@ -240,7 +206,161 @@ def add_uspa44(spec, site_name,link_name,sensor_default):
 
     return joints
 
-def add_uspa46(spec, site_name,sensor_default):
+def lay_down_grid_for_4_4(parent_body,sensor_default):
+    contacts_bodies = []
+    joints = {}
+    sensor_name = parent_body.name
+    joints[sensor_name] = {}
+    pos = [0,0,0]
+    parent_name = parent_body.name
+    joints = {}
+    joints[parent_name] = {}
+    for j in range(4):
+        pos[1] += _4_4_OFFSET[0]
+        euler = [2*1.57,0,2*1.57]
+        for i in range(4):
+            name = f"{parent_name}_4_4_sensor_patch_{i}_{j}"
+            loc = f"{i}_{j}"
+            joints[parent_name][loc] = {}
+            pos[0] += _4_4_OFFSET[1]
+            child =parent_body.add_body(name=name,pos=pos,euler=euler)
+            child.add_geom(
+                name=name,
+                type=mj.mjtGeom.mjGEOM_SPHERE,
+                size=[0.0025, 0.0025, 0.0025],
+                pos=[0,0,0],
+                default=sensor_default
+            )
+            axis_name = "not_set"
+            for axis in [[1,0,0],[0,1,0],[0,0,1]]:
+                if axis[0] == 1:
+                    limit = SLIDER_JOINT_LIMITS[0]
+                    axis_name = "x"
+                elif axis[1] == 1:
+                    limit = SLIDER_JOINT_LIMITS[1]
+                    axis_name = "y"
+                elif axis[2] == 1:
+                    limit = SLIDER_JOINT_LIMITS[2]
+                    axis_name = "z"
+                else:
+                    raise ValueError(f"Invalid axis: {axis}")
+                joint_name = name + f"_slide_{axis_name}"
+                print(f"j_name: {joint_name}")
+                joint = child.add_joint(
+                    type=mj.mjtJoint.mjJNT_SLIDE,
+                    name=joint_name,
+                    axis=axis,
+                    range=limit,
+                )
+                joints[parent_name][loc][axis_name] = joint.name
+            contacts_bodies.append(child.name)
+            if i ==3:
+                 pos[0] = 0
+    
+    return contacts_bodies,joints
+        
+def add_uspa44(spec,_44_sites,sensor_default):
+    all_joints = []
+    for base_frames,data in _44_sites.items():
+        pos = data["pos"]
+        quat = data["quat"]
+        parent = data["parent"]
+        # base frame
+        parent = spec.body(parent).add_body(name=base_frames,pos=pos,quat=quat)
+        g = parent.add_geom(
+            name=base_frames,
+            type=mj.mjtGeom.mjGEOM_SPHERE,
+            size=[0.0025, 0.0025, 0.0025],
+            pos=[0,0,0],
+            default=sensor_default
+        )
+        g.rgba = [1, 1, 0, 1]
+    
+        contacts_bodies,joints = lay_down_grid_for_4_4(parent,sensor_default)
+        remove_contact_detection_between_grid_elements_of_sensor(spec,contacts_bodies)
+        all_joints.append(joints)
+    return all_joints
+
+def  lay_down_grid_for_4_6(parent_body,sensor_default):
+    contacts_bodies = []
+    joints = {}
+    sensor_name = parent_body.name
+    joints[sensor_name] = {}
+
+    pos = [4.55/1000,4.43/1000,0]
+    parent_name = parent_body.name
+    for j in range(4):
+        euler = [2*1.57,0,2*1.57]
+        for i in range(6):
+            name = f"{parent_name}_4_6_sensor_patch_{i}_{j}"
+            print(f"name: {name}")
+            loc = f"{i}_{j}"
+            joints[sensor_name][loc] = {}
+           
+            child =parent_body.add_body(name=name,pos=pos,euler=euler)
+            child.add_geom(
+                name=name,
+                type=mj.mjtGeom.mjGEOM_SPHERE,
+                size=[0.0025, 0.0025, 0.0025],
+                pos=[0,0,0],
+                default=sensor_default
+            )
+            pos[0] += _4_6_OFFSET[0]
+
+            axis_name = "not_set"
+            for axis in [[1,0,0],[0,1,0],[0,0,1]]:
+                if axis[0] == 1:
+                    limit = SLIDER_JOINT_LIMITS[0]
+                    axis_name = "x"
+                elif axis[1] == 1:
+                    limit = SLIDER_JOINT_LIMITS[1]
+                    axis_name = "y"
+                elif axis[2] == 1:
+                    limit = SLIDER_JOINT_LIMITS[2]
+                    axis_name = "z"
+                else:
+                    raise ValueError(f"Invalid axis: {axis}")
+                joint_name = name + f"_slide_{axis_name}"
+                print(f"j_name: {joint_name}")
+                joint = child.add_joint(
+                    type=mj.mjtJoint.mjJNT_SLIDE,
+                    name=joint_name,
+                    axis=axis,
+                    range=limit,
+                )
+                joints[sensor_name][loc][axis_name] = joint.name
+            contacts_bodies.append(child.name)
+            
+
+            if i ==5:
+                 pos[0] = 4.55/1000
+        pos[1] += _4_6_OFFSET[1]
+    
+    return contacts_bodies,joints
+        
+
+def add_uspa46(spec,_46_sites,sensor_default):
+    all_joints = []
+    for base_frames,data in _46_sites.items():
+        pos = data["pos"]
+        quat = data["quat"]
+        parent = data["parent"]
+        # base frame
+        parent = spec.body(parent).add_body(name=base_frames,pos=pos,quat=quat)
+        g = parent.add_geom(
+            name=base_frames,
+            type=mj.mjtGeom.mjGEOM_SPHERE,
+            size=[0.0025, 0.0025, 0.0025],
+            pos=[0,0,0],
+            default=sensor_default
+        )
+        g.rgba = [1, 1, 0, 1]
+        contacts_bodies,joints = lay_down_grid_for_4_6(parent,sensor_default)
+        remove_contact_detection_between_grid_elements_of_sensor(spec,contacts_bodies)
+        all_joints.append(joints)
+   
+
+def _add_uspa46(spec, site_name,sensor_default):
     link_name = site_name
     contacts_bodies = []
     joints = {}
@@ -334,6 +454,9 @@ def wrtie_sensor_joints_to_json(joints):
 if __name__ == "__main__":
     spec = mj.MjSpec.from_file("leapXela_base_model.xml")
     fingertip_magnet_pose = load_fingertip_magnet_pose()
+    _44_sites = load_4_4_sites()
+    _46_sites = load_4_6_sites()
+
     site_names = ["if_bs_uspa44", "mf_bs_uspa44" ,"rf_bs_uspa44",
                   "if_md_uspa44", "mf_md_uspa44" ,"rf_md_uspa44",
                   "if_px_uspa44", "mf_px_uspa44" ,"rf_px_uspa44",
@@ -357,29 +480,16 @@ if __name__ == "__main__":
     remove_collision_geoms_of_the_hand(spec)
 
     joints = {}
- 
-    # add sensor_patch to finger links
-    for site_name in site_names:
-        if "bs" in site_name:
-            joints[site_name] = add_uspa44(spec, site_name,"bs",sensor_patch_default)[site_name]
-        elif "md" in site_name:
-            joints[site_name] = add_uspa44(spec, site_name,"md",sensor_patch_default)[site_name]
-        elif "px" in site_name:
-            joints[site_name] = add_uspa44(spec, site_name,"px",sensor_patch_default)[site_name]
-    sensor_patch_default_dict, sensor_patch_params = add_sensor_patch_defaults_for_if_mf_rf(spec,sensor_patch_default)
+    add_uspa44(spec,_44_sites,sensor_patch_default)
+
+    
     for finger in ["if", "mf", "rf","th"]:
         joints[f"{finger}_ds"] = add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose,finger,sensor_patch_default)[f"{finger}_ds"]
-    # add sensor_patch to thumb links
-    for site_name in th_site_names:
-        if "th_ds" in site_name:
-            joints[site_name] = add_uspa44(spec, site_name,"th_ds",sensor_patch_default)[site_name]
-        elif "th_px" in site_name:
-            joints[site_name] = add_uspa44(spec, site_name,"th_px",sensor_patch_default)[site_name]
-   
     
+    add_uspa46(spec,_46_sites,sensor_patch_default)
     # add sensor_patch to palm
-    for site_name in palm_site_names:
-        joints[site_name] = add_uspa46(spec, site_name,sensor_patch_default)[site_name]
+    # for site_name in palm_site_names:
+    #     joints[site_name] = add_uspa46(spec, site_name,sensor_patch_default)[site_name]
     # print(joints.keys())
     # pprint.pprint(joints["if_bs_uspa44"])
     wrtie_sensor_joints_to_json(joints)

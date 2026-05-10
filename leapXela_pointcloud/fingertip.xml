@@ -52,8 +52,8 @@
 
 
 
-      <!-- <body name="1_aftc_2_base2x" pos="0.0126 0.0236 0.01254" quat="0.704416 -0.0616284 0.704416 0.0616284"> -->
-      <body name="1_aftc_2_base2x" pos="0.0126 0.0236 0.01254" quat="1 0 0 0">
+      <body name="1_aftc_2_base2x" pos="0.0126 0.0236 0.01254" quat="0.704416 -0.0616284 0.704416 0.0616284">
+      <!-- <body name="1_aftc_2_base2x" pos="0.0126 0.0236 0.01254" quat="1 0 0 0"> -->
 
         <inertial pos="0 0 0" mass="0.005" diaginertia="1e-06 1e-06 1e-06" />
         <joint name="j_2_x" pos="0 0 0" axis="1 0 0" type="slide" range="-0.0015 0.0015" actuatorfrcrange="-100 100" />

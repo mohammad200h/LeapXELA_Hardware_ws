@@ -37,28 +37,28 @@
     <material name="thp1_unified_material" rgba="0.647059 0.647059 0.647059 1"/>
     <material name="servo_unified_material" rgba="0.498039 0.498039 0.498039 1"/>
     <material name="part10_material" rgba="0.792157 0.819608 0.933333 1"/>
-    <mesh name="thp1_unified" content_type="model/stl" file="thp1_unified.stl"/>
-    <mesh name="clipper" content_type="model/stl" file="clipper.stl"/>
-    <mesh name="fingertip_fix" content_type="model/stl" file="fingertip_fix.stl"/>
+    <mesh name="leap_hand_xela_back_cover" content_type="model/stl" file="leap_hand_xela_back_cover.stl"/>
+    <mesh name="thconnector" content_type="model/stl" file="thconnector.stl"/>
     <mesh name="leap_hand_xela_side_cover" content_type="model/stl" file="leap_hand_xela_side_cover.stl"/>
-    <mesh name="part10" content_type="model/stl" file="part10.stl"/>
-    <mesh name="palm_face" content_type="model/stl" file="palm_face.stl"/>
-    <mesh name="leap_hand_xela_bottom" content_type="model/stl" file="leap_hand_xela_bottom.stl"/>
-    <mesh name="part_2" content_type="model/stl" file="part_2.stl"/>
-    <mesh name="4_6_origin" content_type="model/stl" file="4_6_origin.stl"/>
+    <mesh name="p5_unified" content_type="model/stl" file="p5_unified.stl"/>
+    <mesh name="servo_unified" content_type="model/stl" file="servo_unified.stl"/>
     <mesh name="thp0_unified" content_type="model/stl" file="thp0_unified.stl"/>
+    <mesh name="leap_hand_xela_bottom" content_type="model/stl" file="leap_hand_xela_bottom.stl"/>
+    <mesh name="p2_unified" content_type="model/stl" file="p2_unified.stl"/>
+    <mesh name="part10" content_type="model/stl" file="part10.stl"/>
+    <mesh name="thp2_unified" content_type="model/stl" file="thp2_unified.stl"/>
+    <mesh name="4_6_origin" content_type="model/stl" file="4_6_origin.stl"/>
+    <mesh name="palm_face" content_type="model/stl" file="palm_face.stl"/>
+    <mesh name="clipper" content_type="model/stl" file="clipper.stl"/>
     <mesh name="top_palm" content_type="model/stl" file="top_palm.stl"/>
     <mesh name="pointcloud" content_type="model/stl" file="pointcloud.stl"/>
-    <mesh name="thconnector" content_type="model/stl" file="thconnector.stl"/>
-    <mesh name="leap_hand_xela_motorholder" content_type="model/stl" file="leap_hand_xela_motorholder.stl"/>
-    <mesh name="thp2_unified" content_type="model/stl" file="thp2_unified.stl"/>
-    <mesh name="p3_unified" content_type="model/stl" file="p3_unified.stl"/>
-    <mesh name="p2_unified" content_type="model/stl" file="p2_unified.stl"/>
-    <mesh name="uspa46" content_type="model/stl" file="uspa46.stl"/>
     <mesh name="p4_unified" content_type="model/stl" file="p4_unified.stl"/>
-    <mesh name="servo_unified" content_type="model/stl" file="servo_unified.stl"/>
-    <mesh name="p5_unified" content_type="model/stl" file="p5_unified.stl"/>
-    <mesh name="leap_hand_xela_back_cover" content_type="model/stl" file="leap_hand_xela_back_cover.stl"/>
+    <mesh name="p3_unified" content_type="model/stl" file="p3_unified.stl"/>
+    <mesh name="uspa46" content_type="model/stl" file="uspa46.stl"/>
+    <mesh name="thp1_unified" content_type="model/stl" file="thp1_unified.stl"/>
+    <mesh name="leap_hand_xela_motorholder" content_type="model/stl" file="leap_hand_xela_motorholder.stl"/>
+    <mesh name="fingertip_fix" content_type="model/stl" file="fingertip_fix.stl"/>
+    <mesh name="part_2" content_type="model/stl" file="part_2.stl"/>
   </asset>
 
   <worldbody>
@@ -91,9 +91,9 @@
       <geom class="collision" pos="0.04305 -0.027 0.0962" quat="0 1 0 0" type="mesh" material="uspa46_material" mesh="uspa46"/>
       <geom class="visual" pos="-0.00455 -0.027 0.0962" quat="0 0 0 1" material="uspa46_material" mesh="uspa46"/>
       <geom class="collision" pos="-0.00455 -0.027 0.0962" quat="0 0 0 1" type="mesh" material="uspa46_material" mesh="uspa46"/>
-      <site name="4_6_1_base_frame" pos="-0.0271 -0.027 0.0478" quat="0.707107 0.707107 0 0"/>
-      <site name="4_6_2_base_frame" pos="0.0656 -0.027 0.1115" quat="0 0 0.707107 -0.707107"/>
-      <site name="4_6_3_base_frame" pos="-0.0271 -0.027 0.0809" quat="0.707107 0.707107 0 0"/>
+      <site name="4_6_1_base_frame" pos="0.018 -0.027 0.0478" quat="0 0 -0.707107 -0.707107"/>
+      <site name="4_6_2_base_frame" pos="0.0205 -0.027 0.1115" quat="0.707107 -0.707107 0 0"/>
+      <site name="4_6_3_base_frame" pos="0.018 -0.027 0.0809" quat="0 0 -0.707107 -0.707107"/>
       <body name="p4_unified" pos="-0.02317 -0.0165 0.1436" quat="0 0.707107 0 0.707107">
         <inertial pos="0.0342889 -0.0265621 -0.0145004" quat="0.612792 0.580476 0.43131 0.3186" mass="0.0353104" diaginertia="1.15885e-05 1.10404e-05 5.79888e-06"/>
         <joint name="rf_mcp" pos="0 0 0" axis="0 0 1" range="-0.314159 2.23402"/>
