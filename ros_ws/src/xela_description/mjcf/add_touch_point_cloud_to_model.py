@@ -4,9 +4,12 @@ import pprint
 import json
 
 # [x_min, x_max, y_min, y_max, z_min, z_max]
-SLIDER_JOINT_LIMITS = [(-0.0025, 0.0025), (-0.0025, 0.0025), (-0.0025, 0.0025)]
+SLIDER_JOINT_LIMITS = [(-0.0015, 0.0015), (-0.0015, 0.0015), (-0.001, 0)]
 _4_4_OFFSET = [4.70/1000, 4.25/1000]
 _4_6_OFFSET = [7.25/1000, 7.25/1000]
+_4_4_Z_POS = 0.005
+_4_6_Z_POS = _4_4_Z_POS
+SPHERE_SIZE = [0.002]*3
 
 
 def load_fingertip_magnet_pose():
@@ -110,7 +113,7 @@ def add_sensor_patch_to_fingertip(spec,fingertip_magnet_pose, finger_name, senso
         #     quat=quat)
         child.add_geom(
             name=f"{finger_name}_sensor_{idx+1}",
-            size=[0.0025, 0.0025, 0.0025],
+            size=SPHERE_SIZE,
             pos=[0,0,0],
             type=mj.mjtGeom.mjGEOM_SPHERE,
             default=sensor_default
@@ -211,7 +214,7 @@ def lay_down_grid_for_4_4(parent_body,sensor_default):
     joints = {}
     sensor_name = parent_body.name
     joints[sensor_name] = {}
-    pos = [0,0,0]
+    pos = [0,0,_4_4_Z_POS]
     parent_name = parent_body.name
     joints = {}
     joints[parent_name] = {}
@@ -227,7 +230,7 @@ def lay_down_grid_for_4_4(parent_body,sensor_default):
             child.add_geom(
                 name=name,
                 type=mj.mjtGeom.mjGEOM_SPHERE,
-                size=[0.0025, 0.0025, 0.0025],
+                size=SPHERE_SIZE,
                 pos=[0,0,0],
                 default=sensor_default
             )
@@ -287,7 +290,7 @@ def  lay_down_grid_for_4_6(parent_body,sensor_default):
     sensor_name = parent_body.name
     joints[sensor_name] = {}
 
-    pos = [4.55/1000,4.43/1000,0]
+    pos = [4.55/1000,4.43/1000,_4_6_Z_POS]
     parent_name = parent_body.name
     for j in range(4):
         euler = [2*1.57,0,2*1.57]
@@ -301,7 +304,7 @@ def  lay_down_grid_for_4_6(parent_body,sensor_default):
             child.add_geom(
                 name=name,
                 type=mj.mjtGeom.mjGEOM_SPHERE,
-                size=[0.0025, 0.0025, 0.0025],
+                size=SPHERE_SIZE,
                 pos=[0,0,0],
                 default=sensor_default
             )
