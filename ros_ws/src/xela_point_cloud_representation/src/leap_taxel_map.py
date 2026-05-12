@@ -172,21 +172,21 @@ def get_palm_sim_taxel_map(map_dict):
     for i in range(6):
         row = []
         for j in range(3, -1, -1):
-            row.append(f"palm_up_left_ds_4_4_sensor_patch_{i}_{j}")
+            row.append(f"palm_up_left_pad_4_6_sensor_patch_{i}_{j}")
         up_left_map.append(row)
     
     down_left_map = []
     for i in range(6):
         row = []
         for j in range(3, -1, -1):
-            row.append(f"palm_down_left_ds_4_4_sensor_patch_{i}_{j}")
+            row.append(f"palm_down_left_pad_4_6_sensor_patch_{i}_{j}")
         down_left_map.append(row)
 
     # palm right sensor
     up_right_map = []
     for i in range(5, -1, -1):
         for j in range(3):
-            row.append(f"palm_up_right_ds_4_4_sensor_patch_{i}_{j}")
+            row.append(f"palm_right_pad_4_6_sensor_patch_{i}_{j}")
         up_right_map.append(row)
     
     return up_left_map, down_left_map, up_right_map
