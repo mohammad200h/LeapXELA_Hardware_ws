@@ -24,7 +24,15 @@ class Storage:
         self._file = None
         self._ensure_open()
     
-    def store(self, raw_image: np.array, normalized_image: np.array, state: JointState):
+    def store(
+        self,
+        raw_image: np.ndarray,
+        normalized_image: np.ndarray,
+        state: JointState,
+        xela_taxels: SensStream,
+        raw_msg: Image,
+        norm_msg: Image,
+    ):
         self._ensure_open()
         idx = f"{self.current_index:06d}"
         grp = self._root.require_group(idx)
@@ -32,13 +40,16 @@ class Storage:
         self._write_or_replace_dataset(grp, "raw_image", raw_image)
         self._write_or_replace_dataset(grp, "normalized_image", normalized_image)
 
-        self._write_image_attrs(grp["raw_image"], raw_image)
-        self._write_image_attrs(grp["normalized_image"], normalized_image)
+        self._write_image_attrs(grp["raw_image"], raw_msg)
+        self._write_image_attrs(grp["normalized_image"], norm_msg)
 
         st = grp.require_group("state")
         self._write_or_replace_dataset(st, "position", np.asarray(state.position, dtype=np.float64))
         self._write_or_replace_dataset(st, "velocity", np.asarray(state.velocity, dtype=np.float64))
         self._write_or_replace_dataset(st, "effort", np.asarray(state.effort, dtype=np.float64))
+
+        xt_grp = grp.require_group("xela_taxels")
+        self._write_sens_stream(xt_grp, xela_taxels)
 
         name_dt = self._h5py.string_dtype(encoding="utf-8")
         self._write_or_replace_dataset(
@@ -94,6 +105,34 @@ class Storage:
             name, data=data, compression="gzip", compression_opts=4, shuffle=True
         )
 
+    def _write_sens_stream(self, xt_grp, stream: SensStream) -> None:
+        """Serialize SensStream (SensorFull[], each with Taxel[] and Forces[])."""
+        sensors = stream.sensors
+        xt_grp.attrs["num_sensors"] = int(len(sensors))
+
+        for i, sensor in enumerate(sensors):
+            sg = xt_grp.require_group(f"sensor_{i:03d}")
+            sg.attrs["message"] = int(sensor.message)
+            sg.attrs["time"] = float(sensor.time)
+            sg.attrs["model"] = str(sensor.model)
+            sg.attrs["sensor_pos"] = int(sensor.sensor_pos)
+
+            if sensor.taxels:
+                taxels = np.array(
+                    [[t.x, t.y, t.z] for t in sensor.taxels], dtype=np.uint16
+                )
+            else:
+                taxels = np.zeros((0, 3), dtype=np.uint16)
+            self._write_or_replace_dataset(sg, "taxels", taxels)
+
+            if sensor.forces:
+                forces = np.array(
+                    [[f.x, f.y, f.z] for f in sensor.forces], dtype=np.float32
+                )
+            else:
+                forces = np.zeros((0, 3), dtype=np.float32)
+            self._write_or_replace_dataset(sg, "forces", forces)
+
     def _write_image_attrs(self, ds, msg: Image) -> None:
         ds.attrs["height"] = int(msg.height)
         ds.attrs["width"] = int(msg.width)
@@ -135,9 +174,15 @@ class XelaDataCollector(Node):
             self._raw_sub = Subscriber(self, Image, "/leap_image")
             self._norm_sub = Subscriber(self, Image, "/leap_image_normalized")
             self._state_sub = Subscriber(self, JointState, "/leap_state")
+            self._xela_taxels_sub = Subscriber(self, SensStream, "/xServTopic")
             # Reasonable defaults for two topics at ~same rate
             self._sync = ApproximateTimeSynchronizer(
-                [self._raw_sub, self._norm_sub, self._state_sub, self._xela_taxels],
+                [
+                    self._raw_sub,
+                    self._norm_sub,
+                    self._state_sub,
+                    self._xela_taxels_sub,
+                ],
                 queue_size=30,
                 slop=0.05,
                 allow_headerless=False,
@@ -180,9 +225,9 @@ class XelaDataCollector(Node):
             raw = self._decode_image(raw_msg, dtype=np.int32)
             norm = self._decode_image(norm_msg, dtype=np.float32)
             # TODO: rewrite storage
-            self.storage.store(raw, norm, state_msg, xela_taxel_msg)
+            self.storage.store(raw, norm, state_msg, xela_taxel_msg, raw_msg, norm_msg)
         except Exception as e:
-            self.get_logger().error(f"Failed to decode images: {e}")
+            self.get_logger().error(f"Failed to store synced frame: {e}")
             return
 
         self.get_logger().info(
