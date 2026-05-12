@@ -84,7 +84,7 @@ class XelaSimpleClient(Node):
         img = self.leap_image.get_image()  # (26, 31, 3) int32
         out.height = int(img.shape[0])
         out.width = int(img.shape[1])
-        out.encoding = "32FC3"
+        out.encoding = "32SC3"
         out.is_bigendian = False
         out.step = int(out.width * 3 * 4)  # 3 channels * 4 bytes/float32
         out.data = img.tobytes()

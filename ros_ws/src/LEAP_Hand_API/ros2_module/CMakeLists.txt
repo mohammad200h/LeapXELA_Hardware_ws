@@ -24,7 +24,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 ## ament specific configuration  ##
 ###################################
 ament_package()
-
 #############
 ## Install ##
 #############
@@ -54,7 +53,6 @@ install(FILES
   scripts/squeeze.csv
   scripts/contour.csv
   scripts/enclosure.csv
-  scripts/enclosure2.csv
   scripts/enclosure_pet.csv
   DESTINATION share/${PROJECT_NAME}/config
 )
