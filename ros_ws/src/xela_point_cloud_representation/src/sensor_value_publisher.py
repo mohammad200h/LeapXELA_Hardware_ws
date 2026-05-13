@@ -56,7 +56,7 @@ class SensorValuePublisher(Node):
     def __init__(self) -> None:
         super().__init__("sensor_value_publisher")
 
-        self.scaled_data = np.load("scaled_taxel_data/scaled_data_01.npy")
+        self.scaled_data = np.load("./xela_point_cloud_representation/scaled_taxel_data/scaled_data_01.npy")
 
         if self.scaled_data.shape[1:] != (368, 3):
             raise ValueError(
