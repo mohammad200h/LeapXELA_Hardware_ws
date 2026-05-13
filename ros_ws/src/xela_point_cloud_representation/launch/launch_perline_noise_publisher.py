@@ -17,7 +17,7 @@ def generate_launch_description() -> LaunchDescription:
         [
             DeclareLaunchArgument(
                 "node_name",
-                default_value="sensor_value_publisher_fake",
+                default_value="sensor_value_publisher",
                 description="ROS node name.",
             ),
             DeclareLaunchArgument(
@@ -27,7 +27,7 @@ def generate_launch_description() -> LaunchDescription:
             ),
             Node(
                 package="xela_point_cloud_representation",
-                executable="sensor_value_publisher_fake.py",
+                executable="sensor_value_publisher.py",
                 name=node_name,
                 output="screen",
                 parameters=[

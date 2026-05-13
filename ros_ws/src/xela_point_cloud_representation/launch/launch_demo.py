@@ -41,8 +41,8 @@ def generate_launch_description() -> LaunchDescription:
             ),
             DeclareLaunchArgument(
                 "perline_noise_publisher_node_name",
-                default_value="sensor_value_publisher_fake",
-                description="Node name for the per-line noise publisher (fake sensor publisher).",
+                default_value="sensor_value_publisher",
+                description="Node name for the sensor value publisher).",
             ),
             DeclareLaunchArgument(
                 "sensor_joints_path",

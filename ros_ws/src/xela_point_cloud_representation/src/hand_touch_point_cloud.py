@@ -12,6 +12,8 @@ from typing import Optional
 import numpy as np
 import open3d as o3d
 
+from pathlib import Path
+
 
 class HandTouchPointCloud(Node):
     def __init__(self) -> None:
@@ -32,12 +34,19 @@ class HandTouchPointCloud(Node):
         self._viewer_thread = threading.Thread(target=self._viewer_loop, daemon=True)
         self._viewer_thread.start()
 
+        self.dump_enabled = True
+        self.dump_dir = Path("pointcloud_dump")
+        self.dump_dir.mkdir(parents=True, exist_ok=True)
+        self._dump_frames = []
+
     def _on_point_cloud(self, msg: PointCloud2) -> None:
         pts = point_cloud2.read_points(msg, field_names=('x', 'y', 'z'), skip_nans=True)
         xyz = np.fromiter((c for p in pts for c in p), dtype=np.float32).reshape(-1, 3)
         with self._lock:
             self._latest_xyz = xyz
             self._latest_stamp_ns = self.get_clock().now().nanoseconds
+            if self.dump_enabled:
+                self._dump_frames.append(xyz.copy())
 
         # Throttled log: confirm we are actually receiving points.
         now_ns = self.get_clock().now().nanoseconds
@@ -54,6 +63,18 @@ class HandTouchPointCloud(Node):
 
     def destroy_node(self) -> bool:
         self._stop_event.set()
+        if self.dump_enabled and len(self._dump_frames) > 0:
+            dump_path = self.dump_dir / "hand_touch_point_cloud.npy"
+
+            np.save(
+                dump_path,
+                np.array(self._dump_frames, dtype=object),
+                allow_pickle=True,
+            )
+
+            self.get_logger().info(
+                f"Saved {len(self._dump_frames)} frames to {dump_path}"
+            )
         return super().destroy_node()
 
     def _viewer_loop(self) -> None:
