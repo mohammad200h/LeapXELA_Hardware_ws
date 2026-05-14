@@ -26,11 +26,15 @@ def _load_leap_xela_id():
     import sys
 
     # Try the installed ROS path first.
-    if "leapXelaMap" in sys.modules:
-        return sys.modules["leapXelaMap"].LEAP_XELA_ID
+    try:
+        from xela_data_collection.leapXelaMap import LEAP_XELA_ID
+        return LEAP_XELA_ID
+    except ImportError:
+        pass
 
     src_path = (
         Path(__file__).resolve().parents[3]
+        / "lib"
         / "xela_data_collection"
         / "xela_data_collection"
         / "leapXelaMap.py"
@@ -70,6 +74,9 @@ def load_calibrated_from_h5(h5_path: Path, calib_dir: Path) -> np.ndarray:
 
     rows, cols, taxel_ids = _build_taxel_index(_load_leap_xela_id())
 
+    if not h5_path.exists():
+        raise FileNotFoundError(f"h5 file not found: {h5_path.resolve()}")
+        
     frames = []
     with h5py.File(str(h5_path), "r") as f:
         root_key = list(f.keys())[0]
