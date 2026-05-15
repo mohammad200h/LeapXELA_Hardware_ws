@@ -8,6 +8,7 @@ from launch_ros.substitutions import FindPackageShare
 def generate_launch_description() -> LaunchDescription:
     node_name = LaunchConfiguration("node_name")
     sensor_joints_path = LaunchConfiguration("sensor_joints_path")
+    h5_path = LaunchConfiguration("h5_path")
 
     default_sensor_joints_path = PathJoinSubstitution(
         [FindPackageShare("xela_description"), "mjcf", "sensor_joints.json"]
@@ -25,6 +26,11 @@ def generate_launch_description() -> LaunchDescription:
                 default_value=default_sensor_joints_path,
                 description="Path to `sensor_joints.json` (installed in xela_description).",
             ),
+            DeclareLaunchArgument(
+                "h5_path",
+                default_value="",
+                description="Optional HDF5 file path containing sensor and joint state data.",
+            ),
             Node(
                 package="xela_point_cloud_representation",
                 executable="sensor_value_publisher.py",
@@ -32,6 +38,7 @@ def generate_launch_description() -> LaunchDescription:
                 output="screen",
                 parameters=[
                     {"sensor_joints_path": sensor_joints_path},
+                    {"h5_path": h5_path},
                 ],
             ),
         ]

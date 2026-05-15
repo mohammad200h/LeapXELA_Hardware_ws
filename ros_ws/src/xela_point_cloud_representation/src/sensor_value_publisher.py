@@ -6,7 +6,9 @@ from pathlib import Path
 import rclpy
 from rclpy.node import Node
 import numpy as np
+import h5py
 
+from sensor_msgs.msg import JointState
 from xela_point_cloud_representation.msg import Texel, HandSensors
 
 from leap_taxel_map import (
@@ -15,95 +17,64 @@ from leap_taxel_map import (
     sorted_1D_hand_taxel_name,
 )
 
+def load_calibrated_from_npy(npy_path: Path):
+    data = np.load(npy_path)
+    return np.asarray(data, dtype=np.float32)
 
-def _load_leap_xela_id():
-    """Load LEAP_XELA_ID from the xela_data_collection sibling package.
 
-    Tries the ROS Python path first (post-colcon-build), then falls back to
-    loading the source file directly so this works without a full overlay.
+def _decode_h5_string_array(raw_data):
+    return [
+        x.decode("utf-8") if isinstance(x, bytes) else str(x)
+        for x in np.asarray(raw_data).ravel()
+    ]
+
+
+def load_joint_states_from_h5(h5_path: Path):
+    """Load joint state names and positions from *h5_path*.
+
+    The HDF5 layout is expected to contain frame groups under the top-level
+    stream, and within each frame a `state` group with `name` and `position`.
     """
-    import importlib.util
-    import sys
-
-    # Try the installed ROS path first.
-    try:
-        from xela_data_collection.leapXelaMap import LEAP_XELA_ID
-        return LEAP_XELA_ID
-    except ImportError:
-        pass
-
-    src_path = (
-        Path(__file__).resolve().parents[3]
-        / "lib"
-        / "xela_data_collection"
-        / "xela_data_collection"
-        / "leapXelaMap.py"
-    )
-    spec = importlib.util.spec_from_file_location("leapXelaMap", src_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Cannot find leapXelaMap at {src_path}")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)  # type: ignore[union-attr]
-    return mod.LEAP_XELA_ID
-
-
-def _build_taxel_index(id_map):
-    """Return (rows, cols, taxel_ids) arrays for the 368 active taxels."""
-    id_arr = np.array(id_map, dtype=float)
-    mask = id_arr != 6e6
-    rows, cols = np.where(mask)
-    taxel_ids = id_arr[mask].astype(int)
-    return rows, cols, taxel_ids
-
-
-def load_calibrated_from_h5(h5_path: Path, calib_dir: Path) -> np.ndarray:
-    """Load every sample from *h5_path* and return calibrated taxel data.
-
-    Returns
-    -------
-    np.ndarray
-        Shape (N, 368, 3), float64.  Each value is the calibrated force
-        displacement in sensor units after subtracting the resting offset
-        and applying the asymmetric per-axis scale factor.
-    """
-    import h5py
-
-    offset = np.load(str(calib_dir / "taxel_offset.npy"))      # (368, 3)
-    scale_pos = np.load(str(calib_dir / "taxel_scale_pos.npy"))  # (368, 3)
-    scale_neg = np.load(str(calib_dir / "taxel_scale_neg.npy"))  # (368, 3)
-
-    rows, cols, taxel_ids = _build_taxel_index(_load_leap_xela_id())
 
     if not h5_path.exists():
         raise FileNotFoundError(f"h5 file not found: {h5_path.resolve()}")
-        
-    frames = []
+
+    joint_frames = []
     with h5py.File(str(h5_path), "r") as f:
         root_key = list(f.keys())[0]
         root_grp = f[root_key]
-        for sample_key in sorted(root_grp.keys()):
-            raw_data = root_grp[sample_key]["raw_image"][()]  # (26, 31, 3)
-            # Non-squeeze EPs store int32 values mislabelled as float32 ("32FC3"),
-            # so the bytes must be reinterpreted.  Squeeze stores genuine int32
-            # ("32SC3") and can be used directly.
-            if raw_data.dtype == np.float32:
-                raw_i32 = raw_data.view(np.int32)
-            else:
-                raw_i32 = raw_data
 
-            # Extract readings at active taxel positions then reorder by taxel id
-            raw_at_positions = raw_i32[rows, cols, :]        # (368, 3) in mask order
-            taxel_raw = np.zeros((368, 3), dtype=np.int32)
-            taxel_raw[taxel_ids] = raw_at_positions          # indexed by taxel id
+        sample_keys = sorted(
+            root_grp.keys(),
+            key=lambda x: (0, int(x)) if x.isdigit() else (1, x),
+        )
 
-            delta = taxel_raw.astype(np.float64) - offset
-            calibrated = np.where(delta >= 0, delta * scale_pos, delta * scale_neg)
-            frames.append(calibrated)
+        for sample_key in sample_keys:
+            try:
+                sample = root_grp[sample_key]
+                if "state" not in sample:
+                    joint_frames.append(([], []))
+                    continue
 
-    return np.stack(frames, axis=0)  # (N, 368, 3)
+                state = sample["state"]
+                if "name" not in state or "position" not in state:
+                    joint_frames.append(([], []))
+                    continue
+
+                names = _decode_h5_string_array(state["name"][()])
+                positions = np.asarray(state["position"][()], dtype=np.float64).ravel()
+                if len(positions) != len(names):
+                    joint_frames.append(([], []))
+                    continue
+
+                joint_frames.append((names, positions.tolist()))
+
+            except Exception as e:
+                joint_frames.append(([], []))   
+    return joint_frames
 
 
-def generate_sensor_msg_from_local_array(local_data, sensor_names_1d):
+def generate_sensor_msg(local_data, sensor_names_1d):
     """
     local_data shape: (368, 3)
     local_data[idx] = [x, y, z]
@@ -143,49 +114,56 @@ def taxel_1d_sensor_names():
 class SensorValuePublisher(Node):
     def __init__(self) -> None:
         super().__init__("sensor_value_publisher")
-
         self.declare_parameter("h5_path", "")
-        self.declare_parameter(
-            "calib_dir",
-            str(Path(__file__).resolve().parents[4] / "data" / "pointcloud_calibration"),
-        )
+        self.declare_parameter("scaled_root", "interim")
 
-        h5_path_str = self.get_parameter("h5_path").get_parameter_value().string_value
-        calib_dir = Path(
-            self.get_parameter("calib_dir").get_parameter_value().string_value
-        )
+        h5_path_str = self.get_parameter("h5_path").value
+        if not h5_path_str:
+            raise ValueError("Please provide h5_path")
+        scaled_root = self.get_parameter("scaled_root").value
 
-        if h5_path_str:
-            self.get_logger().info(f"Loading calibrated data from h5: {h5_path_str}")
-            self.scaled_data = load_calibrated_from_h5(Path(h5_path_str), calib_dir)
-        else:
-            self.get_logger().info("No h5_path given; loading pre-scaled npy fallback.")
-            self.scaled_data = np.load(
-                "./xela_point_cloud_representation/scaled_taxel_data/scaled_data_01.npy"
-            )
+        h5_path = Path(h5_path_str)
 
-        if self.scaled_data.shape[1:] != (368, 3):
-            raise ValueError(
-                f"Expected scaled_data shape (N, 368, 3), got {self.scaled_data.shape}"
-            )
+        dataset_type = h5_path.parent.name
+        stem = h5_path.stem
+
+        project_root = h5_path.parents[2]
+        scaled_path = project_root / "interim" / dataset_type / f"{stem}_scaled.npy"
+
+        self.scaled_data = load_calibrated_from_npy(scaled_path)
+        self.joint_frames = load_joint_states_from_h5(h5_path)
 
         self.frame_idx = 0
 
-        self.publisher_ = self.create_publisher(
+        self.sensor_publisher_ = self.create_publisher(
             HandSensors,
             "sensor_values",
-            10
+            10,
+        )
+        self.joint_publisher_ = self.create_publisher(
+            JointState,
+            "xela_joint_publisher",
+            10,
         )
 
         self.sensor_names_1d = taxel_1d_sensor_names()
         self.timer = self.create_timer(0.01, self.publish_sensor_values)
-
+    
     def publish_sensor_values(self):
+        if self.scaled_data.shape[0] == 0:
+            return
         frame_data = self.scaled_data[self.frame_idx]
 
-        hand_sensors_msg = generate_sensor_msg_from_local_array(frame_data, self.sensor_names_1d)
+        hand_sensors_msg = generate_sensor_msg(frame_data, self.sensor_names_1d)
+        self.sensor_publisher_.publish(hand_sensors_msg)
 
-        self.publisher_.publish(hand_sensors_msg)
+        if self.joint_frames:
+            joint_names, joint_positions = self.joint_frames[self.frame_idx % len(self.joint_frames)]
+            joint_msg = JointState()
+            joint_msg.header.stamp = self.get_clock().now().to_msg()
+            joint_msg.name = list(joint_names)
+            joint_msg.position = [float(x) for x in joint_positions]
+            self.joint_publisher_.publish(joint_msg)
 
         self.frame_idx = (self.frame_idx + 1) % self.scaled_data.shape[0]
 

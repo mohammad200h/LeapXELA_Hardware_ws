@@ -8,3 +8,8 @@ linux_1.8.0_208601/
 install/
 build/
 log/
+
+
+# OS
+.DS_Store
+ros_ws/src/xela_point_cloud_representation/pointcloud_calibration/

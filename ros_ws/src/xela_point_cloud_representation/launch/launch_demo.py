@@ -19,6 +19,7 @@ def generate_launch_description() -> LaunchDescription:
     )
 
     sensor_joints_path = LaunchConfiguration("sensor_joints_path")
+    h5_path = LaunchConfiguration("h5_path")
     robot_description_path = LaunchConfiguration("robot_description_path")
 
     xela_pcr_launch_dir = PathJoinSubstitution(
@@ -48,6 +49,11 @@ def generate_launch_description() -> LaunchDescription:
                 "sensor_joints_path",
                 default_value=default_sensor_joints_path,
                 description="Path to `sensor_joints.json` (installed in xela_description).",
+            ),
+            DeclareLaunchArgument(
+                "h5_path",
+                default_value="",
+                description="Optional HDF5 file path containing sensor and joint state data.",
             ),
             DeclareLaunchArgument(
                 "robot_description_path",
@@ -81,6 +87,7 @@ def generate_launch_description() -> LaunchDescription:
                 launch_arguments={
                     "node_name": perline_noise_publisher_node_name,
                     "sensor_joints_path": sensor_joints_path,
+                    "h5_path": h5_path,
                 }.items(),
             ),
             IncludeLaunchDescription(
