@@ -12,5 +12,6 @@ log/
 
 # OS
 .DS_Store
+__pycache__/
 ros_ws/src/xela_point_cloud_representation/pointcloud_calibration/
 ros_ws/pointcloud/
