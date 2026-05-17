@@ -42,6 +42,58 @@ JOINT_MAP = {
     "joint_3": "th_ipl",
 }
 
+FLAT_OFFSET = {
+    "joint_0": 2.4559032917022705,
+    "joint_1": 3.1492626667022705,
+    "joint_2": 0.8866409063339233,
+    "joint_3": 1.544718623161316,
+
+    "joint_4": 4.697049140930176,
+    "joint_5": 3.3364081382751465,
+    "joint_6": 3.136990785598755,
+    "joint_7": 3.136990785598755,
+
+    "joint_8": 4.670971393585205,
+    "joint_9": 3.3333401679992676,
+    "joint_10": 3.120116949081421,
+    "joint_11": 3.155398368835449,
+
+    "joint_12": 4.664835453033447,
+    "joint_13": 3.2689130306243896,
+    "joint_14": 3.120116949081421,
+    "joint_15": 3.1461946964263916,
+}
+
+SIGN = {
+    "joint_0": 1.0,
+    "joint_1": 1.0,
+    "joint_2": 1.0,
+    "joint_3": -1.0,
+
+    "joint_4": -1.0,
+    "joint_5": 1.0,
+    "joint_6": 1.0,
+    "joint_7": -1.0,
+
+    "joint_8": -1.0,
+    "joint_9": 1.0,
+    "joint_10": 1.0,
+    "joint_11": -1.0,
+
+    "joint_12": -1.0,
+    "joint_13": 1.0,
+    "joint_14": 1.0,
+    "joint_15": -1.0,
+}
+
+def wrap_to_pi(x):
+    return (x + np.pi) % (2.0 * np.pi) - np.pi
+
+
+def motor_rad_to_mujoco_qpos(raw_name, raw_pos):
+    q_rel = wrap_to_pi(float(raw_pos) - FLAT_OFFSET[raw_name])
+    return SIGN[raw_name] * q_rel
+
 def load_calibrated_from_npy(npy_path: Path):
     data = np.load(npy_path)
     return np.asarray(data, dtype=np.float32)
@@ -96,7 +148,7 @@ def load_joint_states_from_h5(h5_path: Path):
                 for name, pos in zip(raw_names, raw_positions):
                     if name in JOINT_MAP:
                         mapped_names.append(JOINT_MAP[name])
-                        mapped_positions.append(float(pos))
+                        mapped_positions.append(motor_rad_to_mujoco_qpos(name, pos))
                     else:
                         print(f"[WARN] No MuJoCo mapping for joint name: {name}")
 

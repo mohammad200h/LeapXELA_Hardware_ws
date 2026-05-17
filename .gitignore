@@ -15,3 +15,4 @@ log/
 __pycache__/
 ros_ws/src/xela_point_cloud_representation/pointcloud_calibration/
 ros_ws/pointcloud/
+ros_ws/pointcloud_dump/
