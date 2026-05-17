@@ -14,12 +14,9 @@
 // MuJoCo
 #include <mujoco/mujoco.h>
 
-//#include <GLFW/glfw3.h>
-//#include <xela_point_cloud_representation/camera_control.hpp>
-
 #include <algorithm>
 #include <array>
-// #include <chrono>
+
 #include <cmath>
 #include <cstdio>
 #include <dlfcn.h>
@@ -45,19 +42,6 @@ struct MujocoApi
   void (*mj_forward)(const mjModel *, mjData *){nullptr};
   int (*mj_name2id)(const mjModel *, int, const char *){nullptr};
   const char * (*mj_id2name)(const mjModel *, int, int){nullptr};
-
-  // void (*mjv_defaultCamera)(mjvCamera *){nullptr};
-  // void (*mjv_defaultOption)(mjvOption *){nullptr};
-  // void (*mjv_defaultScene)(mjvScene *){nullptr};
-  // void (*mjr_defaultContext)(mjrContext *){nullptr};
-  // void (*mjv_makeScene)(const mjModel *, mjvScene *, int){nullptr};
-  // void (*mjr_makeContext)(const mjModel *, mjrContext *, int){nullptr};
-  // void (*mjv_moveCamera)(const mjModel *, mjtMouse, mjtNum, mjtNum, const mjvScene *, mjvCamera *){nullptr};
-  // void (*mjv_updateScene)(
-  //   const mjModel *, const mjData *, const mjvOption *, const mjvPerturb *, const mjvCamera *, int, mjvScene *){nullptr};
-  // void (*mjr_render)(mjrRect, const mjvScene *, const mjrContext *){nullptr};
-  // void (*mjr_freeContext)(mjrContext *){nullptr};
-  // void (*mjv_freeScene)(mjvScene *){nullptr};
 
   static void * open_library()
   {
@@ -99,17 +83,6 @@ struct MujocoApi
     mj_name2id = load_symbol<decltype(mj_name2id)>(handle, "mj_name2id");
     mj_id2name = load_symbol<decltype(mj_id2name)>(handle, "mj_id2name");
 
-    // mjv_defaultCamera = load_symbol<decltype(mjv_defaultCamera)>(handle, "mjv_defaultCamera");
-    // mjv_defaultOption = load_symbol<decltype(mjv_defaultOption)>(handle, "mjv_defaultOption");
-    // mjv_defaultScene = load_symbol<decltype(mjv_defaultScene)>(handle, "mjv_defaultScene");
-    // mjr_defaultContext = load_symbol<decltype(mjr_defaultContext)>(handle, "mjr_defaultContext");
-    // mjv_makeScene = load_symbol<decltype(mjv_makeScene)>(handle, "mjv_makeScene");
-    // mjr_makeContext = load_symbol<decltype(mjr_makeContext)>(handle, "mjr_makeContext");
-    // mjv_moveCamera = load_symbol<decltype(mjv_moveCamera)>(handle, "mjv_moveCamera");
-    // mjv_updateScene = load_symbol<decltype(mjv_updateScene)>(handle, "mjv_updateScene");
-    // mjr_render = load_symbol<decltype(mjr_render)>(handle, "mjr_render");
-    // mjr_freeContext = load_symbol<decltype(mjr_freeContext)>(handle, "mjr_freeContext");
-    // mjv_freeScene = load_symbol<decltype(mjv_freeScene)>(handle, "mjv_freeScene");
   }
 
   ~MujocoApi()
@@ -149,23 +122,12 @@ public:
 
     touch_point_cloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("hand_touch_point_cloud", rclcpp::QoS(10));
 
-    // const int64_t render_hz = declare_parameter<int64_t>("render_hz", 60);
-    // if (render_hz <= 0) {
-    //   throw std::runtime_error("Parameter 'render_hz' must be > 0");
-    // }
-    // render_hz_ = static_cast<double>(render_hz);
-
-    // init_rendering();
     // Initialize derived quantities so the first frame renders a consistent pose.
     {
       std::lock_guard<std::mutex> lk(mj_mutex_);
       api_.mj_forward(model_, data_);
     }
 
-    // const auto period = std::chrono::duration<double>(1.0 / render_hz_);
-    // render_timer_ = create_wall_timer(
-    //   std::chrono::duration_cast<std::chrono::nanoseconds>(period),
-    //   [this]() { this->render_once(); });
   }
 
   ~ProcessHandSensorsIntoPointcloudNode() override
@@ -285,37 +247,66 @@ private:
     }
   }
 
+  // void on_joint_state(sensor_msgs::msg::JointState::ConstSharedPtr msg)
+  // {
+  //   if (!msg || msg->name.empty() || msg->position.empty() || !data_) {
+  //     return;
+  //   }
+  //   const size_t n = std::min(msg->name.size(), msg->position.size());
+
+  //   std::lock_guard<std::mutex> lk(mj_mutex_);
+  //   bool updated_any = false;
+  //   std::vector<std::string> changed_joints;
+  //   changed_joints.reserve(n);
+  //   for (size_t i = 0; i < n; ++i) {
+  //     const bool changed = set_joint_qpos_locked(msg->name[i], msg->position[i]);
+  //     updated_any |= changed;
+  //     if (changed) {
+  //       changed_joints.push_back(msg->name[i]);
+  //     }
+  //   }
+
+  //   if (updated_any) {
+  //     api_.mj_forward(model_, data_);
+
+  //     std::sort(changed_joints.begin(), changed_joints.end());
+  //     changed_joints.erase(std::unique(changed_joints.begin(), changed_joints.end()), changed_joints.end());
+  //     for (const auto & jname : changed_joints) {
+  //       if (auto pose = get_body_world_pose_from_texel_joint_locked(jname)) {
+  //         const std::string key = !pose->body_name.empty() ? pose->body_name : jname;
+  //         latest_body_pose_by_body_name_[key] = *pose;
+  //       }
+  //     }
+  //     publish_touch_point_cloud_locked();
+  //   }
+  // }
   void on_joint_state(sensor_msgs::msg::JointState::ConstSharedPtr msg)
   {
     if (!msg || msg->name.empty() || msg->position.empty() || !data_) {
       return;
     }
+
     const size_t n = std::min(msg->name.size(), msg->position.size());
 
     std::lock_guard<std::mutex> lk(mj_mutex_);
+
     bool updated_any = false;
-    std::vector<std::string> changed_joints;
-    changed_joints.reserve(n);
+
     for (size_t i = 0; i < n; ++i) {
-      const bool changed = set_joint_qpos_locked(msg->name[i], msg->position[i]);
+      const bool changed =
+        set_joint_qpos_locked(msg->name[i], msg->position[i]);
+
       updated_any |= changed;
-      if (changed) {
-        changed_joints.push_back(msg->name[i]);
-      }
     }
 
+    // IMPORTANT:
+    // Joint states should ONLY update the hand articulation.
+    // Do NOT accumulate bodies into the tactile point cloud here.
+    //
+    // The tactile point cloud must only be generated from taxel
+    // sensor joints inside on_sensors().
     if (updated_any) {
       api_.mj_forward(model_, data_);
-
-      std::sort(changed_joints.begin(), changed_joints.end());
-      changed_joints.erase(std::unique(changed_joints.begin(), changed_joints.end()), changed_joints.end());
-      for (const auto & jname : changed_joints) {
-        if (auto pose = get_body_world_pose_from_texel_joint_locked(jname)) {
-          const std::string key = !pose->body_name.empty() ? pose->body_name : jname;
-          latest_body_pose_by_body_name_[key] = *pose;
-        }
-      }
-      publish_touch_point_cloud_locked();
     }
   }
 
@@ -356,25 +347,72 @@ private:
 
     std::lock_guard<std::mutex> lk(mj_mutex_);
     bool updated_any = false;
-    std::vector<std::string> changed_joints;
-    changed_joints.reserve(367+16);
 
-    apply_texels_locked(msg->texels, updated_any, changed_joints);
-
-    if (updated_any) {
-      api_.mj_forward(model_, data_);
-
-      std::sort(changed_joints.begin(), changed_joints.end());
-      changed_joints.erase(std::unique(changed_joints.begin(), changed_joints.end()), changed_joints.end());
-      for (const auto & jname : changed_joints) {
-        if (auto pose = get_body_world_pose_from_texel_joint_locked(jname)) {
-          const std::string key = !pose->body_name.empty() ? pose->body_name : jname;
-          latest_body_pose_by_body_name_[key] = *pose;
-        }
+    for (const auto & texel : msg->texels) {
+      if (!texel.joint_x.empty()) {
+        updated_any |= set_joint_qpos_locked(texel.joint_x, static_cast<double>(texel.x));
       }
-      publish_touch_point_cloud_locked();
+      if (!texel.joint_y.empty()) {
+        updated_any |= set_joint_qpos_locked(texel.joint_y, static_cast<double>(texel.y));
+      }
+      if (!texel.joint_z.empty()) {
+        updated_any |= set_joint_qpos_locked(texel.joint_z, static_cast<double>(texel.z));
+      }
     }
+
+    api_.mj_forward(model_, data_);
+
+    latest_body_pose_by_body_name_.clear();
+
+    for (const auto & texel : msg->texels) {
+      if (texel.joint_x.empty()) {
+        continue;
+      }
+
+      if (auto pose = get_body_world_pose_from_texel_joint_locked(texel.joint_x)) {
+        const std::string key = !pose->body_name.empty() ? pose->body_name : texel.joint_x;
+        latest_body_pose_by_body_name_[key] = *pose;
+      } else {
+        RCLCPP_WARN_THROTTLE(
+          get_logger(),
+          *get_clock(),
+          2000,
+          "Missing pose for taxel joint_x: %s",
+          texel.joint_x.c_str());
+      }
+    }
+
+    publish_touch_point_cloud_locked();
   }
+
+  // void on_sensors(xela_point_cloud_representation::msg::HandSensors::ConstSharedPtr msg)
+  // {
+  //   if (!msg || !data_) {
+  //     return;
+  //   }
+
+  //   std::lock_guard<std::mutex> lk(mj_mutex_);
+  //   bool updated_any = false;
+  //   std::vector<std::string> changed_joints;
+  //   changed_joints.reserve(367+16);
+
+  //   apply_texels_locked(msg->texels, updated_any, changed_joints);
+
+  //   if (updated_any) {
+  //     latest_body_pose_by_body_name_.clear();
+  //     api_.mj_forward(model_, data_);
+
+  //     std::sort(changed_joints.begin(), changed_joints.end());
+  //     changed_joints.erase(std::unique(changed_joints.begin(), changed_joints.end()), changed_joints.end());
+  //     for (const auto & jname : changed_joints) {
+  //       if (auto pose = get_body_world_pose_from_texel_joint_locked(jname)) {
+  //         const std::string key = !pose->body_name.empty() ? pose->body_name : jname;
+  //         latest_body_pose_by_body_name_[key] = *pose;
+  //       }
+  //     }
+  //     publish_touch_point_cloud_locked();
+  //   }
+  // }
 
   bool set_joint_qpos_locked(const std::string & joint_name, double desired_qpos)
   {
@@ -445,101 +483,6 @@ private:
     }
   }
 
-  // void init_rendering()
-  // {
-  //   if (!glfwInit()) {
-  //     throw std::runtime_error("glfwInit() failed");
-  //   }
-
-  //   glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-  //   // Force desktop OpenGL (not GLES). Prefer a compatibility profile so that
-  //   // legacy extension queries work across drivers/setups.
-  //   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-  //   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-  //   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-  //   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
-
-  //   window_ = glfwCreateWindow(1200, 900, "MuJoCo Viewer (process_hand_sensors_into_pointcloud)", nullptr, nullptr);
-  //   if (!window_) {
-  //     glfwTerminate();
-  //     throw std::runtime_error("glfwCreateWindow() failed");
-  //   }
-
-  //   glfwMakeContextCurrent(window_);
-  //   glfwSwapInterval(1);
-
-  //   // Helpful diagnostics when rendering fails.
-  //   const unsigned char * gl_version = glGetString(GL_VERSION);
-  //   const unsigned char * gl_renderer = glGetString(GL_RENDERER);
-  //   const unsigned char * gl_vendor = glGetString(GL_VENDOR);
-  //   RCLCPP_INFO(
-  //     get_logger(), "OpenGL vendor='%s' renderer='%s' version='%s'",
-  //     gl_vendor ? reinterpret_cast<const char *>(gl_vendor) : "(null)",
-  //     gl_renderer ? reinterpret_cast<const char *>(gl_renderer) : "(null)",
-  //     gl_version ? reinterpret_cast<const char *>(gl_version) : "(null)");
-  //   RCLCPP_INFO(
-  //     get_logger(), "GLFW reports GL_ARB_framebuffer_object: %s",
-  //     glfwExtensionSupported("GL_ARB_framebuffer_object") ? "yes" : "no");
-
-  //   api_.mjv_defaultCamera(&cam_);
-  //   api_.mjv_defaultOption(&opt_);
-  //   api_.mjv_defaultScene(&scn_);
-  //   api_.mjr_defaultContext(&con_);
-
-  //   api_.mjv_makeScene(model_, &scn_, 2000);
-  //   api_.mjr_makeContext(model_, &con_, mjFONTSCALE_150);
-
-  //   camera_control_ = std::make_unique<xela_point_cloud_representation::CameraControl>(
-  //     window_, model_, &scn_, &cam_, api_.mjv_moveCamera, api_.mjv_defaultCamera, &mj_mutex_);
-  //   camera_control_->install();
-
-  //   cam_.azimuth = 0;
-  //   cam_.elevation = -50.0;
-  //   cam_.distance = 1.0;
-  // }
-
-  // void shutdown_rendering()
-  // {
-  //   if (window_) {
-  //     api_.mjr_freeContext(&con_);
-  //     api_.mjv_freeScene(&scn_);
-
-  //     glfwDestroyWindow(window_);
-  //     window_ = nullptr;
-  //     glfwTerminate();
-  //   }
-  // }
-
-  // void render_once()
-  // {
-  //   if (!window_) {
-  //     return;
-  //   }
-  //   if (glfwWindowShouldClose(window_)) {
-  //     rclcpp::shutdown();
-  //     return;
-  //   }
-
-  //   {
-  //     std::lock_guard<std::mutex> lk(mj_mutex_);
-  //     // Viewer-only mode: do NOT advance simulation time. Just refresh derived quantities
-  //     // in case external code updated qpos/qvel/ctrl since the last render.
-  //     api_.mj_forward(model_, data_);
-  //   }
-
-  //   mjrRect viewport{0, 0, 0, 0};
-  //   glfwGetFramebufferSize(window_, &viewport.width, &viewport.height);
-
-  //   {
-  //     std::lock_guard<std::mutex> lk(mj_mutex_);
-  //     api_.mjv_updateScene(model_, data_, &opt_, /*pert=*/nullptr, &cam_, mjCAT_ALL, &scn_);
-  //     api_.mjr_render(viewport, &scn_, &con_);
-  //   }
-
-  //   glfwSwapBuffers(window_);
-  //   glfwPollEvents();
-  // }
-
   MujocoApi api_;
   mjModel * model_{nullptr};
   mjData * data_{nullptr};
@@ -550,15 +493,6 @@ private:
   rclcpp::Subscription<xela_point_cloud_representation::msg::HandSensors>::SharedPtr sensor_sub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr touch_point_cloud_pub_;
 
-  // double render_hz_{60.0};
-  // rclcpp::TimerBase::SharedPtr render_timer_;
-
-  // GLFWwindow * window_{nullptr};
-  // mjvCamera cam_{};
-  // mjvOption opt_{};
-  // mjvScene scn_{};
-  // mjrContext con_{};
-  // std::unique_ptr<xela_point_cloud_representation::CameraControl> camera_control_;
 };
 
 int main(int argc, char ** argv)

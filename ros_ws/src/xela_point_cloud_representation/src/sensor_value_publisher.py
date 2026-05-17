@@ -9,7 +9,7 @@ import numpy as np
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from sensor_msgs.msg import JointState
 from xela_point_cloud_representation.msg import Texel, HandSensors
 
@@ -19,6 +19,28 @@ from leap_taxel_map import (
     sorted_1D_hand_taxel_name,
 )
 
+
+JOINT_MAP = {
+    "joint_4": "if_mcp",
+    "joint_5": "if_rot",
+    "joint_6": "if_pip",
+    "joint_7": "if_dip",
+
+    "joint_8": "mf_mcp",
+    "joint_9": "mf_rot",
+    "joint_10": "mf_pip",
+    "joint_11": "mf_dip",
+
+    "joint_12": "rf_mcp",
+    "joint_13": "rf_rot",
+    "joint_14": "rf_pip",
+    "joint_15": "rf_dip",
+
+    "joint_0": "th_cmc",
+    "joint_1": "th_axl",
+    "joint_2": "th_mcp",
+    "joint_3": "th_ipl",
+}
 
 def load_calibrated_from_npy(npy_path: Path):
     data = np.load(npy_path)
@@ -61,14 +83,25 @@ def load_joint_states_from_h5(h5_path: Path):
                     joint_frames.append(([], []))
                     continue
 
-                names = _decode_h5_string_array(state["name"][()])
-                positions = np.asarray(state["position"][()], dtype=np.float64).ravel()
+                raw_names = _decode_h5_string_array(state["name"][()])
+                raw_positions = np.asarray(state["position"][()], dtype=np.float64).ravel()
 
-                if len(positions) != len(names):
+                if len(raw_positions) != len(raw_names):
                     joint_frames.append(([], []))
                     continue
+                
+                mapped_names = []
+                mapped_positions = []
 
-                joint_frames.append((names, positions.tolist()))
+                for name, pos in zip(raw_names, raw_positions):
+                    if name in JOINT_MAP:
+                        mapped_names.append(JOINT_MAP[name])
+                        mapped_positions.append(float(pos))
+                    else:
+                        print(f"[WARN] No MuJoCo mapping for joint name: {name}")
+
+                joint_frames.append((mapped_names, mapped_positions))
+
 
             except Exception:
                 joint_frames.append(([], []))
@@ -119,6 +152,7 @@ def taxel_1d_sensor_names():
 class SensorValuePublisher(Node):
     def __init__(self) -> None:
         super().__init__("sensor_value_publisher")
+        self.recorder_ready = False
 
         self.declare_parameter(
             "dataset_root",
@@ -181,19 +215,48 @@ class SensorValuePublisher(Node):
             10,
         )
 
+        self.ready_sub = self.create_subscription(
+            Bool,
+            "recorder_ready",
+            self.on_recorder_ready,
+            1,
+        )
+
         self.get_logger().info(
             f"Found {len(self.h5_files)} h5 files under {self.dataset_root / 'contour'}"
         )
 
+        # if not self.load_next_valid_file():
+        #     self.log_skipped_files()
+        #     raise RuntimeError("No valid h5/scaled npy pairs found.")
+
+        self.timer = None
+        self.get_logger().info("Waiting for recorder_ready...")
+
+        # self.timer = self.create_timer(
+        #     self.publish_period,
+        #     self.publish_sensor_values,
+        # )
+
+    def on_recorder_ready(self, msg: Bool):
+        if not msg.data or self.recorder_ready:
+            return
+    
+        self.recorder_ready = True
+    
+        self.get_logger().info("Recorder ready. Loading first file.")
+    
         if not self.load_next_valid_file():
             self.log_skipped_files()
             raise RuntimeError("No valid h5/scaled npy pairs found.")
-
+    
+        self.get_logger().info("Starting publishing.")
+    
         self.timer = self.create_timer(
             self.publish_period,
             self.publish_sensor_values,
         )
-
+    
     def scaled_path_for_h5(self, h5_path: Path) -> Path:
         # h5:
         # pointcloud_calibration/ML_dataset/contour/<dataset_type>/<stem>.h5

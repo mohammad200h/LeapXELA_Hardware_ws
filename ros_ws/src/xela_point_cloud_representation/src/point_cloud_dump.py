@@ -10,7 +10,7 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import PointCloud2
 from sensor_msgs_py import point_cloud2
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 
 
 class HandTouchPointCloudRecorder(Node):
@@ -31,6 +31,17 @@ class HandTouchPointCloudRecorder(Node):
             10,
         )
 
+        self.ready_pub = self.create_publisher(
+            Bool,
+            "recorder_ready",
+            1,
+        )
+
+        self.ready_timer = self.create_timer(
+            0.5,
+            self.publish_ready,
+        )
+
         self.dump_root = Path("pointcloud_dump")
         self.dump_root.mkdir(parents=True, exist_ok=True)
 
@@ -42,6 +53,11 @@ class HandTouchPointCloudRecorder(Node):
 
         self.get_logger().info("Point cloud recorder started.")
 
+    def publish_ready(self) -> None:
+        msg = Bool()
+        msg.data = True
+        self.ready_pub.publish(msg)
+
     def _output_path_from_h5(self, h5_path: Path) -> Path:
         parts = h5_path.parts
 
@@ -51,14 +67,20 @@ class HandTouchPointCloudRecorder(Node):
         else:
             relative = Path(h5_path.name)
 
-        output_relative = relative.with_name(f"{h5_path.stem}_point_cloud.npy")
+        output_relative = relative.with_name(
+            f"{h5_path.stem}_point_cloud.npy"
+        )
 
         return self.dump_root / output_relative
 
     def _on_current_file(self, msg: String) -> None:
         new_h5_path = Path(msg.data)
 
-        if self.current_h5_path is not None and new_h5_path != self.current_h5_path:
+        # Same file message can arrive multiple times. Do not clear buffer.
+        if self.current_h5_path == new_h5_path:
+            return
+
+        if self.current_h5_path is not None:
             self._save_current_file()
 
         self.current_h5_path = new_h5_path
@@ -66,6 +88,7 @@ class HandTouchPointCloudRecorder(Node):
         self.current_output_path.parent.mkdir(parents=True, exist_ok=True)
 
         self._dump_frames = []
+        self._last_log_time_ns = 0
 
         self.get_logger().info(
             f"Recording point clouds for: {self.current_h5_path.name}"
@@ -75,6 +98,12 @@ class HandTouchPointCloudRecorder(Node):
         )
 
     def _on_point_cloud(self, msg: PointCloud2) -> None:
+        if self.current_output_path is None:
+            self.get_logger().warn(
+                "Received point cloud before current_h5_file. Skipping frame."
+            )
+            return
+
         pts = point_cloud2.read_points(
             msg,
             field_names=("x", "y", "z"),
@@ -111,17 +140,22 @@ class HandTouchPointCloudRecorder(Node):
             )
             return
 
+        data = np.asarray(self._dump_frames, dtype=np.float32)
+
         np.save(
             self.current_output_path,
-            np.array(self._dump_frames, dtype=object),
-            allow_pickle=True,
+            data,
         )
 
         self.get_logger().info(
-            f"Saved {len(self._dump_frames)} frames to {self.current_output_path}"
+            f"Saved {data.shape[0]} frames to {self.current_output_path} "
+            f"with shape {data.shape}"
         )
 
     def destroy_node(self) -> bool:
+        if self.ready_timer is not None:
+            self.ready_timer.cancel()
+
         self._save_current_file()
         return super().destroy_node()
 
