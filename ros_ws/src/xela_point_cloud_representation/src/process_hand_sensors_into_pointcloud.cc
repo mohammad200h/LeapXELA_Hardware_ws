@@ -14,13 +14,12 @@
 // MuJoCo
 #include <mujoco/mujoco.h>
 
-#include <GLFW/glfw3.h>
-
-#include <xela_point_cloud_representation/camera_control.hpp>
+//#include <GLFW/glfw3.h>
+//#include <xela_point_cloud_representation/camera_control.hpp>
 
 #include <algorithm>
 #include <array>
-#include <chrono>
+// #include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <dlfcn.h>
@@ -47,18 +46,18 @@ struct MujocoApi
   int (*mj_name2id)(const mjModel *, int, const char *){nullptr};
   const char * (*mj_id2name)(const mjModel *, int, int){nullptr};
 
-  void (*mjv_defaultCamera)(mjvCamera *){nullptr};
-  void (*mjv_defaultOption)(mjvOption *){nullptr};
-  void (*mjv_defaultScene)(mjvScene *){nullptr};
-  void (*mjr_defaultContext)(mjrContext *){nullptr};
-  void (*mjv_makeScene)(const mjModel *, mjvScene *, int){nullptr};
-  void (*mjr_makeContext)(const mjModel *, mjrContext *, int){nullptr};
-  void (*mjv_moveCamera)(const mjModel *, mjtMouse, mjtNum, mjtNum, const mjvScene *, mjvCamera *){nullptr};
-  void (*mjv_updateScene)(
-    const mjModel *, const mjData *, const mjvOption *, const mjvPerturb *, const mjvCamera *, int, mjvScene *){nullptr};
-  void (*mjr_render)(mjrRect, const mjvScene *, const mjrContext *){nullptr};
-  void (*mjr_freeContext)(mjrContext *){nullptr};
-  void (*mjv_freeScene)(mjvScene *){nullptr};
+  // void (*mjv_defaultCamera)(mjvCamera *){nullptr};
+  // void (*mjv_defaultOption)(mjvOption *){nullptr};
+  // void (*mjv_defaultScene)(mjvScene *){nullptr};
+  // void (*mjr_defaultContext)(mjrContext *){nullptr};
+  // void (*mjv_makeScene)(const mjModel *, mjvScene *, int){nullptr};
+  // void (*mjr_makeContext)(const mjModel *, mjrContext *, int){nullptr};
+  // void (*mjv_moveCamera)(const mjModel *, mjtMouse, mjtNum, mjtNum, const mjvScene *, mjvCamera *){nullptr};
+  // void (*mjv_updateScene)(
+  //   const mjModel *, const mjData *, const mjvOption *, const mjvPerturb *, const mjvCamera *, int, mjvScene *){nullptr};
+  // void (*mjr_render)(mjrRect, const mjvScene *, const mjrContext *){nullptr};
+  // void (*mjr_freeContext)(mjrContext *){nullptr};
+  // void (*mjv_freeScene)(mjvScene *){nullptr};
 
   static void * open_library()
   {
@@ -100,17 +99,17 @@ struct MujocoApi
     mj_name2id = load_symbol<decltype(mj_name2id)>(handle, "mj_name2id");
     mj_id2name = load_symbol<decltype(mj_id2name)>(handle, "mj_id2name");
 
-    mjv_defaultCamera = load_symbol<decltype(mjv_defaultCamera)>(handle, "mjv_defaultCamera");
-    mjv_defaultOption = load_symbol<decltype(mjv_defaultOption)>(handle, "mjv_defaultOption");
-    mjv_defaultScene = load_symbol<decltype(mjv_defaultScene)>(handle, "mjv_defaultScene");
-    mjr_defaultContext = load_symbol<decltype(mjr_defaultContext)>(handle, "mjr_defaultContext");
-    mjv_makeScene = load_symbol<decltype(mjv_makeScene)>(handle, "mjv_makeScene");
-    mjr_makeContext = load_symbol<decltype(mjr_makeContext)>(handle, "mjr_makeContext");
-    mjv_moveCamera = load_symbol<decltype(mjv_moveCamera)>(handle, "mjv_moveCamera");
-    mjv_updateScene = load_symbol<decltype(mjv_updateScene)>(handle, "mjv_updateScene");
-    mjr_render = load_symbol<decltype(mjr_render)>(handle, "mjr_render");
-    mjr_freeContext = load_symbol<decltype(mjr_freeContext)>(handle, "mjr_freeContext");
-    mjv_freeScene = load_symbol<decltype(mjv_freeScene)>(handle, "mjv_freeScene");
+    // mjv_defaultCamera = load_symbol<decltype(mjv_defaultCamera)>(handle, "mjv_defaultCamera");
+    // mjv_defaultOption = load_symbol<decltype(mjv_defaultOption)>(handle, "mjv_defaultOption");
+    // mjv_defaultScene = load_symbol<decltype(mjv_defaultScene)>(handle, "mjv_defaultScene");
+    // mjr_defaultContext = load_symbol<decltype(mjr_defaultContext)>(handle, "mjr_defaultContext");
+    // mjv_makeScene = load_symbol<decltype(mjv_makeScene)>(handle, "mjv_makeScene");
+    // mjr_makeContext = load_symbol<decltype(mjr_makeContext)>(handle, "mjr_makeContext");
+    // mjv_moveCamera = load_symbol<decltype(mjv_moveCamera)>(handle, "mjv_moveCamera");
+    // mjv_updateScene = load_symbol<decltype(mjv_updateScene)>(handle, "mjv_updateScene");
+    // mjr_render = load_symbol<decltype(mjr_render)>(handle, "mjr_render");
+    // mjr_freeContext = load_symbol<decltype(mjr_freeContext)>(handle, "mjr_freeContext");
+    // mjv_freeScene = load_symbol<decltype(mjv_freeScene)>(handle, "mjv_freeScene");
   }
 
   ~MujocoApi()
@@ -150,28 +149,28 @@ public:
 
     touch_point_cloud_pub_ = create_publisher<sensor_msgs::msg::PointCloud2>("hand_touch_point_cloud", rclcpp::QoS(10));
 
-    const int64_t render_hz = declare_parameter<int64_t>("render_hz", 60);
-    if (render_hz <= 0) {
-      throw std::runtime_error("Parameter 'render_hz' must be > 0");
-    }
-    render_hz_ = static_cast<double>(render_hz);
+    // const int64_t render_hz = declare_parameter<int64_t>("render_hz", 60);
+    // if (render_hz <= 0) {
+    //   throw std::runtime_error("Parameter 'render_hz' must be > 0");
+    // }
+    // render_hz_ = static_cast<double>(render_hz);
 
-    init_rendering();
+    // init_rendering();
     // Initialize derived quantities so the first frame renders a consistent pose.
     {
       std::lock_guard<std::mutex> lk(mj_mutex_);
       api_.mj_forward(model_, data_);
     }
 
-    const auto period = std::chrono::duration<double>(1.0 / render_hz_);
-    render_timer_ = create_wall_timer(
-      std::chrono::duration_cast<std::chrono::nanoseconds>(period),
-      [this]() { this->render_once(); });
+    // const auto period = std::chrono::duration<double>(1.0 / render_hz_);
+    // render_timer_ = create_wall_timer(
+    //   std::chrono::duration_cast<std::chrono::nanoseconds>(period),
+    //   [this]() { this->render_once(); });
   }
 
   ~ProcessHandSensorsIntoPointcloudNode() override
   {
-    shutdown_rendering();
+    // shutdown_rendering();
 
     if (data_) {
       api_.mj_deleteData(data_);
@@ -446,100 +445,100 @@ private:
     }
   }
 
-  void init_rendering()
-  {
-    if (!glfwInit()) {
-      throw std::runtime_error("glfwInit() failed");
-    }
+  // void init_rendering()
+  // {
+  //   if (!glfwInit()) {
+  //     throw std::runtime_error("glfwInit() failed");
+  //   }
 
-    glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-    // Force desktop OpenGL (not GLES). Prefer a compatibility profile so that
-    // legacy extension queries work across drivers/setups.
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+  //   glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+  //   // Force desktop OpenGL (not GLES). Prefer a compatibility profile so that
+  //   // legacy extension queries work across drivers/setups.
+  //   glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+  //   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+  //   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+  //   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
 
-    window_ = glfwCreateWindow(1200, 900, "MuJoCo Viewer (process_hand_sensors_into_pointcloud)", nullptr, nullptr);
-    if (!window_) {
-      glfwTerminate();
-      throw std::runtime_error("glfwCreateWindow() failed");
-    }
+  //   window_ = glfwCreateWindow(1200, 900, "MuJoCo Viewer (process_hand_sensors_into_pointcloud)", nullptr, nullptr);
+  //   if (!window_) {
+  //     glfwTerminate();
+  //     throw std::runtime_error("glfwCreateWindow() failed");
+  //   }
 
-    glfwMakeContextCurrent(window_);
-    glfwSwapInterval(1);
+  //   glfwMakeContextCurrent(window_);
+  //   glfwSwapInterval(1);
 
-    // Helpful diagnostics when rendering fails.
-    const unsigned char * gl_version = glGetString(GL_VERSION);
-    const unsigned char * gl_renderer = glGetString(GL_RENDERER);
-    const unsigned char * gl_vendor = glGetString(GL_VENDOR);
-    RCLCPP_INFO(
-      get_logger(), "OpenGL vendor='%s' renderer='%s' version='%s'",
-      gl_vendor ? reinterpret_cast<const char *>(gl_vendor) : "(null)",
-      gl_renderer ? reinterpret_cast<const char *>(gl_renderer) : "(null)",
-      gl_version ? reinterpret_cast<const char *>(gl_version) : "(null)");
-    RCLCPP_INFO(
-      get_logger(), "GLFW reports GL_ARB_framebuffer_object: %s",
-      glfwExtensionSupported("GL_ARB_framebuffer_object") ? "yes" : "no");
+  //   // Helpful diagnostics when rendering fails.
+  //   const unsigned char * gl_version = glGetString(GL_VERSION);
+  //   const unsigned char * gl_renderer = glGetString(GL_RENDERER);
+  //   const unsigned char * gl_vendor = glGetString(GL_VENDOR);
+  //   RCLCPP_INFO(
+  //     get_logger(), "OpenGL vendor='%s' renderer='%s' version='%s'",
+  //     gl_vendor ? reinterpret_cast<const char *>(gl_vendor) : "(null)",
+  //     gl_renderer ? reinterpret_cast<const char *>(gl_renderer) : "(null)",
+  //     gl_version ? reinterpret_cast<const char *>(gl_version) : "(null)");
+  //   RCLCPP_INFO(
+  //     get_logger(), "GLFW reports GL_ARB_framebuffer_object: %s",
+  //     glfwExtensionSupported("GL_ARB_framebuffer_object") ? "yes" : "no");
 
-    api_.mjv_defaultCamera(&cam_);
-    api_.mjv_defaultOption(&opt_);
-    api_.mjv_defaultScene(&scn_);
-    api_.mjr_defaultContext(&con_);
+  //   api_.mjv_defaultCamera(&cam_);
+  //   api_.mjv_defaultOption(&opt_);
+  //   api_.mjv_defaultScene(&scn_);
+  //   api_.mjr_defaultContext(&con_);
 
-    api_.mjv_makeScene(model_, &scn_, 2000);
-    api_.mjr_makeContext(model_, &con_, mjFONTSCALE_150);
+  //   api_.mjv_makeScene(model_, &scn_, 2000);
+  //   api_.mjr_makeContext(model_, &con_, mjFONTSCALE_150);
 
-    camera_control_ = std::make_unique<xela_point_cloud_representation::CameraControl>(
-      window_, model_, &scn_, &cam_, api_.mjv_moveCamera, api_.mjv_defaultCamera, &mj_mutex_);
-    camera_control_->install();
+  //   camera_control_ = std::make_unique<xela_point_cloud_representation::CameraControl>(
+  //     window_, model_, &scn_, &cam_, api_.mjv_moveCamera, api_.mjv_defaultCamera, &mj_mutex_);
+  //   camera_control_->install();
 
-    cam_.azimuth = 0;
-    cam_.elevation = -50.0;
-    cam_.distance = 1.0;
-  }
+  //   cam_.azimuth = 0;
+  //   cam_.elevation = -50.0;
+  //   cam_.distance = 1.0;
+  // }
 
-  void shutdown_rendering()
-  {
-    if (window_) {
-      api_.mjr_freeContext(&con_);
-      api_.mjv_freeScene(&scn_);
+  // void shutdown_rendering()
+  // {
+  //   if (window_) {
+  //     api_.mjr_freeContext(&con_);
+  //     api_.mjv_freeScene(&scn_);
 
-      glfwDestroyWindow(window_);
-      window_ = nullptr;
-      glfwTerminate();
-    }
-  }
+  //     glfwDestroyWindow(window_);
+  //     window_ = nullptr;
+  //     glfwTerminate();
+  //   }
+  // }
 
-  void render_once()
-  {
-    if (!window_) {
-      return;
-    }
-    if (glfwWindowShouldClose(window_)) {
-      rclcpp::shutdown();
-      return;
-    }
+  // void render_once()
+  // {
+  //   if (!window_) {
+  //     return;
+  //   }
+  //   if (glfwWindowShouldClose(window_)) {
+  //     rclcpp::shutdown();
+  //     return;
+  //   }
 
-    {
-      std::lock_guard<std::mutex> lk(mj_mutex_);
-      // Viewer-only mode: do NOT advance simulation time. Just refresh derived quantities
-      // in case external code updated qpos/qvel/ctrl since the last render.
-      api_.mj_forward(model_, data_);
-    }
+  //   {
+  //     std::lock_guard<std::mutex> lk(mj_mutex_);
+  //     // Viewer-only mode: do NOT advance simulation time. Just refresh derived quantities
+  //     // in case external code updated qpos/qvel/ctrl since the last render.
+  //     api_.mj_forward(model_, data_);
+  //   }
 
-    mjrRect viewport{0, 0, 0, 0};
-    glfwGetFramebufferSize(window_, &viewport.width, &viewport.height);
+  //   mjrRect viewport{0, 0, 0, 0};
+  //   glfwGetFramebufferSize(window_, &viewport.width, &viewport.height);
 
-    {
-      std::lock_guard<std::mutex> lk(mj_mutex_);
-      api_.mjv_updateScene(model_, data_, &opt_, /*pert=*/nullptr, &cam_, mjCAT_ALL, &scn_);
-      api_.mjr_render(viewport, &scn_, &con_);
-    }
+  //   {
+  //     std::lock_guard<std::mutex> lk(mj_mutex_);
+  //     api_.mjv_updateScene(model_, data_, &opt_, /*pert=*/nullptr, &cam_, mjCAT_ALL, &scn_);
+  //     api_.mjr_render(viewport, &scn_, &con_);
+  //   }
 
-    glfwSwapBuffers(window_);
-    glfwPollEvents();
-  }
+  //   glfwSwapBuffers(window_);
+  //   glfwPollEvents();
+  // }
 
   MujocoApi api_;
   mjModel * model_{nullptr};
@@ -551,15 +550,15 @@ private:
   rclcpp::Subscription<xela_point_cloud_representation::msg::HandSensors>::SharedPtr sensor_sub_;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr touch_point_cloud_pub_;
 
-  double render_hz_{60.0};
-  rclcpp::TimerBase::SharedPtr render_timer_;
+  // double render_hz_{60.0};
+  // rclcpp::TimerBase::SharedPtr render_timer_;
 
-  GLFWwindow * window_{nullptr};
-  mjvCamera cam_{};
-  mjvOption opt_{};
-  mjvScene scn_{};
-  mjrContext con_{};
-  std::unique_ptr<xela_point_cloud_representation::CameraControl> camera_control_;
+  // GLFWwindow * window_{nullptr};
+  // mjvCamera cam_{};
+  // mjvOption opt_{};
+  // mjvScene scn_{};
+  // mjrContext con_{};
+  // std::unique_ptr<xela_point_cloud_representation::CameraControl> camera_control_;
 };
 
 int main(int argc, char ** argv)

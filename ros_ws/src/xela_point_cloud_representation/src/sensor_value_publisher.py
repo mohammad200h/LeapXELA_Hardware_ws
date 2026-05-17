@@ -2,12 +2,14 @@
 
 import json
 from pathlib import Path
+from typing import List, Tuple
 
+import h5py
+import numpy as np
 import rclpy
 from rclpy.node import Node
-import numpy as np
-import h5py
 
+from std_msgs.msg import String
 from sensor_msgs.msg import JointState
 from xela_point_cloud_representation.msg import Texel, HandSensors
 
@@ -16,6 +18,7 @@ from leap_taxel_map import (
     get_sorted_1D_hand_taxels_map,
     sorted_1D_hand_taxel_name,
 )
+
 
 def load_calibrated_from_npy(npy_path: Path):
     data = np.load(npy_path)
@@ -30,16 +33,11 @@ def _decode_h5_string_array(raw_data):
 
 
 def load_joint_states_from_h5(h5_path: Path):
-    """Load joint state names and positions from *h5_path*.
-
-    The HDF5 layout is expected to contain frame groups under the top-level
-    stream, and within each frame a `state` group with `name` and `position`.
-    """
-
     if not h5_path.exists():
         raise FileNotFoundError(f"h5 file not found: {h5_path.resolve()}")
 
     joint_frames = []
+
     with h5py.File(str(h5_path), "r") as f:
         root_key = list(f.keys())[0]
         root_grp = f[root_key]
@@ -52,41 +50,47 @@ def load_joint_states_from_h5(h5_path: Path):
         for sample_key in sample_keys:
             try:
                 sample = root_grp[sample_key]
+
                 if "state" not in sample:
                     joint_frames.append(([], []))
                     continue
 
                 state = sample["state"]
+
                 if "name" not in state or "position" not in state:
                     joint_frames.append(([], []))
                     continue
 
                 names = _decode_h5_string_array(state["name"][()])
                 positions = np.asarray(state["position"][()], dtype=np.float64).ravel()
+
                 if len(positions) != len(names):
                     joint_frames.append(([], []))
                     continue
 
                 joint_frames.append((names, positions.tolist()))
 
-            except Exception as e:
-                joint_frames.append(([], []))   
+            except Exception:
+                joint_frames.append(([], []))
+
     return joint_frames
 
 
 def generate_sensor_msg(local_data, sensor_names_1d):
-    """
-    local_data shape: (368, 3)
-    local_data[idx] = [x, y, z]
-    """
-
     local_data = np.asarray(local_data, dtype=np.float32)
+
+    if local_data.shape[0] != len(sensor_names_1d):
+        raise ValueError(
+            f"Taxel count mismatch: data has {local_data.shape[0]}, "
+            f"sensor map has {len(sensor_names_1d)}"
+        )
+
     sensor_msg = HandSensors()
+
     for idx, sensor_name in enumerate(sensor_names_1d):
         texel = Texel()
         texel.sensor_name = sensor_name
 
-        # Publish xyz
         texel.x = float(local_data[idx, 0])
         texel.y = float(local_data[idx, 1])
         texel.z = float(local_data[idx, 2])
@@ -100,81 +104,247 @@ def generate_sensor_msg(local_data, sensor_names_1d):
 
     return sensor_msg
 
+
 def taxel_1d_sensor_names():
     map_path = Path(__file__).resolve().parent / "leap_sensor_taxel_map.json"
+
     with open(map_path, "r") as f:
         map_dict = json.load(f)
 
     hand_hw_flat, hand_sim_flat = get_flatten_hand(map_dict)
     map_ = get_sorted_1D_hand_taxels_map(hand_hw_flat, hand_sim_flat)
-    sorted_sim = sorted_1D_hand_taxel_name(map_, hand_hw_flat)
+    return sorted_1D_hand_taxel_name(map_, hand_hw_flat)
 
-    return sorted_sim
 
 class SensorValuePublisher(Node):
     def __init__(self) -> None:
         super().__init__("sensor_value_publisher")
-        self.declare_parameter("h5_path", "")
+
+        self.declare_parameter(
+            "dataset_root",
+            str(
+                Path(__file__).resolve().parent
+                / "pointcloud_calibration"
+                / "ML_dataset"
+            ),
+        )
         self.declare_parameter("scaled_root", "interim")
+        self.declare_parameter("publish_period", 0.01)
 
-        h5_path_str = self.get_parameter("h5_path").value
-        if not h5_path_str:
-            raise ValueError("Please provide h5_path")
-        scaled_root = self.get_parameter("scaled_root").value
+        self.dataset_root = Path(self.get_parameter("dataset_root").value)
+        self.scaled_root = str(self.get_parameter("scaled_root").value)
+        self.publish_period = float(self.get_parameter("publish_period").value)
 
-        h5_path = Path(h5_path_str)
+        if not self.dataset_root.exists():
+            raise FileNotFoundError(
+                f"dataset_root not found: {self.dataset_root.resolve()}"
+            )
 
-        dataset_type = h5_path.parent.name
-        stem = h5_path.stem
+        # dataset_root: pointcloud_calibration/ML_dataset
+        # project_root: pointcloud_calibration
+        self.project_root = self.dataset_root.parent
 
-        project_root = h5_path.parents[2]
-        scaled_path = project_root / "interim" / dataset_type / f"{stem}_scaled.npy"
+        # Expected:
+        # pointcloud_calibration/ML_dataset/contour/<dataset_type>/*.h5
+        self.h5_files = sorted(self.dataset_root.rglob("*.h5"))
 
-        self.scaled_data = load_calibrated_from_npy(scaled_path)
-        self.joint_frames = load_joint_states_from_h5(h5_path)
+        if len(self.h5_files) == 0:
+            raise FileNotFoundError(
+                f"No .h5 files found under: {self.dataset_root / 'contour'}"
+            )
 
+        self.sensor_names_1d = taxel_1d_sensor_names()
+
+        self.skipped_files: List[Tuple[str, str]] = []
+        self.current_file_idx = 0
         self.frame_idx = 0
+
+        self.current_h5_path = None
+        self.scaled_data = None
+        self.joint_frames = []
 
         self.sensor_publisher_ = self.create_publisher(
             HandSensors,
             "sensor_values",
             10,
         )
+
         self.joint_publisher_ = self.create_publisher(
             JointState,
             "xela_joint_publisher",
             10,
         )
 
-        self.sensor_names_1d = taxel_1d_sensor_names()
-        self.timer = self.create_timer(0.01, self.publish_sensor_values)
-    
+        self.current_file_pub_ = self.create_publisher(
+            String,
+            "current_h5_file",
+            10,
+        )
+
+        self.get_logger().info(
+            f"Found {len(self.h5_files)} h5 files under {self.dataset_root / 'contour'}"
+        )
+
+        if not self.load_next_valid_file():
+            self.log_skipped_files()
+            raise RuntimeError("No valid h5/scaled npy pairs found.")
+
+        self.timer = self.create_timer(
+            self.publish_period,
+            self.publish_sensor_values,
+        )
+
+    def scaled_path_for_h5(self, h5_path: Path) -> Path:
+        # h5:
+        # pointcloud_calibration/ML_dataset/contour/<dataset_type>/<stem>.h5
+        #
+        # scaled:
+        # pointcloud_calibration/interim/contour/<dataset_type>/<stem>_scaled.npy
+
+        relative = h5_path.relative_to(self.dataset_root)
+        scaled_relative = relative.with_name(f"{h5_path.stem}_scaled.npy")
+
+        return self.project_root / self.scaled_root / scaled_relative
+
+    def load_next_valid_file(self) -> bool:
+        while self.current_file_idx < len(self.h5_files):
+            h5_path = self.h5_files[self.current_file_idx]
+            scaled_path = self.scaled_path_for_h5(h5_path)
+
+            try:
+                if not scaled_path.exists():
+                    raise FileNotFoundError(
+                        f"scaled npy not found: {scaled_path.resolve()}"
+                    )
+
+                scaled_data = load_calibrated_from_npy(scaled_path)
+
+                if scaled_data.ndim != 3 or scaled_data.shape[2] != 3:
+                    raise ValueError(
+                        f"Expected scaled data shape (frames, taxels, 3), "
+                        f"got {scaled_data.shape}"
+                    )
+
+                if scaled_data.shape[0] == 0:
+                    raise ValueError("scaled data has 0 frames")
+
+                if scaled_data.shape[1] != len(self.sensor_names_1d):
+                    raise ValueError(
+                        f"Taxel count mismatch: scaled data has "
+                        f"{scaled_data.shape[1]}, sensor map has "
+                        f"{len(self.sensor_names_1d)}"
+                    )
+
+                joint_frames = load_joint_states_from_h5(h5_path)
+
+                self.current_h5_path = h5_path
+                self.scaled_data = scaled_data
+                self.joint_frames = joint_frames
+                self.frame_idx = 0
+
+                msg = String()
+                msg.data = str(self.current_h5_path)
+                self.current_file_pub_.publish(msg)
+
+                self.get_logger().info(
+                    f"Loaded file {self.current_file_idx + 1}/"
+                    f"{len(self.h5_files)}: {h5_path.name}, "
+                    f"frames={self.scaled_data.shape[0]}, "
+                    f"taxels={self.scaled_data.shape[1]}"
+                )
+
+                return True
+
+            except Exception as e:
+                self.skipped_files.append((str(h5_path), str(e)))
+                self.get_logger().warn(
+                    f"Skipping file: {h5_path.name}. Reason: {e}"
+                )
+                self.current_file_idx += 1
+
+        return False
+
     def publish_sensor_values(self):
-        if self.scaled_data.shape[0] == 0:
+        if self.scaled_data is None or self.scaled_data.shape[0] == 0:
             return
+
         frame_data = self.scaled_data[self.frame_idx]
 
-        hand_sensors_msg = generate_sensor_msg(frame_data, self.sensor_names_1d)
+        try:
+            hand_sensors_msg = generate_sensor_msg(
+                frame_data,
+                self.sensor_names_1d,
+            )
+        except Exception as e:
+            self.skipped_files.append(
+                (
+                    str(self.current_h5_path),
+                    f"Failed at frame {self.frame_idx}: {e}",
+                )
+            )
+            self.get_logger().warn(
+                f"Skipping remaining frames of {self.current_h5_path.name}: {e}"
+            )
+
+            self.current_file_idx += 1
+            if not self.load_next_valid_file():
+                self.finish()
+            return
+
         self.sensor_publisher_.publish(hand_sensors_msg)
 
         if self.joint_frames:
-            joint_names, joint_positions = self.joint_frames[self.frame_idx % len(self.joint_frames)]
+            joint_names, joint_positions = self.joint_frames[
+                self.frame_idx % len(self.joint_frames)
+            ]
+
             joint_msg = JointState()
             joint_msg.header.stamp = self.get_clock().now().to_msg()
             joint_msg.name = list(joint_names)
             joint_msg.position = [float(x) for x in joint_positions]
+
             self.joint_publisher_.publish(joint_msg)
 
-        self.frame_idx = (self.frame_idx + 1) % self.scaled_data.shape[0]
+        self.frame_idx += 1
+
+        if self.frame_idx >= self.scaled_data.shape[0]:
+            self.get_logger().info(
+                f"Finished file: {self.current_h5_path.name}"
+            )
+
+            self.current_file_idx += 1
+
+            if not self.load_next_valid_file():
+                self.finish()
+
+    def log_skipped_files(self):
+        if not self.skipped_files:
+            self.get_logger().info("No files were skipped.")
+            return
+
+        self.get_logger().warn(
+            f"Skipped {len(self.skipped_files)} files:"
+        )
+
+        for path, reason in self.skipped_files:
+            self.get_logger().warn(f"  {path} | {reason}")
+
+    def finish(self):
+        self.get_logger().info("Finished publishing all valid files.")
+        self.log_skipped_files()
+        rclpy.shutdown()
+
 
 def main(args=None) -> None:
     rclpy.init(args=args)
     node = SensorValuePublisher()
+
     try:
         rclpy.spin(node)
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 
 if __name__ == "__main__":

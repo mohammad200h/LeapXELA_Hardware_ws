@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(xela_point_cloud_representation)
 
+set(MUJOCO_ROOT "/root/mujoco-3.1.6")
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -10,8 +12,8 @@ find_package(ament_index_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(OpenGL REQUIRED)
+# find_package(glfw3 REQUIRED)
+# find_package(OpenGL REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Texel.msg"
@@ -21,12 +23,13 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 add_executable(process_hand_sensors_into_pointcloud
   src/process_hand_sensors_into_pointcloud.cc
-  src/camera_control.cc
+  #src/camera_control.cc
 )
 
 target_include_directories(process_hand_sensors_into_pointcloud PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
+  ${MUJOCO_ROOT}/include
 )
 
 ament_target_dependencies(process_hand_sensors_into_pointcloud
@@ -41,8 +44,8 @@ rosidl_target_interfaces(process_hand_sensors_into_pointcloud
 
 target_link_libraries(process_hand_sensors_into_pointcloud
   dl
-  glfw
-  OpenGL::GL
+  #glfw
+  #OpenGL::GL
 )
 
 
@@ -51,10 +54,11 @@ install(TARGETS process_hand_sensors_into_pointcloud
 )
 
 install(PROGRAMS
-  src/hand_controller.py
-  src/hand_touch_point_cloud.py
+  #src/hand_controller.py
+  #src/hand_touch_point_cloud.py
   src/leap_taxel_map.py
   src/sensor_value_publisher.py
+  src/point_cloud_dump.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

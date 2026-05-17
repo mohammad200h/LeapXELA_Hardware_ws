@@ -185,7 +185,7 @@ def get_palm_sim_taxel_map(map_dict):
     # palm right sensor
     up_right_map = []
     for i in range(5, -1, -1):
-        for j in range(3):
+        for j in range(3, -1, -1):
             row.append(f"palm_right_pad_4_6_sensor_patch_{i}_{j}")
         up_right_map.append(row)
     
