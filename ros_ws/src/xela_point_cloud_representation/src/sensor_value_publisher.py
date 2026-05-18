@@ -43,26 +43,27 @@ JOINT_MAP = {
 }
 
 FLAT_OFFSET = {
-    "joint_0": 2.4559032917022705,
-    "joint_1": 3.1492626667022705,
-    "joint_2": 0.8866409063339233,
-    "joint_3": 1.544718623161316,
+    "joint_0": 3.14159274,
+    "joint_1": 1.60147595,
+    "joint_2": 3.14159274,
+    "joint_3": 1.68431091,
 
-    "joint_4": 4.697049140930176,
-    "joint_5": 3.3364081382751465,
-    "joint_6": 3.136990785598755,
-    "joint_7": 3.136990785598755,
+    "joint_4": 4.76909262,
+    "joint_5": 3.14159274,
+    "joint_6": 3.12321721,
+    "joint_7": 3.13224351,
 
-    "joint_8": 4.670971393585205,
-    "joint_9": 3.3333401679992676,
-    "joint_10": 3.120116949081421,
-    "joint_11": 3.155398368835449,
+    "joint_8": 4.75687456,
+    "joint_9": 3.14159274,
+    "joint_10": 3.08636928,
+    "joint_11": 3.14772868,
 
-    "joint_12": 4.664835453033447,
-    "joint_13": 3.2689130306243896,
-    "joint_14": 3.120116949081421,
-    "joint_15": 3.1461946964263916,
+    "joint_12": 4.77683252,
+    "joint_13": 3.14159274,
+    "joint_14": 3.09710717,
+    "joint_15": 3.12165093,
 }
+
 
 SIGN = {
     "joint_0": 1.0,
@@ -86,12 +87,8 @@ SIGN = {
     "joint_15": -1.0,
 }
 
-def wrap_to_pi(x):
-    return (x + np.pi) % (2.0 * np.pi) - np.pi
-
-
 def motor_rad_to_mujoco_qpos(raw_name, raw_pos):
-    q_rel = wrap_to_pi(float(raw_pos) - FLAT_OFFSET[raw_name])
+    q_rel = float(raw_pos) - FLAT_OFFSET[raw_name]
     return SIGN[raw_name] * q_rel
 
 def load_calibrated_from_npy(npy_path: Path):
@@ -130,7 +127,6 @@ def load_joint_states_from_h5(h5_path: Path):
                     continue
 
                 state = sample["state"]
-
                 if "name" not in state or "position" not in state:
                     joint_frames.append(([], []))
                     continue
@@ -153,7 +149,6 @@ def load_joint_states_from_h5(h5_path: Path):
                         print(f"[WARN] No MuJoCo mapping for joint name: {name}")
 
                 joint_frames.append((mapped_names, mapped_positions))
-
 
             except Exception:
                 joint_frames.append(([], []))
