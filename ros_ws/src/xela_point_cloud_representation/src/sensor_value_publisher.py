@@ -22,18 +22,18 @@ from leap_taxel_map import (
 
 JOINT_MAP = {
     "joint_4": "if_mcp",
-    "joint_5": "if_rot",
-    "joint_6": "if_pip",
+    "joint_6": "if_rot",
+    "joint_5": "if_pip",
     "joint_7": "if_dip",
 
     "joint_8": "mf_mcp",
-    "joint_9": "mf_rot",
-    "joint_10": "mf_pip",
+    "joint_10": "mf_rot",
+    "joint_9": "mf_pip",
     "joint_11": "mf_dip",
 
     "joint_12": "rf_mcp",
-    "joint_13": "rf_rot",
-    "joint_14": "rf_pip",
+    "joint_14": "rf_rot",
+    "joint_13": "rf_pip",
     "joint_15": "rf_dip",
 
     "joint_0": "th_cmc",
@@ -49,17 +49,17 @@ FLAT_OFFSET = {
     "joint_3": 1.68431091,
 
     "joint_4": 4.76909262,
-    "joint_5": 3.14159274,
+    "joint_5": 3.33487415,
     "joint_6": 3.12321721,
     "joint_7": 3.13224351,
 
     "joint_8": 4.75687456,
-    "joint_9": 3.14159274,
+    "joint_9": 3.33180618,
     "joint_10": 3.08636928,
     "joint_11": 3.14772868,
 
     "joint_12": 4.77683252,
-    "joint_13": 3.14159274,
+    "joint_13": 3.26584506,
     "joint_14": 3.09710717,
     "joint_15": 3.12165093,
 }
@@ -72,18 +72,18 @@ SIGN = {
     "joint_3": -1.0,
 
     "joint_4": -1.0,
-    "joint_5": 1.0,
-    "joint_6": 1.0,
+    "joint_5": -1.0,
+    "joint_6": -1.0,
     "joint_7": -1.0,
 
     "joint_8": -1.0,
-    "joint_9": 1.0,
-    "joint_10": 1.0,
+    "joint_9": -1.0,
+    "joint_10": -1.0,
     "joint_11": -1.0,
 
     "joint_12": -1.0,
-    "joint_13": 1.0,
-    "joint_14": 1.0,
+    "joint_13": -1.0,
+    "joint_14": -1.0,
     "joint_15": -1.0,
 }
 
