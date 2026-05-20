@@ -224,7 +224,7 @@ class XelaDataCollector(Node):
         try:
             raw = self._decode_image(raw_msg, dtype=np.int32)
             norm = self._decode_image(norm_msg, dtype=np.float32)
-            # TODO: rewrite storage
+           
             self.storage.store(raw, norm, state_msg, xela_taxel_msg, raw_msg, norm_msg)
         except Exception as e:
             self.get_logger().error(f"Failed to store synced frame: {e}")
