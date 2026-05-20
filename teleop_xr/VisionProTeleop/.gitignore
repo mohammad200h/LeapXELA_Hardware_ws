@@ -1,0 +1,9 @@
+/*.egg-info
+/dist 
+*.pyc
+build/
+*.mp4
+# CloudKit private key - DO NOT COMMIT
+avp_stream/datasets/eckey.pem
+*.pem
+downloads/
