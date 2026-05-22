@@ -5,8 +5,8 @@ Quest / AVP hand tracking -> PyBullet IK -> LEAP Hand joint angles.
 Based on https://github.com/Improbable-AI/VisionProTeleop and
 https://github.com/leap-hand/Bidex_VisionPro_Teleop
 
-ROS 2 node publishes the 16-D LEAP joint vector after IK on a JointState topic
-(default: cmd_xela, compatible with leaphand_node).
+ROS 2 node publishes revolute joint angles from ``leap_description`` ``hand.urdf``
+on a JointState topic (default: cmd_xela, compatible with leaphand_node).
 """
 
 from __future__ import annotations
@@ -22,31 +22,55 @@ from sensor_msgs.msg import JointState
 
 from oculusTeleop.client import QuestHeadsetStreamer
 
-# 16-D LEAP Hand joint order (matches leaphand_node / LEAP Hand API).
-LEAP_JOINT_NAMES = [
-    "joint1",
-    "joint2",
-    "joint3",
-    "joint4",
-    "joint5",
-    "joint6",
-    "joint7",
-    "joint8",
-    "joint9",
-    "joint10",
-    "joint11",
-    "joint12",
-    "joint13",
-    "joint14",
-    "joint15",
-    "joint16",
-]
+# Fingertip + realtip link indices for hand.urdf (index/middle/ring/thumb).
+_HAND_EE_LINK_INDICES = (4, 5, 9, 10, 14, 15, 19, 20)
 
 
 def _decode_pybullet_name(name):
     if isinstance(name, bytes):
         return name.decode("utf-8")
     return name
+
+
+def _leap_description_urdf_dir() -> str:
+    """Resolve leap_description/urdf (installed share or source tree)."""
+    try:
+        from ament_index_python.packages import get_package_share_directory
+
+        share = get_package_share_directory("leap_description")
+        urdf_dir = os.path.join(share, "urdf")
+        if os.path.isfile(os.path.join(urdf_dir, "hand.urdf")):
+            return urdf_dir
+    except Exception:
+        pass
+
+    here = os.path.dirname(os.path.abspath(__file__))
+    src_urdf = os.path.normpath(
+        os.path.join(here, "..", "..", "leap_description", "urdf")
+    )
+    if os.path.isfile(os.path.join(src_urdf, "hand.urdf")):
+        return src_urdf
+
+    raise FileNotFoundError(
+        "hand.urdf not found. Build/install leap_description or run from the workspace."
+    )
+
+
+def _setup_pybullet_search_paths(urdf_dir: str) -> None:
+    p.setAdditionalSearchPath(urdf_dir)
+    assets_dir = os.path.join(urdf_dir, "assets")
+    if os.path.isdir(assets_dir):
+        p.setAdditionalSearchPath(assets_dir)
+
+
+def _revolute_joints(body_id: int) -> list[tuple[int, str]]:
+    """(joint_index, name) for each revolute joint in URDF order."""
+    joints: list[tuple[int, str]] = []
+    for joint_index in range(p.getNumJoints(body_id)):
+        info = p.getJointInfo(body_id, joint_index)
+        if info[2] == p.JOINT_REVOLUTE:
+            joints.append((joint_index, _decode_pybullet_name(info[1])))
+    return joints
 
 
 def get_name_off_ee(robot_id, ee_index):
@@ -84,34 +108,49 @@ class Leapv1PybulletIKPython:
         quest_ip: str | None = None,
         quest_port: int = 5006,
         use_gui: bool = True,
+        urdf_path: str = "",
     ):
         self.vps = QuestHeadsetStreamer(quest_ip=quest_ip, port=quest_port)
         p.connect(p.GUI if use_gui else p.DIRECT)
 
-        path_src = os.path.abspath(__file__)
-        path_src = os.path.dirname(path_src)
         self.is_left = is_left
         self.glove_to_leap_mapping_scale = 1.6
-        self.leapEndEffectorIndex = [3, 4, 8, 9, 13, 14, 18, 19]
+        self.leapEndEffectorIndex = list(_HAND_EE_LINK_INDICES)
+
+        urdf_dir = _leap_description_urdf_dir()
+        resolved_urdf = (
+            os.path.abspath(urdf_path.strip())
+            if urdf_path.strip()
+            else os.path.join(urdf_dir, "hand.urdf")
+        )
+        if not os.path.isfile(resolved_urdf):
+            raise FileNotFoundError(f"URDF not found: {resolved_urdf}")
+
+        _setup_pybullet_search_paths(os.path.dirname(resolved_urdf))
+
         if self.is_left:
-            path_src = os.path.join(path_src, "leap_hand_mesh_left/robot_pybullet.urdf")
-            self.LeapId = p.loadURDF(
-                path_src,
-                [0.31, 0.01, 0.06],
-                p.getQuaternionFromEuler([1.57, 0, 0]),
-                useFixedBase=True,
-            )
+            base_pos = [0.31, 0.01, 0.06]
+            base_orn = p.getQuaternionFromEuler([1.57, 0, 0])
         else:
-            path_src = os.path.join(path_src, "leap_hand_mesh_right/robot_pybullet.urdf")
-            self.LeapId = p.loadURDF(
-                path_src,
-                [-0.22, 0.01, 0.03],
-                p.getQuaternionFromEuler([1.57, 0, 3.14]),
-                useFixedBase=True,
-            )
+            base_pos = [-0.22, 0.01, 0.03]
+            base_orn = p.getQuaternionFromEuler([1.57, 0, 3.14])
+
+        self.LeapId = p.loadURDF(
+            resolved_urdf,
+            base_pos,
+            base_orn,
+            useFixedBase=True,
+        )
+        if self.LeapId < 0:
+            raise RuntimeError(f"Failed to load URDF: {resolved_urdf}")
+
+        if not self.is_left:
             for ee_index in self.leapEndEffectorIndex:
                 name = get_name_off_ee(self.LeapId, ee_index)
                 print(f"EE {ee_index} name: {name}")
+
+        self._revolute_joints = _revolute_joints(self.LeapId)
+        self.joint_names = [name for _, name in self._revolute_joints]
 
         self.numJoints = p.getNumJoints(self.LeapId)
         p.setGravity(0, 0, 0)
@@ -206,7 +245,7 @@ class Leapv1PybulletIKPython:
             rightHandThumb_pos,
         ]
 
-        jointPoses = p.calculateInverseKinematics2(
+        joint_poses = p.calculateInverseKinematics2(
             self.LeapId,
             self.leapEndEffectorIndex,
             leapEndEffectorPos,
@@ -215,39 +254,24 @@ class Leapv1PybulletIKPython:
             residualThreshold=0.0001,
         )
 
-        combined_jointPoses = (
-            jointPoses[0:4]
-            + (0.0,)
-            + jointPoses[4:8]
-            + (0.0,)
-            + jointPoses[8:12]
-            + (0.0,)
-            + jointPoses[12:16]
-            + (0.0,)
-        )
-        combined_jointPoses = list(combined_jointPoses)
+        if len(joint_poses) != len(self._revolute_joints):
+            raise RuntimeError(
+                f"IK returned {len(joint_poses)} joints, expected {len(self._revolute_joints)}"
+            )
 
-        for i in range(20):
+        for (joint_index, _name), target in zip(self._revolute_joints, joint_poses):
             p.setJointMotorControl2(
                 bodyIndex=self.LeapId,
-                jointIndex=i,
+                jointIndex=joint_index,
                 controlMode=p.POSITION_CONTROL,
-                targetPosition=combined_jointPoses[i],
+                targetPosition=float(target),
                 targetVelocity=0,
                 force=500,
                 positionGain=0.3,
                 velocityGain=1,
             )
 
-        real_robot_hand_q = np.array([float(0.0) for _ in range(16)])
-        real_robot_hand_q[0:4] = jointPoses[0:4]
-        real_robot_hand_q[4:8] = jointPoses[4:8]
-        real_robot_hand_q[8:12] = jointPoses[8:12]
-        real_robot_hand_q[12:16] = jointPoses[12:16]
-        real_robot_hand_q[0:2] = real_robot_hand_q[0:2][::-1]
-        real_robot_hand_q[4:6] = real_robot_hand_q[4:6][::-1]
-        real_robot_hand_q[8:10] = real_robot_hand_q[8:10][::-1]
-        return [float(i) for i in real_robot_hand_q]
+        return [float(q) for q in joint_poses]
 
     def close(self) -> None:
         self.vps.close()
@@ -264,6 +288,7 @@ class AvpLeapServerNode(Node):
         self.declare_parameter("publish_rate_hz", 30.0)
         self.declare_parameter("joint_topic", "cmd_xela")
         self.declare_parameter("wait_for_tracking_sec", 30.0)
+        self.declare_parameter("urdf_path", "")
 
         quest_ip = self.get_parameter("quest_ip").get_parameter_value().string_value
         if not quest_ip.strip():
@@ -274,6 +299,7 @@ class AvpLeapServerNode(Node):
         rate_hz = float(self.get_parameter("publish_rate_hz").value)
         joint_topic = str(self.get_parameter("joint_topic").value)
         wait_sec = float(self.get_parameter("wait_for_tracking_sec").value)
+        urdf_path = str(self.get_parameter("urdf_path").value)
 
         self.get_logger().info(
             f"Starting AVP/Quest IK teleop (hand={'left' if is_left else 'right'}, "
@@ -284,6 +310,7 @@ class AvpLeapServerNode(Node):
             quest_ip=quest_ip,
             quest_port=quest_port,
             use_gui=use_gui,
+            urdf_path=urdf_path,
         )
 
         if wait_sec > 0.0:
@@ -301,13 +328,14 @@ class AvpLeapServerNode(Node):
 
         self._joint_pub = self.create_publisher(JointState, joint_topic, 10)
         self._joint_msg = JointState()
-        self._joint_msg.name = list(LEAP_JOINT_NAMES)
+        self._joint_msg.name = list(self._ik.joint_names)
 
         period = 1.0 / max(rate_hz, 1.0)
         self._timer = self.create_timer(period, self._on_timer)
 
         self.get_logger().info(
-            f"Publishing {len(LEAP_JOINT_NAMES)}-D LEAP joints on '{joint_topic}' at {rate_hz:.1f} Hz."
+            f"Publishing {len(self._ik.joint_names)} joints on '{joint_topic}' "
+            f"at {rate_hz:.1f} Hz ({', '.join(self._ik.joint_names)})."
         )
 
     def _on_timer(self) -> None:
