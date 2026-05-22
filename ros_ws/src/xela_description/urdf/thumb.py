@@ -19,9 +19,9 @@ def _as_list(value: Any) -> list[Any]:
     return [value]
 
 
-class LinkThP2:
+class CMCLink:
     def link_name(self) -> str:
-        return "thp2_unified"
+        return "cmc"
 
     def inertial(self) -> dict[str, Any]:
         return {
@@ -54,9 +54,9 @@ class LinkThP2:
         }
 
 
-class LinkClipper:
+class AXLLink:
     def link_name(self) -> str:
-        return "clipper"
+        return "axl"
 
     def inertial(self) -> dict[str, Any]:
         return {
@@ -106,9 +106,9 @@ class LinkClipper:
         ]
 
 
-class LinkThP1:
+class MCPLink:
     def link_name(self) -> str:
-        return "thp1_unified"
+        return "th_mcp"
 
     def inertial(self) -> dict[str, Any]:
         return {
@@ -141,9 +141,9 @@ class LinkThP1:
         }
 
 
-class LinkThFingertip:
+class IPLLink:
     def link_name(self) -> str:
-        return "thfingertip_unified"
+        return "th_ipl"
 
     def inertial(self) -> dict[str, Any]:
         return {
@@ -176,9 +176,40 @@ class LinkThFingertip:
         }
 
 
+class THREALTIPLINK:
+    def link_name(self) -> str:
+        return "th_realtip"
+
+    def inertial(self) -> dict[str, Any]:
+        return {
+            "origin": {"xyz": [0.0, 0.0, 0.0], "rpy": [0.0, 0.0, 0.0]},
+            "mass": 0.000001,
+            "inertia": {
+                "ixx": 0.000025,
+                "ixy": 0.0,
+                "ixz": 0.0,
+                "iyy": 0.000025,
+                "iyz": 0.0,
+                "izz": 0.000025,
+            },
+        }
+    def visual(self) -> dict[str, Any]:
+        return {
+            "origin": {"xyz": [0.0, 0.0, 0.0], "rpy": [0.0, 0.0, 0.0]},
+            "geometry": {"sphere": {"radius": 0.005}},
+            "material": {
+                "name": "ball_material",
+                "color": {"rgba": [1.0, 0.0, 0.0, 1.0]},
+            },
+        }
+    def collision(self) -> dict[str, Any]:
+        return {
+            "origin": {"xyz": [0.0, 0.0, 0.0], "rpy": [0.0, 0.0, 0.0]},
+            "geometry": {"sphere": {"radius": 0.005}},
+        }
 
 
-class JointThAxl:
+class THAXLJOINT:
     def joint_name(self) -> str:
         return "th_axl"
 
@@ -189,10 +220,10 @@ class JointThAxl:
         return {"xyz": [-0.0144, -0.0, 0.013], "rpy": [-1.5708, 0.0, 1.5708]}
 
     def parent_link_name(self) -> str:
-        return "thp2_unified"
+        return "cmc"
 
     def child_link_name(self) -> str:
-        return "clipper"
+        return "axl"
 
     def axis(self) -> list[float]:
         return [0.0, 0.0, 1.0]
@@ -201,7 +232,7 @@ class JointThAxl:
         return {"effort": 10, "velocity": 10, "lower": -0.349066, "upper": 2.0944}
 
 
-class JointThMcp:
+class THMCPJOINT:
     def joint_name(self) -> str:
         return "th_mcp"
 
@@ -212,10 +243,10 @@ class JointThMcp:
         return {"xyz": [0.0145, -0.0, 0.019], "rpy": [1.5708, 0.0, -1.5708]}
 
     def parent_link_name(self) -> str:
-        return "clipper"
+        return "axl"
 
     def child_link_name(self) -> str:
-        return "thp1_unified"
+        return "th_mcp"
 
     def axis(self) -> list[float]:
         return [0.0, 0.0, 1.0]
@@ -224,7 +255,7 @@ class JointThMcp:
         return {"effort": 10, "velocity": 10, "lower": -0.471239, "upper": 2.44346}
 
 
-class JointThIpl:
+class THIPLJOINT:
     def joint_name(self) -> str:
         return "th_ipl"
 
@@ -235,10 +266,10 @@ class JointThIpl:
         return {"xyz": [-0.0, 0.0446, 0.0], "rpy": [-0.0, -0.0, -3.14159]}
 
     def parent_link_name(self) -> str:
-        return "thp1_unified"
+        return "th_mcp"
 
     def child_link_name(self) -> str:
-        return "thfingertip_unified"
+        return "th_ipl"
 
     def axis(self) -> list[float]:
         return [0.0, 0.0, 1.0]
@@ -247,15 +278,40 @@ class JointThIpl:
         return {"effort": 10, "velocity": 10, "lower": -1.3439, "upper": 1.88496}
 
 
+class THREALTIPJOINT:
+    def joint_name(self) -> str:
+        return "th_realtip"
+
+    def joint_type(self) -> str:
+        return "fixed"
+
+    def origin(self) -> dict[str, Any]:
+        return {"xyz": [0.0, -0.07, 0.015], "rpy": [0.0, 0.0, 0.0]}
+
+    def parent_link_name(self) -> str:
+        return "th_ipl"
+
+    def child_link_name(self) -> str:
+        return "th_realtip"
+
+    def axis(self) -> list[float]:
+        return [0.0, 0.0, -1.0]
+
+    def limit(self) -> dict[str, Any]:
+        return None
+
 @dataclass(frozen=True)
 class Thumb:
     links: list[Any]
     joints: list[Any]
 
 
-def generate_thumb() -> Thumb:
-    links = [LinkThP2(), LinkClipper(), LinkThP1(), LinkThFingertip()]
-    joints = [ JointThAxl(), JointThMcp(), JointThIpl()]
+def generate_thumb(teleop: bool = False) -> Thumb:
+    links = [CMCLink(), AXLLink(), MCPLink(), IPLLink()]
+    joints = [ THAXLJOINT(), THMCPJOINT(), THIPLJOINT()]
+    if teleop:
+        links += [THREALTIPLINK()]
+        joints += [THREALTIPJOINT()]
     return Thumb(links=links, joints=joints)
 
 
@@ -264,30 +320,38 @@ def link_urdf(link: Any) -> str:
     visuals = _as_list(link.visual())
     collisions = _as_list(link.collision())
 
-    visuals_xml = "\n".join(
-        f"""
+    visuals_xml = ""
+    collisions_xml = ""
+    for v in visuals:
+        if "mesh" in v["geometry"].keys():
+            mesh_visual_xml = f"""<mesh filename="{v["geometry"]["mesh"]["filename"]}"/>"""
+        else:
+            mesh_visual_xml = f"""<sphere radius="{v["geometry"]["sphere"]["radius"]}"/>"""
+
+        visuals_xml += f"""\n
     <visual>
       <origin xyz="{list_to_string(v["origin"]["xyz"])}" rpy="{list_to_string(v["origin"]["rpy"])}"/>
       <geometry>
-        <mesh filename="{v["geometry"]["mesh"]["filename"]}"/>
+        {mesh_visual_xml}
       </geometry>
       <material name="{v["material"]["name"]}">
         <color rgba="{list_to_string(v["material"]["color"]["rgba"])}"/>
       </material>
-    </visual>""".rstrip("\n")
-        for v in visuals
-    )
-
-    collisions_xml = "\n".join(
-        f"""
+    </visual>
+    """
+    for c in collisions:
+        if "mesh" in c["geometry"].keys():
+            mesh_collision_xml = f"""<mesh filename="{c["geometry"]["mesh"]["filename"]}"/>"""
+        else:
+            mesh_collision_xml = f"""<sphere radius="{c["geometry"]["sphere"]["radius"]}"/>"""
+        collisions_xml += f"""\n
     <collision>
       <origin xyz="{list_to_string(c["origin"]["xyz"])}" rpy="{list_to_string(c["origin"]["rpy"])}"/>
       <geometry>
-        <mesh filename="{c["geometry"]["mesh"]["filename"]}"/>
+        {mesh_collision_xml}
       </geometry>
-    </collision>""".rstrip("\n")
-        for c in collisions
-    )
+    </collision>
+    """
 
     return f"""
   <link name="{link.link_name()}">
@@ -305,13 +369,17 @@ def link_urdf(link: Any) -> str:
 def joint_urdf(joint: Any) -> str:
     limit = joint.limit()
     origin = joint.origin()
+
+    limit_xml = ""
+    if limit is not None:
+        limit_xml = f"""<limit effort="{limit["effort"]}" velocity="{limit["velocity"]}" lower="{limit["lower"]}" upper="{limit["upper"]}"/>"""
     return f"""
   <joint name="{joint.joint_name()}" type="{joint.joint_type()}">
     <origin xyz="{list_to_string(origin["xyz"])}" rpy="{list_to_string(origin["rpy"])}"/>
     <parent link="{joint.parent_link_name()}"/>
     <child link="{joint.child_link_name()}"/>
     <axis xyz="{list_to_string(joint.axis())}"/>
-    <limit effort="{limit["effort"]}" velocity="{limit["velocity"]}" lower="{limit["lower"]}" upper="{limit["upper"]}"/>
+    {limit_xml}
   </joint>
 """.rstrip("\n")
 

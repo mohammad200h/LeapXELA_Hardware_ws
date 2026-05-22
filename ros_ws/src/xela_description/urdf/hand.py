@@ -28,12 +28,12 @@ class BasePalmJoint:
         return [0.0, 0.0, 1.0]
 
 
-class RFPalmJoint(BasePalmJoint):
+class RFMCPJoint(BasePalmJoint):
     def joint_name(self) -> str:
         return "rf_mcp"
 
     def child_link_name(self) -> str:
-        return "rf_p4_unified"
+        return "rf_mcp"
 
     def origin(self) -> dict[str, Any]:
         return {"xyz": [-0.02317, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
@@ -42,12 +42,12 @@ class RFPalmJoint(BasePalmJoint):
         return {"effort": 10, "velocity": 10, "lower": -0.314159, "upper": 2.23402}
 
 
-class MFPalmJoint(BasePalmJoint):
+class MFMCPJoint(BasePalmJoint):
     def joint_name(self) -> str:
         return "mf_mcp"
 
     def child_link_name(self) -> str:
-        return "mf_p4_unified"
+        return "mf_mcp"
 
     def origin(self) -> dict[str, Any]:
         return {"xyz": [0.02228, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
@@ -56,12 +56,12 @@ class MFPalmJoint(BasePalmJoint):
         return {"effort": 10, "velocity": 10, "lower": -0.314159, "upper": 2.23402}
 
 
-class IFPalmJoint(BasePalmJoint):
+class IFMCPJoint(BasePalmJoint):
     def joint_name(self) -> str:
         return "if_mcp"
 
     def child_link_name(self) -> str:
-        return "if_p4_unified"
+        return "if_mcp"
 
     def origin(self) -> dict[str, Any]:
         return {"xyz": [0.06773, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
@@ -70,12 +70,12 @@ class IFPalmJoint(BasePalmJoint):
         return {"effort": 10, "velocity": 10, "lower": -0.314159, "upper": 2.23402}
 
 
-class ThumbPalmJoint(BasePalmJoint):
+class ThumbCMCJoint(BasePalmJoint):
     def joint_name(self) -> str:
         return "th_cmc"
 
     def child_link_name(self) -> str:
-        return "thp2_unified"
+        return "cmc"
 
     def origin(self) -> dict[str, Any]:
         return {"xyz": [0.0480627, -0.013, 0.07], "rpy": [-3.14159, 0.0, 3.14159]}
@@ -117,7 +117,7 @@ def joint_urdf(joint: Any) -> str:
 """.rstrip("\n")
 
 def generate_palm_joints() -> str:
-    palm_joints = [RFPalmJoint(), MFPalmJoint(), IFPalmJoint(), ThumbPalmJoint()]
+    palm_joints = [RFMCPJoint(), MFMCPJoint(), IFMCPJoint(), ThumbCMCJoint()]
     return "\n".join(joint_urdf(j) for j in palm_joints)
 
 def render_hand_joints_urdf() -> str:

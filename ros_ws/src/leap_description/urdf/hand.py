@@ -21,7 +21,7 @@ def base_world_xml():
   <joint name="base_to_base" type="fixed">
     <parent link="base"/>
     <child link="palm_lower"/>
-    <origin rpy="0 0 0" xyz="0 0 0.1"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
   </joint>
 """
 

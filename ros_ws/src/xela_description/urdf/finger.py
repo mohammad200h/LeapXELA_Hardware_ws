@@ -11,14 +11,14 @@ except ImportError:  # pragma: no cover
     from list_to_string import list_to_string
 
 
-class LinkP4:
+class MCPLink:
     def __init__(self, prefix: str):
         self.prefix = prefix
 
     # For now this template generates a single link (p4_unified),
     # matching `urdf/robot.urdf`.
     def link_name(self) -> str:
-        return f"{self.prefix}_p4_unified"
+        return f"{self.prefix}_mcp"
 
     def inertial(self) -> dict[str, Any]:
         return {
@@ -51,12 +51,12 @@ class LinkP4:
         }
 
 
-class LinkP3:
+class PIPLink:
     def __init__(self, prefix: str):
         self.prefix = prefix
 
     def link_name(self) -> str:
-        return f"{self.prefix}_p3_unified"
+        return f"{self.prefix}_pip"
 
     def inertial(self) -> dict[str, Any]:
         return {
@@ -89,12 +89,12 @@ class LinkP3:
         }
 
 
-class LinkP2:
+class DIPLink:
     def __init__(self, prefix: str):
         self.prefix = prefix
 
     def link_name(self) -> str:
-        return f"{self.prefix}_p2_unified"
+        return f"{self.prefix}_dip"
 
     def inertial(self) -> dict[str, Any]:
         return {
@@ -127,12 +127,12 @@ class LinkP2:
         }
 
 
-class LinkFingertop:
+class FingertipLink:
     def __init__(self, prefix: str):
         self.prefix = prefix
 
     def link_name(self) -> str:
-        return f"{self.prefix}_fingertop_unfied"
+        return f"{self.prefix}_fingertip"
 
     def inertial(self) -> dict[str, Any]:
         return {
@@ -165,7 +165,44 @@ class LinkFingertop:
         }
 
 
-class JointP4P3:
+class RELATIPLink:
+    def __init__(self, prefix: str):
+        self.prefix = prefix
+
+    def link_name(self) -> str:
+        return f"{self.prefix}_realtip"
+
+    def inertial(self) -> dict[str, Any]:
+        return {
+            "origin": {"xyz": [0.0, 0.0, 0.0], "rpy": [0.0, 0.0, 0.0]},
+            "mass": 0.000001,
+            "inertia": {
+                "ixx": 0.000025,
+                "ixy": 0.0,
+                "ixz": 0.0,
+                "iyy": 0.000025,
+                "iyz": 0.0,
+                "izz": 0.000025,
+            },
+        }
+
+    def visual(self) -> dict[str, Any]:
+        return {
+            "origin": {"xyz": [0.0, 0.0, 0.0], "rpy": [0.0, 0.0, 0.0]},
+            "geometry": {"sphere": {"radius": 0.005}},
+            "material": {
+                "name": "ball_material",
+                "color": {"rgba": [1.0, 0.0, 0.0, 1.0]},
+            },
+        }
+
+    def collision(self) -> dict[str, Any]:
+        return {
+            "origin": {"xyz": [0.0, 0.0, 0.0], "rpy": [0.0, 0.0, 0.0]},
+            "geometry": {"sphere": {"radius": 0.005}},
+        }
+
+class ROTJOINT:
     def __init__(self, prefix: str, offset: float):
         self.prefix = prefix
         self.offset = offset
@@ -180,10 +217,10 @@ class JointP4P3:
         return {"xyz": [0.0326 + self.offset, -0.0123, -0.0145], "rpy": [-1.5708, -1.5708, 0.0]}
 
     def parent_link_name(self) -> str:
-        return f"{self.prefix}_p4_unified"
+        return f"{self.prefix}_mcp"
 
     def child_link_name(self) -> str:
-        return f"{self.prefix}_p3_unified"
+        return f"{self.prefix}_pip"
 
     def axis(self) -> list[float]:
         return [0.0, 0.0, 1.0]
@@ -192,7 +229,7 @@ class JointP4P3:
         return {"effort": 10, "velocity": 10, "lower": -1.0472, "upper": 1.0472}
 
 
-class JointP3P2:
+class PIPJOINT:
     def __init__(self, prefix: str, offset: float):
         self.prefix = prefix
         self.offset = offset
@@ -207,10 +244,10 @@ class JointP3P2:
         return {"xyz": [0.0145 + self.offset, 0.015, 0.013], "rpy": [1.5708, 0.0, 1.5708]}
 
     def parent_link_name(self) -> str:
-        return f"{self.prefix}_p3_unified"
+        return f"{self.prefix}_pip"
 
     def child_link_name(self) -> str:
-        return f"{self.prefix}_p2_unified"
+        return f"{self.prefix}_dip"
 
     def axis(self) -> list[float]:
         return [0.0, 0.0, 1.0]
@@ -219,7 +256,7 @@ class JointP3P2:
         return {"effort": 10, "velocity": 10, "lower": -0.506145, "upper": 1.88496}
 
 
-class JointP2Fingertop:
+class DIPJOINT:
     def __init__(self, prefix: str, offset: float):
         self.prefix = prefix
         self.offset = offset
@@ -234,16 +271,41 @@ class JointP2Fingertop:
         return {"xyz": [0.0361 + self.offset, 0.0, -0.0291], "rpy": [0.0, 0.0, 1.5708]}
 
     def parent_link_name(self) -> str:
-        return f"{self.prefix}_p2_unified"
+        return f"{self.prefix}_dip"
 
     def child_link_name(self) -> str:
-        return f"{self.prefix}_fingertop_unfied"
+        return f"{self.prefix}_fingertip"
 
     def axis(self) -> list[float]:
         return [0.0, 0.0, 1.0]
 
     def limit(self) -> dict[str, Any]:
         return {"effort": 10, "velocity": 10, "lower": -0.366519, "upper": 2.04204}
+
+class RELATIPJOINT:
+    def __init__(self, prefix: str, offset: float):
+        self.prefix = prefix
+        self.offset = offset
+
+    def joint_name(self) -> str:
+        return f"{self.prefix}_realtip"
+
+    def joint_type(self) -> str:
+        return "fixed"
+
+    def origin(self) -> dict[str, Any]:
+        return {"xyz": [-0.02, -0.07, 0.015], "rpy": [0.0, 0.0, 0.0]}
+
+    def parent_link_name(self) -> str:
+        return f"{self.prefix}_fingertip"
+
+    def child_link_name(self) -> str:
+        return f"{self.prefix}_realtip"
+    def axis(self) -> list[float]:
+        return [0.0, 0.0, -1.0]
+
+    def limit(self) -> dict[str, Any]:
+        return None
 
 
 @dataclass(frozen=True)
@@ -253,14 +315,16 @@ class Finger:
     joints: list[Any]
 
 
-def generate_finger(prefix: str, offset: float) -> Finger:
-    p4 = LinkP4(prefix)
-    p3 = LinkP3(prefix)
-    p2 = LinkP2(prefix)
-    fingertop = LinkFingertop(prefix)
+def generate_finger(prefix: str, offset: float, teleop = False) -> Finger:
+  
 
-    links = [p4, p3, p2, fingertop]
-    joints = [JointP4P3(prefix, offset), JointP3P2(prefix, offset), JointP2Fingertop(prefix, offset)]
+    links = [MCPLink(prefix), PIPLink(prefix), DIPLink(prefix), FingertipLink(prefix)]
+    joints = [ROTJOINT(prefix, offset), PIPJOINT(prefix, offset), DIPJOINT(prefix, offset)]
+
+
+    if teleop:
+        links += [RELATIPLink(prefix)]
+        joints += [RELATIPJOINT(prefix, offset)]
 
     return Finger(prefix, links, joints)
 
@@ -269,6 +333,15 @@ def link_urdf(link: Any) -> str:
     inertial = link.inertial()
     visual = link.visual()
     collision = link.collision()
+    
+    if "mesh" in visual["geometry"].keys():
+        mesh_visual_xml = f"""<mesh filename="{visual["geometry"]["mesh"]["filename"]}"/>"""
+    else:
+        mesh_visual_xml = f"""<sphere radius="{visual["geometry"]["sphere"]["radius"]}"/>"""
+    if "mesh" in collision["geometry"].keys():
+        mesh_collision_xml = f"""<mesh filename="{collision["geometry"]["mesh"]["filename"]}"/>"""
+    else:
+        mesh_collision_xml = f"""<sphere radius="{collision["geometry"]["sphere"]["radius"]}"/>"""
 
     return f"""
   <link name="{link.link_name()}">
@@ -280,7 +353,7 @@ def link_urdf(link: Any) -> str:
     <visual>
       <origin xyz="{list_to_string(visual["origin"]["xyz"])}" rpy="{list_to_string(visual["origin"]["rpy"])}"/>
       <geometry>
-        <mesh filename="{visual["geometry"]["mesh"]["filename"]}"/>
+        {mesh_visual_xml}
       </geometry>
       <material name="{visual["material"]["name"]}">
         <color rgba="{list_to_string(visual["material"]["color"]["rgba"])}"/>
@@ -289,7 +362,7 @@ def link_urdf(link: Any) -> str:
     <collision>
       <origin xyz="{list_to_string(collision["origin"]["xyz"])}" rpy="{list_to_string(collision["origin"]["rpy"])}"/>
       <geometry>
-        <mesh filename="{collision["geometry"]["mesh"]["filename"]}"/>
+        {mesh_collision_xml}
       </geometry>
     </collision>
   </link>
@@ -301,13 +374,19 @@ def link_urdf(link: Any) -> str:
 def joint_urdf(joint: Any) -> str:
     limit = joint.limit()
     origin = joint.origin()
+    
+    limit_xml = ""
+    if limit is not None:
+        limit_xml = f"""<limit effort="{limit["effort"]}" velocity="{limit["velocity"]}" lower="{limit["lower"]}" upper="{limit["upper"]}"/>"""
+
+     
     return f"""
   <joint name="{joint.joint_name()}" type="{joint.joint_type()}">
     <origin xyz="{list_to_string(origin["xyz"])}" rpy="{list_to_string(origin["rpy"])}"/>
     <parent link="{joint.parent_link_name()}"/>
     <child link="{joint.child_link_name()}"/>
     <axis xyz="{list_to_string(joint.axis())}"/>
-    <limit effort="{limit["effort"]}" velocity="{limit["velocity"]}" lower="{limit["lower"]}" upper="{limit["upper"]}"/>
+    {limit_xml}
   </joint>
 """.rstrip(
         "\n"

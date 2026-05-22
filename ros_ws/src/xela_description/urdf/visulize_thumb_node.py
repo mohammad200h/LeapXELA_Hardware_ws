@@ -1,17 +1,12 @@
 from __future__ import annotations
 
+import argparse
 import time
 from pathlib import Path
 
-import rclpy
-from rclpy.node import Node
-
 
 def _default_urdf_path() -> str:
-    from ament_index_python.packages import get_package_share_directory
-
-    share_dir = Path(get_package_share_directory("xela_description"))
-    return str(share_dir / "thumb.urdf")
+    return str(Path(__file__).resolve().parent / "thumb.urdf")
 
 
 def _run_pybullet(urdf_path: str, use_gui: bool = True) -> None:
@@ -67,29 +62,26 @@ def _run_pybullet(urdf_path: str, use_gui: bool = True) -> None:
             pass
 
 
-class VisulizeThumbPybulletNode(Node):
-    def __init__(self) -> None:
-        super().__init__("visulize_thumb_pybullet")
-
-        self.declare_parameter("urdf_path", _default_urdf_path())
-        self.declare_parameter("use_gui", True)
-
-        urdf_path = str(self.get_parameter("urdf_path").value)
-        use_gui = bool(self.get_parameter("use_gui").value)
-
-        self.get_logger().info(f"Loading URDF in PyBullet: {urdf_path}")
-        self.get_logger().info(f"PyBullet GUI: {use_gui}")
-
-        _run_pybullet(urdf_path=urdf_path, use_gui=use_gui)
-
-
 def main() -> None:
-    rclpy.init()
-    node: VisulizeThumbPybulletNode | None = None
-    try:
-        node = VisulizeThumbPybulletNode()
-    finally:
-        if node is not None:
-            node.destroy_node()
-        rclpy.shutdown()
+    parser = argparse.ArgumentParser(description="Visualize thumb URDF in PyBullet.")
+    parser.add_argument(
+        "--urdf",
+        default=None,
+        help="Path to URDF (default: thumb.urdf in this directory)",
+    )
+    parser.add_argument(
+        "--direct",
+        action="store_true",
+        help="Use DIRECT connection instead of GUI",
+    )
+    args = parser.parse_args()
 
+    urdf_path = args.urdf or _default_urdf_path()
+    use_gui = not args.direct
+    print(f"Loading URDF in PyBullet: {urdf_path}")
+    print(f"PyBullet GUI: {use_gui}")
+    _run_pybullet(urdf_path=urdf_path, use_gui=use_gui)
+
+
+if __name__ == "__main__":
+    main()
