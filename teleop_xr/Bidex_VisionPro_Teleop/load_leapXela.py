@@ -5,6 +5,11 @@ import time
 import pybullet as p
 
 
+def disable_body_collision(body_id: int) -> None:
+    """Turn off all collisions for a PyBullet multibody."""
+    for link_idx in range(-1, p.getNumJoints(body_id)):
+        p.setCollisionFilterGroupMask(body_id, link_idx, 0, 0)
+
 def load_hand(is_left: bool = False, gui: bool = True):
     """Connect to PyBullet and load the LeapXela hand URDF.
 
@@ -29,7 +34,8 @@ def load_hand(is_left: bool = False, gui: bool = True):
 
     p.setAdditionalSearchPath(urdf_dir)
 
-    base_position = [-0.22, 0.01, 0.03]
+    base_position = [-0.12, 0.0, 0.01]
+
     base_orientation = p.getQuaternionFromEuler([1.57, 0, -1.57])
     leap_id = p.loadURDF(
         urdf_path,
@@ -37,6 +43,21 @@ def load_hand(is_left: bool = False, gui: bool = True):
         base_orientation,
         useFixedBase=True,
     )
+
+    disable_body_collision(leap_id)
+
+    urdf_path = os.path.join(path_src, "leap_hand_mesh_right/robot_pybullet.urdf")
+    base_position = [-0.22, 0.01, 0.03]
+    base_orientation = p.getQuaternionFromEuler([1.57, 0, 3.14])
+
+    leap_id = p.loadURDF(
+        urdf_path,
+        base_position,
+        base_orientation,
+        useFixedBase=True,
+    )
+    
+    disable_body_collision(leap_id)
 
     num_joints = p.getNumJoints(leap_id)
     p.setGravity(0, 0, 0)

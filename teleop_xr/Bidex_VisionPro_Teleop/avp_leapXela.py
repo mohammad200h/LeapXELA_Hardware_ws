@@ -2,7 +2,8 @@ import pybullet as p
 import numpy as np
 import os
 import time
-from avp_stream import VisionProStreamer
+from client import QuestHeadsetStreamer
+
 
 '''
 This is based off of https://github.com/Improbable-AI/VisionProTeleop by Younghyo Park et. al. which streams the AVP data.
@@ -16,13 +17,46 @@ This is not as accurate as Manus gloves but easier to use.
 Inspired by Dexcap https://dex-cap.github.io/ by Wang et. al. and Robotic Telekinesis by Shaw et. al.
 '''
 
-#Set this to your IP address of you AVP
-AVP_IP = "192.168.2.19"
+# Quest Wi-Fi IPv4 (Settings -> Wi-Fi on headset)
+QUEST_IP = "192.168.2.48"
+
+def _decode_pybullet_name(name):
+    if isinstance(name, bytes):
+        return name.decode("utf-8")
+    return name
+
+
+def get_name_off_ee(robot_id, ee_index):
+    """Return the URDF link name for a PyBullet link index (IK end-effector index).
+
+    PyBullet uses -1 for the base link and 0..getNumJoints()-1 for child links;
+    link index i is the child link of joint i (see getJointInfo / getLinkState).
+    """
+    if ee_index == -1:
+        return _decode_pybullet_name(p.getBodyInfo(robot_id)[1])
+    num_joints = p.getNumJoints(robot_id)
+    if ee_index < 0 or ee_index >= num_joints:
+        raise ValueError(
+            f"Invalid end-effector link index {ee_index} for body {robot_id} "
+            f"(valid: -1 or 0..{num_joints - 1})"
+        )
+    return _decode_pybullet_name(p.getJointInfo(robot_id, ee_index)[12])
+
+
+def get_ee_index_off_name(robot_id, link_name):
+    """Return the PyBullet link index for a URDF link name."""
+    if link_name == _decode_pybullet_name(p.getBodyInfo(robot_id)[1]):
+        return -1
+    for joint_index in range(p.getNumJoints(robot_id)):
+        if _decode_pybullet_name(p.getJointInfo(robot_id, joint_index)[12]) == link_name:
+            return joint_index
+    raise ValueError(f"Link '{link_name}' not found on body {robot_id}")
+
 
 class Leapv1PybulletIKPython():
-    def __init__(self, is_left = True):
+    def __init__(self, is_left = False):
         #start AVP         
-        self.vps = VisionProStreamer(ip = AVP_IP, record = True)
+        self.vps = QuestHeadsetStreamer(quest_ip=QUEST_IP, port=5006)
         # start pybullet
         #clid = p.connect(p.SHARED_MEMORY)
         #clid = p.connect(p.DIRECT)
@@ -32,18 +66,45 @@ class Leapv1PybulletIKPython():
         path_src = os.path.dirname(path_src)
         self.is_left = is_left
         self.glove_to_leap_mapping_scale = 1.6
-        self.leapEndEffectorIndex = [3, 4, 8, 9, 13, 14, 18, 19]
+        
+
+        
+
         if self.is_left:
             raise ValueError("Left hand is not implemented")
         else:
-            path_src =  os.path.join(path_src, "leapXela_right")
+            path_src =  os.path.join(path_src, "leapXela_right/hand.urdf")
+            print(f"Loading LeapXela hand from {path_src}")
             ##You may have to set this path for your setup on ROS2
             self.LeapId = p.loadURDF(
                 path_src,
-                [-0.22, 0.01, 0.03],
+                [-0.12, 0.0, 0.01],
                 p.getQuaternionFromEuler([1.57, 0, -1.57]),
                 useFixedBase = True
             )
+
+        self.ee_link_names = [
+            "if_fingertop_unfied",
+            "if_realtip",
+            "mf_fingertop_unfied",
+            "mf_realtip",
+            "rf_fingertop_unfied",
+            "rf_realtip",
+            "thfingertip_unified",
+            "threaltip"          
+        ]
+        self.leapEndEffectorIndex = [ get_ee_index_off_name(self.LeapId, link_name)  for link_name in self.ee_link_names ]
+
+
+        
+        for ee_index in self.leapEndEffectorIndex:
+            name = get_name_off_ee(self.LeapId, ee_index)
+            print(f"EE {ee_index} name: {name}")
+        
+        print("\n\n")
+        for link_name in self.ee_link_names:
+            ee_index = get_ee_index_off_name(self.LeapId, link_name)
+            print(f"EE {ee_index} name: {link_name}")
 
         self.numJoints = p.getNumJoints(self.LeapId)
         p.setGravity(0, 0, 0)
@@ -100,9 +161,9 @@ class Leapv1PybulletIKPython():
 
     def get_avp_data(self):
         #gets the data converts it and then computes IK and visualizes
-        r = self.vps.latest              
+        r = self.vps.get_latest()              
         if self.is_left:
-            hand_pose = np.asarray(r['left_fingers']).astype(float)  
+            hand_pose = np.asarray(r.left.fingers).astype(float)  
         else:
             hand_pose = np.asarray(r['right_fingers']).astype(float) 
         indices = [3,4,8,9,13,14,18,19,23,24]
