@@ -1,0 +1,173 @@
+{
+    "leap":{
+        "hardware":{
+
+        },
+        "sim":{
+            "fingers":{
+                "mcp":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.314159,
+                    "upper": 2.23402
+
+                },
+                "rot":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower":-1.047,
+                    "upper":1.047
+                },
+                "pip":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.506,
+                    "upper": 1.885
+                },
+                "dip":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.366,
+                    "upper": 2.042
+                }
+
+            },
+            "thumb":{
+                "cmc":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.349066,
+                    "upper": 2.0944
+                },
+                "axl":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.47,
+                    "upper": 2.443
+                },
+                "mcp":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -1.20,
+                    "upper": 1.90
+                },
+                "ipl":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -1.34,
+                    "upper": 1.88
+                }
+            }
+        }
+    },
+    "leapXela":{
+        "hardware":{
+            "fingers":{
+                "mcp":{
+                     "zero":265,
+                    "lower": 275,
+                    "upper": 145
+
+                },
+                "rot":{
+                    "zero":180,
+                    "lower":200,
+                    "upper":160
+                },
+                "pip":{
+                    "zero":180,
+                    "lower": 195,
+                    "upper": 60
+                },
+                "dip":{
+                    "zero":180,
+                    "lower": 185,
+                    "upper": 50
+                }
+
+
+
+            },
+            "thumb":{
+                "cmc":{
+                    "zero":180,
+                    "lower": 135,
+                    "upper": 305
+                },
+                "axl":{
+                    "zero":180,
+                    "lower": 5,
+                    "upper": 205
+                },
+                "mcp":{
+                    "zero":95,
+                    "lower": 110,
+                    "upper": 10
+                },
+                "ipl":{
+                    "zero":90,
+                    "lower": 115,
+                    "upper": 15
+                }
+            }
+        },
+        "sim":{
+            "fingers":{
+                "mcp":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.1745,
+                    "upper": 2.0944
+
+                },
+                "rot":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower":-0.349,
+                    "upper":0.349
+                },
+                "pip":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.262,
+                    "upper": 2.0944
+                },
+                "dip":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.0873,
+                    "upper": 2.2689
+                }
+
+
+
+            },
+            "thumb":{
+                "cmc":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.785,
+                    "upper": 2.181
+                },
+                "axl":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.305,
+                    "upper": 0.436
+                },
+                "mcp":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.262,
+                    "upper": 1.396
+                },
+                "ipl":{
+                    "effort":0.95,
+                    "velocity":8.48,
+                    "lower": -0.436,
+                    "upper": 1.309
+                }
+            }
+        }
+    }
+}

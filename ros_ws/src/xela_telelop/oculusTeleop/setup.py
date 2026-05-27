@@ -40,7 +40,10 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (
             os.path.join('share', package_name, 'launch'),
-            [os.path.join('launch', 'launch_oculus_teleop.py')],
+            [
+                os.path.join('launch', 'launch_oculus_teleop.py'),
+                os.path.join('launch', 'launch_oculus_xela_teleop.py'),
+            ],
         ),
     ],
     install_requires=[
@@ -61,6 +64,7 @@ setup(
     entry_points={
         'console_scripts': [
             'avp_leap_server = oculusTeleop.avp_leap_server:main',
+            'avp_leap_xela_server = oculusTeleop.avp_leapXela_server:main',
             'leap_xela_client = oculusTeleop.leapXela_clinet:main',
             'quest_streamer = oculusTeleop.quest_streamer:main',
             'quest_client = oculusTeleop.client:main',

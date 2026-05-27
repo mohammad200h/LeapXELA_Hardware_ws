@@ -4,6 +4,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from base import load_pose
+import signal
 import threading
 import sys
 import termios
@@ -31,6 +32,19 @@ JOINT_LABELS = [
     "Thumb MCP Forward",
     "Thumb Phalange",
 ]
+
+
+def _format_status(joint, desired_joint_degrees, min_angle, max_angle, step_degrees, last_msg):
+    return (
+        f"Selected joint: {joint}/15 | "
+        f"Label: {JOINT_LABELS[joint]} | "
+        f"Desired: {desired_joint_degrees[joint]:.1f} deg | "
+        f"Step: +/- {step_degrees:.1f} deg | "
+        f"Clamp: {min_angle:.1f}..{max_angle:.1f} deg | "
+        f"{last_msg}"
+    )
+
+
 class KeyboardNode(Node):
 
     def __init__(self):
@@ -54,6 +68,14 @@ class KeyboardNode(Node):
             # JointState fields require a Python sequence of Python floats.
             msg.position = [float(x) for x in desired_joint_degrees]
             self.pub_hand.publish(msg)
+
+        listener = None
+
+        def request_stop(msg="Stopping..."):
+            state["running"] = False
+            if listener is not None:
+                listener.stop()
+            print(msg, flush=True)
 
         def on_press(key):
             with lock:
@@ -84,10 +106,13 @@ class KeyboardNode(Node):
                     did_change = True
                     is_adjustment = True
                     state["last_msg"] = f"Decreased joint {joint} -> {desired_joint_degrees[joint]:.1f} deg"
+                elif key == keyboard.Key.esc:
+                    request_stop("Quit (Esc).")
+                    return False
                 else:
                     try:
                         if key.char and key.char.lower() == "q":
-                            state["running"] = False
+                            request_stop("Quit (q).")
                             return False
                     except AttributeError:
                         pass
@@ -96,8 +121,23 @@ class KeyboardNode(Node):
                 if did_change and is_adjustment:
                     publish_desired()
 
+                if did_change:
+                    emit_status()
+
+        def emit_status():
+            # Full lines (not \r) so status is visible under ros2 launch log prefixing.
+            line = _format_status(
+                state["active_joint"],
+                desired_joint_degrees,
+                min_angle,
+                max_angle,
+                step_degrees,
+                state["last_msg"],
+            )
+            print(line, flush=True)
+
         print("LEAP Hand Joint Control (pynput)")
-        print("Controls: Left/Right select joint, Up/Down adjust value, q to quit")
+        print("Controls: Left/Right select joint, Up/Down adjust value, q or Esc to quit, Ctrl+C also works")
 
         stdin_fd = sys.stdin.fileno()
         old_attrs = None
@@ -107,26 +147,27 @@ class KeyboardNode(Node):
             new_attrs[3] = new_attrs[3] & ~termios.ECHO  # lflags: disable local echo
             termios.tcsetattr(stdin_fd, termios.TCSADRAIN, new_attrs)
 
-        try:
-            with keyboard.Listener(on_press=on_press) as listener:
-                active = state["active_joint"]
-                print(f"Current (desired) degree: {desired_joint_degrees[active]}")
-                while state["running"]:
-                    with lock:
-                        joint = state["active_joint"]
-                        status = (
-                            f"Selected joint: {joint}/15 | "
-                            f"Label: {JOINT_LABELS[joint]} | "
-                            f"Desired: {desired_joint_degrees[joint]:.1f} deg | "
-                            f"Step: +/- {step_degrees:.1f} deg | "
-                            f"Clamp: {min_angle:.1f}..{max_angle:.1f} deg"
-                        )
-                        msg = state["last_msg"]
-                    print(f"\r{status} | {msg}    ", end="", flush=True)
-                    time.sleep(0.05)
+        def on_sigint(signum, frame):
+            request_stop("Quit (Ctrl+C).")
 
-                listener.join()
+        prev_sigint = signal.signal(signal.SIGINT, on_sigint)
+        prev_sigterm = signal.signal(signal.SIGTERM, on_sigint)
+
+        try:
+            # suppress=True blocks Ctrl+C from the terminal; do not use it.
+            listener = keyboard.Listener(on_press=on_press)
+            listener.start()
+            active = state["active_joint"]
+            print(f"Current (desired) degree: {desired_joint_degrees[active]}")
+            emit_status()
+            while state["running"]:
+                time.sleep(0.05)
         finally:
+            signal.signal(signal.SIGINT, prev_sigint)
+            signal.signal(signal.SIGTERM, prev_sigterm)
+            if listener is not None:
+                listener.stop()
+                listener.join(timeout=1.0)
             if old_attrs is not None:
                 termios.tcsetattr(stdin_fd, termios.TCSADRAIN, old_attrs)
         print()
@@ -144,9 +185,12 @@ def main(args=None):
             max_angle=max_angle,
             step_degrees=step_degrees,
         )
+    except KeyboardInterrupt:
+        pass
     finally:
         keyboard_node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

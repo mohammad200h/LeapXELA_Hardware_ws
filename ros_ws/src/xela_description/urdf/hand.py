@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+import json
 
 try:
     # When imported as part of the `xela_description` Python package.
@@ -16,6 +17,24 @@ except ImportError:  # pragma: no cover
     from thumb import generate_thumb, joint_urdf as thumb_joint_urdf, link_urdf as thumb_link_urdf
     from palm import get_palm_constant
 
+def base_world_xml():
+    return f""" <link name="base"/>
+  <joint name="base_to_base" type="fixed">
+    <parent link="base"/>
+    <child link="leap_hand_xela_back_cover"/>
+    <origin rpy="0 0 0" xyz="-0.007 -0.028 -0.039"/>
+  </joint>
+"""
+
+JOINT_CONFIG_FILE = "../joint_config.json"
+
+def load_joint_config(file_path: str) -> dict[str, Any]:
+    try:
+        with open(file_path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading joint config: {e}")
+        return None
 
 class BasePalmJoint:
     def joint_type(self) -> str:
@@ -28,49 +47,31 @@ class BasePalmJoint:
         return [0.0, 0.0, 1.0]
 
 
-class RFMCPJoint(BasePalmJoint):
+class FingersMCPJoint(BasePalmJoint):
+    def __init__(self, prefix: str, joint_config: dict[str, Any]):
+        self.prefix = prefix
+        valid_prefixes = ["rf", "mf", "if"]
+        if prefix not in valid_prefixes:
+            raise ValueError(f"Invalid prefix: {prefix} valid prefixes are {valid_prefixes}")
+        self.joint_config = joint_config
+
     def joint_name(self) -> str:
-        return "rf_mcp"
+        return f"{self.prefix}_mcp"
 
     def child_link_name(self) -> str:
-        return "rf_mcp"
-
-    def origin(self) -> dict[str, Any]:
-        return {"xyz": [-0.02317, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
-
-    def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -0.314159, "upper": 2.23402}
-
-
-class MFMCPJoint(BasePalmJoint):
-    def joint_name(self) -> str:
-        return "mf_mcp"
-
-    def child_link_name(self) -> str:
-        return "mf_mcp"
+        return f"{self.prefix}_mcp"
 
     def origin(self) -> dict[str, Any]:
         return {"xyz": [0.02228, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
 
     def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -0.314159, "upper": 2.23402}
+        return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
 
-
-class IFMCPJoint(BasePalmJoint):
-    def joint_name(self) -> str:
-        return "if_mcp"
-
-    def child_link_name(self) -> str:
-        return "if_mcp"
-
-    def origin(self) -> dict[str, Any]:
-        return {"xyz": [0.06773, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
-
-    def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -0.314159, "upper": 2.23402}
 
 
 class ThumbCMCJoint(BasePalmJoint):
+    def __init__(self, joint_config: dict[str, Any]):
+        self.joint_config = joint_config
     def joint_name(self) -> str:
         return "th_cmc"
 
@@ -81,14 +82,14 @@ class ThumbCMCJoint(BasePalmJoint):
         return {"xyz": [0.0480627, -0.013, 0.07], "rpy": [-3.14159, 0.0, 3.14159]}
 
     def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -0.349066, "upper": 2.0944}
+        return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
 
 
 
 def generate_mf_rf_if_links_and_joints() -> tuple[str, str]:
-    rf_finger = generate_finger("rf", 0.0)
-    mf_finger = generate_finger("mf", 0.0)
-    if_finger = generate_finger("if", 0.0)
+    rf_finger = generate_finger("rf", 0.0, teleop=True)
+    mf_finger = generate_finger("mf", 0.0, teleop=True)
+    if_finger = generate_finger("if", 0.0, teleop=True)
 
     fingers = [rf_finger, mf_finger, if_finger]
 
@@ -98,7 +99,7 @@ def generate_mf_rf_if_links_and_joints() -> tuple[str, str]:
     return fingers_links, joints_urdf
 
 def generate_thumb_links_and_joints() -> tuple[str, str]:
-    thumb = generate_thumb()
+    thumb = generate_thumb(teleop = True)
     thumb_links = "\n".join(thumb_link_urdf(link) for link in thumb.links)
     thumb_joints = "\n".join(thumb_joint_urdf(joint) for joint in thumb.joints)
     return thumb_links, thumb_joints
@@ -117,7 +118,15 @@ def joint_urdf(joint: Any) -> str:
 """.rstrip("\n")
 
 def generate_palm_joints() -> str:
-    palm_joints = [RFMCPJoint(), MFMCPJoint(), IFMCPJoint(), ThumbCMCJoint()]
+    joint_config = load_joint_config(JOINT_CONFIG_FILE)["leapXela"]["sim"]
+    fingers_config = joint_config["fingers"]["mcp"]
+    thumb_config = joint_config["thumb"]["cmc"]
+    palm_joints = [
+        FingersMCPJoint("if", fingers_config), 
+        FingersMCPJoint("mf", fingers_config), 
+        FingersMCPJoint("rf", fingers_config),
+        ThumbCMCJoint(thumb_config)
+    ]
     return "\n".join(joint_urdf(j) for j in palm_joints)
 
 def render_hand_joints_urdf() -> str:
@@ -128,6 +137,7 @@ def render_hand_joints_urdf() -> str:
     return f"""
   <?xml version="1.0" ?>
   <robot name="xela_palm_generated">
+  {base_world_xml()}
   {palm_link}
   {fingers_links}
   {thumb_links}

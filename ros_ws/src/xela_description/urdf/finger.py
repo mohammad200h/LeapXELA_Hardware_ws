@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+import json
 
 try:
     # When imported as part of the `xela_description` Python package.
@@ -9,6 +10,17 @@ try:
 except ImportError:  # pragma: no cover
     # When executed directly as a script.
     from list_to_string import list_to_string
+
+
+JOINT_CONFIG_FILE = "../joint_config.json"
+
+def load_joint_config(file_path: str) -> dict[str, Any]:
+    try:
+        with open(file_path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading joint config: {e}")
+        return None
 
 
 class MCPLink:
@@ -203,10 +215,10 @@ class RELATIPLink:
         }
 
 class ROTJOINT:
-    def __init__(self, prefix: str, offset: float):
+    def __init__(self, prefix: str, offset: float, joint_config: dict[str, Any]):
         self.prefix = prefix
         self.offset = offset
-
+        self.joint_config = joint_config
     def joint_name(self) -> str:
         return f"{self.prefix}_rot"
 
@@ -226,13 +238,14 @@ class ROTJOINT:
         return [0.0, 0.0, 1.0]
 
     def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -1.0472, "upper": 1.0472}
+        return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
 
 
 class PIPJOINT:
-    def __init__(self, prefix: str, offset: float):
+    def __init__(self, prefix: str, offset: float, joint_config: dict[str, Any]):
         self.prefix = prefix
         self.offset = offset
+        self.joint_config = joint_config
 
     def joint_name(self) -> str:
         return f"{self.prefix}_pip"
@@ -253,13 +266,14 @@ class PIPJOINT:
         return [0.0, 0.0, 1.0]
 
     def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -0.506145, "upper": 1.88496}
+        return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
 
 
 class DIPJOINT:
-    def __init__(self, prefix: str, offset: float):
+    def __init__(self, prefix: str, offset: float, joint_config: dict[str, Any]):
         self.prefix = prefix
         self.offset = offset
+        self.joint_config = joint_config
 
     def joint_name(self) -> str:
         return f"{self.prefix}_dip"
@@ -280,7 +294,7 @@ class DIPJOINT:
         return [0.0, 0.0, 1.0]
 
     def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -0.366519, "upper": 2.04204}
+        return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
 
 class RELATIPJOINT:
     def __init__(self, prefix: str, offset: float):
@@ -317,9 +331,13 @@ class Finger:
 
 def generate_finger(prefix: str, offset: float, teleop = False) -> Finger:
   
-
+    joint_config = load_joint_config(JOINT_CONFIG_FILE)["leapXela"]["sim"]["fingers"]
     links = [MCPLink(prefix), PIPLink(prefix), DIPLink(prefix), FingertipLink(prefix)]
-    joints = [ROTJOINT(prefix, offset), PIPJOINT(prefix, offset), DIPJOINT(prefix, offset)]
+    joints = [
+        ROTJOINT(prefix, offset, joint_config["rot"]),
+        PIPJOINT(prefix, offset, joint_config["pip"]),
+        DIPJOINT(prefix, offset, joint_config["dip"]),
+    ]
 
 
     if teleop:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
+import json
 
 try:
     # When imported as part of the `xela_description` Python package.
@@ -9,6 +10,16 @@ try:
 except ImportError:  # pragma: no cover
     # When executed directly as a script.
     from list_to_string import list_to_string
+
+JOINT_CONFIG_FILE = "../joint_config.json"
+
+def load_joint_config(file_path: str) -> dict[str, Any]:
+    try:
+        with open(file_path, "r") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading joint config: {e}")
+        return None
 
 
 def _as_list(value: Any) -> list[Any]:
@@ -210,6 +221,9 @@ class THREALTIPLINK:
 
 
 class THAXLJOINT:
+    def __init__(self, joint_config: dict[str, Any]):
+        self.joint_config = joint_config
+
     def joint_name(self) -> str:
         return "th_axl"
 
@@ -229,10 +243,12 @@ class THAXLJOINT:
         return [0.0, 0.0, 1.0]
 
     def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -0.349066, "upper": 2.0944}
+        return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
 
 
 class THMCPJOINT:
+    def __init__(self, joint_config: dict[str, Any]):
+        self.joint_config = joint_config
     def joint_name(self) -> str:
         return "th_mcp"
 
@@ -252,10 +268,12 @@ class THMCPJOINT:
         return [0.0, 0.0, 1.0]
 
     def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -0.471239, "upper": 2.44346}
+        return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
 
 
 class THIPLJOINT:
+    def __init__(self, joint_config: dict[str, Any]):
+        self.joint_config = joint_config
     def joint_name(self) -> str:
         return "th_ipl"
 
@@ -275,7 +293,7 @@ class THIPLJOINT:
         return [0.0, 0.0, 1.0]
 
     def limit(self) -> dict[str, Any]:
-        return {"effort": 10, "velocity": 10, "lower": -1.3439, "upper": 1.88496}
+        return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
 
 
 class THREALTIPJOINT:
@@ -307,8 +325,10 @@ class Thumb:
 
 
 def generate_thumb(teleop: bool = False) -> Thumb:
+    joint_config = load_joint_config(JOINT_CONFIG_FILE)["leapXela"]["sim"]["thumb"]
     links = [CMCLink(), AXLLink(), MCPLink(), IPLLink()]
-    joints = [ THAXLJOINT(), THMCPJOINT(), THIPLJOINT()]
+
+    joints = [ THAXLJOINT(joint_config["axl"]), THMCPJOINT(joint_config["mcp"]), THIPLJOINT(joint_config["ipl"])]
     if teleop:
         links += [THREALTIPLINK()]
         joints += [THREALTIPJOINT()]

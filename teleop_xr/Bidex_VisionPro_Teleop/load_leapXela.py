@@ -34,9 +34,9 @@ def load_hand(is_left: bool = False, gui: bool = True):
 
     p.setAdditionalSearchPath(urdf_dir)
 
-    base_position = [-0.12, 0.0, 0.01]
+    base_position = [-0.12, 0.035, -0.01]
 
-    base_orientation = p.getQuaternionFromEuler([1.57, 0, -1.57])
+    base_orientation = p.getQuaternionFromEuler([1.57, -1.57, -1.57])
     leap_id = p.loadURDF(
         urdf_path,
         base_position,

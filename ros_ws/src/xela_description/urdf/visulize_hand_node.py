@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-import argparse
 import time
 from pathlib import Path
 
+import rclpy
+from rclpy.node import Node
+
 
 def _default_urdf_path() -> str:
-    return str(Path(__file__).resolve().parent / "hand.urdf")
+    from ament_index_python.packages import get_package_share_directory
+
+    share_dir = Path(get_package_share_directory("xela_description"))
+    return str(share_dir / "hand.urdf")
 
 
 def _run_pybullet(urdf_path: str, use_gui: bool = True) -> None:
@@ -26,7 +31,9 @@ def _run_pybullet(urdf_path: str, use_gui: bool = True) -> None:
     if not urdf.exists():
         raise FileNotFoundError(f"URDF not found: {urdf}")
     if urdf.is_dir():
-        raise IsADirectoryError(f"URDF path points to a directory, not a file: {urdf}")
+        raise IsADirectoryError(
+            f"URDF path points to a directory, not a file: {urdf}"
+        )
 
     cid = p.connect(p.GUI if use_gui else p.DIRECT)
     try:
@@ -34,7 +41,6 @@ def _run_pybullet(urdf_path: str, use_gui: bool = True) -> None:
         p.setAdditionalSearchPath(str(data_path))
         p.setAdditionalSearchPath(str(urdf.parent))
         p.setGravity(0, 0, -9.81)
-
         try:
             plane_path = data_path / "plane.urdf"
             p.loadURDF(str(plane_path) if plane_path.exists() else "plane.urdf")
@@ -63,25 +69,31 @@ def _run_pybullet(urdf_path: str, use_gui: bool = True) -> None:
             pass
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Visualize hand URDF in PyBullet.")
-    parser.add_argument(
-        "--urdf",
-        default=None,
-        help="Path to URDF (default: hand.urdf in this directory)",
-    )
-    parser.add_argument(
-        "--direct",
-        action="store_true",
-        help="Use DIRECT connection instead of GUI",
-    )
-    args = parser.parse_args()
+class VisulizeHandPybulletNode(Node):
+    def __init__(self) -> None:
+        super().__init__("visulize_hand_pybullet")
 
-    urdf_path = args.urdf or _default_urdf_path()
-    use_gui = not args.direct
-    print(f"Loading URDF in PyBullet: {urdf_path}")
-    print(f"PyBullet GUI: {use_gui}")
-    _run_pybullet(urdf_path=urdf_path, use_gui=use_gui)
+        self.declare_parameter("urdf_path", _default_urdf_path())
+        self.declare_parameter("use_gui", True)
+
+        urdf_path = str(self.get_parameter("urdf_path").value)
+        use_gui = bool(self.get_parameter("use_gui").value)
+
+        self.get_logger().info(f"Loading URDF in PyBullet: {urdf_path}")
+        self.get_logger().info(f"PyBullet GUI: {use_gui}")
+
+        _run_pybullet(urdf_path=urdf_path, use_gui=use_gui)
+
+
+def main() -> None:
+    rclpy.init()
+    node: VisulizeHandPybulletNode | None = None
+    try:
+        node = VisulizeHandPybulletNode()
+    finally:
+        if node is not None:
+            node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == "__main__":

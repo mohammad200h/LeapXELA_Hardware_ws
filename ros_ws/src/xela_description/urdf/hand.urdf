@@ -1,6 +1,13 @@
 
   <?xml version="1.0" ?>
   <robot name="xela_palm_generated">
+   <link name="base"/>
+  <joint name="base_to_base" type="fixed">
+    <parent link="base"/>
+    <child link="leap_hand_xela_back_cover"/>
+    <origin rpy="0 0 0" xyz="-0.007 -0.028 -0.039"/>
+  </joint>
+
   <link name="leap_hand_xela_back_cover">
     <inertial>
       <origin xyz="-0.000780549 -0.00686016 0.0718797" rpy="0 0 0"/>
@@ -309,6 +316,29 @@
     </collision>
   </link>
 
+  <link name="rf_realtip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1e-06"/>
+      <inertia ixx="2.5e-05" ixy="0.0" ixz="0.0" iyy="2.5e-05" iyz="0.0" izz="2.5e-05"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="ball_material">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </collision>
+  </link>
+
   <link name="mf_mcp">
     <inertial>
       <origin xyz="0.0342889 -0.0265621 -0.0145004" rpy="0.0 0.0 0.0"/>
@@ -401,6 +431,29 @@
     </collision>
   </link>
 
+  <link name="mf_realtip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1e-06"/>
+      <inertia ixx="2.5e-05" ixy="0.0" ixz="0.0" iyy="2.5e-05" iyz="0.0" izz="2.5e-05"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="ball_material">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </collision>
+  </link>
+
   <link name="if_mcp">
     <inertial>
       <origin xyz="0.0342889 -0.0265621 -0.0145004" rpy="0.0 0.0 0.0"/>
@@ -489,6 +542,29 @@
       <origin xyz="-0.00135925 -0.025 0.0145" rpy="-1.5708 -1.5708 0.0"/>
       <geometry>
         <mesh filename="package://assets/fingertop_unfied.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="if_realtip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1e-06"/>
+      <inertia ixx="2.5e-05" ixy="0.0" ixz="0.0" iyy="2.5e-05" iyz="0.0" izz="2.5e-05"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="ball_material">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.005"/>
       </geometry>
     </collision>
   </link>
@@ -627,13 +703,42 @@
     </collision>
     
   </link>
+
+  <link name="th_realtip">
+    <inertial>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <mass value="1e-06"/>
+      <inertia ixx="2.5e-05" ixy="0.0" ixz="0.0" iyy="2.5e-05" iyz="0.0" izz="2.5e-05"/>
+    </inertial>
+
+
+    <visual>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+      <material name="ball_material">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    
+
+
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </collision>
+    
+  </link>
   
   <joint name="th_axl" type="revolute">
     <origin xyz="-0.0144 -0.0 0.013" rpy="-1.5708 0.0 1.5708"/>
     <parent link="cmc"/>
     <child link="axl"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.349066" upper="2.0944"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.305" upper="0.436"/>
   </joint>
 
   <joint name="th_mcp" type="revolute">
@@ -641,7 +746,7 @@
     <parent link="axl"/>
     <child link="th_mcp"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.471239" upper="2.44346"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.262" upper="1.396"/>
   </joint>
 
   <joint name="th_ipl" type="revolute">
@@ -649,7 +754,15 @@
     <parent link="th_mcp"/>
     <child link="th_ipl"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-1.3439" upper="1.88496"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.436" upper="1.309"/>
+  </joint>
+
+  <joint name="th_realtip" type="fixed">
+    <origin xyz="0.0 -0.07 0.015" rpy="0.0 0.0 0.0"/>
+    <parent link="th_ipl"/>
+    <child link="th_realtip"/>
+    <axis xyz="0.0 0.0 -1.0"/>
+    
   </joint>
   
   <joint name="rf_rot" type="revolute">
@@ -657,7 +770,7 @@
     <parent link="rf_mcp"/>
     <child link="rf_pip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-1.0472" upper="1.0472"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.349" upper="0.349"/>
   </joint>
 
   <joint name="rf_pip" type="revolute">
@@ -665,7 +778,7 @@
     <parent link="rf_pip"/>
     <child link="rf_dip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.506145" upper="1.88496"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.262" upper="2.0944"/>
   </joint>
 
   <joint name="rf_dip" type="revolute">
@@ -673,7 +786,15 @@
     <parent link="rf_dip"/>
     <child link="rf_fingertip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.366519" upper="2.04204"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.0873" upper="2.2689"/>
+  </joint>
+
+  <joint name="rf_realtip" type="fixed">
+    <origin xyz="-0.02 -0.07 0.015" rpy="0.0 0.0 0.0"/>
+    <parent link="rf_fingertip"/>
+    <child link="rf_realtip"/>
+    <axis xyz="0.0 0.0 -1.0"/>
+    
   </joint>
 
   <joint name="mf_rot" type="revolute">
@@ -681,7 +802,7 @@
     <parent link="mf_mcp"/>
     <child link="mf_pip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-1.0472" upper="1.0472"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.349" upper="0.349"/>
   </joint>
 
   <joint name="mf_pip" type="revolute">
@@ -689,7 +810,7 @@
     <parent link="mf_pip"/>
     <child link="mf_dip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.506145" upper="1.88496"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.262" upper="2.0944"/>
   </joint>
 
   <joint name="mf_dip" type="revolute">
@@ -697,7 +818,15 @@
     <parent link="mf_dip"/>
     <child link="mf_fingertip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.366519" upper="2.04204"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.0873" upper="2.2689"/>
+  </joint>
+
+  <joint name="mf_realtip" type="fixed">
+    <origin xyz="-0.02 -0.07 0.015" rpy="0.0 0.0 0.0"/>
+    <parent link="mf_fingertip"/>
+    <child link="mf_realtip"/>
+    <axis xyz="0.0 0.0 -1.0"/>
+    
   </joint>
 
   <joint name="if_rot" type="revolute">
@@ -705,7 +834,7 @@
     <parent link="if_mcp"/>
     <child link="if_pip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-1.0472" upper="1.0472"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.349" upper="0.349"/>
   </joint>
 
   <joint name="if_pip" type="revolute">
@@ -713,7 +842,7 @@
     <parent link="if_pip"/>
     <child link="if_dip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.506145" upper="1.88496"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.262" upper="2.0944"/>
   </joint>
 
   <joint name="if_dip" type="revolute">
@@ -721,15 +850,23 @@
     <parent link="if_dip"/>
     <child link="if_fingertip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.366519" upper="2.04204"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.0873" upper="2.2689"/>
+  </joint>
+
+  <joint name="if_realtip" type="fixed">
+    <origin xyz="-0.02 -0.07 0.015" rpy="0.0 0.0 0.0"/>
+    <parent link="if_fingertip"/>
+    <child link="if_realtip"/>
+    <axis xyz="0.0 0.0 -1.0"/>
+    
   </joint>
   
-  <joint name="rf_mcp" type="revolute">
-    <origin xyz="-0.02317 -0.0165 0.1436" rpy="3.14159 -1.5708 0.0"/>
+  <joint name="if_mcp" type="revolute">
+    <origin xyz="0.02228 -0.0165 0.1436" rpy="3.14159 -1.5708 0.0"/>
     <parent link="leap_hand_xela_back_cover"/>
-    <child link="rf_mcp"/>
+    <child link="if_mcp"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.314159" upper="2.23402"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.1745" upper="2.0944"/>
   </joint>
 
   <joint name="mf_mcp" type="revolute">
@@ -737,15 +874,15 @@
     <parent link="leap_hand_xela_back_cover"/>
     <child link="mf_mcp"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.314159" upper="2.23402"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.1745" upper="2.0944"/>
   </joint>
 
-  <joint name="if_mcp" type="revolute">
-    <origin xyz="0.06773 -0.0165 0.1436" rpy="3.14159 -1.5708 0.0"/>
+  <joint name="rf_mcp" type="revolute">
+    <origin xyz="0.02228 -0.0165 0.1436" rpy="3.14159 -1.5708 0.0"/>
     <parent link="leap_hand_xela_back_cover"/>
-    <child link="if_mcp"/>
+    <child link="rf_mcp"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.314159" upper="2.23402"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.1745" upper="2.0944"/>
   </joint>
 
   <joint name="th_cmc" type="revolute">
@@ -753,7 +890,7 @@
     <parent link="leap_hand_xela_back_cover"/>
     <child link="cmc"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.349066" upper="2.0944"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.785" upper="2.181"/>
   </joint>
 
   </robot>

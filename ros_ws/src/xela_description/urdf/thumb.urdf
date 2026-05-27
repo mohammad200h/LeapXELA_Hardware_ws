@@ -141,7 +141,7 @@
     <parent link="cmc"/>
     <child link="axl"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.349066" upper="2.0944"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.305" upper="0.436"/>
   </joint>
 
   <joint name="th_mcp" type="revolute">
@@ -149,7 +149,7 @@
     <parent link="axl"/>
     <child link="th_mcp"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-0.471239" upper="2.44346"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.262" upper="1.396"/>
   </joint>
 
   <joint name="th_ipl" type="revolute">
@@ -157,7 +157,7 @@
     <parent link="th_mcp"/>
     <child link="th_ipl"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="10" velocity="10" lower="-1.3439" upper="1.88496"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.436" upper="1.309"/>
   </joint>
 <link name="base"/>
 <joint name="base" type="fixed">
