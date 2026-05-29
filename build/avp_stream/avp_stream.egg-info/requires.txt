@@ -1,0 +1,16 @@
+aiortc
+av
+flask
+gdown
+grpcio
+grpcio-tools
+matplotlib
+mujoco
+numpy
+opencv-python
+pydub
+pyyaml
+requests
+scipy
+tqdm
+websocket-client

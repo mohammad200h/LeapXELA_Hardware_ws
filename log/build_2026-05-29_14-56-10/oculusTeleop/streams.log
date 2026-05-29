@@ -1,0 +1,271 @@
+[1.756s] Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/oculusTeleop': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/install/leap_description:${AMENT_PREFIX_PATH} PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/oculusTeleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/oculusTeleop build --build-base /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build install --record /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/install.log --single-version-externally-managed install_data
+[2.267s] running egg_info
+[2.268s] creating ../../../../build/oculusTeleop/oculusTeleop.egg-info
+[2.269s] writing ../../../../build/oculusTeleop/oculusTeleop.egg-info/PKG-INFO
+[2.269s] writing dependency_links to ../../../../build/oculusTeleop/oculusTeleop.egg-info/dependency_links.txt
+[2.269s] writing entry points to ../../../../build/oculusTeleop/oculusTeleop.egg-info/entry_points.txt
+[2.269s] writing requirements to ../../../../build/oculusTeleop/oculusTeleop.egg-info/requires.txt
+[2.269s] writing top-level names to ../../../../build/oculusTeleop/oculusTeleop.egg-info/top_level.txt
+[2.270s] writing manifest file '../../../../build/oculusTeleop/oculusTeleop.egg-info/SOURCES.txt'
+[2.277s] reading manifest file '../../../../build/oculusTeleop/oculusTeleop.egg-info/SOURCES.txt'
+[2.279s] writing manifest file '../../../../build/oculusTeleop/oculusTeleop.egg-info/SOURCES.txt'
+[2.279s] running build
+[2.279s] running build_py
+[2.279s] creating /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build
+[2.280s] creating /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib
+[2.280s] creating /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop
+[2.280s] copying oculusTeleop/__init__.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop
+[2.280s] copying oculusTeleop/client.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop
+[2.280s] copying oculusTeleop/quest_streamer.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop
+[2.280s] copying oculusTeleop/leapXela_clinet.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop
+[2.281s] copying oculusTeleop/avp_leapXela_server.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop
+[2.281s] copying oculusTeleop/avp_leap_server.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop
+[2.281s] copying oculusTeleop/sim_to_hardware_conversion.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop
+[2.281s] creating /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.281s] copying oculusTeleop/leapXela_right/__init__.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.282s] copying oculusTeleop/leapXela_right/visulize_hand_node.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.282s] copying oculusTeleop/leapXela_right/visulize_finger_node.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.282s] copying oculusTeleop/leapXela_right/visulize_node.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.282s] copying oculusTeleop/leapXela_right/list_to_string.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.282s] copying oculusTeleop/leapXela_right/finger.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.282s] copying oculusTeleop/leapXela_right/visulize_palm_node.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.283s] copying oculusTeleop/leapXela_right/thumb.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.283s] copying oculusTeleop/leapXela_right/palm.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.283s] copying oculusTeleop/leapXela_right/visulize_thumb_node.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.283s] copying oculusTeleop/leapXela_right/hand.py -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.287s] creating /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.287s] copying oculusTeleop/leap_hand_mesh_left/dip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.287s] copying oculusTeleop/leap_hand_mesh_left/dip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.289s] copying oculusTeleop/leap_hand_mesh_left/fingertip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.289s] copying oculusTeleop/leap_hand_mesh_left/fingertip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.290s] copying oculusTeleop/leap_hand_mesh_left/mcp_joint.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.290s] copying oculusTeleop/leap_hand_mesh_left/mcp_joint.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.292s] copying oculusTeleop/leap_hand_mesh_left/palm_lower_left.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.292s] copying oculusTeleop/leap_hand_mesh_left/palm_lower_left.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.394s] copying oculusTeleop/leap_hand_mesh_left/pip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.394s] copying oculusTeleop/leap_hand_mesh_left/pip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.395s] copying oculusTeleop/leap_hand_mesh_left/robot.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.395s] copying oculusTeleop/leap_hand_mesh_left/robot_pybullet.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.396s] copying oculusTeleop/leap_hand_mesh_left/thumb_dip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.396s] copying oculusTeleop/leap_hand_mesh_left/thumb_dip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.398s] copying oculusTeleop/leap_hand_mesh_left/thumb_fingertip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.398s] copying oculusTeleop/leap_hand_mesh_left/thumb_fingertip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.399s] copying oculusTeleop/leap_hand_mesh_left/thumb_left_temp_base.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.400s] copying oculusTeleop/leap_hand_mesh_left/thumb_left_temp_base.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.401s] copying oculusTeleop/leap_hand_mesh_left/thumb_pip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.401s] copying oculusTeleop/leap_hand_mesh_left/thumb_pip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left
+[2.402s] creating /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.402s] copying oculusTeleop/leap_hand_mesh_right/config.json -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.402s] copying oculusTeleop/leap_hand_mesh_right/dip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.402s] copying oculusTeleop/leap_hand_mesh_right/dip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.404s] copying oculusTeleop/leap_hand_mesh_right/fingertip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.404s] copying oculusTeleop/leap_hand_mesh_right/fingertip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.406s] copying oculusTeleop/leap_hand_mesh_right/fingertip_old.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.407s] copying oculusTeleop/leap_hand_mesh_right/mcp_joint.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.407s] copying oculusTeleop/leap_hand_mesh_right/mcp_joint.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.409s] copying oculusTeleop/leap_hand_mesh_right/palm_lower.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.409s] copying oculusTeleop/leap_hand_mesh_right/palm_lower.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.508s] copying oculusTeleop/leap_hand_mesh_right/palm_lower_left.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.619s] copying oculusTeleop/leap_hand_mesh_right/palm_lower_left_old.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.705s] copying oculusTeleop/leap_hand_mesh_right/pip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.705s] copying oculusTeleop/leap_hand_mesh_right/pip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.707s] copying oculusTeleop/leap_hand_mesh_right/robot.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.707s] copying oculusTeleop/leap_hand_mesh_right/robot_pybullet.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.708s] copying oculusTeleop/leap_hand_mesh_right/thumb_dip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.710s] copying oculusTeleop/leap_hand_mesh_right/thumb_dip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.710s] copying oculusTeleop/leap_hand_mesh_right/thumb_fingertip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.711s] copying oculusTeleop/leap_hand_mesh_right/thumb_fingertip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.714s] copying oculusTeleop/leap_hand_mesh_right/thumb_fingertip_old.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.716s] copying oculusTeleop/leap_hand_mesh_right/thumb_pip.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.717s] copying oculusTeleop/leap_hand_mesh_right/thumb_pip.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right
+[2.718s] copying oculusTeleop/leapXela_right/palm.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.719s] copying oculusTeleop/leapXela_right/finger.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.719s] copying oculusTeleop/leapXela_right/thumb.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.720s] copying oculusTeleop/leapXela_right/robot.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.720s] copying oculusTeleop/leapXela_right/hand.urdf -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.720s] copying oculusTeleop/leapXela_right/config.json -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right
+[2.720s] creating /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.720s] copying oculusTeleop/leapXela_right/assets/fingertop_unfied.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.721s] copying oculusTeleop/leapXela_right/assets/p4_unified.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.722s] copying oculusTeleop/leapXela_right/assets/thp0_unified.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.723s] copying oculusTeleop/leapXela_right/assets/fingertop_unfied.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.725s] copying oculusTeleop/leapXela_right/assets/p5_unified.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.726s] copying oculusTeleop/leapXela_right/assets/palm_face.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.727s] copying oculusTeleop/leapXela_right/assets/thfingertip_unified.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.727s] copying oculusTeleop/leapXela_right/assets/thconnector.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.728s] copying oculusTeleop/leapXela_right/assets/p3_unified.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.728s] copying oculusTeleop/leapXela_right/assets/thp1_unified.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.728s] copying oculusTeleop/leapXela_right/assets/top_palm.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.730s] copying oculusTeleop/leapXela_right/assets/leap_hand_xela_motorholder.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.730s] copying oculusTeleop/leapXela_right/assets/clipper.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.730s] copying oculusTeleop/leapXela_right/assets/uspa46.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.731s] copying oculusTeleop/leapXela_right/assets/leap_hand_xela_motorholder.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.732s] copying oculusTeleop/leapXela_right/assets/leap_hand_xela_bottom.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.733s] copying oculusTeleop/leapXela_right/assets/leap_hand_xela_side_cover.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.734s] copying oculusTeleop/leapXela_right/assets/p5_unified.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.734s] copying oculusTeleop/leapXela_right/assets/p4_unified.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.734s] copying oculusTeleop/leapXela_right/assets/leap_hand_xela_side_cover.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.734s] copying oculusTeleop/leapXela_right/assets/clipper.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.734s] copying oculusTeleop/leapXela_right/assets/uspa46.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.735s] copying oculusTeleop/leapXela_right/assets/thfingertip_unified.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.736s] copying oculusTeleop/leapXela_right/assets/leap_hand_xela_back_cover.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.737s] copying oculusTeleop/leapXela_right/assets/top_palm.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.737s] copying oculusTeleop/leapXela_right/assets/palm_face.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.738s] copying oculusTeleop/leapXela_right/assets/thp1_unified.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.740s] copying oculusTeleop/leapXela_right/assets/thconnector.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.741s] copying oculusTeleop/leapXela_right/assets/thp0_unified.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.742s] copying oculusTeleop/leapXela_right/assets/leap_hand_xela_back_cover.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.742s] copying oculusTeleop/leapXela_right/assets/p3_unified.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.744s] copying oculusTeleop/leapXela_right/assets/leap_hand_xela_bottom.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.744s] copying oculusTeleop/leapXela_right/assets/thp2_unified.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.744s] copying oculusTeleop/leapXela_right/assets/p2_unified.stl -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.744s] copying oculusTeleop/leapXela_right/assets/p2_unified.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.745s] copying oculusTeleop/leapXela_right/assets/thp2_unified.part -> /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets
+[2.752s] running install
+[2.754s] running install_lib
+[2.754s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop
+[2.756s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/__init__.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop
+[2.762s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/client.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop
+[2.762s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/quest_streamer.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop
+[2.762s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_clinet.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop
+[2.763s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/avp_leapXela_server.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop
+[2.763s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/avp_leap_server.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop
+[2.764s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.764s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/thumb_pip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.764s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/fingertip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.764s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/palm_lower_left.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.765s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/thumb_left_temp_base.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.770s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/dip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.770s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/fingertip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.771s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/robot.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.771s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/pip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.771s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/thumb_fingertip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.771s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/mcp_joint.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.771s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/thumb_dip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.774s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/pip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.776s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/thumb_left_temp_base.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.777s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/robot_pybullet.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.777s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/thumb_dip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.777s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/dip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.780s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/thumb_fingertip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.784s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/thumb_pip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.784s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/mcp_joint.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.784s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_left/palm_lower_left.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_left
+[2.784s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.784s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/thumb_pip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.785s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/fingertip_old.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.785s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/fingertip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.787s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/palm_lower_left.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.794s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/palm_lower.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.801s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/dip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.801s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/palm_lower.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.802s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/fingertip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.802s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/robot.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.802s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/pip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.803s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/thumb_fingertip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.803s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/mcp_joint.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.806s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/thumb_dip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.807s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/config.json -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.808s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/pip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.808s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/robot_pybullet.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.808s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/palm_lower_left_old.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.815s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/thumb_dip.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.816s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/thumb_fingertip_old.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.817s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/dip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.820s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/thumb_fingertip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.823s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/thumb_pip.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.824s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leap_hand_mesh_right/mcp_joint.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leap_hand_mesh_right
+[2.825s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/sim_to_hardware_conversion.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop
+[2.825s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.826s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/__init__.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.826s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/palm.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.826s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/finger.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.826s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/visulize_hand_node.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.826s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/thumb.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.826s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.826s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/fingertop_unfied.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.827s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/p4_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.827s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thp0_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.833s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/fingertop_unfied.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.836s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/p5_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.836s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/palm_face.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.837s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thfingertip_unified.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.837s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thconnector.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.837s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/p3_unified.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.837s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thp1_unified.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.837s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/top_palm.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.842s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/leap_hand_xela_motorholder.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.842s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/clipper.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.842s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/uspa46.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.842s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/leap_hand_xela_motorholder.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.843s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/leap_hand_xela_bottom.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.843s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/leap_hand_xela_side_cover.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.843s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/p5_unified.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.843s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/p4_unified.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.843s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/leap_hand_xela_side_cover.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.843s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/clipper.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.844s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/uspa46.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.844s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thfingertip_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.845s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/leap_hand_xela_back_cover.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.846s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/top_palm.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.846s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/palm_face.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.848s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thp1_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.849s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thconnector.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.850s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thp0_unified.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.850s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/leap_hand_xela_back_cover.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.850s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/p3_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.851s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/leap_hand_xela_bottom.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.851s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thp2_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.853s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/p2_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.854s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/p2_unified.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.855s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/assets/thp2_unified.part -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/assets
+[2.855s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/robot.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.855s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/visulize_finger_node.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.855s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/visulize_node.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.855s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/config.json -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.856s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/list_to_string.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.856s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/finger.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.856s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/visulize_palm_node.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.856s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/thumb.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.857s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/palm.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.857s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/visulize_thumb_node.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.857s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/hand.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.857s] copying /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build/lib/oculusTeleop/leapXela_right/hand.urdf -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right
+[2.858s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/__init__.py to __init__.cpython-310.pyc
+[2.859s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/client.py to client.cpython-310.pyc
+[2.861s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/quest_streamer.py to quest_streamer.cpython-310.pyc
+[2.866s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_clinet.py to leapXela_clinet.cpython-310.pyc
+[2.868s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/avp_leapXela_server.py to avp_leapXela_server.cpython-310.pyc
+[2.873s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/avp_leap_server.py to avp_leap_server.cpython-310.pyc
+[2.877s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/sim_to_hardware_conversion.py to sim_to_hardware_conversion.cpython-310.pyc
+[2.879s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/__init__.py to __init__.cpython-310.pyc
+[2.879s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/visulize_hand_node.py to visulize_hand_node.cpython-310.pyc
+[2.880s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/visulize_finger_node.py to visulize_finger_node.cpython-310.pyc
+[2.881s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/visulize_node.py to visulize_node.cpython-310.pyc
+[2.883s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/list_to_string.py to list_to_string.cpython-310.pyc
+[2.883s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/finger.py to finger.cpython-310.pyc
+[2.889s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/visulize_palm_node.py to visulize_palm_node.cpython-310.pyc
+[2.891s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/thumb.py to thumb.cpython-310.pyc
+[2.896s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/palm.py to palm.cpython-310.pyc
+[2.896s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/visulize_thumb_node.py to visulize_thumb_node.cpython-310.pyc
+[2.897s] byte-compiling /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop/leapXela_right/hand.py to hand.cpython-310.pyc
+[2.900s] running install_data
+[2.900s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/ament_index
+[2.900s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/ament_index/resource_index
+[2.901s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/ament_index/resource_index/packages
+[2.901s] copying resource/oculusTeleop -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/ament_index/resource_index/packages
+[2.901s] copying package.xml -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop
+[2.901s] creating /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/launch
+[2.901s] copying launch/launch_oculus_teleop.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/launch
+[2.901s] copying launch/launch_oculus_xela_teleop.py -> /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/launch
+[2.902s] running install_egg_info
+[2.905s] Copying ../../../../build/oculusTeleop/oculusTeleop.egg-info to /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages/oculusTeleop-0.0.0-py3.10.egg-info
+[2.906s] running install_scripts
+[2.945s] Installing avp_leap_server script to /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/oculusTeleop
+[2.945s] Installing avp_leap_xela_server script to /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/oculusTeleop
+[2.946s] Installing convert_sim_to_hardware script to /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/oculusTeleop
+[2.946s] Installing leap_xela_client script to /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/oculusTeleop
+[2.946s] Installing quest_client script to /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/oculusTeleop
+[2.946s] Installing quest_streamer script to /workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/oculusTeleop
+[2.948s] writing list of installed files to '/workspace/LeapXELA_Hardware_ws/build/oculusTeleop/install.log'
+[2.984s] Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/oculusTeleop' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/install/leap_description:${AMENT_PREFIX_PATH} PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/oculusTeleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/oculusTeleop build --build-base /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build install --record /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/install.log --single-version-externally-managed install_data

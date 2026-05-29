@@ -1,0 +1,26 @@
+[32m.[0m[31mF[0m[32m.[0m[31mF[0m[31m                                                                     [100%][0m
+=================================== FAILURES ===================================
+[31m[1m____________________________ test_get_joint_ranges _____________________________[0m
+[1m[31mtest/test_sim_to_hardware_conversion_node.py[0m:61: in test_get_joint_ranges
+    [94massert[39;49;00m joint_ranges_hw[[33m"[39;49;00m[33mll[39;49;00m[33m"[39;49;00m] == get_joint_ranges_hw()[[33m"[39;49;00m[33mll[39;49;00m[33m"[39;49;00m][90m[39;49;00m
+[1m[31mE   AssertionError: assert [2.35619, 0.0... 3.40339, ...] == [2.3561944901...13889427, ...][0m
+[1m[31mE     At index 0 diff: 2.35619 != 2.356194490192345[0m
+[1m[31mE     Left contains 4 more items, first extra item: 4.79966[0m
+[1m[31mE     Full diff:[0m
+[1m[31mE       [[0m
+[1m[31mE     -  2.356194490192345,[0m
+[1m[31mE     -  0.08726646259971647,[0m
+[1m[31mE     -  1.9198621771937625,...[0m
+[1m[31mE     [0m
+[1m[31mE     ...Full output truncated (27 lines hidden), use '-vv' to show[0m
+[31m[1m___________________________ test_map_sim_to_hardware ___________________________[0m
+[1m[31mtest/test_sim_to_hardware_conversion_node.py[0m:113: in test_map_sim_to_hardware
+    hardware_values = map_sim_to_hardware([90m[39;49;00m
+[1m[31moculusTeleop/sim_to_hardware_conversion.py[0m:142: in map_sim_to_hardware
+    hw_ll = [96mfloat[39;49;00m(hardware_limits[[33m"[39;49;00m[33mll[39;49;00m[33m"[39;49;00m][i])[90m[39;49;00m
+[1m[31mE   IndexError: list index out of range[0m
+- generated xml file: /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/pytest.xml -
+=========================== short test summary info ============================
+FAILED test/test_sim_to_hardware_conversion_node.py::test_get_joint_ranges - ...
+FAILED test/test_sim_to_hardware_conversion_node.py::test_map_sim_to_hardware
+[31m[31m[1m2 failed[0m, [32m2 passed[0m, [33m3 deselected[0m[31m in 0.62s[0m[0m

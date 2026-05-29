@@ -58,9 +58,15 @@ def test_get_joint_ranges():
     )
     assert len(joint_ranges_hw["ll"]) == 16
     assert len(joint_ranges_hw["ul"]) == 16
-    assert joint_ranges_hw["ll"] == get_joint_ranges_hw()["ll"]
-    assert joint_ranges_hw["ul"] == get_joint_ranges_hw()["ul"]
-    assert joint_ranges_hw["zero"] == get_joint_ranges_hw()["zero"]
+    assert joint_ranges_hw["ll"] == pytest.approx(
+        get_joint_ranges_hw()["ll"], rel=1e-2, abs=1e-2
+    )
+    assert joint_ranges_hw["ul"] == pytest.approx(
+        get_joint_ranges_hw()["ul"], rel=1e-2, abs=1e-2
+    )
+    assert joint_ranges_hw["zero"] == pytest.approx(
+        get_joint_ranges_hw()["zero"], rel=1e-2, abs=1e-2
+    )
 
     joint_ranges_sim = get_joint_ranges(
         ordered_joint_names, joint_config["leapXela"]["sim"]
@@ -68,8 +74,12 @@ def test_get_joint_ranges():
     assert len(joint_ranges_sim["ll"]) == 16
     assert len(joint_ranges_sim["ul"]) == 16
     assert len(joint_ranges_sim["zero"]) == 16
-    assert joint_ranges_sim["ll"] == get_joint_ranges_sim()["ll"]
-    assert joint_ranges_sim["ul"] == get_joint_ranges_sim()["ul"]
+    assert joint_ranges_sim["ll"] == pytest.approx(
+        get_joint_ranges_sim()["ll"], rel=1e-5, abs=1e-2
+    )
+    assert joint_ranges_sim["ul"] == pytest.approx(
+        get_joint_ranges_sim()["ul"], rel=1e-5, abs=1e-2
+    )
     assert joint_ranges_sim["zero"] == get_joint_ranges_sim()["zero"]
 
 

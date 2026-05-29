@@ -1,0 +1,1275 @@
+[0.183s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build']
+[0.183s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=16, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, verb_parser=<colcon_defaults.argument_parser.defaults.DefaultArgumentsDecorator object at 0x75c523914c40>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x75c523a86560>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x75c523a86560>>)
+[0.461s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.461s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.461s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.461s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.461s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.461s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.461s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/workspace/LeapXELA_Hardware_ws'
+[0.461s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.462s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.462s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.462s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.462s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.462s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.462s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.462s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.462s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.526s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extensions ['ignore', 'ignore_ament_install']
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extension 'ignore'
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extension 'ignore_ament_install'
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extensions ['colcon_pkg']
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extension 'colcon_pkg'
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extensions ['colcon_meta']
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extension 'colcon_meta'
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extensions ['ros']
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extension 'ros'
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extensions ['cmake', 'python']
+[0.527s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extension 'cmake'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extension 'python'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extensions ['python_setup_py']
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(docker) by extension 'python_setup_py'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extensions ['ignore', 'ignore_ament_install']
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extension 'ignore'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extension 'ignore_ament_install'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extensions ['colcon_pkg']
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extension 'colcon_pkg'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extensions ['colcon_meta']
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extension 'colcon_meta'
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extensions ['ros']
+[0.528s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extension 'ros'
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extensions ['cmake', 'python']
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extension 'cmake'
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extension 'python'
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extensions ['python_setup_py']
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(etc_xela) by extension 'python_setup_py'
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extensions ['ignore', 'ignore_ament_install']
+[0.529s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extension 'ignore'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extension 'ignore_ament_install'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extensions ['colcon_pkg']
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extension 'colcon_pkg'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extensions ['colcon_meta']
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extension 'colcon_meta'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extensions ['ros']
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extension 'ros'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extensions ['cmake', 'python']
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extension 'cmake'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extension 'python'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extensions ['python_setup_py']
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud) by extension 'python_setup_py'
+[0.530s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extensions ['ignore', 'ignore_ament_install']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extension 'ignore'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extension 'ignore_ament_install'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extensions ['colcon_pkg']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extension 'colcon_pkg'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extensions ['colcon_meta']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extension 'colcon_meta'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extensions ['ros']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extension 'ros'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extensions ['cmake', 'python']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extension 'cmake'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extension 'python'
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extensions ['python_setup_py']
+[0.531s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_pointcloud/assets) by extension 'python_setup_py'
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extensions ['ignore', 'ignore_ament_install']
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extension 'ignore'
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extension 'ignore_ament_install'
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extensions ['colcon_pkg']
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extension 'colcon_pkg'
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extensions ['colcon_meta']
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extension 'colcon_meta'
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extensions ['ros']
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extension 'ros'
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extensions ['cmake', 'python']
+[0.532s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extension 'cmake'
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extension 'python'
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extensions ['python_setup_py']
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers) by extension 'python_setup_py'
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extensions ['ignore', 'ignore_ament_install']
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extension 'ignore'
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extension 'ignore_ament_install'
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extensions ['colcon_pkg']
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extension 'colcon_pkg'
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extensions ['colcon_meta']
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extension 'colcon_meta'
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extensions ['ros']
+[0.533s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extension 'ros'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extensions ['cmake', 'python']
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extension 'cmake'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extension 'python'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extensions ['python_setup_py']
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(leapXela_with_4_4_markers/assets) by extension 'python_setup_py'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extensions ['ignore', 'ignore_ament_install']
+[0.534s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extension 'ignore'
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extension 'ignore_ament_install'
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extensions ['colcon_pkg']
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extension 'colcon_pkg'
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extensions ['colcon_meta']
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extension 'colcon_meta'
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extensions ['ros']
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extension 'ros'
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extensions ['cmake', 'python']
+[0.535s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extension 'cmake'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(mujoco_c_example) by extension 'python'
+[0.541s] DEBUG:colcon.colcon_core.package_identification:Package 'mujoco_c_example' with type 'cmake' and name 'mujoco_c_example'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extensions ['ignore', 'ignore_ament_install']
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extension 'ignore'
+[0.541s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extension 'ignore_ament_install'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extensions ['colcon_pkg']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extension 'colcon_pkg'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extensions ['colcon_meta']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extension 'colcon_meta'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extensions ['ros']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extension 'ros'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extensions ['cmake', 'python']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extension 'cmake'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extension 'python'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extensions ['python_setup_py']
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(realsene) by extension 'python_setup_py'
+[0.542s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extensions ['ignore', 'ignore_ament_install']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extension 'ignore'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extension 'ignore_ament_install'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extensions ['colcon_pkg']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extension 'colcon_pkg'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extensions ['colcon_meta']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extension 'colcon_meta'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extensions ['ros']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extension 'ros'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extensions ['cmake', 'python']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extension 'cmake'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extension 'python'
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extensions ['python_setup_py']
+[0.543s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws) by extension 'python_setup_py'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/build) by extensions ['ignore', 'ignore_ament_install']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/build) by extension 'ignore'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/build) ignored
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extensions ['ignore', 'ignore_ament_install']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extension 'ignore'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extension 'ignore_ament_install'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extensions ['colcon_pkg']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extension 'colcon_pkg'
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extensions ['colcon_meta']
+[0.544s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extension 'colcon_meta'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extensions ['ros']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extension 'ros'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extensions ['cmake', 'python']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extension 'cmake'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extension 'python'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extensions ['python_setup_py']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/data) by extension 'python_setup_py'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/install) by extensions ['ignore', 'ignore_ament_install']
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/install) by extension 'ignore'
+[0.545s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/install) ignored
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/log) by extensions ['ignore', 'ignore_ament_install']
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/log) by extension 'ignore'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/log) ignored
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extensions ['ignore', 'ignore_ament_install']
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extension 'ignore'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extension 'ignore_ament_install'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extensions ['colcon_pkg']
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extension 'colcon_pkg'
+[0.546s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extensions ['colcon_meta']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extension 'colcon_meta'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extensions ['ros']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extension 'ros'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extensions ['cmake', 'python']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extension 'cmake'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extension 'python'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extensions ['python_setup_py']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs) by extension 'python_setup_py'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extensions ['ignore', 'ignore_ament_install']
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extension 'ignore'
+[0.547s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extension 'ignore_ament_install'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extensions ['colcon_pkg']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extension 'colcon_pkg'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extensions ['colcon_meta']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extension 'colcon_meta'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extensions ['ros']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extension 'ros'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extensions ['cmake', 'python']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extension 'cmake'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extension 'python'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extensions ['python_setup_py']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-44-45-881832-Blade-14377) by extension 'python_setup_py'
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extensions ['ignore', 'ignore_ament_install']
+[0.548s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extension 'ignore'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extension 'ignore_ament_install'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extensions ['colcon_pkg']
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extension 'colcon_pkg'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extensions ['colcon_meta']
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extension 'colcon_meta'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extensions ['ros']
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extension 'ros'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extensions ['cmake', 'python']
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extension 'cmake'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extension 'python'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extensions ['python_setup_py']
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-52-49-475171-Blade-17462) by extension 'python_setup_py'
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extensions ['ignore', 'ignore_ament_install']
+[0.549s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extension 'ignore'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extension 'ignore_ament_install'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extensions ['colcon_pkg']
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extension 'colcon_pkg'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extensions ['colcon_meta']
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extension 'colcon_meta'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extensions ['ros']
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extension 'ros'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extensions ['cmake', 'python']
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extension 'cmake'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extension 'python'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extensions ['python_setup_py']
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/ros_logs/2026-05-05-09-53-32-621195-Blade-18162) by extension 'python_setup_py'
+[0.550s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extensions ['ignore', 'ignore_ament_install']
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extension 'ignore'
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extension 'ignore_ament_install'
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extensions ['colcon_pkg']
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extension 'colcon_pkg'
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extensions ['colcon_meta']
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extension 'colcon_meta'
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extensions ['ros']
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extension 'ros'
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extensions ['cmake', 'python']
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extension 'cmake'
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extension 'python'
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extensions ['python_setup_py']
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src) by extension 'python_setup_py'
+[0.551s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extensions ['ignore', 'ignore_ament_install']
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extension 'ignore'
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extension 'ignore_ament_install'
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extensions ['colcon_pkg']
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extension 'colcon_pkg'
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extensions ['colcon_meta']
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extension 'colcon_meta'
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extensions ['ros']
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extension 'ros'
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extensions ['cmake', 'python']
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extension 'cmake'
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extension 'python'
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extensions ['python_setup_py']
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API) by extension 'python_setup_py'
+[0.552s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extensions ['ignore', 'ignore_ament_install']
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extension 'ignore'
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extension 'ignore_ament_install'
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extensions ['colcon_pkg']
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extension 'colcon_pkg'
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extensions ['colcon_meta']
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extension 'colcon_meta'
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extensions ['ros']
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extension 'ros'
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extensions ['cmake', 'python']
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extension 'cmake'
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extension 'python'
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extensions ['python_setup_py']
+[0.553s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python) by extension 'python_setup_py'
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extension 'ignore'
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extension 'ignore_ament_install'
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extensions ['colcon_pkg']
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extension 'colcon_pkg'
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extensions ['colcon_meta']
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extension 'colcon_meta'
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extensions ['ros']
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extension 'ros'
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extensions ['cmake', 'python']
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extension 'cmake'
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extension 'python'
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extensions ['python_setup_py']
+[0.554s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/__pycache__) by extension 'python_setup_py'
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extensions ['ignore', 'ignore_ament_install']
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extension 'ignore'
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extension 'ignore_ament_install'
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extensions ['colcon_pkg']
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extension 'colcon_pkg'
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extensions ['colcon_meta']
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extension 'colcon_meta'
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extensions ['ros']
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extension 'ros'
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extensions ['cmake', 'python']
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extension 'cmake'
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extension 'python'
+[0.555s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extensions ['python_setup_py']
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils) by extension 'python_setup_py'
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extension 'ignore'
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extension 'ignore_ament_install'
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extensions ['colcon_pkg']
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extension 'colcon_pkg'
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extensions ['colcon_meta']
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extension 'colcon_meta'
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extensions ['ros']
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extension 'ros'
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extensions ['cmake', 'python']
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extension 'cmake'
+[0.556s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extension 'python'
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extensions ['python_setup_py']
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/python/leap_hand_utils/__pycache__) by extension 'python_setup_py'
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extensions ['ignore', 'ignore_ament_install']
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extension 'ignore'
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extension 'ignore_ament_install'
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extensions ['colcon_pkg']
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extension 'colcon_pkg'
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extensions ['colcon_meta']
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extension 'colcon_meta'
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extensions ['ros']
+[0.557s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/ros2_module) by extension 'ros'
+[0.563s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/LEAP_Hand_API/ros2_module' with type 'ros.ament_cmake' and name 'leap_hand'
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extensions ['ignore', 'ignore_ament_install']
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extension 'ignore'
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extension 'ignore_ament_install'
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extensions ['colcon_pkg']
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extension 'colcon_pkg'
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extensions ['colcon_meta']
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extension 'colcon_meta'
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extensions ['ros']
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extension 'ros'
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extensions ['cmake', 'python']
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extension 'cmake'
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extension 'python'
+[0.564s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extensions ['python_setup_py']
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/LEAP_Hand_API/useful_tools) by extension 'python_setup_py'
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extensions ['ignore', 'ignore_ament_install']
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extension 'ignore'
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extension 'ignore_ament_install'
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extensions ['colcon_pkg']
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extension 'colcon_pkg'
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extensions ['colcon_meta']
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extension 'colcon_meta'
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extensions ['ros']
+[0.565s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_description) by extension 'ros'
+[0.566s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/leap_description' with type 'ros.ament_python' and name 'leap_description'
+[0.566s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extensions ['ignore', 'ignore_ament_install']
+[0.567s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extension 'ignore'
+[0.567s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extension 'ignore_ament_install'
+[0.567s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extensions ['colcon_pkg']
+[0.567s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extension 'colcon_pkg'
+[0.567s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extensions ['colcon_meta']
+[0.567s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extension 'colcon_meta'
+[0.567s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extensions ['ros']
+[0.567s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/leap_to_leapXela) by extension 'ros'
+[0.568s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/leap_to_leapXela' with type 'ros.ament_python' and name 'leap_to_leapXela'
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extensions ['ignore', 'ignore_ament_install']
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extension 'ignore'
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extension 'ignore_ament_install'
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extensions ['colcon_pkg']
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extension 'colcon_pkg'
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extensions ['colcon_meta']
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extension 'colcon_meta'
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extensions ['ros']
+[0.569s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_data_collection) by extension 'ros'
+[0.570s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/xela_data_collection' with type 'ros.ament_python' and name 'xela_data_collection'
+[0.570s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extensions ['ignore', 'ignore_ament_install']
+[0.570s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extension 'ignore'
+[0.571s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extension 'ignore_ament_install'
+[0.571s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extensions ['colcon_pkg']
+[0.571s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extension 'colcon_pkg'
+[0.571s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extensions ['colcon_meta']
+[0.571s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extension 'colcon_meta'
+[0.571s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extensions ['ros']
+[0.571s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_description) by extension 'ros'
+[0.572s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/xela_description' with type 'ros.ament_python' and name 'xela_description'
+[0.572s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extensions ['ignore', 'ignore_ament_install']
+[0.572s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extension 'ignore'
+[0.572s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extension 'ignore_ament_install'
+[0.572s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extensions ['colcon_pkg']
+[0.572s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extension 'colcon_pkg'
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extensions ['colcon_meta']
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extension 'colcon_meta'
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extensions ['ros']
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extension 'ros'
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extensions ['cmake', 'python']
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extension 'cmake'
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extension 'python'
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extensions ['python_setup_py']
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models) by extension 'python_setup_py'
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extensions ['ignore', 'ignore_ament_install']
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extension 'ignore'
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extension 'ignore_ament_install'
+[0.573s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extensions ['colcon_pkg']
+[0.574s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extension 'colcon_pkg'
+[0.574s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extensions ['colcon_meta']
+[0.574s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extension 'colcon_meta'
+[0.574s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extensions ['ros']
+[0.574s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_models) by extension 'ros'
+[0.575s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/xela_models/xela_models' with type 'ros.ament_cmake' and name 'xela_models'
+[0.575s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extensions ['ignore', 'ignore_ament_install']
+[0.575s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extension 'ignore'
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extension 'ignore_ament_install'
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extensions ['colcon_pkg']
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extension 'colcon_pkg'
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extensions ['colcon_meta']
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extension 'colcon_meta'
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extensions ['ros']
+[0.576s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_models/xela_pybullet_viewer) by extension 'ros'
+[0.577s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/xela_models/xela_pybullet_viewer' with type 'ros.ament_python' and name 'xela_pybullet_viewer'
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extensions ['ignore', 'ignore_ament_install']
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extension 'ignore'
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extension 'ignore_ament_install'
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extensions ['colcon_pkg']
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extension 'colcon_pkg'
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extensions ['colcon_meta']
+[0.577s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extension 'colcon_meta'
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extensions ['ros']
+[0.578s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_point_cloud_representation) by extension 'ros'
+[0.579s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/xela_point_cloud_representation' with type 'ros.ament_cmake' and name 'xela_point_cloud_representation'
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extensions ['ignore', 'ignore_ament_install']
+[0.579s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extension 'ignore'
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extension 'ignore_ament_install'
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extensions ['colcon_pkg']
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extension 'colcon_pkg'
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extensions ['colcon_meta']
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extension 'colcon_meta'
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extensions ['ros']
+[0.580s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_server_ros2) by extension 'ros'
+[0.581s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/xela_server_ros2' with type 'ros.ament_cmake' and name 'xela_server_ros2'
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extensions ['ignore', 'ignore_ament_install']
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extension 'ignore'
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extension 'ignore_ament_install'
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extensions ['colcon_pkg']
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extension 'colcon_pkg'
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extensions ['colcon_meta']
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extension 'colcon_meta'
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extensions ['ros']
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extension 'ros'
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extensions ['cmake', 'python']
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extension 'cmake'
+[0.582s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extension 'python'
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extensions ['python_setup_py']
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop) by extension 'python_setup_py'
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extensions ['ignore', 'ignore_ament_install']
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extension 'ignore'
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extension 'ignore_ament_install'
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extensions ['colcon_pkg']
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extension 'colcon_pkg'
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extensions ['colcon_meta']
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extension 'colcon_meta'
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extensions ['ros']
+[0.583s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/dex_retargeting) by extension 'ros'
+[0.585s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/xela_telelop/dex_retargeting' with type 'ros.ament_python' and name 'dex_retargeting'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extensions ['ignore', 'ignore_ament_install']
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extension 'ignore'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extension 'ignore_ament_install'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extensions ['colcon_pkg']
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extension 'colcon_pkg'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extensions ['colcon_meta']
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extension 'colcon_meta'
+[0.585s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extensions ['ros']
+[0.586s] Level 1:colcon.colcon_core.package_identification:_identify(ros_ws/src/xela_telelop/oculusTeleop) by extension 'ros'
+[0.587s] DEBUG:colcon.colcon_core.package_identification:Package 'ros_ws/src/xela_telelop/oculusTeleop' with type 'ros.ament_python' and name 'oculusTeleop'
+[0.587s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extensions ['ignore', 'ignore_ament_install']
+[0.587s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extension 'ignore'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extension 'ignore_ament_install'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extensions ['colcon_pkg']
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extension 'colcon_pkg'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extensions ['colcon_meta']
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extension 'colcon_meta'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extensions ['ros']
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extension 'ros'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extensions ['cmake', 'python']
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extension 'cmake'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extension 'python'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extensions ['python_setup_py']
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell) by extension 'python_setup_py'
+[0.588s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extensions ['ignore', 'ignore_ament_install']
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extension 'ignore'
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extension 'ignore_ament_install'
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extensions ['colcon_pkg']
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extension 'colcon_pkg'
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extensions ['colcon_meta']
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extension 'colcon_meta'
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extensions ['ros']
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extension 'ros'
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extensions ['cmake', 'python']
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extension 'cmake'
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extension 'python'
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extensions ['python_setup_py']
+[0.589s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601) by extension 'python_setup_py'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extensions ['ignore', 'ignore_ament_install']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extension 'ignore'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extension 'ignore_ament_install'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extensions ['colcon_pkg']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extension 'colcon_pkg'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extensions ['colcon_meta']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extension 'colcon_meta'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extensions ['ros']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extension 'ros'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extensions ['cmake', 'python']
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extension 'cmake'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extension 'python'
+[0.590s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extensions ['python_setup_py']
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(shell/linux_1.8.0_208601/LOG) by extension 'python_setup_py'
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extensions ['ignore', 'ignore_ament_install']
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extension 'ignore'
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extension 'ignore_ament_install'
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extensions ['colcon_pkg']
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extension 'colcon_pkg'
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extensions ['colcon_meta']
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extension 'colcon_meta'
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extensions ['ros']
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extension 'ros'
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extensions ['cmake', 'python']
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extension 'cmake'
+[0.591s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extension 'python'
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extensions ['python_setup_py']
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr) by extension 'python_setup_py'
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extensions ['ignore', 'ignore_ament_install']
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extension 'ignore'
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extension 'ignore_ament_install'
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extensions ['colcon_pkg']
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extension 'colcon_pkg'
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extensions ['colcon_meta']
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extension 'colcon_meta'
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extensions ['ros']
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extension 'ros'
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extensions ['cmake', 'python']
+[0.592s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extension 'cmake'
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extension 'python'
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extensions ['python_setup_py']
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop) by extension 'python_setup_py'
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extension 'ignore'
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extension 'ignore_ament_install'
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extensions ['colcon_pkg']
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extension 'colcon_pkg'
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extensions ['colcon_meta']
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extension 'colcon_meta'
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extensions ['ros']
+[0.593s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extension 'ros'
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extensions ['cmake', 'python']
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extension 'cmake'
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extension 'python'
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extensions ['python_setup_py']
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/__pycache__) by extension 'python_setup_py'
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extensions ['ignore', 'ignore_ament_install']
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extension 'ignore'
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extension 'ignore_ament_install'
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extensions ['colcon_pkg']
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extension 'colcon_pkg'
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extensions ['colcon_meta']
+[0.594s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extension 'colcon_meta'
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extensions ['ros']
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extension 'ros'
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extensions ['cmake', 'python']
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extension 'cmake'
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extension 'python'
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extensions ['python_setup_py']
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right) by extension 'python_setup_py'
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extensions ['ignore', 'ignore_ament_install']
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extension 'ignore'
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extension 'ignore_ament_install'
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extensions ['colcon_pkg']
+[0.595s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extension 'colcon_pkg'
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extensions ['colcon_meta']
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extension 'colcon_meta'
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extensions ['ros']
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extension 'ros'
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extensions ['cmake', 'python']
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extension 'cmake'
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extension 'python'
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extensions ['python_setup_py']
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/__pycache__) by extension 'python_setup_py'
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extensions ['ignore', 'ignore_ament_install']
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extension 'ignore'
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extension 'ignore_ament_install'
+[0.596s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extensions ['colcon_pkg']
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extension 'colcon_pkg'
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extensions ['colcon_meta']
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extension 'colcon_meta'
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extensions ['ros']
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extension 'ros'
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extensions ['cmake', 'python']
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extension 'cmake'
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extension 'python'
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extensions ['python_setup_py']
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leapXela_right/assets) by extension 'python_setup_py'
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extensions ['ignore', 'ignore_ament_install']
+[0.597s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extension 'ignore'
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extension 'ignore_ament_install'
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extensions ['colcon_pkg']
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extension 'colcon_pkg'
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extensions ['colcon_meta']
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extension 'colcon_meta'
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extensions ['ros']
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extension 'ros'
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extensions ['cmake', 'python']
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extension 'cmake'
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extension 'python'
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extensions ['python_setup_py']
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_left) by extension 'python_setup_py'
+[0.598s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extensions ['ignore', 'ignore_ament_install']
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extension 'ignore'
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extension 'ignore_ament_install'
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extensions ['colcon_pkg']
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extension 'colcon_pkg'
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extensions ['colcon_meta']
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extension 'colcon_meta'
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extensions ['ros']
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extension 'ros'
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extensions ['cmake', 'python']
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extension 'cmake'
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extension 'python'
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extensions ['python_setup_py']
+[0.599s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/Bidex_VisionPro_Teleop/leap_hand_mesh_right) by extension 'python_setup_py'
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extensions ['ignore', 'ignore_ament_install']
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extension 'ignore'
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extension 'ignore_ament_install'
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extensions ['colcon_pkg']
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extension 'colcon_pkg'
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extensions ['colcon_meta']
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extension 'colcon_meta'
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extensions ['ros']
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extension 'ros'
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extensions ['cmake', 'python']
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extension 'cmake'
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extension 'python'
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extensions ['python_setup_py']
+[0.600s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/OcculusTeleop) by extension 'python_setup_py'
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extensions ['ignore', 'ignore_ament_install']
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extension 'ignore'
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extension 'ignore_ament_install'
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extensions ['colcon_pkg']
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extension 'colcon_pkg'
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extensions ['colcon_meta']
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extension 'colcon_meta'
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extensions ['ros']
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extension 'ros'
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extensions ['cmake', 'python']
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extension 'cmake'
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extension 'python'
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extensions ['python_setup_py']
+[0.601s] Level 1:colcon.colcon_core.package_identification:_identify(teleop_xr/VisionProTeleop) by extension 'python_setup_py'
+[1.060s] DEBUG:colcon.colcon_core.package_identification:Package 'teleop_xr/VisionProTeleop' with type 'python' and name 'avp_stream'
+[1.061s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[1.061s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[1.061s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[1.061s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[1.061s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[1.101s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[1.101s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[1.106s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 276 installed packages in /opt/ros/humble
+[1.109s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[1.166s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'cmake_args' from command line to 'None'
+[1.166s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'cmake_target' from command line to 'None'
+[1.166s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.166s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'cmake_clean_cache' from command line to 'False'
+[1.166s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'cmake_clean_first' from command line to 'False'
+[1.166s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'cmake_force_configure' from command line to 'False'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'ament_cmake_args' from command line to 'None'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'catkin_cmake_args' from command line to 'None'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'avp_stream' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.167s] DEBUG:colcon.colcon_core.verb:Building package 'avp_stream' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/avp_stream', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/avp_stream', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/teleop_xr/VisionProTeleop', 'symlink_install': False, 'test_result_base': None}
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'cmake_args' from command line to 'None'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'cmake_target' from command line to 'None'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'cmake_clean_cache' from command line to 'False'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'cmake_clean_first' from command line to 'False'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'cmake_force_configure' from command line to 'False'
+[1.167s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'ament_cmake_args' from command line to 'None'
+[1.168s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'catkin_cmake_args' from command line to 'None'
+[1.168s] Level 5:colcon.colcon_core.verb:set package 'dex_retargeting' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.168s] DEBUG:colcon.colcon_core.verb:Building package 'dex_retargeting' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/dex_retargeting', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/dex_retargeting', 'symlink_install': False, 'test_result_base': None}
+[1.168s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'cmake_args' from command line to 'None'
+[1.168s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'cmake_target' from command line to 'None'
+[1.168s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.168s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'cmake_clean_cache' from command line to 'False'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'cmake_clean_first' from command line to 'False'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'cmake_force_configure' from command line to 'False'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'ament_cmake_args' from command line to 'None'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'catkin_cmake_args' from command line to 'None'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_description' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.169s] DEBUG:colcon.colcon_core.verb:Building package 'leap_description' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/leap_description', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/leap_description', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_description', 'symlink_install': False, 'test_result_base': None}
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'cmake_args' from command line to 'None'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'cmake_target' from command line to 'None'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'cmake_clean_cache' from command line to 'False'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'cmake_clean_first' from command line to 'False'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'cmake_force_configure' from command line to 'False'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'ament_cmake_args' from command line to 'None'
+[1.169s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'catkin_cmake_args' from command line to 'None'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'leap_hand' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.170s] DEBUG:colcon.colcon_core.verb:Building package 'leap_hand' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/leap_hand', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/leap_hand', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module', 'symlink_install': False, 'test_result_base': None}
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'cmake_args' from command line to 'None'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'cmake_target' from command line to 'None'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'cmake_clean_cache' from command line to 'False'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'cmake_clean_first' from command line to 'False'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'cmake_force_configure' from command line to 'False'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'ament_cmake_args' from command line to 'None'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'catkin_cmake_args' from command line to 'None'
+[1.170s] Level 5:colcon.colcon_core.verb:set package 'mujoco_c_example' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.170s] DEBUG:colcon.colcon_core.verb:Building package 'mujoco_c_example' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/mujoco_c_example', 'symlink_install': False, 'test_result_base': None}
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'cmake_args' from command line to 'None'
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'cmake_target' from command line to 'None'
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'cmake_clean_cache' from command line to 'False'
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'cmake_clean_first' from command line to 'False'
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'cmake_force_configure' from command line to 'False'
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'ament_cmake_args' from command line to 'None'
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'catkin_cmake_args' from command line to 'None'
+[1.171s] Level 5:colcon.colcon_core.verb:set package 'xela_description' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.171s] DEBUG:colcon.colcon_core.verb:Building package 'xela_description' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/xela_description', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/xela_description', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_description', 'symlink_install': False, 'test_result_base': None}
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'cmake_args' from command line to 'None'
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'cmake_target' from command line to 'None'
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'cmake_clean_cache' from command line to 'False'
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'cmake_clean_first' from command line to 'False'
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'cmake_force_configure' from command line to 'False'
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'ament_cmake_args' from command line to 'None'
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'catkin_cmake_args' from command line to 'None'
+[1.172s] Level 5:colcon.colcon_core.verb:set package 'xela_models' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.172s] DEBUG:colcon.colcon_core.verb:Building package 'xela_models' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/xela_models', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/xela_models', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_models/xela_models', 'symlink_install': False, 'test_result_base': None}
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'cmake_args' from command line to 'None'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'cmake_target' from command line to 'None'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'cmake_clean_cache' from command line to 'False'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'cmake_clean_first' from command line to 'False'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'cmake_force_configure' from command line to 'False'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'ament_cmake_args' from command line to 'None'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'catkin_cmake_args' from command line to 'None'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'xela_server_ros2' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.173s] DEBUG:colcon.colcon_core.verb:Building package 'xela_server_ros2' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/xela_server_ros2', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2', 'symlink_install': False, 'test_result_base': None}
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'cmake_args' from command line to 'None'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'cmake_target' from command line to 'None'
+[1.173s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'cmake_clean_cache' from command line to 'False'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'cmake_clean_first' from command line to 'False'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'cmake_force_configure' from command line to 'False'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'ament_cmake_args' from command line to 'None'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'catkin_cmake_args' from command line to 'None'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'leap_to_leapXela' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.174s] DEBUG:colcon.colcon_core.verb:Building package 'leap_to_leapXela' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/leap_to_leapXela', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_to_leapXela', 'symlink_install': False, 'test_result_base': None}
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'cmake_args' from command line to 'None'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'cmake_target' from command line to 'None'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'cmake_clean_cache' from command line to 'False'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'cmake_clean_first' from command line to 'False'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'cmake_force_configure' from command line to 'False'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'ament_cmake_args' from command line to 'None'
+[1.174s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'catkin_cmake_args' from command line to 'None'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'oculusTeleop' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.175s] DEBUG:colcon.colcon_core.verb:Building package 'oculusTeleop' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/oculusTeleop', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/oculusTeleop', 'symlink_install': False, 'test_result_base': None}
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'cmake_args' from command line to 'None'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'cmake_target' from command line to 'None'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'cmake_clean_cache' from command line to 'False'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'cmake_clean_first' from command line to 'False'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'cmake_force_configure' from command line to 'False'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'ament_cmake_args' from command line to 'None'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'catkin_cmake_args' from command line to 'None'
+[1.175s] Level 5:colcon.colcon_core.verb:set package 'xela_data_collection' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.175s] DEBUG:colcon.colcon_core.verb:Building package 'xela_data_collection' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/xela_data_collection', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_data_collection', 'symlink_install': False, 'test_result_base': None}
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'cmake_args' from command line to 'None'
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'cmake_target' from command line to 'None'
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'cmake_clean_cache' from command line to 'False'
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'cmake_clean_first' from command line to 'False'
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'cmake_force_configure' from command line to 'False'
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'ament_cmake_args' from command line to 'None'
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'catkin_cmake_args' from command line to 'None'
+[1.176s] Level 5:colcon.colcon_core.verb:set package 'xela_point_cloud_representation' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.176s] DEBUG:colcon.colcon_core.verb:Building package 'xela_point_cloud_representation' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_point_cloud_representation', 'symlink_install': False, 'test_result_base': None}
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'cmake_args' from command line to 'None'
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'cmake_target' from command line to 'None'
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'cmake_clean_cache' from command line to 'False'
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'cmake_clean_first' from command line to 'False'
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'cmake_force_configure' from command line to 'False'
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'ament_cmake_args' from command line to 'None'
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'catkin_cmake_args' from command line to 'None'
+[1.177s] Level 5:colcon.colcon_core.verb:set package 'xela_pybullet_viewer' build argument 'catkin_skip_building_tests' from command line to 'False'
+[1.177s] DEBUG:colcon.colcon_core.verb:Building package 'xela_pybullet_viewer' with the following arguments: {'ament_cmake_args': None, 'build_base': '/workspace/LeapXELA_Hardware_ws/build/xela_pybullet_viewer', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer', 'merge_install': False, 'path': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_models/xela_pybullet_viewer', 'symlink_install': False, 'test_result_base': None}
+[1.177s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[1.179s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[1.180s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_description' with build type 'ament_python'
+[1.180s] Level 1:colcon.colcon_core.shell:create_environment_hook('leap_description', 'ament_prefix_path')
+[1.183s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[1.184s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/hook/ament_prefix_path.ps1'
+[1.185s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/hook/ament_prefix_path.dsv'
+[1.185s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/hook/ament_prefix_path.sh'
+[1.187s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.187s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.191s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_description' with build type 'ament_python'
+[1.192s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_description', 'ament_prefix_path')
+[1.192s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/hook/ament_prefix_path.ps1'
+[1.193s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/hook/ament_prefix_path.dsv'
+[1.193s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/hook/ament_prefix_path.sh'
+[1.194s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.194s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.198s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_models/xela_models' with build type 'ament_cmake'
+[1.199s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_models/xela_models'
+[1.199s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.199s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.203s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2' with build type 'ament_cmake'
+[1.204s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_server_ros2'
+[1.204s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.204s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.208s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/workspace/LeapXELA_Hardware_ws/teleop_xr/VisionProTeleop'
+[1.209s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.209s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.214s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/dex_retargeting' with build type 'ament_python'
+[1.214s] Level 1:colcon.colcon_core.shell:create_environment_hook('dex_retargeting', 'ament_prefix_path')
+[1.215s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/hook/ament_prefix_path.ps1'
+[1.216s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/hook/ament_prefix_path.dsv'
+[1.216s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/hook/ament_prefix_path.sh'
+[1.217s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.217s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.222s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module' with build type 'ament_cmake'
+[1.222s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/LEAP_Hand_API/ros2_module'
+[1.222s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.222s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.226s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/workspace/LeapXELA_Hardware_ws/mujoco_c_example'
+[1.227s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.227s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.698s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_description'
+[1.698s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.698s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.169s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_description'
+[2.170s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[2.170s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.182s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/xela_models': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/xela_models -- -j16 -l16
+[2.187s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/xela_server_ros2': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/xela_server_ros2 -- -j16 -l16
+[3.146s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/dex_retargeting'
+[3.147s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[3.147s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[3.162s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/leap_hand': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/leap_hand -- -j16 -l16
+[3.172s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example': /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/mujoco_c_example -- -j16 -l16
+[3.174s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/xela_models' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/xela_models -- -j16 -l16
+[3.191s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/xela_models': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/xela_models
+[3.214s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_models)
+[3.216s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/xela_models' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/xela_models
+[3.222s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models' for CMake module files
+[3.223s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models' for CMake config files
+[3.224s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_models', 'cmake_prefix_path')
+[3.225s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/hook/cmake_prefix_path.ps1'
+[3.226s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/hook/cmake_prefix_path.dsv'
+[3.227s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/hook/cmake_prefix_path.sh'
+[3.229s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models/bin'
+[3.229s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models/lib/pkgconfig/xela_models.pc'
+[3.230s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models/lib/python3.10/site-packages'
+[3.231s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models/bin'
+[3.231s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.ps1'
+[3.235s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.dsv'
+[3.236s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.sh'
+[3.238s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.bash'
+[3.240s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.zsh'
+[3.242s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_models/share/colcon-core/packages/xela_models)
+[3.244s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_models)
+[3.244s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models' for CMake module files
+[3.246s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models' for CMake config files
+[3.246s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_models', 'cmake_prefix_path')
+[3.247s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/hook/cmake_prefix_path.ps1'
+[3.249s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/hook/cmake_prefix_path.dsv'
+[3.250s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/hook/cmake_prefix_path.sh'
+[3.251s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models/bin'
+[3.252s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models/lib/pkgconfig/xela_models.pc'
+[3.252s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models/lib/python3.10/site-packages'
+[3.253s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_models/bin'
+[3.254s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.ps1'
+[3.256s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.dsv'
+[3.257s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.sh'
+[3.258s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.bash'
+[3.259s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_models/share/xela_models/package.zsh'
+[3.260s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_models/share/colcon-core/packages/xela_models)
+[3.261s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_models/xela_pybullet_viewer' with build type 'ament_python'
+[3.261s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_pybullet_viewer', 'ament_prefix_path')
+[3.262s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/hook/ament_prefix_path.ps1'
+[3.264s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/hook/ament_prefix_path.dsv'
+[3.265s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/hook/ament_prefix_path.sh'
+[3.267s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[3.267s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[3.757s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_models/xela_pybullet_viewer'
+[3.758s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[3.758s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[3.771s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/teleop_xr/VisionProTeleop': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/avp_stream/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/avp_stream/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/avp_stream build --build-base /workspace/LeapXELA_Hardware_ws/build/avp_stream/build install --record /workspace/LeapXELA_Hardware_ws/build/avp_stream/install.log --single-version-externally-managed
+[3.772s] WARNING:colcon.colcon_cmake.task.cmake.build:Could not run installation step for package 'mujoco_c_example' because it has no 'install' target
+[3.773s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(mujoco_c_example)
+[3.774s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example' for CMake module files
+[3.776s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example' returned '0': /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/mujoco_c_example -- -j16 -l16
+[3.777s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example' for CMake config files
+[3.778s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/bin'
+[3.778s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/lib/pkgconfig/mujoco_c_example.pc'
+[3.779s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/lib/python3.10/site-packages'
+[3.780s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/bin'
+[3.781s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/share/mujoco_c_example/package.ps1'
+[3.782s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/share/mujoco_c_example/package.dsv'
+[3.783s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/share/mujoco_c_example/package.sh'
+[3.784s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/share/mujoco_c_example/package.bash'
+[3.785s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/share/mujoco_c_example/package.zsh'
+[3.786s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example/share/colcon-core/packages/mujoco_c_example)
+[3.789s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/xela_server_ros2' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/xela_server_ros2 -- -j16 -l16
+[3.793s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/xela_server_ros2': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/xela_server_ros2
+[3.811s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_description': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/xela_description/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/xela_description build --build-base /workspace/LeapXELA_Hardware_ws/build/xela_description/build install --record /workspace/LeapXELA_Hardware_ws/build/xela_description/install.log --single-version-externally-managed install_data
+[3.814s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_description': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/leap_description/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/leap_description build --build-base /workspace/LeapXELA_Hardware_ws/build/leap_description/build install --record /workspace/LeapXELA_Hardware_ws/build/leap_description/install.log --single-version-externally-managed install_data
+[3.841s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/dex_retargeting': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/dex_retargeting/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/dex_retargeting build --build-base /workspace/LeapXELA_Hardware_ws/build/dex_retargeting/build install --record /workspace/LeapXELA_Hardware_ws/build/dex_retargeting/install.log --single-version-externally-managed install_data
+[3.899s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_server_ros2)
+[3.900s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2' for CMake module files
+[3.905s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2' for CMake config files
+[3.909s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/xela_server_ros2' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/xela_server_ros2
+[3.910s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_server_ros2', 'cmake_prefix_path')
+[3.911s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/cmake_prefix_path.ps1'
+[3.912s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/cmake_prefix_path.dsv'
+[3.913s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/cmake_prefix_path.sh'
+[3.915s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/lib'
+[3.915s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_server_ros2', 'ld_library_path_lib')
+[3.916s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/ld_library_path_lib.ps1'
+[3.917s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/ld_library_path_lib.dsv'
+[3.918s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/ld_library_path_lib.sh'
+[3.919s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/bin'
+[3.919s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/lib/pkgconfig/xela_server_ros2.pc'
+[3.919s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/lib/python3.10/site-packages'
+[3.920s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/bin'
+[3.921s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.ps1'
+[3.923s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.dsv'
+[3.924s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.sh'
+[3.925s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.bash'
+[3.926s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.zsh'
+[3.927s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/colcon-core/packages/xela_server_ros2)
+[3.928s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_server_ros2)
+[3.929s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2' for CMake module files
+[3.930s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2' for CMake config files
+[3.931s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_server_ros2', 'cmake_prefix_path')
+[3.932s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/cmake_prefix_path.ps1'
+[3.933s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/cmake_prefix_path.dsv'
+[3.934s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/cmake_prefix_path.sh'
+[3.935s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/lib'
+[3.935s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_server_ros2', 'ld_library_path_lib')
+[3.936s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/ld_library_path_lib.ps1'
+[3.937s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/ld_library_path_lib.dsv'
+[3.937s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/hook/ld_library_path_lib.sh'
+[3.938s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/bin'
+[3.938s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/lib/pkgconfig/xela_server_ros2.pc'
+[3.939s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/lib/python3.10/site-packages'
+[3.940s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/bin'
+[3.941s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.ps1'
+[3.943s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.dsv'
+[3.944s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.sh'
+[3.946s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.bash'
+[3.947s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/xela_server_ros2/package.zsh'
+[3.948s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/share/colcon-core/packages/xela_server_ros2)
+[3.948s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_data_collection' with build type 'ament_python'
+[3.949s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_data_collection', 'ament_prefix_path')
+[3.949s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/hook/ament_prefix_path.ps1'
+[3.951s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/hook/ament_prefix_path.dsv'
+[3.952s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/hook/ament_prefix_path.sh'
+[3.953s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[3.953s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[4.430s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_data_collection'
+[4.430s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[4.431s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[4.439s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/leap_hand' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/leap_hand -- -j16 -l16
+[4.443s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/leap_hand': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/leap_hand
+[4.444s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_description' for CMake module files
+[4.445s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_description' returned '0': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/leap_description/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/leap_description build --build-base /workspace/LeapXELA_Hardware_ws/build/leap_description/build install --record /workspace/LeapXELA_Hardware_ws/build/leap_description/install.log --single-version-externally-managed install_data
+[4.445s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_description' for CMake config files
+[4.446s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_description/lib'
+[4.447s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_description/bin'
+[4.447s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/pkgconfig/leap_description.pc'
+[4.447s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages'
+[4.447s] Level 1:colcon.colcon_core.shell:create_environment_hook('leap_description', 'pythonpath')
+[4.448s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/hook/pythonpath.ps1'
+[4.449s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/hook/pythonpath.dsv'
+[4.449s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/hook/pythonpath.sh'
+[4.451s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_description/bin'
+[4.451s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(leap_description)
+[4.451s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/package.ps1'
+[4.453s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/package.dsv'
+[4.454s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/package.sh'
+[4.454s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/package.bash'
+[4.455s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/package.zsh'
+[4.456s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/leap_description/share/colcon-core/packages/leap_description)
+[4.457s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/avp_stream' for CMake module files
+[4.458s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/avp_stream' for CMake config files
+[4.459s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/teleop_xr/VisionProTeleop' returned '0': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/avp_stream/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/avp_stream/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/avp_stream build --build-base /workspace/LeapXELA_Hardware_ws/build/avp_stream/build install --record /workspace/LeapXELA_Hardware_ws/build/avp_stream/install.log --single-version-externally-managed
+[4.460s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/avp_stream/lib'
+[4.460s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/avp_stream/bin'
+[4.460s] Level 1:colcon.colcon_core.shell:create_environment_hook('avp_stream', 'path')
+[4.460s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/path.ps1'
+[4.461s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/path.dsv'
+[4.462s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/path.sh'
+[4.463s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/avp_stream/lib/pkgconfig/avp_stream.pc'
+[4.463s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/avp_stream/lib/python3.10/site-packages'
+[4.463s] Level 1:colcon.colcon_core.shell:create_environment_hook('avp_stream', 'pythonpath')
+[4.463s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/pythonpath.ps1'
+[4.464s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/pythonpath.dsv'
+[4.465s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/pythonpath.sh'
+[4.466s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/avp_stream/bin'
+[4.466s] Level 1:colcon.colcon_core.shell:create_environment_hook('avp_stream', 'pythonscriptspath')
+[4.466s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/pythonscriptspath.ps1'
+[4.467s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/pythonscriptspath.dsv'
+[4.468s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/hook/pythonscriptspath.sh'
+[4.469s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(avp_stream)
+[4.469s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/package.ps1'
+[4.471s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/package.dsv'
+[4.471s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/package.sh'
+[4.472s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/package.bash'
+[4.473s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/avp_stream/package.zsh'
+[4.473s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/avp_stream/share/colcon-core/packages/avp_stream)
+[4.474s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_description' for CMake module files
+[4.476s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_description' for CMake config files
+[4.477s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_description' returned '0': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/xela_description/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/xela_description build --build-base /workspace/LeapXELA_Hardware_ws/build/xela_description/build install --record /workspace/LeapXELA_Hardware_ws/build/xela_description/install.log --single-version-externally-managed install_data
+[4.478s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_description/lib'
+[4.478s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_description/bin'
+[4.478s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/pkgconfig/xela_description.pc'
+[4.479s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages'
+[4.479s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_description', 'pythonpath')
+[4.479s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/hook/pythonpath.ps1'
+[4.480s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/hook/pythonpath.dsv'
+[4.481s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/hook/pythonpath.sh'
+[4.482s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_description/bin'
+[4.482s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_description)
+[4.483s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/package.ps1'
+[4.484s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/package.dsv'
+[4.484s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/package.sh'
+[4.485s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/package.bash'
+[4.486s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/package.zsh'
+[4.486s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_description/share/colcon-core/packages/xela_description)
+[4.488s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_to_leapXela' with build type 'ament_python'
+[4.488s] Level 1:colcon.colcon_core.shell:create_environment_hook('leap_to_leapXela', 'ament_prefix_path')
+[4.489s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/hook/ament_prefix_path.ps1'
+[4.491s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/hook/ament_prefix_path.dsv'
+[4.494s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/hook/ament_prefix_path.sh'
+[4.496s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[4.496s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[4.515s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/oculusTeleop' with build type 'ament_python'
+[4.516s] Level 1:colcon.colcon_core.shell:create_environment_hook('oculusTeleop', 'ament_prefix_path')
+[4.516s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/hook/ament_prefix_path.ps1'
+[4.517s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/hook/ament_prefix_path.dsv'
+[4.518s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/hook/ament_prefix_path.sh'
+[4.519s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[4.519s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[4.523s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_point_cloud_representation' with build type 'ament_cmake'
+[4.524s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_point_cloud_representation'
+[4.524s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[4.524s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[4.535s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_models/xela_pybullet_viewer': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_models:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_models PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/xela_pybullet_viewer/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/xela_pybullet_viewer build --build-base /workspace/LeapXELA_Hardware_ws/build/xela_pybullet_viewer/build install --record /workspace/LeapXELA_Hardware_ws/build/xela_pybullet_viewer/install.log --single-version-externally-managed install_data
+[4.541s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting' for CMake module files
+[4.546s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting' for CMake config files
+[4.548s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/dex_retargeting' returned '0': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/dex_retargeting/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/dex_retargeting build --build-base /workspace/LeapXELA_Hardware_ws/build/dex_retargeting/build install --record /workspace/LeapXELA_Hardware_ws/build/dex_retargeting/install.log --single-version-externally-managed install_data
+[4.560s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/lib'
+[4.560s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/bin'
+[4.560s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/lib/pkgconfig/dex_retargeting.pc'
+[4.560s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/lib/python3.10/site-packages'
+[4.560s] Level 1:colcon.colcon_core.shell:create_environment_hook('dex_retargeting', 'pythonpath')
+[4.561s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/hook/pythonpath.ps1'
+[4.562s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/hook/pythonpath.dsv'
+[4.562s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/hook/pythonpath.sh'
+[4.563s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/bin'
+[4.564s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(dex_retargeting)
+[4.564s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/package.ps1'
+[4.565s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/package.dsv'
+[4.566s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/package.sh'
+[4.567s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/package.bash'
+[4.567s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/dex_retargeting/package.zsh'
+[4.568s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/dex_retargeting/share/colcon-core/packages/dex_retargeting)
+[5.006s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_to_leapXela'
+[5.007s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[5.007s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[5.494s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/oculusTeleop'
+[5.494s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[5.494s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[5.505s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(leap_hand)
+[5.506s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand' for CMake module files
+[5.508s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/opt/ros/humble PYTHONPATH=/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation -- -j16 -l16
+[5.508s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/leap_hand' returned '0': CMAKE_PREFIX_PATH=/opt/ros/humble /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/leap_hand
+[5.509s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand' for CMake config files
+[5.510s] Level 1:colcon.colcon_core.shell:create_environment_hook('leap_hand', 'cmake_prefix_path')
+[5.510s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/cmake_prefix_path.ps1'
+[5.511s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/cmake_prefix_path.dsv'
+[5.512s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/cmake_prefix_path.sh'
+[5.513s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/lib'
+[5.513s] Level 1:colcon.colcon_core.shell:create_environment_hook('leap_hand', 'ld_library_path_lib')
+[5.514s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/ld_library_path_lib.ps1'
+[5.514s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/ld_library_path_lib.dsv'
+[5.515s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/ld_library_path_lib.sh'
+[5.516s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/bin'
+[5.516s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/lib/pkgconfig/leap_hand.pc'
+[5.516s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/lib/python3.10/site-packages'
+[5.517s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/bin'
+[5.517s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.ps1'
+[5.518s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.dsv'
+[5.519s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.sh'
+[5.520s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.bash'
+[5.521s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.zsh'
+[5.521s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/colcon-core/packages/leap_hand)
+[5.522s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(leap_hand)
+[5.523s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand' for CMake module files
+[5.525s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand' for CMake config files
+[5.525s] Level 1:colcon.colcon_core.shell:create_environment_hook('leap_hand', 'cmake_prefix_path')
+[5.526s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/cmake_prefix_path.ps1'
+[5.526s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/cmake_prefix_path.dsv'
+[5.527s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/cmake_prefix_path.sh'
+[5.528s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/lib'
+[5.528s] Level 1:colcon.colcon_core.shell:create_environment_hook('leap_hand', 'ld_library_path_lib')
+[5.529s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/ld_library_path_lib.ps1'
+[5.529s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/ld_library_path_lib.dsv'
+[5.530s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/hook/ld_library_path_lib.sh'
+[5.530s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/bin'
+[5.531s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/lib/pkgconfig/leap_hand.pc'
+[5.531s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/lib/python3.10/site-packages'
+[5.532s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_hand/bin'
+[5.532s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.ps1'
+[5.533s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.dsv'
+[5.534s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.sh'
+[5.535s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.bash'
+[5.535s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/leap_hand/package.zsh'
+[5.536s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/leap_hand/share/colcon-core/packages/leap_hand)
+[5.542s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer' for CMake module files
+[5.543s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_data_collection': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2 LD_LIBRARY_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/lib:${LD_LIBRARY_PATH} PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/xela_data_collection/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/xela_data_collection build --build-base /workspace/LeapXELA_Hardware_ws/build/xela_data_collection/build install --record /workspace/LeapXELA_Hardware_ws/build/xela_data_collection/install.log --single-version-externally-managed install_data
+[5.544s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_models/xela_pybullet_viewer' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_models:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_models PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/xela_pybullet_viewer/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/xela_pybullet_viewer build --build-base /workspace/LeapXELA_Hardware_ws/build/xela_pybullet_viewer/build install --record /workspace/LeapXELA_Hardware_ws/build/xela_pybullet_viewer/install.log --single-version-externally-managed install_data
+[5.544s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer' for CMake config files
+[5.545s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/lib'
+[5.545s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/bin'
+[5.546s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/lib/pkgconfig/xela_pybullet_viewer.pc'
+[5.546s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/lib/python3.10/site-packages'
+[5.546s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_pybullet_viewer', 'pythonpath')
+[5.546s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/hook/pythonpath.ps1'
+[5.547s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/hook/pythonpath.dsv'
+[5.548s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/hook/pythonpath.sh'
+[5.549s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/bin'
+[5.549s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_pybullet_viewer)
+[5.550s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/package.ps1'
+[5.551s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/package.dsv'
+[5.552s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/package.sh'
+[5.552s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/package.bash'
+[5.553s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/xela_pybullet_viewer/package.zsh'
+[5.554s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_pybullet_viewer/share/colcon-core/packages/xela_pybullet_viewer)
+[6.054s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection' for CMake module files
+[6.055s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_data_collection' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2 LD_LIBRARY_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/lib:${LD_LIBRARY_PATH} PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/xela_data_collection/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/xela_server_ros2/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/xela_data_collection build --build-base /workspace/LeapXELA_Hardware_ws/build/xela_data_collection/build install --record /workspace/LeapXELA_Hardware_ws/build/xela_data_collection/install.log --single-version-externally-managed install_data
+[6.056s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection' for CMake config files
+[6.057s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/lib'
+[6.057s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/bin'
+[6.057s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/lib/pkgconfig/xela_data_collection.pc'
+[6.058s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/lib/python3.10/site-packages'
+[6.058s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_data_collection', 'pythonpath')
+[6.058s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/hook/pythonpath.ps1'
+[6.059s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/hook/pythonpath.dsv'
+[6.060s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/hook/pythonpath.sh'
+[6.061s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/bin'
+[6.061s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_data_collection)
+[6.062s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/package.ps1'
+[6.063s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/package.dsv'
+[6.063s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/package.sh'
+[6.064s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/package.bash'
+[6.065s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/xela_data_collection/package.zsh'
+[6.065s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_data_collection/share/colcon-core/packages/xela_data_collection)
+[6.135s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_to_leapXela': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/leap_description:${AMENT_PREFIX_PATH} PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/leap_to_leapXela/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/leap_to_leapXela build --build-base /workspace/LeapXELA_Hardware_ws/build/leap_to_leapXela/build install --record /workspace/LeapXELA_Hardware_ws/build/leap_to_leapXela/install.log --single-version-externally-managed install_data
+[6.147s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/oculusTeleop': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/install/leap_description:${AMENT_PREFIX_PATH} PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/oculusTeleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/oculusTeleop build --build-base /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build install --record /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/install.log --single-version-externally-managed install_data
+[6.652s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/opt/ros/humble PYTHONPATH=/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation -- -j16 -l16
+[6.655s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/opt/ros/humble PYTHONPATH=/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation
+[6.656s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela' for CMake module files
+[6.657s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/leap_to_leapXela' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/leap_description:${AMENT_PREFIX_PATH} PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/leap_to_leapXela/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/leap_to_leapXela build --build-base /workspace/LeapXELA_Hardware_ws/build/leap_to_leapXela/build install --record /workspace/LeapXELA_Hardware_ws/build/leap_to_leapXela/install.log --single-version-externally-managed install_data
+[6.658s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela' for CMake config files
+[6.659s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/lib'
+[6.659s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/bin'
+[6.659s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/lib/pkgconfig/leap_to_leapXela.pc'
+[6.660s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/lib/python3.10/site-packages'
+[6.660s] Level 1:colcon.colcon_core.shell:create_environment_hook('leap_to_leapXela', 'pythonpath')
+[6.660s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/hook/pythonpath.ps1'
+[6.661s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/hook/pythonpath.dsv'
+[6.662s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/hook/pythonpath.sh'
+[6.663s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/bin'
+[6.663s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(leap_to_leapXela)
+[6.664s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/package.ps1'
+[6.665s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/package.dsv'
+[6.665s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/package.sh'
+[6.666s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/package.bash'
+[6.667s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/leap_to_leapXela/package.zsh'
+[6.668s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/leap_to_leapXela/share/colcon-core/packages/leap_to_leapXela)
+[6.712s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop' for CMake module files
+[6.714s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_telelop/oculusTeleop' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/install/leap_description:${AMENT_PREFIX_PATH} PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/oculusTeleop/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../../build/oculusTeleop build --build-base /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/build install --record /workspace/LeapXELA_Hardware_ws/build/oculusTeleop/install.log --single-version-externally-managed install_data
+[6.715s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop' for CMake config files
+[6.716s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib'
+[6.716s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/bin'
+[6.716s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/pkgconfig/oculusTeleop.pc'
+[6.717s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/lib/python3.10/site-packages'
+[6.717s] Level 1:colcon.colcon_core.shell:create_environment_hook('oculusTeleop', 'pythonpath')
+[6.717s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/hook/pythonpath.ps1'
+[6.718s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/hook/pythonpath.dsv'
+[6.719s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/hook/pythonpath.sh'
+[6.720s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/bin'
+[6.720s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(oculusTeleop)
+[6.721s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/package.ps1'
+[6.722s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/package.dsv'
+[6.723s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/package.sh'
+[6.723s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/package.bash'
+[6.724s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/oculusTeleop/package.zsh'
+[6.724s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/oculusTeleop/share/colcon-core/packages/oculusTeleop)
+[6.755s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_point_cloud_representation)
+[6.755s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation' for CMake module files
+[6.756s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/opt/ros/humble PYTHONPATH=/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation
+[6.758s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation' for CMake config files
+[6.759s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_point_cloud_representation', 'cmake_prefix_path')
+[6.759s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/cmake_prefix_path.ps1'
+[6.760s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/cmake_prefix_path.dsv'
+[6.761s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/cmake_prefix_path.sh'
+[6.762s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib'
+[6.762s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_point_cloud_representation', 'ld_library_path_lib')
+[6.763s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/ld_library_path_lib.ps1'
+[6.763s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/ld_library_path_lib.dsv'
+[6.764s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/ld_library_path_lib.sh'
+[6.765s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/bin'
+[6.765s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/pkgconfig/xela_point_cloud_representation.pc'
+[6.765s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/python3.10/site-packages'
+[6.766s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/bin'
+[6.766s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.ps1'
+[6.767s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.dsv'
+[6.768s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.sh'
+[6.769s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.bash'
+[6.769s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.zsh'
+[6.770s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/colcon-core/packages/xela_point_cloud_representation)
+[6.771s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(xela_point_cloud_representation)
+[6.771s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation' for CMake module files
+[6.772s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation' for CMake config files
+[6.773s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_point_cloud_representation', 'cmake_prefix_path')
+[6.773s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/cmake_prefix_path.ps1'
+[6.774s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/cmake_prefix_path.dsv'
+[6.774s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/cmake_prefix_path.sh'
+[6.775s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib'
+[6.775s] Level 1:colcon.colcon_core.shell:create_environment_hook('xela_point_cloud_representation', 'ld_library_path_lib')
+[6.776s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/ld_library_path_lib.ps1'
+[6.776s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/ld_library_path_lib.dsv'
+[6.777s] INFO:colcon.colcon_core.shell:Creating environment hook '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/hook/ld_library_path_lib.sh'
+[6.778s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/bin'
+[6.778s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/pkgconfig/xela_point_cloud_representation.pc'
+[6.778s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/python3.10/site-packages'
+[6.779s] Level 1:colcon.colcon_core.environment:checking '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/bin'
+[6.779s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.ps1'
+[6.780s] INFO:colcon.colcon_core.shell:Creating package descriptor '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.dsv'
+[6.781s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.sh'
+[6.782s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.bash'
+[6.783s] INFO:colcon.colcon_core.shell:Creating package script '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.zsh'
+[6.784s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/colcon-core/packages/xela_point_cloud_representation)
+[6.784s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[6.785s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[6.785s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[6.785s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[6.794s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.notify_send': Could not find 'notify-send'
+[6.794s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[6.795s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[6.795s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[6.799s] DEBUG:colcon.colcon_notification.desktop_notification.notify2:Failed to initialize notify2: org.freedesktop.DBus.Error.Spawn.ExecFailed: /usr/bin/dbus-launch terminated abnormally without any error message
+[6.799s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[6.801s] INFO:colcon.colcon_core.shell:Creating prefix script '/workspace/LeapXELA_Hardware_ws/install/local_setup.ps1'
+[6.803s] INFO:colcon.colcon_core.shell:Creating prefix util module '/workspace/LeapXELA_Hardware_ws/install/_local_setup_util_ps1.py'
+[6.806s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/workspace/LeapXELA_Hardware_ws/install/setup.ps1'
+[6.808s] INFO:colcon.colcon_core.shell:Creating prefix script '/workspace/LeapXELA_Hardware_ws/install/local_setup.sh'
+[6.809s] INFO:colcon.colcon_core.shell:Creating prefix util module '/workspace/LeapXELA_Hardware_ws/install/_local_setup_util_sh.py'
+[6.810s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/workspace/LeapXELA_Hardware_ws/install/setup.sh'
+[6.812s] INFO:colcon.colcon_core.shell:Creating prefix script '/workspace/LeapXELA_Hardware_ws/install/local_setup.bash'
+[6.813s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/workspace/LeapXELA_Hardware_ws/install/setup.bash'
+[6.814s] INFO:colcon.colcon_core.shell:Creating prefix script '/workspace/LeapXELA_Hardware_ws/install/local_setup.zsh'
+[6.815s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/workspace/LeapXELA_Hardware_ws/install/setup.zsh'

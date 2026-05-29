@@ -1,0 +1,17 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/xela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_point_cloud_representation/msg/detail/dds_fastrtps/hand_sensors__type_support.cpp.o"
+  "CMakeFiles/xela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_point_cloud_representation/msg/detail/dds_fastrtps/hand_sensors__type_support.cpp.o.d"
+  "CMakeFiles/xela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_point_cloud_representation/msg/detail/dds_fastrtps/texel__type_support.cpp.o"
+  "CMakeFiles/xela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_point_cloud_representation/msg/detail/dds_fastrtps/texel__type_support.cpp.o.d"
+  "libxela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp.pdb"
+  "libxela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp.so"
+  "rosidl_typesupport_fastrtps_cpp/xela_point_cloud_representation/msg/detail/dds_fastrtps/hand_sensors__type_support.cpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_point_cloud_representation/msg/detail/dds_fastrtps/texel__type_support.cpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_point_cloud_representation/msg/detail/hand_sensors__rosidl_typesupport_fastrtps_cpp.hpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_point_cloud_representation/msg/detail/texel__rosidl_typesupport_fastrtps_cpp.hpp"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/xela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

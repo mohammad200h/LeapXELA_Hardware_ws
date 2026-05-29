@@ -1,4 +1,5 @@
 from sensor_msgs.msg import JointState
+import math
 
 
 def get_unordered_joint_state_message_with_index_as_joint_value():
@@ -42,22 +43,22 @@ def get_ordered_joint_state_message_with_index_as_joint_value():
 def get_joint_ranges_hw():
     return {
         "ll": [
-            135, 5, 110, 115,
+          float(math.radians(degree))  for degree in [135, 5, 110, 115,
             275, 195, 200, 185,
             275, 195, 200, 185,
-            275, 195, 200, 185,
+            275, 195, 200, 185]
         ],
         "ul": [
-            305, 205, 10, 15,
+          float(math.radians(degree))  for degree in [305, 205, 10, 15,
             145, 60, 160, 50,
             145, 60, 160, 50,
-            145, 60, 160, 50,
+            145, 60, 160, 50]
         ],
         "zero": [
-            180, 180, 95, 90,
+          float(math.radians(degree))  for degree in [180, 180, 95, 90,
             265, 180, 180, 180,
             265, 180, 180, 180,
-            265, 180, 180, 180,
+            265, 180, 180, 180]
         ],
     }
 
@@ -82,8 +83,8 @@ def get_joint_ranges_sim():
 
 def get_hardware_joints_at_zero_position():
     return [
-        180, 180, 95, 90,
+        float(math.radians(degree))  for degree in [180, 180, 95, 90,
         265, 180, 180, 180,
         265, 180, 180, 180,
-        265, 180, 180, 180,
+        265, 180, 180, 180]
     ]

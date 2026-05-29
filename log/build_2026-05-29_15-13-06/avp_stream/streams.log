@@ -1,0 +1,22 @@
+[2.562s] Invoking command in '/workspace/LeapXELA_Hardware_ws/teleop_xr/VisionProTeleop': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/avp_stream/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/avp_stream/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/avp_stream build --build-base /workspace/LeapXELA_Hardware_ws/build/avp_stream/build install --record /workspace/LeapXELA_Hardware_ws/build/avp_stream/install.log --single-version-externally-managed
+[3.034s] running egg_info
+[3.035s] writing ../../build/avp_stream/avp_stream.egg-info/PKG-INFO
+[3.036s] writing dependency_links to ../../build/avp_stream/avp_stream.egg-info/dependency_links.txt
+[3.036s] writing entry points to ../../build/avp_stream/avp_stream.egg-info/entry_points.txt
+[3.036s] writing requirements to ../../build/avp_stream/avp_stream.egg-info/requires.txt
+[3.036s] writing top-level names to ../../build/avp_stream/avp_stream.egg-info/top_level.txt
+[3.040s] reading manifest file '../../build/avp_stream/avp_stream.egg-info/SOURCES.txt'
+[3.041s] adding license file 'LICENSE'
+[3.042s] writing manifest file '../../build/avp_stream/avp_stream.egg-info/SOURCES.txt'
+[3.042s] running build
+[3.043s] running build_py
+[3.046s] running install
+[3.047s] running install_lib
+[3.051s] running install_egg_info
+[3.054s] removing '/workspace/LeapXELA_Hardware_ws/install/avp_stream/lib/python3.10/site-packages/avp_stream-2.50-py3.10.egg-info' (and everything under it)
+[3.055s] Copying ../../build/avp_stream/avp_stream.egg-info to /workspace/LeapXELA_Hardware_ws/install/avp_stream/lib/python3.10/site-packages/avp_stream-2.50-py3.10.egg-info
+[3.056s] running install_scripts
+[3.092s] Installing avp script to /workspace/LeapXELA_Hardware_ws/install/avp_stream/bin
+[3.092s] Installing setup-avp-wired script to /workspace/LeapXELA_Hardware_ws/install/avp_stream/bin
+[3.094s] writing list of installed files to '/workspace/LeapXELA_Hardware_ws/build/avp_stream/install.log'
+[3.250s] Invoked command in '/workspace/LeapXELA_Hardware_ws/teleop_xr/VisionProTeleop' returned '0': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/avp_stream/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/avp_stream/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../build/avp_stream build --build-base /workspace/LeapXELA_Hardware_ws/build/avp_stream/build install --record /workspace/LeapXELA_Hardware_ws/build/avp_stream/install.log --single-version-externally-managed

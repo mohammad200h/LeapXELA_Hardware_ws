@@ -1,0 +1,3 @@
+[console_scripts]
+pybullet_xacro_viewer = xela_pybullet_viewer.pybullet_xacro_viewer:main
+

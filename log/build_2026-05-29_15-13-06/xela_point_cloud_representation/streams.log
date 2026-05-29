@@ -1,0 +1,203 @@
+[0.983s] Invoking command in '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/opt/ros/humble PYTHONPATH=/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation -- -j16 -l16
+[1.063s] [  2%] Built target xela_point_cloud_representation__rs
+[1.107s] [  2%] Built target ament_cmake_python_copy_xela_point_cloud_representation
+[1.139s] [  4%] Built target xela_point_cloud_representation__cpp
+[1.552s] running egg_info
+[1.554s] writing xela_point_cloud_representation.egg-info/PKG-INFO
+[1.554s] writing dependency_links to xela_point_cloud_representation.egg-info/dependency_links.txt
+[1.554s] writing top-level names to xela_point_cloud_representation.egg-info/top_level.txt
+[1.559s] reading manifest file 'xela_point_cloud_representation.egg-info/SOURCES.txt'
+[1.560s] writing manifest file 'xela_point_cloud_representation.egg-info/SOURCES.txt'
+[1.611s] [  4%] Built target ament_cmake_python_build_xela_point_cloud_representation_egg
+[1.626s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_cpp[0m
+[1.649s] [ 13%] Built target xela_point_cloud_representation__rosidl_typesupport_cpp
+[1.665s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_introspection_cpp[0m
+[1.686s] [ 23%] Built target xela_point_cloud_representation__rosidl_typesupport_introspection_cpp
+[1.703s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp[0m
+[1.723s] [ 32%] Built target xela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp
+[1.738s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_generator_c[0m
+[1.756s] [ 41%] Built target xela_point_cloud_representation__rosidl_generator_c
+[1.771s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_fastrtps_c[0m
+[1.792s] [ 51%] Built target xela_point_cloud_representation__rosidl_typesupport_fastrtps_c
+[1.807s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_c[0m
+[1.824s] [ 60%] Built target xela_point_cloud_representation__rosidl_typesupport_c
+[1.839s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_introspection_c[0m
+[1.856s] [ 69%] Built target xela_point_cloud_representation__rosidl_typesupport_introspection_c
+[1.885s] [ 69%] Built target xela_point_cloud_representation
+[1.917s] [ 72%] Built target xela_point_cloud_representation__py
+[1.933s] [35m[1mConsolidate compiler generated dependencies of target process_hand_sensors_into_pointcloud[0m
+[1.962s] [ 79%] Built target process_hand_sensors_into_pointcloud
+[1.977s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_generator_py[0m
+[2.001s] [ 86%] Built target xela_point_cloud_representation__rosidl_generator_py
+[2.016s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_fastrtps_c__pyext[0m
+[2.037s] [ 90%] Built target xela_point_cloud_representation__rosidl_typesupport_fastrtps_c__pyext
+[2.053s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_c__pyext[0m
+[2.073s] [ 95%] Built target xela_point_cloud_representation__rosidl_typesupport_c__pyext
+[2.089s] [35m[1mConsolidate compiler generated dependencies of target xela_point_cloud_representation__rosidl_typesupport_introspection_c__pyext[0m
+[2.109s] [100%] Built target xela_point_cloud_representation__rosidl_typesupport_introspection_c__pyext
+[2.128s] Invoked command in '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/opt/ros/humble PYTHONPATH=/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation -- -j16 -l16
+[2.131s] Invoking command in '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/opt/ros/humble PYTHONPATH=/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation
+[2.146s] -- Install configuration: ""
+[2.146s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/ament_index/resource_index/rosidl_interfaces/xela_point_cloud_representation
+[2.146s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation
+[2.146s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg
+[2.147s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail
+[2.147s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__functions.h
+[2.147s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__struct.h
+[2.147s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__functions.c
+[2.147s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__functions.c
+[2.147s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__functions.h
+[2.147s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__type_support.h
+[2.147s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__struct.h
+[2.148s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__type_support.h
+[2.148s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/hand_sensors.h
+[2.148s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/texel.h
+[2.148s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/rosidl_generator_c__visibility_control.h
+[2.148s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/environment/library_path.sh
+[2.148s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/environment/library_path.dsv
+[2.148s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/libxela_point_cloud_representation__rosidl_generator_c.so
+[2.148s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation
+[2.149s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg
+[2.149s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail
+[2.149s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__rosidl_typesupport_fastrtps_c.h
+[2.149s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__rosidl_typesupport_fastrtps_c.h
+[2.149s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[2.149s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/libxela_point_cloud_representation__rosidl_typesupport_fastrtps_c.so
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__builder.hpp
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__traits.hpp
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__struct.hpp
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__traits.hpp
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__type_support.hpp
+[2.150s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__struct.hpp
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__builder.hpp
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__type_support.hpp
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/hand_sensors.hpp
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/texel.hpp
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/rosidl_generator_cpp__visibility_control.hpp
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__rosidl_typesupport_fastrtps_cpp.hpp
+[2.151s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__rosidl_typesupport_fastrtps_cpp.hpp
+[2.152s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/dds_fastrtps
+[2.152s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[2.152s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/libxela_point_cloud_representation__rosidl_typesupport_fastrtps_cpp.so
+[2.152s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation
+[2.152s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg
+[2.153s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail
+[2.153s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__type_support.c
+[2.153s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__rosidl_typesupport_introspection_c.h
+[2.153s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__type_support.c
+[2.153s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__rosidl_typesupport_introspection_c.h
+[2.153s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[2.153s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/libxela_point_cloud_representation__rosidl_typesupport_introspection_c.so
+[2.153s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/libxela_point_cloud_representation__rosidl_typesupport_c.so
+[2.154s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation
+[2.154s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg
+[2.154s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail
+[2.154s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__rosidl_typesupport_introspection_cpp.hpp
+[2.154s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/texel__type_support.cpp
+[2.154s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__type_support.cpp
+[2.154s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/xela_point_cloud_representation/xela_point_cloud_representation/msg/detail/hand_sensors__rosidl_typesupport_introspection_cpp.hpp
+[2.154s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/libxela_point_cloud_representation__rosidl_typesupport_introspection_cpp.so
+[2.155s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/libxela_point_cloud_representation__rosidl_typesupport_cpp.so
+[2.155s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/environment/pythonpath.sh
+[2.155s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/environment/pythonpath.dsv
+[2.155s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation-0.0.0-py3.10.egg-info
+[2.155s] -- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation-0.0.0-py3.10.egg-info/dependency_links.txt
+[2.155s] -- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation-0.0.0-py3.10.egg-info/SOURCES.txt
+[2.155s] -- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation-0.0.0-py3.10.egg-info/PKG-INFO
+[2.155s] -- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation-0.0.0-py3.10.egg-info/top_level.txt
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/xela_point_cloud_representation_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/__init__.py
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/libxela_point_cloud_representation__rosidl_generator_py.so
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/_xela_point_cloud_representation_s.ep.rosidl_typesupport_introspection_c.c
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/_xela_point_cloud_representation_s.ep.rosidl_typesupport_fastrtps_c.c
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/xela_point_cloud_representation_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/msg
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/msg/__init__.py
+[2.156s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/msg/_hand_sensors_s.c
+[2.157s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/msg/_hand_sensors.py
+[2.157s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/msg/_texel_s.c
+[2.157s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/msg/_texel.py
+[2.157s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/xela_point_cloud_representation_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[2.157s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/_xela_point_cloud_representation_s.ep.rosidl_typesupport_c.c
+[2.213s] Listing '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation'...
+[2.213s] Listing '/workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/msg'...
+[2.221s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/xela_point_cloud_representation_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[2.221s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/xela_point_cloud_representation_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[2.221s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages/xela_point_cloud_representation/xela_point_cloud_representation_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[2.222s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/libxela_point_cloud_representation__rosidl_generator_py.so
+[2.222s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/ament_index/resource_index/rust_packages/xela_point_cloud_representation
+[2.222s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/rust
+[2.222s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/rust/Cargo.toml
+[2.222s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/rust/src
+[2.222s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/rust/src/lib.rs
+[2.222s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/rust/src/msg.rs
+[2.223s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/rust/src/msg
+[2.223s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/rust/src/msg/rmw.rs
+[2.223s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/rust/build.rs
+[2.223s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/msg/Texel.idl
+[2.223s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/msg/HandSensors.idl
+[2.223s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/msg/Texel.msg
+[2.223s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/msg/HandSensors.msg
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/xela_point_cloud_representation/process_hand_sensors_into_pointcloud
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/xela_point_cloud_representation/hand_controller.py
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/xela_point_cloud_representation/hand_touch_point_cloud.py
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/xela_point_cloud_representation/leap_taxel_map.py
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/xela_point_cloud_representation/sensor_value_publisher_fake.py
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/lib/xela_point_cloud_representation/leap_sensor_taxel_map.json
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include/
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include//xela_point_cloud_representation
+[2.224s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include//xela_point_cloud_representation/process_hand_sensors_into_pointcloud.h
+[2.225s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/include//xela_point_cloud_representation/camera_control.hpp
+[2.225s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/launch
+[2.225s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/launch/launch_perline_noise_publisher.py
+[2.225s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/launch/launch_hand_touch_point_cloud.py
+[2.225s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/launch/launch_demo.py
+[2.225s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/launch/launch_pointcloud_proccessing.py
+[2.225s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/launch/launch_hand_controller.py
+[2.225s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/ament_index/resource_index/package_run_dependencies/xela_point_cloud_representation
+[2.226s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/ament_index/resource_index/parent_prefix_path/xela_point_cloud_representation
+[2.226s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/environment/ament_prefix_path.sh
+[2.226s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/environment/ament_prefix_path.dsv
+[2.226s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/environment/path.sh
+[2.226s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/environment/path.dsv
+[2.226s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/local_setup.bash
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/local_setup.sh
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/local_setup.zsh
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/local_setup.dsv
+[2.227s] -- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.dsv
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/ament_index/resource_index/packages/xela_point_cloud_representation
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_generator_cExport.cmake
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_generator_cExport-noconfig.cmake
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_typesupport_fastrtps_cExport.cmake
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_generator_cppExport.cmake
+[2.227s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_typesupport_fastrtps_cppExport.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representation__rosidl_typesupport_introspection_cExport.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representation__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representation__rosidl_typesupport_cExport.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representation__rosidl_typesupport_cExport-noconfig.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representation__rosidl_typesupport_introspection_cppExport.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representation__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representation__rosidl_typesupport_cppExport.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representation__rosidl_typesupport_cppExport-noconfig.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_generator_pyExport.cmake
+[2.228s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/export_xela_point_cloud_representation__rosidl_generator_pyExport-noconfig.cmake
+[2.229s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/rosidl_cmake-extras.cmake
+[2.229s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/ament_cmake_export_include_directories-extras.cmake
+[2.229s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/ament_cmake_export_libraries-extras.cmake
+[2.229s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/ament_cmake_export_targets-extras.cmake
+[2.229s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[2.229s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/ament_cmake_export_dependencies-extras.cmake
+[2.230s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[2.230s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representationConfig.cmake
+[2.230s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/cmake/xela_point_cloud_representationConfig-version.cmake
+[2.230s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_point_cloud_representation/share/xela_point_cloud_representation/package.xml
+[2.232s] Invoked command in '/workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation' returned '0': AMENT_PREFIX_PATH=/workspace/LeapXELA_Hardware_ws/install/xela_description:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/opt/ros/humble PYTHONPATH=/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/build/xela_point_cloud_representation

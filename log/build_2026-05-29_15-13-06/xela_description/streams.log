@@ -1,0 +1,26 @@
+[2.618s] Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_description': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/xela_description/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/xela_description build --build-base /workspace/LeapXELA_Hardware_ws/build/xela_description/build install --record /workspace/LeapXELA_Hardware_ws/build/xela_description/install.log --single-version-externally-managed install_data
+[3.087s] running egg_info
+[3.088s] writing ../../../build/xela_description/xela_description.egg-info/PKG-INFO
+[3.088s] writing dependency_links to ../../../build/xela_description/xela_description.egg-info/dependency_links.txt
+[3.089s] writing entry points to ../../../build/xela_description/xela_description.egg-info/entry_points.txt
+[3.089s] writing requirements to ../../../build/xela_description/xela_description.egg-info/requires.txt
+[3.089s] writing top-level names to ../../../build/xela_description/xela_description.egg-info/top_level.txt
+[3.093s] reading manifest file '../../../build/xela_description/xela_description.egg-info/SOURCES.txt'
+[3.098s] writing manifest file '../../../build/xela_description/xela_description.egg-info/SOURCES.txt'
+[3.099s] running build
+[3.099s] running build_py
+[3.100s] running install
+[3.101s] running install_lib
+[3.104s] running install_data
+[3.108s] running install_egg_info
+[3.113s] removing '/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/xela_description-0.0.0-py3.10.egg-info' (and everything under it)
+[3.114s] Copying ../../../build/xela_description/xela_description.egg-info to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/xela_description-0.0.0-py3.10.egg-info
+[3.115s] running install_scripts
+[3.165s] Installing visulize script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description
+[3.165s] Installing visulize_finger script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description
+[3.166s] Installing visulize_hand script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description
+[3.166s] Installing visulize_mjcf script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description
+[3.166s] Installing visulize_palm script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description
+[3.166s] Installing visulize_thumb script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description
+[3.167s] writing list of installed files to '/workspace/LeapXELA_Hardware_ws/build/xela_description/install.log'
+[3.285s] Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_description' returned '0': PYTHONPATH=/workspace/LeapXELA_Hardware_ws/build/xela_description/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated -W ignore:easy_install command is deprecated setup.py egg_info --egg-base ../../../build/xela_description build --build-base /workspace/LeapXELA_Hardware_ws/build/xela_description/build install --record /workspace/LeapXELA_Hardware_ws/build/xela_description/install.log --single-version-externally-managed install_data

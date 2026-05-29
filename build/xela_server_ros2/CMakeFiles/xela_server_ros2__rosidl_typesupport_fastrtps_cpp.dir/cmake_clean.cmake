@@ -1,0 +1,29 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/forces__type_support.cpp.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/forces__type_support.cpp.o.d"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/sens_stream__type_support.cpp.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/sens_stream__type_support.cpp.o.d"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/sensor_full__type_support.cpp.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/sensor_full__type_support.cpp.o.d"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/taxel__type_support.cpp.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/taxel__type_support.cpp.o.d"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/srv/detail/dds_fastrtps/xela_sensor_stream__type_support.cpp.o"
+  "CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_server_ros2/srv/detail/dds_fastrtps/xela_sensor_stream__type_support.cpp.o.d"
+  "libxela_server_ros2__rosidl_typesupport_fastrtps_cpp.pdb"
+  "libxela_server_ros2__rosidl_typesupport_fastrtps_cpp.so"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/forces__type_support.cpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/sens_stream__type_support.cpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/sensor_full__type_support.cpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/dds_fastrtps/taxel__type_support.cpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/forces__rosidl_typesupport_fastrtps_cpp.hpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/sens_stream__rosidl_typesupport_fastrtps_cpp.hpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/sensor_full__rosidl_typesupport_fastrtps_cpp.hpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/msg/detail/taxel__rosidl_typesupport_fastrtps_cpp.hpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/srv/detail/dds_fastrtps/xela_sensor_stream__type_support.cpp"
+  "rosidl_typesupport_fastrtps_cpp/xela_server_ros2/srv/detail/xela_sensor_stream__rosidl_typesupport_fastrtps_cpp.hpp"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/xela_server_ros2__rosidl_typesupport_fastrtps_cpp.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

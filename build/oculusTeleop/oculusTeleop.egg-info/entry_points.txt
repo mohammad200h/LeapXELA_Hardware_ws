@@ -1,0 +1,8 @@
+[console_scripts]
+avp_leap_server = oculusTeleop.avp_leap_server:main
+avp_leap_xela_server = oculusTeleop.avp_leapXela_server:main
+convert_sim_to_hardware = oculusTeleop.sim_to_hardware_conversion:main
+leap_xela_client = oculusTeleop.leapXela_clinet:main
+quest_client = oculusTeleop.client:main
+quest_streamer = oculusTeleop.quest_streamer:main
+

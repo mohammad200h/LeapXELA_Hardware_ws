@@ -1,0 +1,65 @@
+running egg_info
+creating ../../../build/leap_description/leap_description.egg-info
+writing ../../../build/leap_description/leap_description.egg-info/PKG-INFO
+writing dependency_links to ../../../build/leap_description/leap_description.egg-info/dependency_links.txt
+writing entry points to ../../../build/leap_description/leap_description.egg-info/entry_points.txt
+writing requirements to ../../../build/leap_description/leap_description.egg-info/requires.txt
+writing top-level names to ../../../build/leap_description/leap_description.egg-info/top_level.txt
+writing manifest file '../../../build/leap_description/leap_description.egg-info/SOURCES.txt'
+reading manifest file '../../../build/leap_description/leap_description.egg-info/SOURCES.txt'
+writing manifest file '../../../build/leap_description/leap_description.egg-info/SOURCES.txt'
+running build
+running install
+running install_data
+creating /workspace/LeapXELA_Hardware_ws/install/leap_description/share/ament_index
+creating /workspace/LeapXELA_Hardware_ws/install/leap_description/share/ament_index/resource_index
+creating /workspace/LeapXELA_Hardware_ws/install/leap_description/share/ament_index/resource_index/packages
+copying resource/leap_description -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/ament_index/resource_index/packages
+copying package.xml -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description
+creating /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/palm.urdf -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/finger.urdf -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/visulize_hand_node.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/thumb.urdf -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/robot.urdf -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/list_to_string.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/finger.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/visulize_palm_node.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/visulize_finger.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/thumb.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/robot_pybullet.urdf -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/palm.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/visulize_thumb_node.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/hand.py -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+copying urdf/hand.urdf -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf
+creating /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/thumb_pip.part -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/fingertip_old.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/fingertip.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/palm_lower_left.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/palm_lower.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/dip.part -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/palm_lower.part -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/fingertip.part -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/pip.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/thumb_fingertip.part -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/mcp_joint.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/thumb_dip.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/config.json -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/pip.part -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/palm_lower_left_old.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/thumb_dip.part -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/thumb_fingertip_old.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/dip.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/thumb_fingertip.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/thumb_pip.stl -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+copying urdf/assets/mcp_joint.part -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/assets
+creating /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/__pycache__
+copying urdf/__pycache__/palm.cpython-310.pyc -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/__pycache__
+copying urdf/__pycache__/thumb.cpython-310.pyc -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/__pycache__
+copying urdf/__pycache__/finger.cpython-310.pyc -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/__pycache__
+copying urdf/__pycache__/list_to_string.cpython-310.pyc -> /workspace/LeapXELA_Hardware_ws/install/leap_description/share/leap_description/urdf/__pycache__
+running install_egg_info
+Copying ../../../build/leap_description/leap_description.egg-info to /workspace/LeapXELA_Hardware_ws/install/leap_description/lib/python3.10/site-packages/leap_description-0.0.0-py3.10.egg-info
+running install_scripts
+writing list of installed files to '/workspace/LeapXELA_Hardware_ws/build/leap_description/install.log'

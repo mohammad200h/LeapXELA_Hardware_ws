@@ -1,0 +1,6 @@
+source;share/leap_to_leapXela/hook/pythonpath.ps1
+source;share/leap_to_leapXela/hook/pythonpath.dsv
+source;share/leap_to_leapXela/hook/pythonpath.sh
+source;share/leap_to_leapXela/hook/ament_prefix_path.ps1
+source;share/leap_to_leapXela/hook/ament_prefix_path.dsv
+source;share/leap_to_leapXela/hook/ament_prefix_path.sh

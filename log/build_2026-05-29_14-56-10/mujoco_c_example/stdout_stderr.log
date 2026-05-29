@@ -1,0 +1,16 @@
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so   
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /workspace/LeapXELA_Hardware_ws/build/mujoco_c_example
+[ 25%] [32mBuilding CXX object CMakeFiles/load_model.dir/load_model.cc.o[0m
+[ 50%] [32m[1mLinking CXX executable load_model[0m
+[ 50%] Built target load_model
+[ 75%] [32mBuilding CXX object CMakeFiles/load_only.dir/load_only.cc.o[0m
+[100%] [32m[1mLinking CXX executable load_only[0m
+[100%] Built target load_only

@@ -1,0 +1,4 @@
+Invoking command in '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example': /usr/bin/cmake /workspace/LeapXELA_Hardware_ws/mujoco_c_example -DCMAKE_INSTALL_PREFIX=/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example
+Invoked command in '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example' returned '0': /usr/bin/cmake /workspace/LeapXELA_Hardware_ws/mujoco_c_example -DCMAKE_INSTALL_PREFIX=/workspace/LeapXELA_Hardware_ws/install/mujoco_c_example
+Invoking command in '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example': /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/mujoco_c_example -- -j16 -l16
+Invoked command in '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example' returned '0': /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/mujoco_c_example -- -j16 -l16

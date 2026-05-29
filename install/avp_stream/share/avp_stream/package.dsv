@@ -1,0 +1,9 @@
+source;share/avp_stream/hook/path.ps1
+source;share/avp_stream/hook/path.dsv
+source;share/avp_stream/hook/path.sh
+source;share/avp_stream/hook/pythonpath.ps1
+source;share/avp_stream/hook/pythonpath.dsv
+source;share/avp_stream/hook/pythonpath.sh
+source;share/avp_stream/hook/pythonscriptspath.ps1
+source;share/avp_stream/hook/pythonscriptspath.dsv
+source;share/avp_stream/hook/pythonscriptspath.sh
