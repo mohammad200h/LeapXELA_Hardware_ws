@@ -86,7 +86,8 @@ def _revolute_joints(body_id: int) -> list[tuple[int, str]]:
 
 
 def get_name_off_ee(robot_id, ee_index):
-    """Return the URDF link name for a PyBullet link index (IK end-effector index).
+    """
+    Return the URDF link name for a PyBullet link index (IK end-effector index).
 
     PyBullet uses -1 for the base link and 0..getNumJoints()-1 for child links;
     link index i is the child link of joint i (see getJointInfo / getLinkState).

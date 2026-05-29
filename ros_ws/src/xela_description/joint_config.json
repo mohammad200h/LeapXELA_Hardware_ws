@@ -139,6 +139,7 @@
                 "mcp":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.1745,
                     "upper": 2.0944
 
@@ -146,18 +147,21 @@
                 "rot":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower":-0.349,
                     "upper":0.349
                 },
                 "pip":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.262,
                     "upper": 2.0944
                 },
                 "dip":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.0873,
                     "upper": 2.2689
                 }

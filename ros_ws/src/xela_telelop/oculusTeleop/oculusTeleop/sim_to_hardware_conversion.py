@@ -9,9 +9,7 @@ from sensor_msgs.msg import JointState
 
 
 def load_joint_config() -> dict[str, Any]:
-    """
-    Load the joint config JSON from the installed `xela_description` package.
-    """
+    """Load joint config JSON from the installed `xela_description` package."""
     resolved_path = os.path.join(
         get_package_share_directory("xela_description"),
         "joint_config.json",
@@ -28,13 +26,15 @@ def load_joint_config() -> dict[str, Any]:
 
 def get_joint_ranges(ordered_joint_names, joint_config: dict[str, Any]) -> dict[str, list[float]]:
     """
-    Build ordered lower/upper limits for each joint in `ordered_joint_names`.
+    Build ordered lower/upper/zero limits for each joint in `ordered_joint_names`.
 
     `joint_config` is expected to be a subtree like:
       joint_config["leapXela"]["hardware"]  (or ["sim"])
     with keys: {"thumb": {...}, "fingers": {...}}.
+
+    Hardware joints may define `"zero"`; sim uses 0.0 rad when omitted.
     """
-    limits: dict[str, list[float]] = {"ll": [], "ul": []}
+    limits: dict[str, list[float]] = {"ll": [], "ul": [], "zero": []}
 
     for full_name in ordered_joint_names:
         prefix, joint = full_name.split("_", 1)
@@ -45,8 +45,13 @@ def get_joint_ranges(ordered_joint_names, joint_config: dict[str, Any]) -> dict[
 
         limits["ll"].append(float(section[joint]["lower"]))
         limits["ul"].append(float(section[joint]["upper"]))
+        if "zero" in section[joint]:
+            limits["zero"].append(float(section[joint]["zero"]))
+        else:
+            limits["zero"].append(0.0)
 
     return limits
+
 
 def get_joint_names(joint_config: dict[str, Any]) -> tuple[list[str], list[int]]:
     hw_map = joint_config["leapXela"]["hardware"]["map"]
@@ -81,29 +86,66 @@ def remap_joint_commands(ordered_joint_names, unordered_joint_names, unordered_j
         ) from e
 
 
+def _piecewise_map(
+    value: float,
+    sim_ll: float,
+    sim_zero: float,
+    sim_ul: float,
+    hw_ll: float,
+    hw_zero: float,
+    hw_ul: float,
+    index: int,
+) -> float:
+    """Affine map sim [ll, zero, ul] -> hardware [ll, zero, ul] in two segments."""
+    v = float(value)
+
+    if v <= sim_zero:
+        denom = sim_zero - sim_ll
+        if denom == 0.0:
+            if abs(v - sim_zero) < 1e-12:
+                return hw_zero
+            raise ValueError(
+                f"Invalid sim range at index {index}: lower == zero == {sim_ll}, "
+                f"but value {v} is below zero"
+            )
+        alpha = (v - sim_ll) / denom
+        return alpha * (hw_zero - hw_ll) + hw_ll
+
+    denom = sim_ul - sim_zero
+    if denom == 0.0:
+        if abs(v - sim_zero) < 1e-12:
+            return hw_zero
+        raise ValueError(
+            f"Invalid sim range at index {index}: zero == upper == {sim_ul}, "
+            f"but value {v} is above zero"
+        )
+    alpha = (v - sim_zero) / denom
+    return alpha * (hw_ul - hw_zero) + hw_zero
+
+
 def map_sim_to_hardware(
     sim_value: List[float],
     sim_limits: dict[str, list[float]],
     hardware_limits: dict[str, list[float]],
 ) -> List[float]:
     """
-    Linearly map each joint position from sim range to hardware range.
+    Piecewise-linear map each joint from sim to hardware using three anchors.
 
-    `sim_limits` and `hardware_limits` must have list fields: {"ll": [...], "ul": [...]}.
+    `sim_limits` and `hardware_limits` must have: {"ll": [...], "ul": [...], "zero": [...]}.
+    Maps sim ll/zero/ul to hardware ll/zero/ul respectively.
     """
     out: list[float] = []
     for i, v in enumerate(sim_value):
         sim_ll = float(sim_limits["ll"][i])
         sim_ul = float(sim_limits["ul"][i])
+        sim_zero = float(sim_limits["zero"][i])
         hw_ll = float(hardware_limits["ll"][i])
         hw_ul = float(hardware_limits["ul"][i])
+        hw_zero = float(hardware_limits["zero"][i])
 
-        denom = sim_ul - sim_ll
-        if denom == 0.0:
-            raise ValueError(f"Invalid sim range at index {i}: lower == upper == {sim_ll}")
-
-        alpha = (float(v) - sim_ll) / denom
-        out.append(alpha * (hw_ul - hw_ll) + hw_ll)
+        out.append(
+            _piecewise_map(v, sim_ll, sim_zero, sim_ul, hw_ll, hw_zero, hw_ul, i)
+        )
     return out
 
 
@@ -113,7 +155,6 @@ class ConvertSimToHardware(Node):
         self.declare_parameter("teleop_topic", "oculus_teleop_joint_commands")
         self.declare_parameter("hardware_topic", "cmd_xela")
 
-
         hardware_topic = str(self.get_parameter("hardware_topic").value)
         teleop_topic = str(self.get_parameter("teleop_topic").value)
 
@@ -122,18 +163,31 @@ class ConvertSimToHardware(Node):
 
         joint_config = load_joint_config()
         self.joint_names, self.idx = get_joint_names(joint_config)
-        self.hardware_joint_ranges = get_joint_ranges(self.joint_names, joint_config["leapXela"]["hardware"])
-        self.sim_joint_ranges = get_joint_ranges(self.joint_names, joint_config["leapXela"]["sim"])
+        leap_xela = joint_config["leapXela"]
+        self.hardware_joint_ranges = get_joint_ranges(
+            self.joint_names, leap_xela["hardware"]
+        )
+        self.sim_joint_ranges = get_joint_ranges(
+            self.joint_names, leap_xela["sim"]
+        )
 
     def _callback(self, msg):
-        ordered_joint_positions = remap_joint_commands(self.joint_names, msg.name, msg.position)
+        ordered_joint_positions = remap_joint_commands(
+            self.joint_names, msg.name, msg.position
+        )
         ordered_joint_positions = map_sim_to_hardware(
             ordered_joint_positions,
             self.sim_joint_ranges,
             self.hardware_joint_ranges,
         )
-        self.get_logger().info(f"unordered_joint_names: {msg.name} \n ordered_joint_names: {self.joint_names}")
-        self.get_logger().info(f"unordered_joint_positions: {msg.position} \n ordered_joint_positions: {ordered_joint_positions}")
+        self.get_logger().info(
+            f"unordered_joint_names: {msg.name}\n"
+            f"ordered_joint_names: {self.joint_names}"
+        )
+        self.get_logger().info(
+            f"unordered_joint_positions: {msg.position}\n"
+            f"ordered_joint_positions: {ordered_joint_positions}"
+        )
 
         out = JointState()
         out.header = msg.header
