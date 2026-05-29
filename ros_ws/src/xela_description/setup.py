@@ -43,6 +43,7 @@ setup(
         ('share/' + package_name, ['urdf/thumb.urdf']),
         ('share/' + package_name, ['urdf/palm.urdf']),
         ('share/' + package_name, ['urdf/hand.urdf']),
+        ('share/' + package_name, ['joint_config.json']),
     ]
     + _data_files_under("launch", "launch")
     + _data_files_under("mjcf", "mjcf")

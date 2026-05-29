@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 
+import json
+import os
 import numpy as np
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String
 from threading import RLock
+from typing import Any
+
+from ament_index_python.packages import get_package_share_directory
 
 from leap_hand_utils.dynamixel_client import DynamixelClient
 import leap_hand_utils.leap_hand_utils as lhu
@@ -13,9 +18,51 @@ from leap_hand.srv import LeapPosition, LeapVelocity, LeapEffort, LeapState
 from base import LeapXelaBase
 
 
+def load_joint_config() -> dict[str, Any]:
+    """
+    Load the joint config JSON from the installed `xela_description` package.
+    """
+    resolved_path = os.path.join(
+        get_package_share_directory("xela_description"),
+        "joint_config.json",
+    )
+    if not os.path.exists(resolved_path):
+        raise FileNotFoundError(
+            f"Expected joint config at '{resolved_path}', but it does not exist. "
+            "Make sure the 'xela_description' package is installed and contains joint_config.json."
+        )
+
+    with open(resolved_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+def get_joint_names(joint_config: dict[str, Any]) -> list[str]:
+    map = joint_config["leapXela"]["hardware"]["map"]
+    joint_names = []
+    idx = []
+
+    for finger in ["th", "if", "mf", "rf"]:
+        for key, value in map[finger].items():
+            idx.append(int(key))
+            joint_names.append(f"{finger}_{value}")
+
+    print(f"get_joint_names:: joint_names: {joint_names} \n idx: {idx}")
+    print(f"get_joint_names:: joint_names::len:: {len(joint_names)} \n idx::len {len(idx)}")
+    return joint_names, idx
+
+
+
+
+
+def clamp_the_joint_commands(joint_commands):
+    # TODO implement this function
+    pass
+
 class LeapXELANode(Node):
     def __init__(self):
         super().__init__('leaphand_node')
+
+        joint_config = load_joint_config()
+        self.joint_names, self.idx = get_joint_names(joint_config)
 
         # Guards all reads/writes to the hand hardware so they never overlap.
         self._hw_mutex = RLock()
@@ -37,8 +84,7 @@ class LeapXELANode(Node):
             pos, vel, cur = self._leapXela.dxl_client.read_pos_vel_cur()
             msg = JointState()
             msg.header.stamp = self.get_clock().now().to_msg()
-            msg.name = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6', 'joint7', 'joint8', 
-                        'joint9', 'joint10', 'joint11', 'joint12', 'joint13', 'joint14', 'joint15', 'joint16']
+            msg.name = self.joint_names
             msg.position = pos.tolist()
             msg.velocity = vel.tolist()
             msg.effort = cur.tolist()
@@ -47,6 +93,7 @@ class LeapXELANode(Node):
     # Receive LEAP pose and directly control the robot
     def _receive_pose(self, msg):
         pose = msg.position
+       
         self.curr_pos = np.array(pose)
         
         with self._hw_mutex:

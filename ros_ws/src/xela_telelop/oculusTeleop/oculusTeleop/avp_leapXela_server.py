@@ -221,9 +221,9 @@ class Leapv1PybulletIKPython:
             hand_pos[i][0] = hand_pos[i][0] * 1.35 * 1.5
             hand_pos[i][1] = hand_pos[i][1] * 1.5
             hand_pos[i][2] = hand_pos[i][2] * 1.5
-        output = self.compute_IK(hand_pos)
+        output, joint_names = self.compute_IK(hand_pos)
         self.update_target_vis(hand_pos)
-        return output
+        return output, joint_names
 
     def compute_IK(self, hand_pos):
         p.stepSimulation()
@@ -264,8 +264,10 @@ class Leapv1PybulletIKPython:
             raise RuntimeError(
                 f"IK returned {len(joint_poses)} joints, expected {len(self._revolute_joints)}"
             )
-
+        joint_names = []
         for (joint_index, _name), target in zip(self._revolute_joints, joint_poses):
+            # print(f"joint_index: {joint_index} \n _name: {_name} \n target: {target}")
+            joint_names.append(_name)
             p.setJointMotorControl2(
                 bodyIndex=self.LeapId,
                 jointIndex=joint_index,
@@ -277,7 +279,7 @@ class Leapv1PybulletIKPython:
                 velocityGain=1,
             )
 
-        return [float(q) for q in joint_poses]
+        return [float(q) for q in joint_poses], joint_names
 
     def close(self) -> None:
         self.vps.close()
@@ -292,7 +294,7 @@ class AvpLeapServerNode(Node):
         self.declare_parameter("is_left", False)
         self.declare_parameter("use_gui", True)
         self.declare_parameter("publish_rate_hz", 30.0)
-        self.declare_parameter("joint_topic", "cmd_xela")
+        self.declare_parameter("joint_topic", "oculus_teleop_joint_commands")
         self.declare_parameter("wait_for_tracking_sec", 30.0)
 
         quest_ip = self.get_parameter("quest_ip").get_parameter_value().string_value
@@ -342,12 +344,13 @@ class AvpLeapServerNode(Node):
         )
 
     def _on_timer(self) -> None:
-        joints = self._ik.get_avp_data()
+        joints, joint_names = self._ik.get_avp_data()
         if joints is None:
             return
 
         self._joint_msg.header.stamp = self.get_clock().now().to_msg()
         self._joint_msg.position = [float(x) for x in joints]
+        self._joint_msg.name = joint_names
         self._joint_pub.publish(self._joint_msg)
 
     def destroy_node(self) -> None:

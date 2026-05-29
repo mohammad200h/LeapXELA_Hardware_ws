@@ -1,0 +1,3 @@
+### Running the test ####
+colcon test --packages-select oculusTeleop --pytest-args -k sim_to_hardware_conversion_node -q
+colcon test-result --verbose --all

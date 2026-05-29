@@ -862,7 +862,7 @@
   </joint>
   
   <joint name="if_mcp" type="revolute">
-    <origin xyz="0.02228 -0.0165 0.1436" rpy="3.14159 -1.5708 0.0"/>
+    <origin xyz="0.06773 -0.0165 0.1436" rpy="3.14159 -1.5708 0.0"/>
     <parent link="leap_hand_xela_back_cover"/>
     <child link="if_mcp"/>
     <axis xyz="0.0 0.0 1.0"/>
@@ -878,7 +878,7 @@
   </joint>
 
   <joint name="rf_mcp" type="revolute">
-    <origin xyz="0.02228 -0.0165 0.1436" rpy="3.14159 -1.5708 0.0"/>
+    <origin xyz="-0.02317 -0.0165 0.1436" rpy="3.14159 -1.5708 0.0"/>
     <parent link="leap_hand_xela_back_cover"/>
     <child link="rf_mcp"/>
     <axis xyz="0.0 0.0 1.0"/>

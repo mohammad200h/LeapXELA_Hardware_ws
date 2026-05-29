@@ -48,12 +48,13 @@ class BasePalmJoint:
 
 
 class FingersMCPJoint(BasePalmJoint):
-    def __init__(self, prefix: str, joint_config: dict[str, Any]):
+    def __init__(self, prefix: str, pos: list[float], joint_config: dict[str, Any]):
         self.prefix = prefix
         valid_prefixes = ["rf", "mf", "if"]
         if prefix not in valid_prefixes:
             raise ValueError(f"Invalid prefix: {prefix} valid prefixes are {valid_prefixes}")
         self.joint_config = joint_config
+        self.pos = pos
 
     def joint_name(self) -> str:
         return f"{self.prefix}_mcp"
@@ -62,7 +63,7 @@ class FingersMCPJoint(BasePalmJoint):
         return f"{self.prefix}_mcp"
 
     def origin(self) -> dict[str, Any]:
-        return {"xyz": [0.02228, -0.0165, 0.1436], "rpy": [3.14159, -1.5708, 0.0]}
+        return {"xyz": self.pos, "rpy": [3.14159, -1.5708, 0.0]}
 
     def limit(self) -> dict[str, Any]:
         return {"effort": self.joint_config["effort"], "velocity": self.joint_config["velocity"], "lower": self.joint_config["lower"], "upper": self.joint_config["upper"]}
@@ -87,9 +88,9 @@ class ThumbCMCJoint(BasePalmJoint):
 
 
 def generate_mf_rf_if_links_and_joints() -> tuple[str, str]:
-    rf_finger = generate_finger("rf", 0.0, teleop=True)
-    mf_finger = generate_finger("mf", 0.0, teleop=True)
-    if_finger = generate_finger("if", 0.0, teleop=True)
+    rf_finger = generate_finger("rf" ,0.0, teleop=True)
+    mf_finger = generate_finger("mf",0.0, teleop=True)
+    if_finger = generate_finger("if",0.0, teleop=True)
 
     fingers = [rf_finger, mf_finger, if_finger]
 
@@ -122,9 +123,9 @@ def generate_palm_joints() -> str:
     fingers_config = joint_config["fingers"]["mcp"]
     thumb_config = joint_config["thumb"]["cmc"]
     palm_joints = [
-        FingersMCPJoint("if", fingers_config), 
-        FingersMCPJoint("mf", fingers_config), 
-        FingersMCPJoint("rf", fingers_config),
+        FingersMCPJoint("if", [0.06773, -0.0165, 0.1436] , fingers_config), 
+        FingersMCPJoint("mf", [0.02228, -0.0165, 0.1436] ,fingers_config), 
+        FingersMCPJoint("rf", [-0.02317, -0.0165, 0.1436],fingers_config),
         ThumbCMCJoint(thumb_config)
     ]
     return "\n".join(joint_urdf(j) for j in palm_joints)

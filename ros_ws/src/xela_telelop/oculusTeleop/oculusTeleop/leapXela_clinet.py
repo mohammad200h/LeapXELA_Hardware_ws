@@ -62,7 +62,7 @@ class LeapXelaSubscriberNode(Node):
     def __init__(self) -> None:
         super().__init__("leap_xela_subscriber")
 
-        self.declare_parameter("joint_topic", "cmd_xela")
+        self.declare_parameter("joint_topic", "oculus_teleop_joint_commands")
         self.declare_parameter("use_gui", True)
         self.declare_parameter("sim_hz", 240)
 

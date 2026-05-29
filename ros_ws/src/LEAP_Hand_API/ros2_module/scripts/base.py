@@ -61,6 +61,16 @@ class LeapXelaBase:
         except Exception as e:
             print(f"Warning: Failed to write joint positions: {e}")
     
+    def set_joints_radians(self, radians_array):
+        """Set all 16 joints using radian values (list or np.array of length 16)."""
+        if len(radians_array) != 16:
+            print("Error: Please provide exactly 16 values (one per joint).")
+            return
+        try:
+            self.dxl_client.write_desired_pos(self.motors, radians_array)
+        except Exception as e:
+            print(f"Warning: Failed to write joint positions: {e}")
+    
     def safe_disconnect(self):
         """Safely disconnect from Dynamixel motors, handling I/O errors gracefully."""
         if hasattr(self, 'dxl_client') and self.dxl_client:

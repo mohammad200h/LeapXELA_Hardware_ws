@@ -68,6 +68,7 @@ setup(
             'leap_xela_client = oculusTeleop.leapXela_clinet:main',
             'quest_streamer = oculusTeleop.quest_streamer:main',
             'quest_client = oculusTeleop.client:main',
+            'convert_sim_to_hardware = oculusTeleop.sim_to_hardware_conversion:main',
         ],
     },
 )

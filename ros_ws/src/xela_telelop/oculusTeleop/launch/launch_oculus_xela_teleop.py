@@ -8,16 +8,16 @@ from launch_ros.parameter_descriptions import ParameterValue
 def generate_launch_description():
     joint_topic_arg = DeclareLaunchArgument(
         "joint_topic",
-        default_value="cmd_xela",
+        default_value="oculus_teleop_joint_commands",
         description=(
-            "JointState topic (avp_leap_xela_server publishes, "
-            "leap_xela_client subscribes)"
+            "Sim/teleop JointState topic (avp_leap_xela_server publishes, "
+            "leap_xela_client and convert_sim_to_hardware subscribe)"
         ),
     )
     quest_ip_arg = DeclareLaunchArgument(
         "quest_ip",
-        # default_value="192.168.2.48",  # UCL IP
-        default_value="192.168.1.65",  # Home IP
+        default_value="192.168.2.48",  # UCL IP
+        # default_value="192.168.1.65",  # Home IP
         description="Quest / AVP headset IP for UDP tracking",
     )
     quest_port_arg = DeclareLaunchArgument(
@@ -44,6 +44,11 @@ def generate_launch_description():
         "wait_for_tracking_sec",
         default_value="30.0",
         description="Seconds to wait for first tracking packet at startup",
+    )
+    hardware_topic_arg = DeclareLaunchArgument(
+        "hardware_topic",
+        default_value="cmd_xela",
+        description="Hardware topic (convert_sim_to_hardware publishes)",
     )
 
     avp_leap_xela_server = Node(
@@ -81,6 +86,19 @@ def generate_launch_description():
         ],
     )
 
+    leap_xela_sim_to_hardware_conversion = Node(
+        package="oculusTeleop",
+        executable="convert_sim_to_hardware",
+        name="convert_sim_to_hardware",
+        output="screen",
+        parameters=[
+            {"teleop_topic": LaunchConfiguration("joint_topic")},
+            {"hardware_topic": LaunchConfiguration("hardware_topic")},
+        ],
+    )
+
+    # add launch_leap.py from ros2_module under LEAP_Hand_API package
+
     return LaunchDescription(
         [
             joint_topic_arg,
@@ -90,7 +108,9 @@ def generate_launch_description():
             is_left_arg,
             publish_rate_hz_arg,
             wait_for_tracking_sec_arg,
+            hardware_topic_arg,
             avp_leap_xela_server,
             leap_xela_client,
+            leap_xela_sim_to_hardware_conversion
         ]
     )
