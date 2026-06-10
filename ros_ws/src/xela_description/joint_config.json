@@ -170,24 +170,28 @@
                 "cmc":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.785,
                     "upper": 2.181
                 },
                 "axl":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.305,
                     "upper": 0.436
                 },
                 "mcp":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.262,
                     "upper": 1.396
                 },
                 "ipl":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.436,
                     "upper": 1.309
                 }

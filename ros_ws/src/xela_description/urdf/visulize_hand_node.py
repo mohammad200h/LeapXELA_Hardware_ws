@@ -14,6 +14,34 @@ def _default_urdf_path() -> str:
     return str(share_dir / "hand.urdf")
 
 
+def _joint_slider_limits(lower: float, upper: float) -> tuple[float, float, float]:
+    """Return (range_min, range_max, start) for PyBullet debug sliders."""
+    if lower <= upper:
+        return lower, upper, (lower + upper) / 2.0
+    return upper, lower, (lower + upper) / 2.0
+
+
+def _create_joint_sliders(p, body_id: int) -> list[tuple[int, int]]:
+    sliders: list[tuple[int, int]] = []
+    for joint_idx in range(p.getNumJoints(body_id)):
+        info = p.getJointInfo(body_id, joint_idx)
+        if info[2] not in (p.JOINT_REVOLUTE, p.JOINT_PRISMATIC):
+            continue
+        name = info[1].decode("utf-8")
+        lo, hi, start = _joint_slider_limits(float(info[8]), float(info[9]))
+        if lo == hi:
+            lo, hi, start = -3.14, 3.14, 0.0
+        slider_id = p.addUserDebugParameter(name, lo, hi, start)
+        sliders.append((joint_idx, slider_id))
+    return sliders
+
+
+def _apply_joint_sliders(p, body_id: int, sliders: list[tuple[int, int]]) -> None:
+    for joint_idx, slider_id in sliders:
+        pos = p.readUserDebugParameter(slider_id)
+        p.resetJointState(body_id, joint_idx, pos)
+
+
 def _run_pybullet(urdf_path: str, use_gui: bool = True) -> None:
     try:
         import pybullet as p  # type: ignore
@@ -47,15 +75,18 @@ def _run_pybullet(urdf_path: str, use_gui: bool = True) -> None:
         except Exception:
             pass
 
-        p.loadURDF(
+        body_id = p.loadURDF(
             str(urdf),
             basePosition=[0.0, 0.0, 0.0],
             baseOrientation=p.getQuaternionFromEuler([0.0, 0.0, 0.0]),
             useFixedBase=True,
         )
 
+        sliders = _create_joint_sliders(p, body_id) if use_gui else []
+
         if use_gui:
             while p.isConnected(cid):
+                _apply_joint_sliders(p, body_id, sliders)
                 p.stepSimulation()
                 time.sleep(1.0 / 240.0)
         else:
