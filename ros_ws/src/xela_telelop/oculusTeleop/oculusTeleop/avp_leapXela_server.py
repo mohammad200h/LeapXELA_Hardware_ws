@@ -131,6 +131,17 @@ class Leapv1PybulletIKPython:
         resolved_urdf = _xela_hand_urdf_path()
         _setup_pybullet_search_paths(os.path.dirname(resolved_urdf))
 
+
+        if self.is_left:
+            raise NotImplementedError("Left hand is not implemented")
+        else:
+            p.resetDebugVisualizerCamera(
+                cameraDistance=0.4,
+                cameraYaw=0, # rotatation around the z axis
+                cameraPitch=0,
+                cameraTargetPosition=[-0.2, 0.0, 0.05],
+            )
+
         if self.is_left:
             base_pos = [0.31, 0.01, 0.06]
             base_orn = p.getQuaternionFromEuler([1.57, 0, 0])

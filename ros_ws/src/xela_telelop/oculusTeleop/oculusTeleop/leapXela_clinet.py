@@ -66,9 +66,13 @@ class LeapXelaSubscriberNode(Node):
         self.declare_parameter("use_gui", True)
         self.declare_parameter("sim_hz", 240)
 
+        self.declare_parameter("is_left", False)
+
         joint_topic = str(self.get_parameter("joint_topic").value)
         use_gui = bool(self.get_parameter("use_gui").value)
         self._sim_hz = float(self.get_parameter("sim_hz").value)
+
+        self.is_left = bool(self.get_parameter("is_left").value)
 
         urdf_dir = _urdf_dir()
         urdf_path = os.path.join(urdf_dir, "hand.urdf")
@@ -84,19 +88,32 @@ class LeapXelaSubscriberNode(Node):
         if os.path.isdir(assets_dir):
             p.setAdditionalSearchPath(assets_dir)
 
-        p.resetDebugVisualizerCamera(
-            cameraDistance=0.4,
-            cameraYaw=50,
-            cameraPitch=-20,
-            cameraTargetPosition=[0.0, 0.0, 0.05],
-        )
+        if self.is_left:
+            raise NotImplementedError("Left hand is not implemented")
+        else:
+            p.resetDebugVisualizerCamera(
+                cameraDistance=0.4,
+                cameraYaw=0, # rotatation around the z axis
+                cameraPitch=0,
+                cameraTargetPosition=[-0.2, 0.0, 0.05],
+            )
+
+        
         p.setGravity(0, 0, 0)
         p.setRealTimeSimulation(0)
 
+
+        if self.is_left:
+            base_pos = [0.31, 0.01, 0.06]
+            base_orn = p.getQuaternionFromEuler([1.57, 0, 0])
+        else:
+            base_pos = [-0.12, 0.035, -0.01]
+            base_orn = p.getQuaternionFromEuler([1.57, -1.57, -1.57])
+
         self._body_id = p.loadURDF(
             urdf_path,
-            [-0.12, 0.0, 0.01],
-            p.getQuaternionFromEuler([1.57, 0, -1.57]),
+            base_pos,
+            base_orn,
             useFixedBase=True,
         )
         if self._body_id < 0:

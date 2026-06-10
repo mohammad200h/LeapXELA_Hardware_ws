@@ -93,8 +93,8 @@
                 },
                 "axl":{
                     "zero":3.14159,
-                    "lower": 0.0872665,
-                    "upper": 3.57792
+                    "lower": 3.05433,
+                    "upper": 1.5708
                 },
                 "mcp":{
                     "zero":1.65806,
@@ -176,8 +176,8 @@
                 "axl":{
                     "effort":0.95,
                     "velocity":8.48,
-                    "lower": -0.305,
-                    "upper": 0.436
+                    "lower": -0.087,
+                    "upper": 1.57
                 },
                 "mcp":{
                     "effort":0.95,

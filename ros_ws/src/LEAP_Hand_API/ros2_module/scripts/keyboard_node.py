@@ -13,6 +13,7 @@ from pynput import keyboard
 min_angle = 120.0
 max_angle = 40.0
 step_degrees = 5.0
+import numpy as np
 
 JOINT_LABELS = [
     "Index MCP Side",
