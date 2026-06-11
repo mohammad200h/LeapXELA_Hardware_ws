@@ -43,6 +43,7 @@ setup(
             [
                 os.path.join('launch', 'launch_oculus_teleop.py'),
                 os.path.join('launch', 'launch_oculus_xela_teleop.py'),
+                os.path.join('launch', 'launch_slider_control.py'),
             ],
         ),
     ],
@@ -69,6 +70,7 @@ setup(
             'quest_streamer = oculusTeleop.quest_streamer:main',
             'quest_client = oculusTeleop.client:main',
             'convert_sim_to_hardware = oculusTeleop.sim_to_hardware_conversion:main',
+            'slider_control = oculusTeleop.hand_slider_control:main',
         ],
     },
 )
