@@ -148,8 +148,8 @@
                     "effort":0.95,
                     "velocity":8.48,
                     "zero":0.0,
-                    "lower":-0.349,
-                    "upper":0.349
+                    "lower":0.349,
+                    "upper":-0.349
                 },
                 "pip":{
                     "effort":0.95,
