@@ -738,7 +738,7 @@
     <parent link="cmc"/>
     <child link="axl"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="0.95" velocity="8.48" lower="-0.305" upper="0.436"/>
+    <limit effort="0.95" velocity="8.48" lower="-0.1745" upper="1.5708"/>
   </joint>
 
   <joint name="th_mcp" type="revolute">
@@ -770,7 +770,7 @@
     <parent link="rf_mcp"/>
     <child link="rf_pip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="0.95" velocity="8.48" lower="-0.349" upper="0.349"/>
+    <limit effort="0.95" velocity="8.48" lower="0.349" upper="-0.349"/>
   </joint>
 
   <joint name="rf_pip" type="revolute">
@@ -802,7 +802,7 @@
     <parent link="mf_mcp"/>
     <child link="mf_pip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="0.95" velocity="8.48" lower="-0.349" upper="0.349"/>
+    <limit effort="0.95" velocity="8.48" lower="0.349" upper="-0.349"/>
   </joint>
 
   <joint name="mf_pip" type="revolute">
@@ -834,7 +834,7 @@
     <parent link="if_mcp"/>
     <child link="if_pip"/>
     <axis xyz="0.0 0.0 1.0"/>
-    <limit effort="0.95" velocity="8.48" lower="-0.349" upper="0.349"/>
+    <limit effort="0.95" velocity="8.48" lower="0.349" upper="-0.349"/>
   </joint>
 
   <joint name="if_pip" type="revolute">

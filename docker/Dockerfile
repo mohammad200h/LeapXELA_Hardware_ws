@@ -168,6 +168,8 @@ RUN pip install mujoco==${MUJOCO_VERSION}
 RUN pip install perlin-noise
 ###### open3d ######
 RUN pip install open3d
+##### Keyboard Control #######
+RUN pip install pynput
 ###### xacro ######
 RUN apt-get update && apt-get install -y ros-humble-xacro
 ##### Joint state publisher ######

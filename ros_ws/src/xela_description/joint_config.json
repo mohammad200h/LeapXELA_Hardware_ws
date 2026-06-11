@@ -92,9 +92,9 @@
                     "upper": 5.32325
                 },
                 "axl":{
-                    "zero":3.14159,
-                    "lower": 0.0872665,
-                    "upper": 3.57792
+                    "zero":1.5708,
+                    "lower": 1.4,
+                    "upper": 3.1459
                 },
                 "mcp":{
                     "zero":1.65806,
@@ -148,8 +148,8 @@
                     "effort":0.95,
                     "velocity":8.48,
                     "zero":0.0,
-                    "lower":-0.349,
-                    "upper":0.349
+                    "lower":0.349,
+                    "upper":-0.349
                 },
                 "pip":{
                     "effort":0.95,
@@ -170,24 +170,28 @@
                 "cmc":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.785,
                     "upper": 2.181
                 },
                 "axl":{
                     "effort":0.95,
                     "velocity":8.48,
-                    "lower": -0.305,
-                    "upper": 0.436
+                    "zero":0.0,
+                    "lower": -0.1745,
+                    "upper": 1.5708
                 },
                 "mcp":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.262,
                     "upper": 1.396
                 },
                 "ipl":{
                     "effort":0.95,
                     "velocity":8.48,
+                    "zero":0.0,
                     "lower": -0.436,
                     "upper": 1.309
                 }
