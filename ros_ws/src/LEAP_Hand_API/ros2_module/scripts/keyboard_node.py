@@ -10,6 +10,7 @@ import sys
 import termios
 import time
 from pynput import keyboard
+import numpy as np
 min_angle = 120.0
 max_angle = 40.0
 step_degrees = 5.0
