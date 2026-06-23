@@ -1,0 +1,328 @@
+#!/usr/bin/env python3
+
+import rclpy
+from rclpy.node import Node
+
+from sensor_msgs.msg import Image
+
+import numpy as np
+from pathlib import Path
+
+from geometry_msgs.msg import WrenchStamped
+from sensor_msgs.msg import JointState
+from xela_server_ros2.msg import SensStream
+
+
+from datetime import datetime
+
+class Storage:
+    def __init__(self, stream_name: str):
+        date = datetime.now().strftime("%Y%m%d")
+        time = datetime.now().strftime("%H%M%S")
+        self.stream_name = stream_name + "_" + date + "_" + time
+        self.current_index = 0
+        self._file = None
+        self._ensure_open()
+    
+    def store(
+        self,
+        raw_image: np.ndarray,
+        normalized_image: np.ndarray,
+        state: JointState,
+        xela_taxels: SensStream,
+        wrench: WrenchStamped,
+        raw_msg: Image,
+        norm_msg: Image,
+    ):
+        self._ensure_open()
+        idx = f"{self.current_index:06d}"
+        grp = self._root.require_group(idx)
+
+        self._write_or_replace_dataset(grp, "raw_image", raw_image)
+        self._write_or_replace_dataset(grp, "normalized_image", normalized_image)
+
+        self._write_image_attrs(grp["raw_image"], raw_msg)
+        self._write_image_attrs(grp["normalized_image"], norm_msg)
+
+        st = grp.require_group("state")
+        self._write_or_replace_dataset(st, "position", np.asarray(state.position, dtype=np.float64))
+        self._write_or_replace_dataset(st, "velocity", np.asarray(state.velocity, dtype=np.float64))
+        self._write_or_replace_dataset(st, "effort", np.asarray(state.effort, dtype=np.float64))
+
+        xt_grp = grp.require_group("xela_taxels")
+        self._write_sens_stream(xt_grp, xela_taxels)
+
+        self._write_wrench(grp, wrench)
+
+        name_dt = self._h5py.string_dtype(encoding="utf-8")
+        self._write_or_replace_dataset(
+            st, "name", np.asarray(state.name, dtype=object).astype(name_dt)
+        )
+
+        if state.header is not None:
+            st.attrs["stamp_sec"] = int(state.header.stamp.sec)
+            st.attrs["stamp_nanosec"] = int(state.header.stamp.nanosec)
+            st.attrs["frame_id"] = str(state.header.frame_id)
+
+        grp.attrs["index"] = int(self.current_index)
+        self._file.flush()
+        self.current_index += 1
+
+    def close(self) -> None:
+        if getattr(self, "_file", None) is not None:
+            try:
+                self._file.flush()
+                self._file.close()
+            finally:
+                self._file = None
+
+    def __del__(self) -> None:  # pragma: no cover
+        try:
+            self.close()
+        except Exception:
+            pass
+
+    def _ensure_open(self) -> None:
+        if getattr(self, "_file", None) is not None:
+            return
+        try:
+            import h5py  # type: ignore
+        except Exception as e:  # pragma: no cover
+            raise RuntimeError(
+                "HDF5 support requires 'h5py'. Install it (e.g. apt/pip) and retry."
+            ) from e
+
+        self._h5py = h5py
+        self._path = Path.cwd() / "data" / f"{self.stream_name}.h5"
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        self._file = self._h5py.File(self._path, "a")
+        self._root = self._file.require_group(self.stream_name)
+
+
+
+    def _write_or_replace_dataset(self, group, name: str, data: np.ndarray) -> None:
+        self._ensure_open()
+        if name in group:
+            del group[name]
+        group.create_dataset(
+            name, data=data, compression="gzip", compression_opts=4, shuffle=True
+        )
+
+    def _write_sens_stream(self, xt_grp, stream: SensStream) -> None:
+        """Serialize SensStream (SensorFull[], each with Taxel[] and Forces[])."""
+        sensors = stream.sensors
+        xt_grp.attrs["num_sensors"] = int(len(sensors))
+
+        for i, sensor in enumerate(sensors):
+            sg = xt_grp.require_group(f"sensor_{i:03d}")
+            sg.attrs["message"] = int(sensor.message)
+            sg.attrs["time"] = float(sensor.time)
+            sg.attrs["model"] = str(sensor.model)
+            sg.attrs["sensor_pos"] = int(sensor.sensor_pos)
+
+            if sensor.taxels:
+                taxels = np.array(
+                    [[t.x, t.y, t.z] for t in sensor.taxels], dtype=np.uint16
+                )
+            else:
+                taxels = np.zeros((0, 3), dtype=np.uint16)
+            self._write_or_replace_dataset(sg, "taxels", taxels)
+
+            if sensor.forces:
+                forces = np.array(
+                    [[f.x, f.y, f.z] for f in sensor.forces], dtype=np.float32
+                )
+            else:
+                forces = np.zeros((0, 3), dtype=np.float32)
+            self._write_or_replace_dataset(sg, "forces", forces)
+
+    def _write_wrench(self, grp, msg: WrenchStamped) -> None:
+        wf = grp.require_group("nano17")
+        force = np.array(
+            [msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z],
+            dtype=np.float64,
+        )
+        torque = np.array(
+            [msg.wrench.torque.x, msg.wrench.torque.y, msg.wrench.torque.z],
+            dtype=np.float64,
+        )
+        self._write_or_replace_dataset(wf, "force", force)
+        self._write_or_replace_dataset(wf, "torque", torque)
+        if msg.header is not None:
+            wf.attrs["stamp_sec"] = int(msg.header.stamp.sec)
+            wf.attrs["stamp_nanosec"] = int(msg.header.stamp.nanosec)
+            wf.attrs["frame_id"] = str(msg.header.frame_id)
+
+    def _write_image_attrs(self, ds, msg: Image) -> None:
+        ds.attrs["height"] = int(msg.height)
+        ds.attrs["width"] = int(msg.width)
+        ds.attrs["encoding"] = str(msg.encoding)
+        ds.attrs["is_bigendian"] = int(msg.is_bigendian)
+        ds.attrs["step"] = int(msg.step)
+        if msg.header is not None:
+            ds.attrs["stamp_sec"] = int(msg.header.stamp.sec)
+            ds.attrs["stamp_nanosec"] = int(msg.header.stamp.nanosec)
+            ds.attrs["frame_id"] = str(msg.header.frame_id)
+    
+
+
+class XelaNANO17DataCollector(Node):
+    """
+    Subscribes to:
+      - /leap_image (published by xela_image_publisher)
+      - /leap_image_normalized (published by xela_image_publisher)
+      - /leap_state
+      - /xServTopic
+      - /nano17 (published by force_publisher)
+
+    If message_filters is available, uses approximate time synchronization and
+    calls a single paired callback. Otherwise, falls back to independent
+    subscriptions and logs reception.
+    """
+
+    def __init__(self):
+        super().__init__("xela_data_collector")
+
+
+        self.storage = Storage("xela_data")
+
+        self._last_raw: Image | None = None
+        self._last_norm: Image | None = None
+        self._last_state: JointState | None = None
+        self._last_xela_taxels: SensStream | None = None
+        self._last_wrench: WrenchStamped | None = None
+        # Prefer synchronized callbacks when possible
+        try:
+            from message_filters import Subscriber, ApproximateTimeSynchronizer
+
+            self._raw_sub = Subscriber(self, Image, "/leap_image")
+            self._norm_sub = Subscriber(self, Image, "/leap_image_normalized")
+            self._state_sub = Subscriber(self, JointState, "/leap_state")
+            self._xela_taxels_sub = Subscriber(self, SensStream, "/xServTopic")
+            self._nano17_sub = Subscriber(self, WrenchStamped, "/nano17")
+            self._sync = ApproximateTimeSynchronizer(
+                [
+                    self._raw_sub,
+                    self._norm_sub,
+                    self._state_sub,
+                    self._xela_taxels_sub,
+                    self._nano17_sub,
+                ],
+                queue_size=30,
+                slop=0.05,
+                allow_headerless=False,
+            )
+            self._sync.registerCallback(self._on_synced_images)
+            self.get_logger().info("Using approximate time sync for all sensor topics.")
+        except Exception as e:
+            self.get_logger().warn(
+                f"message_filters not available (or failed to init): {e}. "
+                "Falling back to independent subscriptions."
+            )
+            self._sub_raw = self.create_subscription(Image, "/leap_image", self._on_raw, 10)
+            self._sub_norm = self.create_subscription(
+                Image, "/leap_image_normalized", self._on_norm, 10
+            )
+            self._xela_taxels = self.create_subscription(
+                SensStream, "/xServTopic", self.on_xela_sensor_stream, 10
+            )
+            self._state_sub = self.create_subscription(
+                JointState, "/leap_state", self._on_state, 10
+            )
+            self._nano17_sub = self.create_subscription(
+                WrenchStamped, "/nano17", self._on_nano17, 10
+            )
+        
+    
+    def _decode_image(self, msg: Image, *, dtype: np.dtype) -> np.ndarray:
+        # Publisher uses 3 channels and packs raw bytes.
+        h, w = int(msg.height), int(msg.width)
+        arr = np.frombuffer(msg.data, dtype=dtype)
+
+        expected = h * w * 3
+        if arr.size != expected:
+            raise ValueError(
+                f"Unexpected image buffer size: got {arr.size}, expected {expected} "
+                f"(h={h}, w={w}, channels=3, dtype={dtype})."
+            )
+        return arr.reshape((h, w, 3))
+
+    def _on_synced_images(
+        self,
+        raw_msg: Image,
+        norm_msg: Image,
+        state_msg: JointState,
+        xela_taxel_msg: SensStream,
+        wrench_msg: WrenchStamped,
+    ):
+        self._last_raw = raw_msg
+        self._last_norm = norm_msg
+        self._last_state = state_msg
+        self._last_xela_taxels = xela_taxel_msg
+        self._last_wrench = wrench_msg
+
+        try:
+            raw = self._decode_image(raw_msg, dtype=np.int32)
+            norm = self._decode_image(norm_msg, dtype=np.float32)
+
+            self.storage.store(
+                raw, norm, state_msg, xela_taxel_msg, wrench_msg, raw_msg, norm_msg
+            )
+        except Exception as e:
+            self.get_logger().error(f"Failed to store synced frame: {e}")
+            return
+
+        self.get_logger().info(
+            f"Synced images: raw[{raw.shape}] norm[{norm.shape}] "
+            f"t_raw={raw_msg.header.stamp.sec}.{raw_msg.header.stamp.nanosec:09d} "
+            f"t_norm={norm_msg.header.stamp.sec}.{norm_msg.header.stamp.nanosec:09d}"
+            f"t_state={state_msg.header.stamp.sec}.{state_msg.header.stamp.nanosec:09d} "
+            f"t_nano17={wrench_msg.header.stamp.sec}.{wrench_msg.header.stamp.nanosec:09d}"
+        )
+
+     
+
+    def _on_raw(self, msg: Image):
+        self._last_raw = msg
+        self.get_logger().debug(
+            f"Raw image received: {msg.height}x{msg.width} enc={msg.encoding}"
+        )
+
+    def _on_norm(self, msg: Image):
+        self._last_norm = msg
+        self.get_logger().debug(
+            f"Normalized image received: {msg.height}x{msg.width} enc={msg.encoding}"
+        )
+
+    def _on_state(self, msg: JointState):
+        self._last_state = msg
+        self.get_logger().debug(f"Hand state received: {msg.position} {msg.velocity} {msg.effort}")
+    
+    def on_xela_sensor_stream(self, msg: SensStream):
+        self._last_xela_taxels = msg
+        self.get_logger().debug(f"Xela sensor stream received: {msg.sensors}")
+
+    def _on_nano17(self, msg: WrenchStamped):
+        self._last_wrench = msg
+        self.get_logger().debug(
+            f"NANO17 force received: "
+            f"({msg.wrench.force.x}, {msg.wrench.force.y}, {msg.wrench.force.z})"
+        )
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = XelaNANO17DataCollector()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.storage.close()
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == "__main__":
+    main()
+

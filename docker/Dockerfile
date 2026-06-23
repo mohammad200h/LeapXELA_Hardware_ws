@@ -57,6 +57,8 @@ RUN apt-get update && apt-get install -y ros-${ROS_DISTRO}-desktop
 #colcon build
 RUN  apt update && apt install -y python3-colcon-common-extensions
 
+RUN apt install -y ros-$ROS_DISTRO-ros2-control ros-$ROS_DISTRO-ros2-controllers
+
 #### Environment setup
 RUN echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 RUN bash /opt/ros/humble/setup.bash
