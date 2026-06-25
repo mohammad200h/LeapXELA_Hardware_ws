@@ -1,0 +1,9 @@
+{
+  "package_name": "arm_server",
+  "non_idl_tuples": [
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/arm_server:msg/SceneObject.msg",
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/arm_server:action/Plan.action",
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/arm_server:action/Execute.action",
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/arm_server:action/UpdatePlanningScene.action"
+  ]
+}

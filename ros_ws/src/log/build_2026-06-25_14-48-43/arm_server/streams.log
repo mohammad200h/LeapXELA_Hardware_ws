@@ -1,0 +1,273 @@
+[0.027s] Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server -- -j16 -l16
+[0.129s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_generator_c[0m
+[0.154s] [  1%] Built target arm_server__cpp
+[0.154s] [  3%] Built target arm_server__rs
+[0.158s] [ 13%] Built target arm_server__rosidl_generator_c
+[0.183s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_introspection_cpp[0m
+[0.183s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_cpp[0m
+[0.183s] [ 13%] Built target ament_cmake_python_copy_arm_server
+[0.186s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_introspection_c[0m
+[0.187s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_fastrtps_c[0m
+[0.188s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_c[0m
+[0.190s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_fastrtps_cpp[0m
+[0.222s] [ 24%] Built target arm_server__rosidl_typesupport_introspection_c
+[0.232s] [ 34%] Built target arm_server__rosidl_typesupport_cpp
+[0.232s] [ 44%] Built target arm_server__rosidl_typesupport_fastrtps_c
+[0.233s] [ 55%] Built target arm_server__rosidl_typesupport_introspection_cpp
+[0.236s] [ 65%] Built target arm_server__rosidl_typesupport_fastrtps_cpp
+[0.236s] [ 75%] Built target arm_server__rosidl_typesupport_c
+[0.281s] [ 77%] [32mBuilding CXX object CMakeFiles/arm_action_server.dir/src/arm_action_server.cpp.o[0m
+[0.284s] [ 77%] Built target arm_server
+[0.334s] [ 79%] Built target arm_server__py
+[0.359s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_generator_py[0m
+[0.393s] [ 87%] Built target arm_server__rosidl_generator_py
+[0.419s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_c__pyext[0m
+[0.419s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_introspection_c__pyext[0m
+[0.419s] [35m[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_fastrtps_c__pyext[0m
+[0.449s] [ 91%] Built target arm_server__rosidl_typesupport_introspection_c__pyext
+[0.451s] [ 94%] Built target arm_server__rosidl_typesupport_fastrtps_c__pyext
+[0.451s] [ 98%] Built target arm_server__rosidl_typesupport_c__pyext
+[0.699s] running egg_info
+[0.700s] writing arm_server.egg-info/PKG-INFO
+[0.701s] writing dependency_links to arm_server.egg-info/dependency_links.txt
+[0.701s] writing top-level names to arm_server.egg-info/top_level.txt
+[0.705s] reading manifest file 'arm_server.egg-info/SOURCES.txt'
+[0.706s] writing manifest file 'arm_server.egg-info/SOURCES.txt'
+[0.756s] [ 98%] Built target ament_cmake_python_build_arm_server_egg
+[17.905s] [100%] [32m[1mLinking CXX executable arm_action_server[0m
+[18.797s] [100%] Built target arm_action_server
+[18.823s] Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server -- -j16 -l16
+[18.845s] Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server
+[18.864s] -- Install configuration: ""
+[18.864s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/rosidl_interfaces/arm_server
+[18.865s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server
+[18.865s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action
+[18.865s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail
+[18.865s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__functions.c
+[18.865s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__struct.h
+[18.866s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__functions.h
+[18.866s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__struct.h
+[18.866s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__functions.c
+[18.866s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__type_support.h
+[18.866s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__type_support.h
+[18.867s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__functions.c
+[18.867s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__functions.h
+[18.867s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__type_support.h
+[18.867s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__functions.h
+[18.867s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__struct.h
+[18.867s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/execute.h
+[18.868s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/plan.h
+[18.868s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/update_planning_scene.h
+[18.868s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg
+[18.868s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail
+[18.868s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__type_support.h
+[18.869s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__struct.h
+[18.869s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__functions.h
+[18.869s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__functions.c
+[18.869s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/scene_object.h
+[18.869s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_generator_c__visibility_control.h
+[18.869s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/library_path.sh
+[18.870s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/library_path.dsv
+[18.870s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_generator_c.so
+[18.871s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_generator_c.so" to ""
+[18.871s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server
+[18.871s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action
+[18.871s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail
+[18.871s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__rosidl_typesupport_fastrtps_c.h
+[18.871s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__rosidl_typesupport_fastrtps_c.h
+[18.872s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__rosidl_typesupport_fastrtps_c.h
+[18.872s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg
+[18.872s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail
+[18.872s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__rosidl_typesupport_fastrtps_c.h
+[18.872s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_typesupport_fastrtps_c__visibility_control.h
+[18.872s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_fastrtps_c.so
+[18.873s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_fastrtps_c.so" to ""
+[18.873s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server
+[18.873s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action
+[18.873s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail
+[18.873s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__type_support.c
+[18.873s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__type_support.c
+[18.873s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__rosidl_typesupport_introspection_c.h
+[18.874s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__rosidl_typesupport_introspection_c.h
+[18.874s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__type_support.c
+[18.874s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__rosidl_typesupport_introspection_c.h
+[18.874s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg
+[18.874s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail
+[18.874s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__rosidl_typesupport_introspection_c.h
+[18.875s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__type_support.c
+[18.875s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_typesupport_introspection_c__visibility_control.h
+[18.875s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_introspection_c.so
+[18.876s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_introspection_c.so" to ""
+[18.876s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_c.so
+[18.876s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_c.so" to ""
+[18.876s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server
+[18.877s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action
+[18.877s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail
+[18.877s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__struct.hpp
+[18.877s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__struct.hpp
+[18.877s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__builder.hpp
+[18.877s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__traits.hpp
+[18.877s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__type_support.hpp
+[18.877s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__type_support.hpp
+[18.878s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__builder.hpp
+[18.878s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__type_support.hpp
+[18.878s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__builder.hpp
+[18.878s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__struct.hpp
+[18.878s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__traits.hpp
+[18.879s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__traits.hpp
+[18.879s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/plan.hpp
+[18.879s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/execute.hpp
+[18.879s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/update_planning_scene.hpp
+[18.879s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg
+[18.879s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail
+[18.879s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__builder.hpp
+[18.880s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__struct.hpp
+[18.880s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__type_support.hpp
+[18.880s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__traits.hpp
+[18.880s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_generator_cpp__visibility_control.hpp
+[18.880s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/scene_object.hpp
+[18.880s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server
+[18.881s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action
+[18.881s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail
+[18.881s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__rosidl_typesupport_fastrtps_cpp.hpp
+[18.881s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__rosidl_typesupport_fastrtps_cpp.hpp
+[18.881s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__rosidl_typesupport_fastrtps_cpp.hpp
+[18.881s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/dds_fastrtps
+[18.881s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg
+[18.881s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail
+[18.882s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__rosidl_typesupport_fastrtps_cpp.hpp
+[18.882s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/dds_fastrtps
+[18.882s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h
+[18.882s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_fastrtps_cpp.so
+[18.883s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_fastrtps_cpp.so" to ""
+[18.883s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server
+[18.883s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action
+[18.883s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail
+[18.883s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__rosidl_typesupport_introspection_cpp.hpp
+[18.883s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__rosidl_typesupport_introspection_cpp.hpp
+[18.883s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__type_support.cpp
+[18.884s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__type_support.cpp
+[18.884s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__type_support.cpp
+[18.884s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__rosidl_typesupport_introspection_cpp.hpp
+[18.884s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg
+[18.884s] -- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail
+[18.884s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__rosidl_typesupport_introspection_cpp.hpp
+[18.884s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__type_support.cpp
+[18.884s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_introspection_cpp.so
+[18.885s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_introspection_cpp.so" to ""
+[18.885s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_cpp.so
+[18.886s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_cpp.so" to ""
+[18.886s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/pythonpath.sh
+[18.886s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/pythonpath.dsv
+[18.886s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info
+[18.886s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info/dependency_links.txt
+[18.887s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info/SOURCES.txt
+[18.887s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info/PKG-INFO
+[18.887s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info/top_level.txt
+[18.887s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server
+[18.887s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action
+[18.887s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/__init__.py
+[18.887s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_execute.py
+[18.888s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_update_planning_scene.py
+[18.888s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_plan.py
+[18.888s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_update_planning_scene_s.c
+[18.888s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_plan_s.c
+[18.889s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_execute_s.c
+[18.889s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/__init__.py
+[18.889s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[18.889s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/_arm_server_s.ep.rosidl_typesupport_fastrtps_c.c
+[18.890s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/_arm_server_s.ep.rosidl_typesupport_c.c
+[18.890s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[18.890s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[18.891s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/_arm_server_s.ep.rosidl_typesupport_introspection_c.c
+[18.891s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/libarm_server__rosidl_generator_py.so
+[18.892s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg
+[18.892s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/__init__.py
+[18.892s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/_scene_object_s.c
+[18.892s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/_scene_object.py
+[19.003s] Listing '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server'...
+[19.003s] Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/__init__.py'...
+[19.003s] Listing '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action'...
+[19.003s] Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/__init__.py'...
+[19.003s] Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_execute.py'...
+[19.003s] Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_plan.py'...
+[19.003s] Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_update_planning_scene.py'...
+[19.003s] Listing '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg'...
+[19.004s] Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/__init__.py'...
+[19.004s] Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/_scene_object.py'...
+[19.011s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so
+[19.012s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" to ""
+[19.012s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so
+[19.012s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so" to ""
+[19.013s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so
+[19.013s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so" to ""
+[19.014s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_generator_py.so
+[19.014s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_generator_py.so" to ""
+[19.014s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/rust_packages/arm_server
+[19.014s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust
+[19.015s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/Cargo.toml
+[19.015s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src
+[19.015s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/action
+[19.015s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/action/rmw.rs
+[19.015s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/lib.rs
+[19.015s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/msg.rs
+[19.016s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/action.rs
+[19.016s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/msg
+[19.016s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/msg/rmw.rs
+[19.016s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/build.rs
+[19.016s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/msg/SceneObject.idl
+[19.016s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/Plan.idl
+[19.017s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/Execute.idl
+[19.017s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/UpdatePlanningScene.idl
+[19.017s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/msg/SceneObject.msg
+[19.017s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/Plan.action
+[19.017s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/Execute.action
+[19.018s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/UpdatePlanningScene.action
+[19.018s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/arm_server/arm_action_server
+[19.022s] -- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/arm_server/arm_action_server" to ""
+[19.022s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/launch
+[19.022s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/launch/__pycache__
+[19.022s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/launch/__pycache__/arm_action_server.launch.cpython-310.pyc
+[19.022s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/launch/arm_action_server.launch.py
+[19.022s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/arm_server/build_the_wall
+[19.023s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/script/ws_table.json
+[19.023s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/package_run_dependencies/arm_server
+[19.023s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/parent_prefix_path/arm_server
+[19.023s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/ament_prefix_path.sh
+[19.023s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/ament_prefix_path.dsv
+[19.023s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/path.sh
+[19.024s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/path.dsv
+[19.024s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/local_setup.bash
+[19.024s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/local_setup.sh
+[19.024s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/local_setup.zsh
+[19.024s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/local_setup.dsv
+[19.025s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/package.dsv
+[19.025s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/packages/arm_server
+[19.025s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_cExport.cmake
+[19.025s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_cExport-noconfig.cmake
+[19.026s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_typesupport_fastrtps_cExport.cmake
+[19.026s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_typesupport_fastrtps_cExport-noconfig.cmake
+[19.026s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_introspection_cExport.cmake
+[19.026s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_introspection_cExport-noconfig.cmake
+[19.026s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_cExport.cmake
+[19.027s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_cExport-noconfig.cmake
+[19.027s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_cppExport.cmake
+[19.027s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_typesupport_fastrtps_cppExport.cmake
+[19.027s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake
+[19.027s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_introspection_cppExport.cmake
+[19.027s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_introspection_cppExport-noconfig.cmake
+[19.028s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_cppExport.cmake
+[19.028s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_cppExport-noconfig.cmake
+[19.028s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_pyExport.cmake
+[19.028s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_pyExport-noconfig.cmake
+[19.029s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/rosidl_cmake-extras.cmake
+[19.029s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/ament_cmake_export_dependencies-extras.cmake
+[19.029s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/ament_cmake_export_include_directories-extras.cmake
+[19.029s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/ament_cmake_export_libraries-extras.cmake
+[19.029s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/ament_cmake_export_targets-extras.cmake
+[19.030s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake
+[19.030s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake
+[19.030s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_serverConfig.cmake
+[19.030s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_serverConfig-version.cmake
+[19.030s] -- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/package.xml
+[19.035s] Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble /usr/bin/cmake --install /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server

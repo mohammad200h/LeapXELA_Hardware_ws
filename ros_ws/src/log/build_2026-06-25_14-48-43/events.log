@@ -1,0 +1,509 @@
+[0.000000] (-) TimerEvent: {}
+[0.000302] (-) JobUnselected: {'identifier': 'dex_retargeting'}
+[0.000539] (-) JobUnselected: {'identifier': 'franka_bringup'}
+[0.000864] (-) JobUnselected: {'identifier': 'franka_control2'}
+[0.000894] (-) JobUnselected: {'identifier': 'franka_description'}
+[0.000919] (-) JobUnselected: {'identifier': 'franka_example_controllers'}
+[0.000944] (-) JobUnselected: {'identifier': 'franka_gripper'}
+[0.000968] (-) JobUnselected: {'identifier': 'franka_hardware'}
+[0.001137] (-) JobUnselected: {'identifier': 'franka_moveit_config'}
+[0.001162] (-) JobUnselected: {'identifier': 'franka_msgs'}
+[0.001186] (-) JobUnselected: {'identifier': 'franka_robot_state_broadcaster'}
+[0.001210] (-) JobUnselected: {'identifier': 'franka_semantic_components'}
+[0.001451] (-) JobUnselected: {'identifier': 'franka_simple_publishers'}
+[0.001525] (-) JobUnselected: {'identifier': 'garmi_bringup'}
+[0.001551] (-) JobUnselected: {'identifier': 'garmi_controllers'}
+[0.001575] (-) JobUnselected: {'identifier': 'garmi_description'}
+[0.001599] (-) JobUnselected: {'identifier': 'garmi_moveit_config'}
+[0.001623] (-) JobUnselected: {'identifier': 'leap_description'}
+[0.001689] (-) JobUnselected: {'identifier': 'leap_hand'}
+[0.001716] (-) JobUnselected: {'identifier': 'leap_to_leapXela'}
+[0.001742] (-) JobUnselected: {'identifier': 'mujoco_ros'}
+[0.001766] (-) JobUnselected: {'identifier': 'mujoco_ros2_control'}
+[0.001791] (-) JobUnselected: {'identifier': 'mujoco_ros2_control_system'}
+[0.001815] (-) JobUnselected: {'identifier': 'mujoco_ros2_dummy_plugin'}
+[0.001839] (-) JobUnselected: {'identifier': 'mujoco_ros2_sensors'}
+[0.001863] (-) JobUnselected: {'identifier': 'mujoco_ros_msgs'}
+[0.002046] (-) JobUnselected: {'identifier': 'mujoco_ros_pkgs'}
+[0.002071] (-) JobUnselected: {'identifier': 'multi_mode_control_msgs'}
+[0.002097] (-) JobUnselected: {'identifier': 'multi_mode_controller'}
+[0.002122] (-) JobUnselected: {'identifier': 'multi_mode_controller_impl'}
+[0.002146] (-) JobUnselected: {'identifier': 'nano17'}
+[0.002171] (-) JobUnselected: {'identifier': 'oculusTeleop'}
+[0.002196] (-) JobUnselected: {'identifier': 'panda_motion_generator_msgs'}
+[0.002220] (-) JobUnselected: {'identifier': 'panda_motion_generators'}
+[0.002322] (-) JobUnselected: {'identifier': 'xela_data_collection'}
+[0.002353] (-) JobUnselected: {'identifier': 'xela_description'}
+[0.002378] (-) JobUnselected: {'identifier': 'xela_models'}
+[0.002408] (-) JobUnselected: {'identifier': 'xela_point_cloud_representation'}
+[0.002434] (-) JobUnselected: {'identifier': 'xela_pybullet_viewer'}
+[0.002459] (-) JobUnselected: {'identifier': 'xela_server_ros2'}
+[0.002493] (arm_server) JobQueued: {'identifier': 'arm_server', 'dependencies': OrderedDict([('franka_description', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_description'), ('franka_msgs', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_msgs'), ('mujoco_ros_msgs', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/mujoco_ros_msgs'), ('franka_gripper', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_gripper'), ('mujoco_ros', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/mujoco_ros'), ('mujoco_ros2_control', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/mujoco_ros2_control'), ('franka_hardware', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_hardware'), ('franka_moveit_config', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_moveit_config')])}
+[0.002565] (arm_server) JobStarted: {'identifier': 'arm_server'}
+[0.023891] (arm_server) JobProgress: {'identifier': 'arm_server', 'progress': 'cmake'}
+[0.025709] (arm_server) JobProgress: {'identifier': 'arm_server', 'progress': 'build'}
+[0.027770] (arm_server) Command: {'cmd': ['/usr/bin/cmake', '--build', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server', '--', '-j16', '-l16'], 'cwd': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '12.2.5.6-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-12-2=12.2.142-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-12-2'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '12.2.2-1'), ('HOSTNAME', 'Blade'), ('GIT_ASKPASS', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/tmp/1.4.341.1/x86_64/lib:/usr/local/lib'), ('BROWSER', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/helpers/browser.sh'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.19.3-1'), ('LOCAL_USER_ID', '1000'), ('HOME', '/root'), ('OLDPWD', '/workspace/LeapXELA_Hardware_ws/ros_ws'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('TERM_PROGRAM_VERSION', '3.4.20'), ('NV_LIBCUBLAS_DEV_VERSION', '12.2.5.6-1'), ('VSCODE_IPC_HOOK_CLI', '/tmp/vscode-ipc-adfdf354-1045-4b27-95c1-b47ec258eeec.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/node'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.19.3-1'), ('COLORTERM', 'truecolor'), ('NV_LIBNPP_PACKAGE', 'libnpp-12-2=12.2.1.4-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.9.6.50-1+cuda12.2'), ('CUDA_VERSION', '12.2.2'), ('COLCON_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install'), ('LOCAL_GID', '1000'), ('NV_NVPROF_VERSION', '12.2.142-1'), ('ROS_DISTRO', 'humble'), ('OVSX_REGISTRY_URL', 'https://open-vsx.org'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-12-2'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=12.2 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '12.1.2.141-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'all'), ('VULKAN_SDK', '/tmp/1.4.341.1/x86_64'), ('NV_CUDA_LIB_VERSION', '12.2.2-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '12.2.140-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-12-2=12.2.1.4-1'), ('TERM', 'xterm-256color'), ('NV_CUDA_CUDART_VERSION', '12.2.140-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.9.6.50-1+cuda12.2'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/opt/ros/humble/bin:/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/tmp/1.4.341.1/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-12-2'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-12-2=12.2.5.6-1'), ('NVARCH', 'x86_64'), ('MUJOCO_DIR', '/usr/local'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '12.1.2.141-1'), ('DISPLAY', ':1'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.19.3-1+cuda12.2'), ('MUJOCO_GL', 'egl'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '12.2.140-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/tmp/vscode-git-b9b2478d3b.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/tmp/cursor-remote-ssh-d65a5de7-8b6b-480a-b00c-7b0d9bfb361d.sock'), ('AMENT_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_models:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_pkgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_control2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-12-2=12.2.5.6-1'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-12-2=12.2.2-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.19.3-1+cuda12.2'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('VK_LAYER_PATH', '/tmp/1.4.341.1/x86_64/etc/vulkan/explicit_layer.d'), ('NV_NVTX_VERSION', '12.2.140-1'), ('NV_LIBNPP_VERSION', '12.2.1.4-1'), ('VSCODE_GIT_IPC_AUTH_TOKEN', '906750d738ddc4952b861b6f7f77e79067ff26a7d3cd997870c84318d6e0b7a1'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('NV_CUDNN_VERSION', '8.9.6.50'), ('PWD', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server'), ('CUDA_HOME', '/usr/local/cuda'), ('PYTHONPATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages::/usr/local/lib'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.19.3-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '12.2.1.4-1'), ('CMAKE_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_models:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_pkgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_control2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_description:/usr/local/lib/cmake::/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble')]), 'shell': False}
+[0.099562] (-) TimerEvent: {}
+[0.131748] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_generator_c\x1b[0m\n'}
+[0.155995] (arm_server) StdoutLine: {'line': b'[  1%] Built target arm_server__cpp\n'}
+[0.156325] (arm_server) StdoutLine: {'line': b'[  3%] Built target arm_server__rs\n'}
+[0.160845] (arm_server) StdoutLine: {'line': b'[ 13%] Built target arm_server__rosidl_generator_c\n'}
+[0.184998] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_introspection_cpp\x1b[0m\n'}
+[0.185423] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_cpp\x1b[0m\n'}
+[0.185680] (arm_server) StdoutLine: {'line': b'[ 13%] Built target ament_cmake_python_copy_arm_server\n'}
+[0.188158] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_introspection_c\x1b[0m\n'}
+[0.189066] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_fastrtps_c\x1b[0m\n'}
+[0.190037] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_c\x1b[0m\n'}
+[0.192742] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_fastrtps_cpp\x1b[0m\n'}
+[0.199661] (-) TimerEvent: {}
+[0.224350] (arm_server) StdoutLine: {'line': b'[ 24%] Built target arm_server__rosidl_typesupport_introspection_c\n'}
+[0.233956] (arm_server) StdoutLine: {'line': b'[ 34%] Built target arm_server__rosidl_typesupport_cpp\n'}
+[0.234736] (arm_server) StdoutLine: {'line': b'[ 44%] Built target arm_server__rosidl_typesupport_fastrtps_c\n'}
+[0.235457] (arm_server) StdoutLine: {'line': b'[ 55%] Built target arm_server__rosidl_typesupport_introspection_cpp\n'}
+[0.238211] (arm_server) StdoutLine: {'line': b'[ 65%] Built target arm_server__rosidl_typesupport_fastrtps_cpp\n'}
+[0.238694] (arm_server) StdoutLine: {'line': b'[ 75%] Built target arm_server__rosidl_typesupport_c\n'}
+[0.283182] (arm_server) StdoutLine: {'line': b'[ 77%] \x1b[32mBuilding CXX object CMakeFiles/arm_action_server.dir/src/arm_action_server.cpp.o\x1b[0m\n'}
+[0.286132] (arm_server) StdoutLine: {'line': b'[ 77%] Built target arm_server\n'}
+[0.299837] (-) TimerEvent: {}
+[0.335919] (arm_server) StdoutLine: {'line': b'[ 79%] Built target arm_server__py\n'}
+[0.361122] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_generator_py\x1b[0m\n'}
+[0.395308] (arm_server) StdoutLine: {'line': b'[ 87%] Built target arm_server__rosidl_generator_py\n'}
+[0.400024] (-) TimerEvent: {}
+[0.421133] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_c__pyext\x1b[0m\n'}
+[0.421589] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_introspection_c__pyext\x1b[0m\n'}
+[0.421775] (arm_server) StdoutLine: {'line': b'\x1b[35m\x1b[1mConsolidate compiler generated dependencies of target arm_server__rosidl_typesupport_fastrtps_c__pyext\x1b[0m\n'}
+[0.451692] (arm_server) StdoutLine: {'line': b'[ 91%] Built target arm_server__rosidl_typesupport_introspection_c__pyext\n'}
+[0.453009] (arm_server) StdoutLine: {'line': b'[ 94%] Built target arm_server__rosidl_typesupport_fastrtps_c__pyext\n'}
+[0.453409] (arm_server) StdoutLine: {'line': b'[ 98%] Built target arm_server__rosidl_typesupport_c__pyext\n'}
+[0.500258] (-) TimerEvent: {}
+[0.600725] (-) TimerEvent: {}
+[0.701198] (-) TimerEvent: {}
+[0.701714] (arm_server) StdoutLine: {'line': b'running egg_info\n'}
+[0.702900] (arm_server) StdoutLine: {'line': b'writing arm_server.egg-info/PKG-INFO\n'}
+[0.703177] (arm_server) StdoutLine: {'line': b'writing dependency_links to arm_server.egg-info/dependency_links.txt\n'}
+[0.703480] (arm_server) StdoutLine: {'line': b'writing top-level names to arm_server.egg-info/top_level.txt\n'}
+[0.707642] (arm_server) StdoutLine: {'line': b"reading manifest file 'arm_server.egg-info/SOURCES.txt'\n"}
+[0.708633] (arm_server) StdoutLine: {'line': b"writing manifest file 'arm_server.egg-info/SOURCES.txt'\n"}
+[0.758590] (arm_server) StdoutLine: {'line': b'[ 98%] Built target ament_cmake_python_build_arm_server_egg\n'}
+[0.801491] (-) TimerEvent: {}
+[0.902095] (-) TimerEvent: {}
+[1.002719] (-) TimerEvent: {}
+[1.103208] (-) TimerEvent: {}
+[1.203723] (-) TimerEvent: {}
+[1.304354] (-) TimerEvent: {}
+[1.404985] (-) TimerEvent: {}
+[1.505519] (-) TimerEvent: {}
+[1.606067] (-) TimerEvent: {}
+[1.706654] (-) TimerEvent: {}
+[1.807103] (-) TimerEvent: {}
+[1.907588] (-) TimerEvent: {}
+[2.008071] (-) TimerEvent: {}
+[2.108673] (-) TimerEvent: {}
+[2.209225] (-) TimerEvent: {}
+[2.309704] (-) TimerEvent: {}
+[2.410290] (-) TimerEvent: {}
+[2.510782] (-) TimerEvent: {}
+[2.611247] (-) TimerEvent: {}
+[2.711728] (-) TimerEvent: {}
+[2.812267] (-) TimerEvent: {}
+[2.912821] (-) TimerEvent: {}
+[3.013364] (-) TimerEvent: {}
+[3.113843] (-) TimerEvent: {}
+[3.214339] (-) TimerEvent: {}
+[3.314901] (-) TimerEvent: {}
+[3.415480] (-) TimerEvent: {}
+[3.515931] (-) TimerEvent: {}
+[3.616530] (-) TimerEvent: {}
+[3.717023] (-) TimerEvent: {}
+[3.817669] (-) TimerEvent: {}
+[3.918292] (-) TimerEvent: {}
+[4.018822] (-) TimerEvent: {}
+[4.119338] (-) TimerEvent: {}
+[4.219774] (-) TimerEvent: {}
+[4.320262] (-) TimerEvent: {}
+[4.420857] (-) TimerEvent: {}
+[4.521409] (-) TimerEvent: {}
+[4.621971] (-) TimerEvent: {}
+[4.722522] (-) TimerEvent: {}
+[4.823198] (-) TimerEvent: {}
+[4.923800] (-) TimerEvent: {}
+[5.024296] (-) TimerEvent: {}
+[5.124998] (-) TimerEvent: {}
+[5.225656] (-) TimerEvent: {}
+[5.326285] (-) TimerEvent: {}
+[5.427008] (-) TimerEvent: {}
+[5.527496] (-) TimerEvent: {}
+[5.628043] (-) TimerEvent: {}
+[5.728604] (-) TimerEvent: {}
+[5.829090] (-) TimerEvent: {}
+[5.929590] (-) TimerEvent: {}
+[6.030146] (-) TimerEvent: {}
+[6.130701] (-) TimerEvent: {}
+[6.231264] (-) TimerEvent: {}
+[6.331890] (-) TimerEvent: {}
+[6.432551] (-) TimerEvent: {}
+[6.533067] (-) TimerEvent: {}
+[6.633787] (-) TimerEvent: {}
+[6.734451] (-) TimerEvent: {}
+[6.835057] (-) TimerEvent: {}
+[6.935672] (-) TimerEvent: {}
+[7.036244] (-) TimerEvent: {}
+[7.136790] (-) TimerEvent: {}
+[7.237320] (-) TimerEvent: {}
+[7.337911] (-) TimerEvent: {}
+[7.438501] (-) TimerEvent: {}
+[7.539031] (-) TimerEvent: {}
+[7.639594] (-) TimerEvent: {}
+[7.740116] (-) TimerEvent: {}
+[7.840635] (-) TimerEvent: {}
+[7.941197] (-) TimerEvent: {}
+[8.041753] (-) TimerEvent: {}
+[8.142235] (-) TimerEvent: {}
+[8.242751] (-) TimerEvent: {}
+[8.343304] (-) TimerEvent: {}
+[8.443794] (-) TimerEvent: {}
+[8.544249] (-) TimerEvent: {}
+[8.644740] (-) TimerEvent: {}
+[8.745225] (-) TimerEvent: {}
+[8.845704] (-) TimerEvent: {}
+[8.946219] (-) TimerEvent: {}
+[9.046803] (-) TimerEvent: {}
+[9.147424] (-) TimerEvent: {}
+[9.248000] (-) TimerEvent: {}
+[9.348601] (-) TimerEvent: {}
+[9.449064] (-) TimerEvent: {}
+[9.549599] (-) TimerEvent: {}
+[9.650179] (-) TimerEvent: {}
+[9.750676] (-) TimerEvent: {}
+[9.851139] (-) TimerEvent: {}
+[9.951645] (-) TimerEvent: {}
+[10.052136] (-) TimerEvent: {}
+[10.152681] (-) TimerEvent: {}
+[10.253248] (-) TimerEvent: {}
+[10.353763] (-) TimerEvent: {}
+[10.454237] (-) TimerEvent: {}
+[10.554766] (-) TimerEvent: {}
+[10.655354] (-) TimerEvent: {}
+[10.755865] (-) TimerEvent: {}
+[10.856480] (-) TimerEvent: {}
+[10.957098] (-) TimerEvent: {}
+[11.057655] (-) TimerEvent: {}
+[11.158171] (-) TimerEvent: {}
+[11.258697] (-) TimerEvent: {}
+[11.359326] (-) TimerEvent: {}
+[11.459880] (-) TimerEvent: {}
+[11.560505] (-) TimerEvent: {}
+[11.661029] (-) TimerEvent: {}
+[11.761674] (-) TimerEvent: {}
+[11.862132] (-) TimerEvent: {}
+[11.962699] (-) TimerEvent: {}
+[12.063271] (-) TimerEvent: {}
+[12.163957] (-) TimerEvent: {}
+[12.264551] (-) TimerEvent: {}
+[12.365159] (-) TimerEvent: {}
+[12.465705] (-) TimerEvent: {}
+[12.566239] (-) TimerEvent: {}
+[12.666801] (-) TimerEvent: {}
+[12.767301] (-) TimerEvent: {}
+[12.867876] (-) TimerEvent: {}
+[12.968517] (-) TimerEvent: {}
+[13.069006] (-) TimerEvent: {}
+[13.169539] (-) TimerEvent: {}
+[13.270079] (-) TimerEvent: {}
+[13.370768] (-) TimerEvent: {}
+[13.471337] (-) TimerEvent: {}
+[13.572066] (-) TimerEvent: {}
+[13.672682] (-) TimerEvent: {}
+[13.773201] (-) TimerEvent: {}
+[13.873798] (-) TimerEvent: {}
+[13.974522] (-) TimerEvent: {}
+[14.075165] (-) TimerEvent: {}
+[14.175780] (-) TimerEvent: {}
+[14.276432] (-) TimerEvent: {}
+[14.377002] (-) TimerEvent: {}
+[14.477580] (-) TimerEvent: {}
+[14.578157] (-) TimerEvent: {}
+[14.678763] (-) TimerEvent: {}
+[14.779357] (-) TimerEvent: {}
+[14.879902] (-) TimerEvent: {}
+[14.980458] (-) TimerEvent: {}
+[15.080943] (-) TimerEvent: {}
+[15.181559] (-) TimerEvent: {}
+[15.282124] (-) TimerEvent: {}
+[15.382655] (-) TimerEvent: {}
+[15.483160] (-) TimerEvent: {}
+[15.583677] (-) TimerEvent: {}
+[15.684139] (-) TimerEvent: {}
+[15.784616] (-) TimerEvent: {}
+[15.885141] (-) TimerEvent: {}
+[15.985600] (-) TimerEvent: {}
+[16.086049] (-) TimerEvent: {}
+[16.186641] (-) TimerEvent: {}
+[16.287192] (-) TimerEvent: {}
+[16.387735] (-) TimerEvent: {}
+[16.488312] (-) TimerEvent: {}
+[16.588798] (-) TimerEvent: {}
+[16.689244] (-) TimerEvent: {}
+[16.789777] (-) TimerEvent: {}
+[16.890313] (-) TimerEvent: {}
+[16.990880] (-) TimerEvent: {}
+[17.091436] (-) TimerEvent: {}
+[17.191976] (-) TimerEvent: {}
+[17.292494] (-) TimerEvent: {}
+[17.392904] (-) TimerEvent: {}
+[17.493470] (-) TimerEvent: {}
+[17.594134] (-) TimerEvent: {}
+[17.694694] (-) TimerEvent: {}
+[17.795351] (-) TimerEvent: {}
+[17.895886] (-) TimerEvent: {}
+[17.906921] (arm_server) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable arm_action_server\x1b[0m\n'}
+[17.996086] (-) TimerEvent: {}
+[18.096645] (-) TimerEvent: {}
+[18.197188] (-) TimerEvent: {}
+[18.297686] (-) TimerEvent: {}
+[18.398227] (-) TimerEvent: {}
+[18.498681] (-) TimerEvent: {}
+[18.599236] (-) TimerEvent: {}
+[18.699700] (-) TimerEvent: {}
+[18.799306] (arm_server) StdoutLine: {'line': b'[100%] Built target arm_action_server\n'}
+[18.799819] (-) TimerEvent: {}
+[18.825011] (arm_server) CommandEnded: {'returncode': 0}
+[18.826464] (arm_server) JobProgress: {'identifier': 'arm_server', 'progress': 'install'}
+[18.846034] (arm_server) Command: {'cmd': ['/usr/bin/cmake', '--install', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server'], 'cwd': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '12.2.5.6-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-12-2=12.2.142-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-12-2'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '12.2.2-1'), ('HOSTNAME', 'Blade'), ('GIT_ASKPASS', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/tmp/1.4.341.1/x86_64/lib:/usr/local/lib'), ('BROWSER', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/helpers/browser.sh'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.19.3-1'), ('LOCAL_USER_ID', '1000'), ('HOME', '/root'), ('OLDPWD', '/workspace/LeapXELA_Hardware_ws/ros_ws'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('TERM_PROGRAM_VERSION', '3.4.20'), ('NV_LIBCUBLAS_DEV_VERSION', '12.2.5.6-1'), ('VSCODE_IPC_HOOK_CLI', '/tmp/vscode-ipc-adfdf354-1045-4b27-95c1-b47ec258eeec.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/node'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.19.3-1'), ('COLORTERM', 'truecolor'), ('NV_LIBNPP_PACKAGE', 'libnpp-12-2=12.2.1.4-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.9.6.50-1+cuda12.2'), ('CUDA_VERSION', '12.2.2'), ('COLCON_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install'), ('LOCAL_GID', '1000'), ('NV_NVPROF_VERSION', '12.2.142-1'), ('ROS_DISTRO', 'humble'), ('OVSX_REGISTRY_URL', 'https://open-vsx.org'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-12-2'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=12.2 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '12.1.2.141-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'all'), ('VULKAN_SDK', '/tmp/1.4.341.1/x86_64'), ('NV_CUDA_LIB_VERSION', '12.2.2-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '12.2.140-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-12-2=12.2.1.4-1'), ('TERM', 'xterm-256color'), ('NV_CUDA_CUDART_VERSION', '12.2.140-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.9.6.50-1+cuda12.2'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/opt/ros/humble/bin:/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/tmp/1.4.341.1/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-12-2'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-12-2=12.2.5.6-1'), ('NVARCH', 'x86_64'), ('MUJOCO_DIR', '/usr/local'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '12.1.2.141-1'), ('DISPLAY', ':1'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.19.3-1+cuda12.2'), ('MUJOCO_GL', 'egl'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '12.2.140-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/tmp/vscode-git-b9b2478d3b.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/tmp/cursor-remote-ssh-d65a5de7-8b6b-480a-b00c-7b0d9bfb361d.sock'), ('AMENT_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_models:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_pkgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_control2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-12-2=12.2.5.6-1'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-12-2=12.2.2-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.19.3-1+cuda12.2'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('VK_LAYER_PATH', '/tmp/1.4.341.1/x86_64/etc/vulkan/explicit_layer.d'), ('NV_NVTX_VERSION', '12.2.140-1'), ('NV_LIBNPP_VERSION', '12.2.1.4-1'), ('VSCODE_GIT_IPC_AUTH_TOKEN', '906750d738ddc4952b861b6f7f77e79067ff26a7d3cd997870c84318d6e0b7a1'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('NV_CUDNN_VERSION', '8.9.6.50'), ('PWD', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server'), ('CUDA_HOME', '/usr/local/cuda'), ('PYTHONPATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages::/usr/local/lib'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.19.3-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '12.2.1.4-1'), ('CMAKE_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_models:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_pkgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_control2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_description:/usr/local/lib/cmake::/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble')]), 'shell': False}
+[18.866438] (arm_server) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[18.866855] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/rosidl_interfaces/arm_server\n'}
+[18.867104] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server\n'}
+[18.867308] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action\n'}
+[18.867558] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail\n'}
+[18.867716] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__functions.c\n'}
+[18.867955] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__struct.h\n'}
+[18.868139] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__functions.h\n'}
+[18.868334] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__struct.h\n'}
+[18.868632] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__functions.c\n'}
+[18.868861] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__type_support.h\n'}
+[18.868970] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__type_support.h\n'}
+[18.869106] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__functions.c\n'}
+[18.869204] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__functions.h\n'}
+[18.869334] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__type_support.h\n'}
+[18.869515] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__functions.h\n'}
+[18.869775] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__struct.h\n'}
+[18.869933] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/execute.h\n'}
+[18.870078] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/plan.h\n'}
+[18.870214] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/update_planning_scene.h\n'}
+[18.870362] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg\n'}
+[18.870520] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail\n'}
+[18.870901] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__type_support.h\n'}
+[18.871042] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__struct.h\n'}
+[18.871170] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__functions.h\n'}
+[18.871306] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__functions.c\n'}
+[18.871461] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/scene_object.h\n'}
+[18.871685] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_generator_c__visibility_control.h\n'}
+[18.871893] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/library_path.sh\n'}
+[18.872092] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/library_path.dsv\n'}
+[18.872373] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_generator_c.so\n'}
+[18.873229] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_generator_c.so" to ""\n'}
+[18.873409] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server\n'}
+[18.873572] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action\n'}
+[18.873690] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail\n'}
+[18.873782] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__rosidl_typesupport_fastrtps_c.h\n'}
+[18.873883] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__rosidl_typesupport_fastrtps_c.h\n'}
+[18.874021] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__rosidl_typesupport_fastrtps_c.h\n'}
+[18.874168] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg\n'}
+[18.874316] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail\n'}
+[18.874414] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__rosidl_typesupport_fastrtps_c.h\n'}
+[18.874546] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[18.874650] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_fastrtps_c.so\n'}
+[18.875168] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_fastrtps_c.so" to ""\n'}
+[18.875323] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server\n'}
+[18.875486] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action\n'}
+[18.875592] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail\n'}
+[18.875696] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__type_support.c\n'}
+[18.875829] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__type_support.c\n'}
+[18.875975] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__rosidl_typesupport_introspection_c.h\n'}
+[18.876116] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__rosidl_typesupport_introspection_c.h\n'}
+[18.876260] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__type_support.c\n'}
+[18.876507] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__rosidl_typesupport_introspection_c.h\n'}
+[18.876658] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg\n'}
+[18.876797] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail\n'}
+[18.876954] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__rosidl_typesupport_introspection_c.h\n'}
+[18.877052] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__type_support.c\n'}
+[18.877177] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[18.877338] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_introspection_c.so\n'}
+[18.878018] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_introspection_c.so" to ""\n'}
+[18.878152] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_c.so\n'}
+[18.878680] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_c.so" to ""\n'}
+[18.878874] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server\n'}
+[18.879036] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action\n'}
+[18.879132] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail\n'}
+[18.879273] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__struct.hpp\n'}
+[18.879371] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__struct.hpp\n'}
+[18.879523] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__builder.hpp\n'}
+[18.879662] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__traits.hpp\n'}
+[18.879817] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__type_support.hpp\n'}
+[18.879965] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__type_support.hpp\n'}
+[18.880138] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__builder.hpp\n'}
+[18.880300] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__type_support.hpp\n'}
+[18.880472] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__builder.hpp\n'}
+[18.880658] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__struct.hpp\n'}
+[18.880848] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__traits.hpp\n'}
+[18.881035] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__traits.hpp\n'}
+[18.881214] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/plan.hpp\n'}
+[18.881351] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/execute.hpp\n'}
+[18.881519] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/update_planning_scene.hpp\n'}
+[18.881671] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg\n'}
+[18.881816] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail\n'}
+[18.881955] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__builder.hpp\n'}
+[18.882117] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__struct.hpp\n'}
+[18.882213] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__type_support.hpp\n'}
+[18.882352] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__traits.hpp\n'}
+[18.882528] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_generator_cpp__visibility_control.hpp\n'}
+[18.882659] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/scene_object.hpp\n'}
+[18.882846] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server\n'}
+[18.882992] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action\n'}
+[18.883120] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail\n'}
+[18.883257] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[18.883387] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[18.883500] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[18.883632] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/dds_fastrtps\n'}
+[18.883816] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg\n'}
+[18.883949] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail\n'}
+[18.884077] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[18.884170] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/dds_fastrtps\n'}
+[18.884298] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[18.884384] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_fastrtps_cpp.so\n'}
+[18.885252] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_fastrtps_cpp.so" to ""\n'}
+[18.885414] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server\n'}
+[18.885539] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action\n'}
+[18.885657] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail\n'}
+[18.885774] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__rosidl_typesupport_introspection_cpp.hpp\n'}
+[18.885863] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__rosidl_typesupport_introspection_cpp.hpp\n'}
+[18.885982] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/execute__type_support.cpp\n'}
+[18.886070] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__type_support.cpp\n'}
+[18.886187] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/plan__type_support.cpp\n'}
+[18.886325] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/action/detail/update_planning_scene__rosidl_typesupport_introspection_cpp.hpp\n'}
+[18.886491] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg\n'}
+[18.886632] (arm_server) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail\n'}
+[18.886759] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__rosidl_typesupport_introspection_cpp.hpp\n'}
+[18.886850] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/include/arm_server/arm_server/msg/detail/scene_object__type_support.cpp\n'}
+[18.886990] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_introspection_cpp.so\n'}
+[18.887681] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_introspection_cpp.so" to ""\n'}
+[18.887821] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_cpp.so\n'}
+[18.888327] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_typesupport_cpp.so" to ""\n'}
+[18.888478] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/pythonpath.sh\n'}
+[18.888624] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/pythonpath.dsv\n'}
+[18.888764] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info\n'}
+[18.888962] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info/dependency_links.txt\n'}
+[18.889098] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info/SOURCES.txt\n'}
+[18.889232] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info/PKG-INFO\n'}
+[18.889355] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server-0.0.0-py3.10.egg-info/top_level.txt\n'}
+[18.889544] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server\n'}
+[18.889682] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action\n'}
+[18.889801] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/__init__.py\n'}
+[18.889928] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_execute.py\n'}
+[18.890131] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_update_planning_scene.py\n'}
+[18.890363] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_plan.py\n'}
+[18.890640] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_update_planning_scene_s.c\n'}
+[18.890836] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_plan_s.c\n'}
+[18.891033] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_execute_s.c\n'}
+[18.891216] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/__init__.py\n'}
+[18.891358] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[18.891667] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/_arm_server_s.ep.rosidl_typesupport_fastrtps_c.c\n'}
+[18.892045] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/_arm_server_s.ep.rosidl_typesupport_c.c\n'}
+[18.892452] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[18.892763] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[18.893065] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/_arm_server_s.ep.rosidl_typesupport_introspection_c.c\n'}
+[18.893605] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/libarm_server__rosidl_generator_py.so\n'}
+[18.893966] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg\n'}
+[18.894111] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/__init__.py\n'}
+[18.894240] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/_scene_object_s.c\n'}
+[18.894369] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/_scene_object.py\n'}
+[18.899922] (-) TimerEvent: {}
+[19.000366] (-) TimerEvent: {}
+[19.005033] (arm_server) StdoutLine: {'line': b"Listing '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server'...\n"}
+[19.005334] (arm_server) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/__init__.py'...\n"}
+[19.005471] (arm_server) StdoutLine: {'line': b"Listing '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action'...\n"}
+[19.005568] (arm_server) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/__init__.py'...\n"}
+[19.005659] (arm_server) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_execute.py'...\n"}
+[19.005771] (arm_server) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_plan.py'...\n"}
+[19.005859] (arm_server) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/action/_update_planning_scene.py'...\n"}
+[19.005945] (arm_server) StdoutLine: {'line': b"Listing '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg'...\n"}
+[19.006037] (arm_server) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/__init__.py'...\n"}
+[19.006125] (arm_server) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/msg/_scene_object.py'...\n"}
+[19.013430] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[19.014034] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" to ""\n'}
+[19.014346] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[19.014956] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so" to ""\n'}
+[19.015258] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[19.015849] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/local/lib/python3.10/dist-packages/arm_server/arm_server_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so" to ""\n'}
+[19.016011] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_generator_py.so\n'}
+[19.016604] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/libarm_server__rosidl_generator_py.so" to ""\n'}
+[19.016799] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/rust_packages/arm_server\n'}
+[19.016954] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust\n'}
+[19.017104] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/Cargo.toml\n'}
+[19.017260] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src\n'}
+[19.017412] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/action\n'}
+[19.017682] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/action/rmw.rs\n'}
+[19.017857] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/lib.rs\n'}
+[19.017972] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/msg.rs\n'}
+[19.018122] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/action.rs\n'}
+[19.018266] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/msg\n'}
+[19.018468] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/src/msg/rmw.rs\n'}
+[19.018579] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/rust/build.rs\n'}
+[19.018723] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/msg/SceneObject.idl\n'}
+[19.018924] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/Plan.idl\n'}
+[19.019101] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/Execute.idl\n'}
+[19.019332] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/UpdatePlanningScene.idl\n'}
+[19.019559] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/msg/SceneObject.msg\n'}
+[19.019720] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/Plan.action\n'}
+[19.019873] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/Execute.action\n'}
+[19.020020] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/action/UpdatePlanningScene.action\n'}
+[19.020303] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/arm_server/arm_action_server\n'}
+[19.023843] (arm_server) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/arm_server/arm_action_server" to ""\n'}
+[19.024191] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/launch\n'}
+[19.024521] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/launch/__pycache__\n'}
+[19.024763] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/launch/__pycache__/arm_action_server.launch.cpython-310.pyc\n'}
+[19.024878] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/launch/arm_action_server.launch.py\n'}
+[19.025004] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/lib/arm_server/build_the_wall\n'}
+[19.025102] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/script/ws_table.json\n'}
+[19.025228] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/package_run_dependencies/arm_server\n'}
+[19.025322] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/parent_prefix_path/arm_server\n'}
+[19.025499] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/ament_prefix_path.sh\n'}
+[19.025637] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/ament_prefix_path.dsv\n'}
+[19.025804] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/path.sh\n'}
+[19.026057] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/environment/path.dsv\n'}
+[19.026210] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/local_setup.bash\n'}
+[19.026467] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/local_setup.sh\n'}
+[19.026791] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/local_setup.zsh\n'}
+[19.026946] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/local_setup.dsv\n'}
+[19.027115] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/package.dsv\n'}
+[19.027333] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/ament_index/resource_index/packages/arm_server\n'}
+[19.027600] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_cExport.cmake\n'}
+[19.027791] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_cExport-noconfig.cmake\n'}
+[19.028006] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_typesupport_fastrtps_cExport.cmake\n'}
+[19.028202] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_typesupport_fastrtps_cExport-noconfig.cmake\n'}
+[19.028415] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_introspection_cExport.cmake\n'}
+[19.028615] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[19.028818] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_cExport.cmake\n'}
+[19.029003] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[19.029186] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_cppExport.cmake\n'}
+[19.029424] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_typesupport_fastrtps_cppExport.cmake\n'}
+[19.029611] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake\n'}
+[19.029833] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[19.029981] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[19.030185] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_cppExport.cmake\n'}
+[19.030367] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_server__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[19.030649] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_pyExport.cmake\n'}
+[19.030862] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/export_arm_server__rosidl_generator_pyExport-noconfig.cmake\n'}
+[19.031037] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/rosidl_cmake-extras.cmake\n'}
+[19.031224] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[19.031439] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[19.031619] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[19.031821] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[19.032001] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[19.032184] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake\n'}
+[19.032369] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_serverConfig.cmake\n'}
+[19.032551] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/cmake/arm_serverConfig-version.cmake\n'}
+[19.032718] (arm_server) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server/share/arm_server/package.xml\n'}
+[19.036562] (arm_server) CommandEnded: {'returncode': 0}
+[19.072255] (arm_server) JobEnded: {'identifier': 'arm_server', 'rc': 0}
+[19.073285] (-) EventReactorShutdown: {}

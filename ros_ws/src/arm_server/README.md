@@ -1,6 +1,6 @@
 # arm_server
 
-ROS 2 action server for Franka arm motion using MoveIt. Planning and execution are split into two separate actions so you can preview a trajectory before moving the real robot.
+ROS 2 action server for Franka arm motion using MoveIt. Planning and execution are split into separate actions so you can preview a trajectory before moving the robot.
 
 ## Overview
 
@@ -8,16 +8,13 @@ ROS 2 action server for Franka arm motion using MoveIt. Planning and execution a
 |--------|-------|---------|
 | `Plan` | `/plan` | Plan to a target end-effector pose (xyz + rpy) |
 | `Execute` | `/execute` | Execute a previously stored plan by `plan_id` |
-
-The server uses `moveit::planning_interface::MoveGroupInterface` and stores planned trajectories in memory until they are executed or replaced by a newer plan.
+| `UpdatePlanningScene` | `/update_planning_scene` | Add collision objects (walls, boxes, etc.) to the MoveIt scene |
 
 ## Dependencies
 
 - ROS 2 Humble
 - MoveIt 2
 - `franka_moveit_config` and `franka_description` (from `multipanda_ros2` in this workspace)
-
-MoveIt must be running before sending goals. The `move_group` node provides planning scene updates and trajectory execution controllers.
 
 ## Build
 
@@ -29,25 +26,38 @@ source install/setup.bash
 
 ## Launch
 
-Start MoveIt first, then start `arm_server`. The `load_gripper` setting must match on both launches.
+### Simulation (recommended)
 
-### Simulation (no real robot)
-
-**Terminal 1 — MoveIt + MuJoCo sim:**
+One command starts MoveIt, MuJoCo, RViz, `arm_server`, and loads workspace walls from `script/ws_table.json`:
 
 ```bash
 source install/setup.bash
-ros2 launch franka_moveit_config sim_moveit.launch.py load_gripper:=false
+ros2 launch arm_server arm_action_server.launch.py
 ```
 
-**Terminal 2 — arm_server:**
+Defaults:
+- `load_gripper:=false`
+- `initial_positions:='"0.0 0 0.0 0 0.0 0 0"'` (all joints at zero)
+- `build_walls:=true` (loads `ws_table.json` into the planning scene after 2 s)
+
+Override the initial arm pose:
 
 ```bash
-source install/setup.bash
-ros2 launch arm_server arm_action_server.launch.py load_gripper:=false
+ros2 launch arm_server arm_action_server.launch.py \
+  initial_positions:='"0.0 -0.785 0.0 -2.356 0.0 1.571 0.785"'
 ```
+
+Skip auto wall loading:
+
+```bash
+ros2 launch arm_server arm_action_server.launch.py build_walls:=false
+```
+
+> **Important:** Use the launch file, not `ros2 run arm_server arm_action_server`. The launch file provides `robot_description`, `robot_description_semantic`, and kinematics parameters required by MoveIt.
 
 ### Real Franka
+
+Start MoveIt with hardware, then start `arm_server` without the sim stack:
 
 **Terminal 1 — MoveIt + hardware:**
 
@@ -62,14 +72,12 @@ ros2 launch franka_moveit_config moveit.launch.py \
 
 ```bash
 source install/setup.bash
-ros2 launch arm_server arm_action_server.launch.py load_gripper:=false
+ros2 launch arm_server arm_action_server.launch.py launch_sim:=false
 ```
 
-> **Important:** Use the launch file above, not `ros2 run arm_server arm_action_server`. The launch file provides `robot_description`, `robot_description_semantic`, and kinematics parameters required by MoveIt.
+`load_gripper` must match on both launches.
 
 ### With gripper enabled
-
-If MoveIt is launched with `load_gripper:=true`, start the arm server with matching settings:
 
 ```bash
 ros2 launch arm_server arm_action_server.launch.py \
@@ -78,52 +86,28 @@ ros2 launch arm_server arm_action_server.launch.py \
   end_effector_link:=panda_hand_tcp
 ```
 
-## Action interfaces
+## Launch parameters
 
-### `arm_server/action/Plan`
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `launch_sim` | `true` | Launch MoveIt + MuJoCo via `sim_moveit.launch.py` |
+| `load_gripper` | `false` | Load Franka Hand in sim / must match MoveIt on real robot |
+| `initial_positions` | `"0.0 0 0.0 0 0.0 0 0"` | MuJoCo initial joint positions (quoted string of 7 values) |
+| `arm_id` | `panda` | Robot name prefix in URDF/SRDF |
+| `planning_group` | `panda_arm` | MoveIt planning group (`panda_manipulator` with gripper) |
+| `end_effector_link` | `panda_link8` | End-effector link (`panda_hand_tcp` with gripper) |
+| `build_walls` | `true` | Load workspace walls on startup |
+| `walls_config_file` | `script/ws_table.json` | JSON file describing walls to add |
+| `clear_existing_walls` | `true` | Remove previously added walls before loading |
 
-**Goal**
+Node parameters (pass via `--ros-args -p ...`):
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `x`, `y`, `z` | `float64` | Target position (meters) in the planning frame |
-| `roll`, `pitch`, `yaw` | `float64` | Target orientation (radians) |
-
-**Result**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | `bool` | Whether planning succeeded |
-| `message` | `string` | Status or error message |
-| `plan_id` | `uint64` | ID used to execute this plan |
-| `trajectory_duration` | `float64` | Planned trajectory duration (seconds) |
-
-**Feedback**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `progress` | `float64` | Planning progress in `[0.0, 1.0]` |
-
-### `arm_server/action/Execute`
-
-**Goal**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `plan_id` | `uint64` | Plan to execute. Use `0` to execute the most recent plan. |
-
-**Result**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `success` | `bool` | Whether execution succeeded |
-| `message` | `string` | Status or error message |
-
-**Feedback**
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `progress` | `float64` | Execution progress in `[0.0, 1.0]` |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `planning_frame` | `panda_link0` | Reference frame for pose goals and scene objects |
+| `planning_time` | `5.0` | MoveIt planning timeout (seconds) |
+| `max_velocity_scaling` | `0.2` | Velocity scaling factor |
+| `max_acceleration_scaling` | `0.2` | Acceleration scaling factor |
 
 ## Plan and execute
 
@@ -134,7 +118,7 @@ ros2 action send_goal /plan arm_server/action/Plan \
   "{x: 0.4, y: 0.0, z: 0.4, roll: 3.14, pitch: 0.0, yaw: 0.0}" --feedback
 ```
 
-On success, note the `plan_id` in the result (for example `1`).
+On success, note the `plan_id` in the result.
 
 ### 2. Execute the plan
 
@@ -143,66 +127,45 @@ ros2 action send_goal /execute arm_server/action/Execute \
   "{plan_id: 1}" --feedback
 ```
 
-To execute the latest plan without tracking the ID:
+Execute the most recent plan:
 
 ```bash
 ros2 action send_goal /execute arm_server/action/Execute \
   "{plan_id: 0}" --feedback
 ```
 
-### Typical workflow
-
-```text
-/plan     -> stores trajectory, returns plan_id
-/execute  -> runs stored trajectory on the robot
-```
-
-Plans are removed from memory after a successful execute. Sending a new `/plan` goal stores an additional plan under a new `plan_id`.
-
-## Launch parameters
-
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `arm_id` | `panda` | Robot name prefix in URDF/SRDF |
-| `load_gripper` | `false` | Must match the MoveIt launch |
-| `planning_group` | `panda_arm` | MoveIt planning group (`panda_manipulator` with gripper) |
-| `end_effector_link` | `panda_link8` | End-effector link (`panda_hand_tcp` with gripper) |
-| `planning_frame` | `world` | Reference frame for pose goals |
-| `planning_time` | `5.0` | MoveIt planning timeout (seconds) |
-| `max_velocity_scaling` | `0.2` | Velocity scaling factor |
-| `max_acceleration_scaling` | `0.2` | Acceleration scaling factor |
-
-Example with custom motion limits:
-
-```bash
-ros2 launch arm_server arm_action_server.launch.py load_gripper:=false \
-  --ros-args -p planning_time:=10.0 -p max_velocity_scaling:=0.1
-```
-
-## Inspecting actions
-
-List available actions:
-
-```bash
-ros2 action list | grep -E 'plan|execute'
-```
-
-Show action interface:
+## Action interfaces
 
 ```bash
 ros2 interface show arm_server/action/Plan
 ros2 interface show arm_server/action/Execute
+ros2 interface show arm_server/action/UpdatePlanningScene
+ros2 interface show arm_server/msg/SceneObject
 ```
 
-## RViz preview
+### `arm_server/action/Plan`
 
-If RViz is running from the MoveIt launch, you can preview planned trajectories using the **Planned Path** display, which listens on `/display_planned_path`. The MotionPlanning panel in RViz does this automatically when planning from the GUI.
+**Goal:** `x`, `y`, `z` (m), `roll`, `pitch`, `yaw` (rad)
+
+**Result:** `success`, `message`, `plan_id`, `trajectory_duration`
+
+### `arm_server/action/Execute`
+
+**Goal:** `plan_id` (`0` = most recent plan)
+
+**Result:** `success`, `message`
+
+### `arm_server/action/UpdatePlanningScene`
+
+**Goal:** `objects` (`SceneObject[]`), `clear_existing` (`bool`)
+
+Each `SceneObject`: `id`, `shape_type` (`box` / `sphere` / `cylinder`), `dimensions`, `x`, `y`, `z`, `roll`, `pitch`, `yaw`, optional `color_r/g/b/a`.
 
 ## Troubleshooting
 
 | Problem | Likely cause |
 |---------|----------------|
-| `Missing robot_description or robot_description_semantic` | Node started with `ros2 run` instead of the launch file |
-| Planning fails immediately | MoveIt (`move_group`) is not running |
+| `Missing robot_description or robot_description_semantic` | Started with `ros2 run` instead of the launch file |
+| Planning fails immediately | `move_group` not running (use `launch_sim:=true` or start MoveIt separately) |
 | Execution fails | Controllers not loaded, or plan is stale/invalid |
-| Parameter / SRDF mismatch | `load_gripper` or planning group does not match MoveIt launch |
+| Parameter / SRDF mismatch | `load_gripper` or planning group does not match MoveIt |

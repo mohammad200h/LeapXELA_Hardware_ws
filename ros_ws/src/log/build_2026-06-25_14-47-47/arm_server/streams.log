@@ -1,0 +1,160 @@
+[0.025s] Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble /usr/bin/cmake /workspace/LeapXELA_Hardware_ws/ros_ws/src/arm_server -DCMAKE_INSTALL_PREFIX=/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server
+[0.138s] -- The C compiler identification is GNU 11.4.0
+[0.245s] -- The CXX compiler identification is GNU 11.4.0
+[0.259s] -- Detecting C compiler ABI info
+[0.409s] -- Detecting C compiler ABI info - done
+[0.422s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.422s] -- Detecting C compile features
+[0.423s] -- Detecting C compile features - done
+[0.429s] -- Detecting CXX compiler ABI info
+[0.591s] -- Detecting CXX compiler ABI info - done
+[0.604s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.605s] -- Detecting CXX compile features
+[0.605s] -- Detecting CXX compile features - done
+[0.617s] -- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.056s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.343s] -- Found rosidl_default_generators: 1.2.1 (/opt/ros/humble/share/rosidl_default_generators/cmake)
+[1.378s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[1.433s] -- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[1.609s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[1.727s] -- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)
+[1.884s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[1.897s] -- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[2.129s] -- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[2.196s] -- Found FastRTPS: /opt/ros/humble/include  
+[2.307s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[2.345s] -- Looking for pthread.h
+[2.494s] -- Looking for pthread.h - found
+[2.494s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.646s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[2.648s] -- Found Threads: TRUE  
+[2.769s] -- Found rclcpp_action: 16.0.19 (/opt/ros/humble/share/rclcpp_action/cmake)
+[2.855s] -- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)
+[2.884s] -- Found shape_msgs: 4.9.1 (/opt/ros/humble/share/shape_msgs/cmake)
+[2.916s] -- Found moveit_msgs: 2.2.1 (/opt/ros/humble/share/moveit_msgs/cmake)
+[3.113s] -- Found tf2: 0.25.20 (/opt/ros/humble/share/tf2/cmake)
+[3.147s] -- Found tf2_geometry_msgs: 0.25.20 (/opt/ros/humble/share/tf2_geometry_msgs/cmake)
+[3.191s] -- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)
+[3.193s] -- Found Eigen3: TRUE (found version "3.3.9") 
+[3.193s] -- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+[3.336s] -- Found moveit_ros_planning_interface: 2.5.9 (/opt/ros/humble/share/moveit_ros_planning_interface/cmake)
+[3.424s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread 
+[3.492s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread 
+[3.601s] -- Found parameter_traits: 0.7.1 (/opt/ros/humble/share/parameter_traits/cmake)
+[3.658s] -- Found rclcpp_lifecycle: 16.0.19 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)
+[3.715s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem 
+[3.936s] -- library: /usr/lib/x86_64-linux-gnu/libcurl.so
+[4.186s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono 
+[4.250s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options 
+[4.300s] -- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread 
+[5.085s] -- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)
+[5.710s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[6.490s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[6.561s] -- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") 
+[6.572s] -- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)
+[6.644s] -- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") 
+[6.644s] -- Using PYTHON_EXECUTABLE: /usr/bin/python3
+[6.644s] -- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10
+[6.645s] -- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so
+[6.709s] -- Found PythonExtra: .so  
+[7.116s] -- Found ament_lint_auto: 0.12.15 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[7.199s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[7.200s] -- Configured cppcheck include dirs: 
+[7.201s] -- Configured cppcheck exclude dirs and/or files: 
+[7.203s] -- Added test 'flake8' to check Python code syntax and style conventions
+[7.205s] -- Added test 'lint_cmake' to check CMake code style
+[7.207s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[7.210s] -- Added test 'uncrustify' to check C / C++ code style
+[7.210s] -- Configured uncrustify additional arguments: 
+[7.212s] -- Added test 'xmllint' to check XML markup files
+[7.217s] -- Configuring done
+[7.330s] -- Generating done
+[7.365s] -- Build files have been written to: /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server
+[7.392s] Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble /usr/bin/cmake /workspace/LeapXELA_Hardware_ws/ros_ws/src/arm_server -DCMAKE_INSTALL_PREFIX=/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server
+[7.397s] Invoking command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server -- -j16 -l16
+[7.497s] [  1%] [34m[1mGenerating C code for ROS interfaces[0m
+[7.519s] [  3%] [34m[1mGenerating Rust code for ROS interfaces[0m
+[7.521s] [  5%] [34m[1mGenerating C++ code for ROS interfaces[0m
+[7.536s] [  5%] Built target ament_cmake_python_copy_arm_server
+[8.012s] running egg_info
+[8.012s] creating arm_server.egg-info
+[8.013s] writing arm_server.egg-info/PKG-INFO
+[8.013s] writing dependency_links to arm_server.egg-info/dependency_links.txt
+[8.013s] writing top-level names to arm_server.egg-info/top_level.txt
+[8.013s] writing manifest file 'arm_server.egg-info/SOURCES.txt'
+[8.017s] reading manifest file 'arm_server.egg-info/SOURCES.txt'
+[8.018s] writing manifest file 'arm_server.egg-info/SOURCES.txt'
+[8.061s] [  5%] Built target ament_cmake_python_build_arm_server_egg
+[8.120s] [  5%] Built target arm_server__rs
+[9.052s] [  6%] [32mBuilding C object CMakeFiles/arm_server__rosidl_generator_c.dir/rosidl_generator_c/arm_server/action/detail/execute__functions.c.o[0m
+[9.053s] [  8%] [32mBuilding C object CMakeFiles/arm_server__rosidl_generator_c.dir/rosidl_generator_c/arm_server/action/detail/update_planning_scene__functions.c.o[0m
+[9.054s] [ 10%] [32mBuilding C object CMakeFiles/arm_server__rosidl_generator_c.dir/rosidl_generator_c/arm_server/msg/detail/scene_object__functions.c.o[0m
+[9.056s] [ 12%] [32mBuilding C object CMakeFiles/arm_server__rosidl_generator_c.dir/rosidl_generator_c/arm_server/action/detail/plan__functions.c.o[0m
+[9.072s] [ 12%] Built target arm_server__cpp
+[9.097s] [ 13%] [34m[1mGenerating C++ introspection for ROS interfaces[0m
+[9.097s] [ 15%] [34m[1mGenerating C++ type support dispatch for ROS interfaces[0m
+[9.103s] [ 17%] [34m[1mGenerating C++ type support for eProsima Fast-RTPS[0m
+[9.271s] [ 18%] [32m[1mLinking C shared library libarm_server__rosidl_generator_c.so[0m
+[9.346s] [ 18%] Built target arm_server__rosidl_generator_c
+[9.369s] [ 24%] [34m[1mGenerating C type support for eProsima Fast-RTPS[0m
+[9.369s] [ 24%] [34m[1mGenerating C type support dispatch for ROS interfaces[0m
+[9.369s] [ 24%] [34m[1mGenerating C introspection for ROS interfaces[0m
+[9.890s] [ 25%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/arm_server/msg/scene_object__type_support.cpp.o[0m
+[9.890s] [ 27%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/arm_server/action/plan__type_support.cpp.o[0m
+[9.891s] [ 29%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/arm_server/action/update_planning_scene__type_support.cpp.o[0m
+[9.891s] [ 31%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/arm_server/action/execute__type_support.cpp.o[0m
+[10.166s] [ 37%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_c.dir/rosidl_typesupport_c/arm_server/action/update_planning_scene__type_support.cpp.o[0m
+[10.166s] [ 37%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_c.dir/rosidl_typesupport_c/arm_server/msg/scene_object__type_support.cpp.o[0m
+[10.166s] [ 37%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_c.dir/rosidl_typesupport_c/arm_server/action/execute__type_support.cpp.o[0m
+[10.167s] [ 37%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_c.dir/rosidl_typesupport_c/arm_server/action/plan__type_support.cpp.o[0m
+[10.314s] [ 39%] [32m[1mLinking CXX shared library libarm_server__rosidl_typesupport_c.so[0m
+[10.407s] [ 39%] Built target arm_server__rosidl_typesupport_c
+[10.489s] [ 41%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/arm_server/action/detail/dds_fastrtps/plan__type_support.cpp.o[0m
+[10.489s] [ 43%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/arm_server/action/detail/dds_fastrtps/execute__type_support.cpp.o[0m
+[10.490s] [ 44%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/arm_server/action/detail/dds_fastrtps/update_planning_scene__type_support.cpp.o[0m
+[10.498s] [ 46%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/arm_server/msg/detail/dds_fastrtps/scene_object__type_support.cpp.o[0m
+[10.713s] [ 50%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/arm_server/action/detail/execute__type_support.cpp.o[0m
+[10.713s] [ 50%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/arm_server/action/detail/update_planning_scene__type_support.cpp.o[0m
+[10.714s] [ 51%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/arm_server/action/detail/plan__type_support.cpp.o[0m
+[10.720s] [ 53%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/arm_server/msg/detail/scene_object__type_support.cpp.o[0m
+[10.760s] [ 55%] [32m[1mLinking CXX shared library libarm_server__rosidl_typesupport_cpp.so[0m
+[10.818s] [ 56%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/arm_server/action/detail/execute__type_support_c.cpp.o[0m
+[10.823s] [ 58%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/arm_server/msg/detail/scene_object__type_support_c.cpp.o[0m
+[10.824s] [ 60%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/arm_server/action/detail/plan__type_support_c.cpp.o[0m
+[10.826s] [ 62%] [32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/arm_server/action/detail/update_planning_scene__type_support_c.cpp.o[0m
+[10.902s] [ 62%] Built target arm_server__rosidl_typesupport_cpp
+[10.998s] [ 63%] [32mBuilding CXX object CMakeFiles/arm_action_server.dir/src/arm_action_server.cpp.o[0m
+[11.540s] [ 65%] [32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/arm_server/msg/detail/scene_object__type_support.c.o[0m
+[11.540s] [ 67%] [32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/arm_server/action/detail/update_planning_scene__type_support.c.o[0m
+[11.542s] [ 68%] [32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/arm_server/action/detail/plan__type_support.c.o[0m
+[11.550s] [ 70%] [32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/arm_server/action/detail/execute__type_support.c.o[0m
+[11.743s] [ 72%] [32m[1mLinking C shared library libarm_server__rosidl_typesupport_introspection_c.so[0m
+[11.826s] [ 72%] Built target arm_server__rosidl_typesupport_introspection_c
+[11.891s] [ 75%] [32m[1mLinking CXX shared library libarm_server__rosidl_typesupport_fastrtps_cpp.so[0m
+[11.891s] [ 75%] [32m[1mLinking CXX shared library libarm_server__rosidl_typesupport_fastrtps_c.so[0m
+[12.040s] [ 75%] Built target arm_server__rosidl_typesupport_fastrtps_c
+[12.042s] [ 75%] Built target arm_server__rosidl_typesupport_fastrtps_cpp
+[12.218s] [ 77%] [32m[1mLinking CXX shared library libarm_server__rosidl_typesupport_introspection_cpp.so[0m
+[12.364s] [ 77%] Built target arm_server__rosidl_typesupport_introspection_cpp
+[12.413s] [ 77%] Built target arm_server
+[12.462s] [ 79%] [34m[1mGenerating Python code for ROS interfaces[0m
+[15.564s] [ 79%] Built target arm_server__py
+[15.612s] [ 81%] [32mBuilding C object CMakeFiles/arm_server__rosidl_generator_py.dir/rosidl_generator_py/arm_server/msg/_scene_object_s.c.o[0m
+[15.612s] [ 84%] [32mBuilding C object CMakeFiles/arm_server__rosidl_generator_py.dir/rosidl_generator_py/arm_server/action/_plan_s.c.o[0m
+[15.612s] [ 86%] [32mBuilding C object CMakeFiles/arm_server__rosidl_generator_py.dir/rosidl_generator_py/arm_server/action/_update_planning_scene_s.c.o[0m
+[15.612s] [ 86%] [32mBuilding C object CMakeFiles/arm_server__rosidl_generator_py.dir/rosidl_generator_py/arm_server/action/_execute_s.c.o[0m
+[15.866s] [ 87%] [32m[1mLinking C shared library rosidl_generator_py/arm_server/libarm_server__rosidl_generator_py.so[0m
+[15.959s] [ 87%] Built target arm_server__rosidl_generator_py
+[16.011s] [ 89%] [32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/arm_server/_arm_server_s.ep.rosidl_typesupport_introspection_c.c.o[0m
+[16.011s] [ 91%] [32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/arm_server/_arm_server_s.ep.rosidl_typesupport_c.c.o[0m
+[16.011s] [ 93%] [32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/arm_server/_arm_server_s.ep.rosidl_typesupport_fastrtps_c.c.o[0m
+[16.307s] [ 94%] [32m[1mLinking C shared library rosidl_generator_py/arm_server/arm_server_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so[0m
+[16.309s] [ 96%] [32m[1mLinking C shared library rosidl_generator_py/arm_server/arm_server_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so[0m
+[16.311s] [ 98%] [32m[1mLinking C shared library rosidl_generator_py/arm_server/arm_server_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so[0m
+[16.396s] [ 98%] Built target arm_server__rosidl_typesupport_c__pyext
+[16.396s] [ 98%] Built target arm_server__rosidl_typesupport_fastrtps_c__pyext
+[16.400s] [ 98%] Built target arm_server__rosidl_typesupport_introspection_c__pyext
+[23.846s] gmake[2]: *** [CMakeFiles/arm_action_server.dir/build.make:76: CMakeFiles/arm_action_server.dir/src/arm_action_server.cpp.o] Interrupt
+[23.847s] gmake[1]: *** [CMakeFiles/Makefile2:612: CMakeFiles/arm_action_server.dir/all] Interrupt
+[23.847s] gmake: *** [Makefile:146: all] Interrupt
+[23.918s] Invoked command in '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server' returned '-2': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server -- -j16 -l16

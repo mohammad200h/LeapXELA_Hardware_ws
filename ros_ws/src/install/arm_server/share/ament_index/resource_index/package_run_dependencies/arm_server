@@ -1,0 +1,1 @@
+rclcpp;rclcpp_action;geometry_msgs;shape_msgs;moveit_msgs;tf2;tf2_geometry_msgs;moveit_ros_planning_interface;action_msgs;rosidl_default_runtime;rclpy;ament_index_python;launch;launch_ros;franka_moveit_config;franka_description;ament_lint_auto;ament_lint_common

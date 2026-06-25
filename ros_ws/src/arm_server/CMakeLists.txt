@@ -10,13 +10,18 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(rclcpp_action REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(shape_msgs REQUIRED)
+find_package(moveit_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_geometry_msgs REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/SceneObject.msg"
   "action/Plan.action"
   "action/Execute.action"
+  "action/UpdatePlanningScene.action"
+  DEPENDENCIES geometry_msgs
 )
 
 add_executable(arm_action_server src/arm_action_server.cpp)
@@ -24,6 +29,8 @@ ament_target_dependencies(arm_action_server
   rclcpp
   rclcpp_action
   geometry_msgs
+  shape_msgs
+  moveit_msgs
   tf2
   tf2_geometry_msgs
   moveit_ros_planning_interface
@@ -38,6 +45,17 @@ install(TARGETS arm_action_server
 
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
+)
+
+install(PROGRAMS
+  script/build_the_wall.py
+  DESTINATION lib/${PROJECT_NAME}
+  RENAME build_the_wall
+)
+
+install(FILES
+  script/ws_table.json
+  DESTINATION share/${PROJECT_NAME}/script
 )
 
 if(BUILD_TESTING)

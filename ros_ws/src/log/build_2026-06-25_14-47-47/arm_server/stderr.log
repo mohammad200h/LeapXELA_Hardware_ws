@@ -1,0 +1,3 @@
+gmake[2]: *** [CMakeFiles/arm_action_server.dir/build.make:76: CMakeFiles/arm_action_server.dir/src/arm_action_server.cpp.o] Interrupt
+gmake[1]: *** [CMakeFiles/Makefile2:612: CMakeFiles/arm_action_server.dir/all] Interrupt
+gmake: *** [Makefile:146: all] Interrupt

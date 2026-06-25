@@ -1,0 +1,27 @@
+// generated from rosidl_adapter/resource/action.idl.em
+// with input from arm_server/action/UpdatePlanningScene.action
+// generated code does not contain a copyright notice
+
+#include "arm_server/msg/SceneObject.idl"
+
+module arm_server {
+  module action {
+    @verbatim (language="comment", text=
+      "Add collision objects (walls, boxes, etc.) to the MoveIt planning scene.")
+    struct UpdatePlanningScene_Goal {
+      sequence<arm_server::msg::SceneObject> objects;
+
+      boolean clear_existing;
+    };
+    struct UpdatePlanningScene_Result {
+      boolean success;
+
+      string message;
+
+      uint32 objects_added;
+    };
+    struct UpdatePlanningScene_Feedback {
+      double progress;
+    };
+  };
+};

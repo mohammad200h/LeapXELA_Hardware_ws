@@ -1,0 +1,20 @@
+// generated from rosidl_adapter/resource/action.idl.em
+// with input from arm_server/action/Execute.action
+// generated code does not contain a copyright notice
+
+
+module arm_server {
+  module action {
+    struct Execute_Goal {
+      uint64 plan_id;
+    };
+    struct Execute_Result {
+      boolean success;
+
+      string message;
+    };
+    struct Execute_Feedback {
+      double progress;
+    };
+  };
+};

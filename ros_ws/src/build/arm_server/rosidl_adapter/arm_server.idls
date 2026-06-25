@@ -1,0 +1,4 @@
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server/rosidl_adapter/arm_server:msg/SceneObject.idl
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server/rosidl_adapter/arm_server:action/Plan.idl
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server/rosidl_adapter/arm_server:action/Execute.idl
+/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server/rosidl_adapter/arm_server:action/UpdatePlanningScene.idl

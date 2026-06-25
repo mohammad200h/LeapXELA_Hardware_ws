@@ -1,0 +1,9 @@
+# Add collision objects (walls, boxes, etc.) to the MoveIt planning scene.
+SceneObject[] objects
+bool clear_existing
+---
+bool success
+string message
+uint32 objects_added
+---
+float64 progress

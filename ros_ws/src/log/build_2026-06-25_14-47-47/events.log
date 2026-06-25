@@ -1,0 +1,444 @@
+[0.000000] (-) TimerEvent: {}
+[0.000865] (-) JobUnselected: {'identifier': 'dex_retargeting'}
+[0.000957] (-) JobUnselected: {'identifier': 'franka_bringup'}
+[0.000987] (-) JobUnselected: {'identifier': 'franka_control2'}
+[0.001013] (-) JobUnselected: {'identifier': 'franka_description'}
+[0.001036] (-) JobUnselected: {'identifier': 'franka_example_controllers'}
+[0.001061] (-) JobUnselected: {'identifier': 'franka_gripper'}
+[0.001085] (-) JobUnselected: {'identifier': 'franka_hardware'}
+[0.001108] (-) JobUnselected: {'identifier': 'franka_moveit_config'}
+[0.001131] (-) JobUnselected: {'identifier': 'franka_msgs'}
+[0.001155] (-) JobUnselected: {'identifier': 'franka_robot_state_broadcaster'}
+[0.001179] (-) JobUnselected: {'identifier': 'franka_semantic_components'}
+[0.001202] (-) JobUnselected: {'identifier': 'franka_simple_publishers'}
+[0.001225] (-) JobUnselected: {'identifier': 'garmi_bringup'}
+[0.001247] (-) JobUnselected: {'identifier': 'garmi_controllers'}
+[0.001270] (-) JobUnselected: {'identifier': 'garmi_description'}
+[0.001293] (-) JobUnselected: {'identifier': 'garmi_moveit_config'}
+[0.001339] (-) JobUnselected: {'identifier': 'leap_description'}
+[0.001395] (-) JobUnselected: {'identifier': 'leap_hand'}
+[0.001417] (-) JobUnselected: {'identifier': 'leap_to_leapXela'}
+[0.001441] (-) JobUnselected: {'identifier': 'mujoco_ros'}
+[0.001463] (-) JobUnselected: {'identifier': 'mujoco_ros2_control'}
+[0.001485] (-) JobUnselected: {'identifier': 'mujoco_ros2_control_system'}
+[0.001507] (-) JobUnselected: {'identifier': 'mujoco_ros2_dummy_plugin'}
+[0.001529] (-) JobUnselected: {'identifier': 'mujoco_ros2_sensors'}
+[0.001552] (-) JobUnselected: {'identifier': 'mujoco_ros_msgs'}
+[0.001573] (-) JobUnselected: {'identifier': 'mujoco_ros_pkgs'}
+[0.001608] (-) JobUnselected: {'identifier': 'multi_mode_control_msgs'}
+[0.001630] (-) JobUnselected: {'identifier': 'multi_mode_controller'}
+[0.001652] (-) JobUnselected: {'identifier': 'multi_mode_controller_impl'}
+[0.001674] (-) JobUnselected: {'identifier': 'nano17'}
+[0.001697] (-) JobUnselected: {'identifier': 'oculusTeleop'}
+[0.001719] (-) JobUnselected: {'identifier': 'panda_motion_generator_msgs'}
+[0.001741] (-) JobUnselected: {'identifier': 'panda_motion_generators'}
+[0.001763] (-) JobUnselected: {'identifier': 'xela_data_collection'}
+[0.001785] (-) JobUnselected: {'identifier': 'xela_description'}
+[0.001807] (-) JobUnselected: {'identifier': 'xela_models'}
+[0.001830] (-) JobUnselected: {'identifier': 'xela_point_cloud_representation'}
+[0.001852] (-) JobUnselected: {'identifier': 'xela_pybullet_viewer'}
+[0.001874] (-) JobUnselected: {'identifier': 'xela_server_ros2'}
+[0.001901] (arm_server) JobQueued: {'identifier': 'arm_server', 'dependencies': OrderedDict([('franka_description', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_description'), ('franka_msgs', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_msgs'), ('mujoco_ros_msgs', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/mujoco_ros_msgs'), ('franka_gripper', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_gripper'), ('mujoco_ros', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/mujoco_ros'), ('mujoco_ros2_control', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/mujoco_ros2_control'), ('franka_hardware', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_hardware'), ('franka_moveit_config', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/franka_moveit_config')])}
+[0.001954] (arm_server) JobStarted: {'identifier': 'arm_server'}
+[0.021910] (arm_server) JobProgress: {'identifier': 'arm_server', 'progress': 'cmake'}
+[0.022619] (arm_server) Command: {'cmd': ['/usr/bin/cmake', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/arm_server', '-DCMAKE_INSTALL_PREFIX=/workspace/LeapXELA_Hardware_ws/ros_ws/src/install/arm_server'], 'cwd': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '12.2.5.6-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-12-2=12.2.142-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-12-2'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '12.2.2-1'), ('HOSTNAME', 'Blade'), ('GIT_ASKPASS', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/tmp/1.4.341.1/x86_64/lib:/usr/local/lib'), ('BROWSER', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/helpers/browser.sh'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.19.3-1'), ('LOCAL_USER_ID', '1000'), ('HOME', '/root'), ('OLDPWD', '/workspace/LeapXELA_Hardware_ws/ros_ws'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('TERM_PROGRAM_VERSION', '3.4.20'), ('NV_LIBCUBLAS_DEV_VERSION', '12.2.5.6-1'), ('VSCODE_IPC_HOOK_CLI', '/tmp/vscode-ipc-adfdf354-1045-4b27-95c1-b47ec258eeec.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/node'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.19.3-1'), ('COLORTERM', 'truecolor'), ('NV_LIBNPP_PACKAGE', 'libnpp-12-2=12.2.1.4-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.9.6.50-1+cuda12.2'), ('CUDA_VERSION', '12.2.2'), ('COLCON_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install'), ('LOCAL_GID', '1000'), ('NV_NVPROF_VERSION', '12.2.142-1'), ('ROS_DISTRO', 'humble'), ('OVSX_REGISTRY_URL', 'https://open-vsx.org'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-12-2'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=12.2 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '12.1.2.141-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'all'), ('VULKAN_SDK', '/tmp/1.4.341.1/x86_64'), ('NV_CUDA_LIB_VERSION', '12.2.2-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '12.2.140-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-12-2=12.2.1.4-1'), ('TERM', 'xterm-256color'), ('NV_CUDA_CUDART_VERSION', '12.2.140-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.9.6.50-1+cuda12.2'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/opt/ros/humble/bin:/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/tmp/1.4.341.1/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-12-2'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-12-2=12.2.5.6-1'), ('NVARCH', 'x86_64'), ('MUJOCO_DIR', '/usr/local'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '12.1.2.141-1'), ('DISPLAY', ':1'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.19.3-1+cuda12.2'), ('MUJOCO_GL', 'egl'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '12.2.140-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/tmp/vscode-git-b9b2478d3b.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/tmp/cursor-remote-ssh-d65a5de7-8b6b-480a-b00c-7b0d9bfb361d.sock'), ('AMENT_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_models:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_pkgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_control2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-12-2=12.2.5.6-1'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-12-2=12.2.2-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.19.3-1+cuda12.2'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('VK_LAYER_PATH', '/tmp/1.4.341.1/x86_64/etc/vulkan/explicit_layer.d'), ('NV_NVTX_VERSION', '12.2.140-1'), ('NV_LIBNPP_VERSION', '12.2.1.4-1'), ('VSCODE_GIT_IPC_AUTH_TOKEN', '906750d738ddc4952b861b6f7f77e79067ff26a7d3cd997870c84318d6e0b7a1'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('NV_CUDNN_VERSION', '8.9.6.50'), ('PWD', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server'), ('CUDA_HOME', '/usr/local/cuda'), ('PYTHONPATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages::/usr/local/lib'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.19.3-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '12.2.1.4-1'), ('CMAKE_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_models:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_pkgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_control2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_description:/usr/local/lib/cmake::/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble')]), 'shell': False}
+[0.099334] (-) TimerEvent: {}
+[0.139437] (arm_server) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[0.199441] (-) TimerEvent: {}
+[0.246941] (arm_server) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[0.261151] (arm_server) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[0.299571] (-) TimerEvent: {}
+[0.399955] (-) TimerEvent: {}
+[0.410603] (arm_server) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[0.423351] (arm_server) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[0.423871] (arm_server) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[0.424794] (arm_server) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[0.430546] (arm_server) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.500209] (-) TimerEvent: {}
+[0.592617] (arm_server) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.600383] (-) TimerEvent: {}
+[0.605904] (arm_server) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[0.606356] (arm_server) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.607212] (arm_server) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.618475] (arm_server) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[0.700524] (-) TimerEvent: {}
+[0.800919] (-) TimerEvent: {}
+[0.901387] (-) TimerEvent: {}
+[1.001806] (-) TimerEvent: {}
+[1.057488] (arm_server) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[1.101970] (-) TimerEvent: {}
+[1.202434] (-) TimerEvent: {}
+[1.303128] (-) TimerEvent: {}
+[1.344740] (arm_server) StdoutLine: {'line': b'-- Found rosidl_default_generators: 1.2.1 (/opt/ros/humble/share/rosidl_default_generators/cmake)\n'}
+[1.379874] (arm_server) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[1.403400] (-) TimerEvent: {}
+[1.434531] (arm_server) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[1.503623] (-) TimerEvent: {}
+[1.604134] (-) TimerEvent: {}
+[1.610886] (arm_server) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[1.704406] (-) TimerEvent: {}
+[1.728922] (arm_server) StdoutLine: {'line': b'-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[1.804547] (-) TimerEvent: {}
+[1.885799] (arm_server) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[1.898411] (arm_server) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[1.904691] (-) TimerEvent: {}
+[2.005122] (-) TimerEvent: {}
+[2.105646] (-) TimerEvent: {}
+[2.130910] (arm_server) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  \n'}
+[2.197751] (arm_server) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/humble/include  \n'}
+[2.205777] (-) TimerEvent: {}
+[2.306214] (-) TimerEvent: {}
+[2.308349] (arm_server) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[2.346568] (arm_server) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[2.406485] (-) TimerEvent: {}
+[2.495878] (arm_server) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[2.496186] (arm_server) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[2.506575] (-) TimerEvent: {}
+[2.607058] (-) TimerEvent: {}
+[2.647876] (arm_server) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[2.649903] (arm_server) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[2.707304] (-) TimerEvent: {}
+[2.770405] (arm_server) StdoutLine: {'line': b'-- Found rclcpp_action: 16.0.19 (/opt/ros/humble/share/rclcpp_action/cmake)\n'}
+[2.807504] (-) TimerEvent: {}
+[2.856237] (arm_server) StdoutLine: {'line': b'-- Found geometry_msgs: 4.9.1 (/opt/ros/humble/share/geometry_msgs/cmake)\n'}
+[2.886087] (arm_server) StdoutLine: {'line': b'-- Found shape_msgs: 4.9.1 (/opt/ros/humble/share/shape_msgs/cmake)\n'}
+[2.907769] (-) TimerEvent: {}
+[2.917660] (arm_server) StdoutLine: {'line': b'-- Found moveit_msgs: 2.2.1 (/opt/ros/humble/share/moveit_msgs/cmake)\n'}
+[3.007995] (-) TimerEvent: {}
+[3.108611] (-) TimerEvent: {}
+[3.114447] (arm_server) StdoutLine: {'line': b'-- Found tf2: 0.25.20 (/opt/ros/humble/share/tf2/cmake)\n'}
+[3.148823] (arm_server) StdoutLine: {'line': b'-- Found tf2_geometry_msgs: 0.25.20 (/opt/ros/humble/share/tf2_geometry_msgs/cmake)\n'}
+[3.192689] (arm_server) StdoutLine: {'line': b'-- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)\n'}
+[3.194817] (arm_server) StdoutLine: {'line': b'-- Found Eigen3: TRUE (found version "3.3.9") \n'}
+[3.195046] (arm_server) StdoutLine: {'line': b'-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target\n'}
+[3.208754] (-) TimerEvent: {}
+[3.309231] (-) TimerEvent: {}
+[3.337364] (arm_server) StdoutLine: {'line': b'-- Found moveit_ros_planning_interface: 2.5.9 (/opt/ros/humble/share/moveit_ros_planning_interface/cmake)\n'}
+[3.409463] (-) TimerEvent: {}
+[3.425953] (arm_server) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread \n'}
+[3.493569] (arm_server) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread \n'}
+[3.509590] (-) TimerEvent: {}
+[3.602690] (arm_server) StdoutLine: {'line': b'-- Found parameter_traits: 0.7.1 (/opt/ros/humble/share/parameter_traits/cmake)\n'}
+[3.609858] (-) TimerEvent: {}
+[3.659943] (arm_server) StdoutLine: {'line': b'-- Found rclcpp_lifecycle: 16.0.19 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)\n'}
+[3.710022] (-) TimerEvent: {}
+[3.716750] (arm_server) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem \n'}
+[3.810298] (-) TimerEvent: {}
+[3.910912] (-) TimerEvent: {}
+[3.937950] (arm_server) StdoutLine: {'line': b'-- library: /usr/lib/x86_64-linux-gnu/libcurl.so\n'}
+[4.011128] (-) TimerEvent: {}
+[4.111692] (-) TimerEvent: {}
+[4.187882] (arm_server) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono \n'}
+[4.211937] (-) TimerEvent: {}
+[4.251628] (arm_server) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options \n'}
+[4.301587] (arm_server) StdoutLine: {'line': b'-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread \n'}
+[4.312161] (-) TimerEvent: {}
+[4.412679] (-) TimerEvent: {}
+[4.513189] (-) TimerEvent: {}
+[4.613768] (-) TimerEvent: {}
+[4.714241] (-) TimerEvent: {}
+[4.814828] (-) TimerEvent: {}
+[4.915274] (-) TimerEvent: {}
+[5.015785] (-) TimerEvent: {}
+[5.086714] (arm_server) StdoutLine: {'line': b'-- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)\n'}
+[5.115981] (-) TimerEvent: {}
+[5.216409] (-) TimerEvent: {}
+[5.316761] (-) TimerEvent: {}
+[5.417411] (-) TimerEvent: {}
+[5.517916] (-) TimerEvent: {}
+[5.618464] (-) TimerEvent: {}
+[5.711449] (arm_server) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[5.718597] (-) TimerEvent: {}
+[5.819053] (-) TimerEvent: {}
+[5.919503] (-) TimerEvent: {}
+[6.019906] (-) TimerEvent: {}
+[6.120281] (-) TimerEvent: {}
+[6.220805] (-) TimerEvent: {}
+[6.321298] (-) TimerEvent: {}
+[6.421850] (-) TimerEvent: {}
+[6.491855] (arm_server) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[6.521987] (-) TimerEvent: {}
+[6.563119] (arm_server) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") \n'}
+[6.573216] (arm_server) StdoutLine: {'line': b'-- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)\n'}
+[6.622169] (-) TimerEvent: {}
+[6.645973] (arm_server) StdoutLine: {'line': b'-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") \n'}
+[6.646224] (arm_server) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[6.646330] (arm_server) StdoutLine: {'line': b'-- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10\n'}
+[6.646418] (arm_server) StdoutLine: {'line': b'-- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so\n'}
+[6.711252] (arm_server) StdoutLine: {'line': b'-- Found PythonExtra: .so  \n'}
+[6.722367] (-) TimerEvent: {}
+[6.822748] (-) TimerEvent: {}
+[6.923196] (-) TimerEvent: {}
+[7.023699] (-) TimerEvent: {}
+[7.117937] (arm_server) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.12.15 (/opt/ros/humble/share/ament_lint_auto/cmake)\n'}
+[7.123835] (-) TimerEvent: {}
+[7.201148] (arm_server) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[7.202302] (arm_server) StdoutLine: {'line': b'-- Configured cppcheck include dirs: \n'}
+[7.202434] (arm_server) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[7.204348] (arm_server) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[7.206536] (arm_server) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[7.208639] (arm_server) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257\n"}
+[7.211446] (arm_server) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[7.211672] (arm_server) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[7.213481] (arm_server) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[7.219071] (arm_server) StdoutLine: {'line': b'-- Configuring done\n'}
+[7.224015] (-) TimerEvent: {}
+[7.324387] (-) TimerEvent: {}
+[7.331495] (arm_server) StdoutLine: {'line': b'-- Generating done\n'}
+[7.367097] (arm_server) StdoutLine: {'line': b'-- Build files have been written to: /workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server\n'}
+[7.393571] (arm_server) CommandEnded: {'returncode': 0}
+[7.397429] (arm_server) JobProgress: {'identifier': 'arm_server', 'progress': 'build'}
+[7.397864] (arm_server) Command: {'cmd': ['/usr/bin/cmake', '--build', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server', '--', '-j16', '-l16'], 'cwd': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '12.2.5.6-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-12-2=12.2.142-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-12-2'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '12.2.2-1'), ('HOSTNAME', 'Blade'), ('GIT_ASKPASS', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/lib:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs/lib:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/tmp/1.4.341.1/x86_64/lib:/usr/local/lib'), ('BROWSER', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/helpers/browser.sh'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.19.3-1'), ('LOCAL_USER_ID', '1000'), ('HOME', '/root'), ('OLDPWD', '/workspace/LeapXELA_Hardware_ws/ros_ws'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('TERM_PROGRAM_VERSION', '3.4.20'), ('NV_LIBCUBLAS_DEV_VERSION', '12.2.5.6-1'), ('VSCODE_IPC_HOOK_CLI', '/tmp/vscode-ipc-adfdf354-1045-4b27-95c1-b47ec258eeec.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/node'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.19.3-1'), ('COLORTERM', 'truecolor'), ('NV_LIBNPP_PACKAGE', 'libnpp-12-2=12.2.1.4-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.9.6.50-1+cuda12.2'), ('CUDA_VERSION', '12.2.2'), ('COLCON_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install'), ('LOCAL_GID', '1000'), ('NV_NVPROF_VERSION', '12.2.142-1'), ('ROS_DISTRO', 'humble'), ('OVSX_REGISTRY_URL', 'https://open-vsx.org'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-12-2'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=12.2 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '12.1.2.141-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'all'), ('VULKAN_SDK', '/tmp/1.4.341.1/x86_64'), ('NV_CUDA_LIB_VERSION', '12.2.2-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '12.2.140-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-12-2=12.2.1.4-1'), ('TERM', 'xterm-256color'), ('NV_CUDA_CUDART_VERSION', '12.2.140-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.9.6.50-1+cuda12.2'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/opt/ros/humble/bin:/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/tmp/1.4.341.1/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-12-2'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-12-2=12.2.5.6-1'), ('NVARCH', 'x86_64'), ('MUJOCO_DIR', '/usr/local'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '12.1.2.141-1'), ('DISPLAY', ':1'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.19.3-1+cuda12.2'), ('MUJOCO_GL', 'egl'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '12.2.140-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/tmp/vscode-git-b9b2478d3b.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/tmp/cursor-remote-ssh-d65a5de7-8b6b-480a-b00c-7b0d9bfb361d.sock'), ('AMENT_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_models:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_pkgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_control2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-12-2=12.2.5.6-1'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-12-2=12.2.2-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.19.3-1+cuda12.2'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('VK_LAYER_PATH', '/tmp/1.4.341.1/x86_64/etc/vulkan/explicit_layer.d'), ('NV_NVTX_VERSION', '12.2.140-1'), ('NV_LIBNPP_VERSION', '12.2.1.4-1'), ('VSCODE_GIT_IPC_AUTH_TOKEN', '906750d738ddc4952b861b6f7f77e79067ff26a7d3cd997870c84318d6e0b7a1'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('NV_CUDNN_VERSION', '8.9.6.50'), ('PWD', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server'), ('CUDA_HOME', '/usr/local/cuda'), ('PYTHONPATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers/lib/python3.10/site-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs/local/lib/python3.10/dist-packages:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages::/usr/local/lib'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.19.3-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '12.2.1.4-1'), ('CMAKE_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_server_ros2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_point_cloud_representation:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_models:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generators:/workspace/LeapXELA_Hardware_ws/ros_ws/install/panda_motion_generator_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller_impl:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_controller:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_example_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/multi_mode_control_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_pkgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_sensors:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_dummy_plugin:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control_system:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_robot_state_broadcaster:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_semantic_components:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_bringup:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_hardware:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros2_control:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros:/workspace/LeapXELA_Hardware_ws/ros_ws/install/mujoco_ros_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_hand:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_moveit_config:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/garmi_controllers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_control2:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_msgs:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_description:/usr/local/lib/cmake::/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_data_collection:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_pybullet_viewer:/workspace/LeapXELA_Hardware_ws/ros_ws/install/oculusTeleop:/workspace/LeapXELA_Hardware_ws/ros_ws/install/xela_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/nano17:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_to_leapXela:/workspace/LeapXELA_Hardware_ws/ros_ws/install/leap_description:/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_simple_publishers:/workspace/LeapXELA_Hardware_ws/ros_ws/install/dex_retargeting:/opt/ros/humble')]), 'shell': False}
+[7.424667] (-) TimerEvent: {}
+[7.498943] (arm_server) StdoutLine: {'line': b'[  1%] \x1b[34m\x1b[1mGenerating C code for ROS interfaces\x1b[0m\n'}
+[7.520344] (arm_server) StdoutLine: {'line': b'[  3%] \x1b[34m\x1b[1mGenerating Rust code for ROS interfaces\x1b[0m\n'}
+[7.523172] (arm_server) StdoutLine: {'line': b'[  5%] \x1b[34m\x1b[1mGenerating C++ code for ROS interfaces\x1b[0m\n'}
+[7.524768] (-) TimerEvent: {}
+[7.538130] (arm_server) StdoutLine: {'line': b'[  5%] Built target ament_cmake_python_copy_arm_server\n'}
+[7.624931] (-) TimerEvent: {}
+[7.725292] (-) TimerEvent: {}
+[7.825777] (-) TimerEvent: {}
+[7.926221] (-) TimerEvent: {}
+[8.013397] (arm_server) StdoutLine: {'line': b'running egg_info\n'}
+[8.014223] (arm_server) StdoutLine: {'line': b'creating arm_server.egg-info\n'}
+[8.014593] (arm_server) StdoutLine: {'line': b'writing arm_server.egg-info/PKG-INFO\n'}
+[8.014825] (arm_server) StdoutLine: {'line': b'writing dependency_links to arm_server.egg-info/dependency_links.txt\n'}
+[8.014990] (arm_server) StdoutLine: {'line': b'writing top-level names to arm_server.egg-info/top_level.txt\n'}
+[8.015220] (arm_server) StdoutLine: {'line': b"writing manifest file 'arm_server.egg-info/SOURCES.txt'\n"}
+[8.018811] (arm_server) StdoutLine: {'line': b"reading manifest file 'arm_server.egg-info/SOURCES.txt'\n"}
+[8.019515] (arm_server) StdoutLine: {'line': b"writing manifest file 'arm_server.egg-info/SOURCES.txt'\n"}
+[8.026390] (-) TimerEvent: {}
+[8.063201] (arm_server) StdoutLine: {'line': b'[  5%] Built target ament_cmake_python_build_arm_server_egg\n'}
+[8.121478] (arm_server) StdoutLine: {'line': b'[  5%] Built target arm_server__rs\n'}
+[8.126563] (-) TimerEvent: {}
+[8.226979] (-) TimerEvent: {}
+[8.327427] (-) TimerEvent: {}
+[8.427913] (-) TimerEvent: {}
+[8.528365] (-) TimerEvent: {}
+[8.628873] (-) TimerEvent: {}
+[8.729333] (-) TimerEvent: {}
+[8.829646] (-) TimerEvent: {}
+[8.929994] (-) TimerEvent: {}
+[9.030615] (-) TimerEvent: {}
+[9.054123] (arm_server) StdoutLine: {'line': b'[  6%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_generator_c.dir/rosidl_generator_c/arm_server/action/detail/execute__functions.c.o\x1b[0m\n'}
+[9.054542] (arm_server) StdoutLine: {'line': b'[  8%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_generator_c.dir/rosidl_generator_c/arm_server/action/detail/update_planning_scene__functions.c.o\x1b[0m\n'}
+[9.056150] (arm_server) StdoutLine: {'line': b'[ 10%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_generator_c.dir/rosidl_generator_c/arm_server/msg/detail/scene_object__functions.c.o\x1b[0m\n'}
+[9.058093] (arm_server) StdoutLine: {'line': b'[ 12%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_generator_c.dir/rosidl_generator_c/arm_server/action/detail/plan__functions.c.o\x1b[0m\n'}
+[9.073652] (arm_server) StdoutLine: {'line': b'[ 12%] Built target arm_server__cpp\n'}
+[9.098656] (arm_server) StdoutLine: {'line': b'[ 13%] \x1b[34m\x1b[1mGenerating C++ introspection for ROS interfaces\x1b[0m\n'}
+[9.099021] (arm_server) StdoutLine: {'line': b'[ 15%] \x1b[34m\x1b[1mGenerating C++ type support dispatch for ROS interfaces\x1b[0m\n'}
+[9.105160] (arm_server) StdoutLine: {'line': b'[ 17%] \x1b[34m\x1b[1mGenerating C++ type support for eProsima Fast-RTPS\x1b[0m\n'}
+[9.130741] (-) TimerEvent: {}
+[9.231242] (-) TimerEvent: {}
+[9.272947] (arm_server) StdoutLine: {'line': b'[ 18%] \x1b[32m\x1b[1mLinking C shared library libarm_server__rosidl_generator_c.so\x1b[0m\n'}
+[9.331459] (-) TimerEvent: {}
+[9.347559] (arm_server) StdoutLine: {'line': b'[ 18%] Built target arm_server__rosidl_generator_c\n'}
+[9.370958] (arm_server) StdoutLine: {'line': b'[ 24%] \x1b[34m\x1b[1mGenerating C type support for eProsima Fast-RTPS\x1b[0m\n'}
+[9.371267] (arm_server) StdoutLine: {'line': b'[ 24%] \x1b[34m\x1b[1mGenerating C type support dispatch for ROS interfaces\x1b[0m\n'}
+[9.371385] (arm_server) StdoutLine: {'line': b'[ 24%] \x1b[34m\x1b[1mGenerating C introspection for ROS interfaces\x1b[0m\n'}
+[9.431582] (-) TimerEvent: {}
+[9.532053] (-) TimerEvent: {}
+[9.632538] (-) TimerEvent: {}
+[9.732925] (-) TimerEvent: {}
+[9.833410] (-) TimerEvent: {}
+[9.891271] (arm_server) StdoutLine: {'line': b'[ 25%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/arm_server/msg/scene_object__type_support.cpp.o\x1b[0m\n'}
+[9.891766] (arm_server) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/arm_server/action/plan__type_support.cpp.o\x1b[0m\n'}
+[9.892354] (arm_server) StdoutLine: {'line': b'[ 29%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/arm_server/action/update_planning_scene__type_support.cpp.o\x1b[0m\n'}
+[9.892584] (arm_server) StdoutLine: {'line': b'[ 31%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/arm_server/action/execute__type_support.cpp.o\x1b[0m\n'}
+[9.933541] (-) TimerEvent: {}
+[10.033967] (-) TimerEvent: {}
+[10.134432] (-) TimerEvent: {}
+[10.167494] (arm_server) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_c.dir/rosidl_typesupport_c/arm_server/action/update_planning_scene__type_support.cpp.o\x1b[0m\n'}
+[10.167864] (arm_server) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_c.dir/rosidl_typesupport_c/arm_server/msg/scene_object__type_support.cpp.o\x1b[0m\n'}
+[10.168227] (arm_server) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_c.dir/rosidl_typesupport_c/arm_server/action/execute__type_support.cpp.o\x1b[0m\n'}
+[10.168476] (arm_server) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_c.dir/rosidl_typesupport_c/arm_server/action/plan__type_support.cpp.o\x1b[0m\n'}
+[10.234565] (-) TimerEvent: {}
+[10.315690] (arm_server) StdoutLine: {'line': b'[ 39%] \x1b[32m\x1b[1mLinking CXX shared library libarm_server__rosidl_typesupport_c.so\x1b[0m\n'}
+[10.334749] (-) TimerEvent: {}
+[10.408696] (arm_server) StdoutLine: {'line': b'[ 39%] Built target arm_server__rosidl_typesupport_c\n'}
+[10.434895] (-) TimerEvent: {}
+[10.490727] (arm_server) StdoutLine: {'line': b'[ 41%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/arm_server/action/detail/dds_fastrtps/plan__type_support.cpp.o\x1b[0m\n'}
+[10.491152] (arm_server) StdoutLine: {'line': b'[ 43%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/arm_server/action/detail/dds_fastrtps/execute__type_support.cpp.o\x1b[0m\n'}
+[10.491969] (arm_server) StdoutLine: {'line': b'[ 44%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/arm_server/action/detail/dds_fastrtps/update_planning_scene__type_support.cpp.o\x1b[0m\n'}
+[10.499746] (arm_server) StdoutLine: {'line': b'[ 46%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/arm_server/msg/detail/dds_fastrtps/scene_object__type_support.cpp.o\x1b[0m\n'}
+[10.535016] (-) TimerEvent: {}
+[10.635415] (-) TimerEvent: {}
+[10.714802] (arm_server) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/arm_server/action/detail/execute__type_support.cpp.o\x1b[0m\n'}
+[10.715120] (arm_server) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/arm_server/action/detail/update_planning_scene__type_support.cpp.o\x1b[0m\n'}
+[10.715861] (arm_server) StdoutLine: {'line': b'[ 51%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/arm_server/action/detail/plan__type_support.cpp.o\x1b[0m\n'}
+[10.721346] (arm_server) StdoutLine: {'line': b'[ 53%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/arm_server/msg/detail/scene_object__type_support.cpp.o\x1b[0m\n'}
+[10.735746] (-) TimerEvent: {}
+[10.761507] (arm_server) StdoutLine: {'line': b'[ 55%] \x1b[32m\x1b[1mLinking CXX shared library libarm_server__rosidl_typesupport_cpp.so\x1b[0m\n'}
+[10.819545] (arm_server) StdoutLine: {'line': b'[ 56%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/arm_server/action/detail/execute__type_support_c.cpp.o\x1b[0m\n'}
+[10.824455] (arm_server) StdoutLine: {'line': b'[ 58%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/arm_server/msg/detail/scene_object__type_support_c.cpp.o\x1b[0m\n'}
+[10.825356] (arm_server) StdoutLine: {'line': b'[ 60%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/arm_server/action/detail/plan__type_support_c.cpp.o\x1b[0m\n'}
+[10.827410] (arm_server) StdoutLine: {'line': b'[ 62%] \x1b[32mBuilding CXX object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/arm_server/action/detail/update_planning_scene__type_support_c.cpp.o\x1b[0m\n'}
+[10.835902] (-) TimerEvent: {}
+[10.903985] (arm_server) StdoutLine: {'line': b'[ 62%] Built target arm_server__rosidl_typesupport_cpp\n'}
+[10.936044] (-) TimerEvent: {}
+[10.999776] (arm_server) StdoutLine: {'line': b'[ 63%] \x1b[32mBuilding CXX object CMakeFiles/arm_action_server.dir/src/arm_action_server.cpp.o\x1b[0m\n'}
+[11.036205] (-) TimerEvent: {}
+[11.136732] (-) TimerEvent: {}
+[11.237280] (-) TimerEvent: {}
+[11.338279] (-) TimerEvent: {}
+[11.440900] (-) TimerEvent: {}
+[11.541417] (arm_server) StdoutLine: {'line': b'[ 65%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/arm_server/msg/detail/scene_object__type_support.c.o\x1b[0m\n'}
+[11.541765] (-) TimerEvent: {}
+[11.542113] (arm_server) StdoutLine: {'line': b'[ 67%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/arm_server/action/detail/update_planning_scene__type_support.c.o\x1b[0m\n'}
+[11.543382] (arm_server) StdoutLine: {'line': b'[ 68%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/arm_server/action/detail/plan__type_support.c.o\x1b[0m\n'}
+[11.552132] (arm_server) StdoutLine: {'line': b'[ 70%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/arm_server/action/detail/execute__type_support.c.o\x1b[0m\n'}
+[11.643430] (-) TimerEvent: {}
+[11.743977] (-) TimerEvent: {}
+[11.745035] (arm_server) StdoutLine: {'line': b'[ 72%] \x1b[32m\x1b[1mLinking C shared library libarm_server__rosidl_typesupport_introspection_c.so\x1b[0m\n'}
+[11.827402] (arm_server) StdoutLine: {'line': b'[ 72%] Built target arm_server__rosidl_typesupport_introspection_c\n'}
+[11.844108] (-) TimerEvent: {}
+[11.892604] (arm_server) StdoutLine: {'line': b'[ 75%] \x1b[32m\x1b[1mLinking CXX shared library libarm_server__rosidl_typesupport_fastrtps_cpp.so\x1b[0m\n'}
+[11.892942] (arm_server) StdoutLine: {'line': b'[ 75%] \x1b[32m\x1b[1mLinking CXX shared library libarm_server__rosidl_typesupport_fastrtps_c.so\x1b[0m\n'}
+[11.944378] (-) TimerEvent: {}
+[12.041985] (arm_server) StdoutLine: {'line': b'[ 75%] Built target arm_server__rosidl_typesupport_fastrtps_c\n'}
+[12.043627] (arm_server) StdoutLine: {'line': b'[ 75%] Built target arm_server__rosidl_typesupport_fastrtps_cpp\n'}
+[12.044470] (-) TimerEvent: {}
+[12.144903] (-) TimerEvent: {}
+[12.220145] (arm_server) StdoutLine: {'line': b'[ 77%] \x1b[32m\x1b[1mLinking CXX shared library libarm_server__rosidl_typesupport_introspection_cpp.so\x1b[0m\n'}
+[12.245122] (-) TimerEvent: {}
+[12.345723] (-) TimerEvent: {}
+[12.365264] (arm_server) StdoutLine: {'line': b'[ 77%] Built target arm_server__rosidl_typesupport_introspection_cpp\n'}
+[12.414925] (arm_server) StdoutLine: {'line': b'[ 77%] Built target arm_server\n'}
+[12.445924] (-) TimerEvent: {}
+[12.463748] (arm_server) StdoutLine: {'line': b'[ 79%] \x1b[34m\x1b[1mGenerating Python code for ROS interfaces\x1b[0m\n'}
+[12.546119] (-) TimerEvent: {}
+[12.646583] (-) TimerEvent: {}
+[12.747065] (-) TimerEvent: {}
+[12.847475] (-) TimerEvent: {}
+[12.947931] (-) TimerEvent: {}
+[13.048435] (-) TimerEvent: {}
+[13.148945] (-) TimerEvent: {}
+[13.249429] (-) TimerEvent: {}
+[13.349916] (-) TimerEvent: {}
+[13.450427] (-) TimerEvent: {}
+[13.550931] (-) TimerEvent: {}
+[13.651491] (-) TimerEvent: {}
+[13.751924] (-) TimerEvent: {}
+[13.852403] (-) TimerEvent: {}
+[13.952822] (-) TimerEvent: {}
+[14.053275] (-) TimerEvent: {}
+[14.153743] (-) TimerEvent: {}
+[14.254233] (-) TimerEvent: {}
+[14.354761] (-) TimerEvent: {}
+[14.455360] (-) TimerEvent: {}
+[14.555808] (-) TimerEvent: {}
+[14.656300] (-) TimerEvent: {}
+[14.756705] (-) TimerEvent: {}
+[14.857165] (-) TimerEvent: {}
+[14.957700] (-) TimerEvent: {}
+[15.058231] (-) TimerEvent: {}
+[15.158705] (-) TimerEvent: {}
+[15.259211] (-) TimerEvent: {}
+[15.359717] (-) TimerEvent: {}
+[15.460174] (-) TimerEvent: {}
+[15.560719] (-) TimerEvent: {}
+[15.565376] (arm_server) StdoutLine: {'line': b'[ 79%] Built target arm_server__py\n'}
+[15.613385] (arm_server) StdoutLine: {'line': b'[ 81%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_generator_py.dir/rosidl_generator_py/arm_server/msg/_scene_object_s.c.o\x1b[0m\n'}
+[15.613745] (arm_server) StdoutLine: {'line': b'[ 84%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_generator_py.dir/rosidl_generator_py/arm_server/action/_plan_s.c.o\x1b[0m\n'}
+[15.613929] (arm_server) StdoutLine: {'line': b'[ 86%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_generator_py.dir/rosidl_generator_py/arm_server/action/_update_planning_scene_s.c.o\x1b[0m\n'}
+[15.614024] (arm_server) StdoutLine: {'line': b'[ 86%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_generator_py.dir/rosidl_generator_py/arm_server/action/_execute_s.c.o\x1b[0m\n'}
+[15.660935] (-) TimerEvent: {}
+[15.761472] (-) TimerEvent: {}
+[15.861910] (-) TimerEvent: {}
+[15.867917] (arm_server) StdoutLine: {'line': b'[ 87%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/arm_server/libarm_server__rosidl_generator_py.so\x1b[0m\n'}
+[15.960678] (arm_server) StdoutLine: {'line': b'[ 87%] Built target arm_server__rosidl_generator_py\n'}
+[15.962089] (-) TimerEvent: {}
+[16.012647] (arm_server) StdoutLine: {'line': b'[ 89%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/arm_server/_arm_server_s.ep.rosidl_typesupport_introspection_c.c.o\x1b[0m\n'}
+[16.013010] (arm_server) StdoutLine: {'line': b'[ 91%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/arm_server/_arm_server_s.ep.rosidl_typesupport_c.c.o\x1b[0m\n'}
+[16.013202] (arm_server) StdoutLine: {'line': b'[ 93%] \x1b[32mBuilding C object CMakeFiles/arm_server__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/arm_server/_arm_server_s.ep.rosidl_typesupport_fastrtps_c.c.o\x1b[0m\n'}
+[16.062292] (-) TimerEvent: {}
+[16.162774] (-) TimerEvent: {}
+[16.263197] (-) TimerEvent: {}
+[16.309147] (arm_server) StdoutLine: {'line': b'[ 94%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/arm_server/arm_server_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\x1b[0m\n'}
+[16.310512] (arm_server) StdoutLine: {'line': b'[ 96%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/arm_server/arm_server_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\x1b[0m\n'}
+[16.313000] (arm_server) StdoutLine: {'line': b'[ 98%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/arm_server/arm_server_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\x1b[0m\n'}
+[16.363369] (-) TimerEvent: {}
+[16.397492] (arm_server) StdoutLine: {'line': b'[ 98%] Built target arm_server__rosidl_typesupport_c__pyext\n'}
+[16.397761] (arm_server) StdoutLine: {'line': b'[ 98%] Built target arm_server__rosidl_typesupport_fastrtps_c__pyext\n'}
+[16.401369] (arm_server) StdoutLine: {'line': b'[ 98%] Built target arm_server__rosidl_typesupport_introspection_c__pyext\n'}
+[16.463504] (-) TimerEvent: {}
+[16.564036] (-) TimerEvent: {}
+[16.664555] (-) TimerEvent: {}
+[16.765053] (-) TimerEvent: {}
+[16.865493] (-) TimerEvent: {}
+[16.965951] (-) TimerEvent: {}
+[17.066504] (-) TimerEvent: {}
+[17.167026] (-) TimerEvent: {}
+[17.267547] (-) TimerEvent: {}
+[17.368028] (-) TimerEvent: {}
+[17.468657] (-) TimerEvent: {}
+[17.569248] (-) TimerEvent: {}
+[17.669932] (-) TimerEvent: {}
+[17.770569] (-) TimerEvent: {}
+[17.870997] (-) TimerEvent: {}
+[17.971427] (-) TimerEvent: {}
+[18.071884] (-) TimerEvent: {}
+[18.172480] (-) TimerEvent: {}
+[18.272985] (-) TimerEvent: {}
+[18.373503] (-) TimerEvent: {}
+[18.474078] (-) TimerEvent: {}
+[18.574602] (-) TimerEvent: {}
+[18.675087] (-) TimerEvent: {}
+[18.775626] (-) TimerEvent: {}
+[18.876140] (-) TimerEvent: {}
+[18.976762] (-) TimerEvent: {}
+[19.077236] (-) TimerEvent: {}
+[19.177677] (-) TimerEvent: {}
+[19.278152] (-) TimerEvent: {}
+[19.378724] (-) TimerEvent: {}
+[19.479241] (-) TimerEvent: {}
+[19.579756] (-) TimerEvent: {}
+[19.680256] (-) TimerEvent: {}
+[19.780895] (-) TimerEvent: {}
+[19.881459] (-) TimerEvent: {}
+[19.982071] (-) TimerEvent: {}
+[20.082607] (-) TimerEvent: {}
+[20.183170] (-) TimerEvent: {}
+[20.283714] (-) TimerEvent: {}
+[20.384227] (-) TimerEvent: {}
+[20.484688] (-) TimerEvent: {}
+[20.585178] (-) TimerEvent: {}
+[20.685676] (-) TimerEvent: {}
+[20.786246] (-) TimerEvent: {}
+[20.886728] (-) TimerEvent: {}
+[20.987224] (-) TimerEvent: {}
+[21.087707] (-) TimerEvent: {}
+[21.188278] (-) TimerEvent: {}
+[21.288774] (-) TimerEvent: {}
+[21.389343] (-) TimerEvent: {}
+[21.489870] (-) TimerEvent: {}
+[21.590351] (-) TimerEvent: {}
+[21.690831] (-) TimerEvent: {}
+[21.791460] (-) TimerEvent: {}
+[21.891968] (-) TimerEvent: {}
+[21.992545] (-) TimerEvent: {}
+[22.093029] (-) TimerEvent: {}
+[22.193538] (-) TimerEvent: {}
+[22.293982] (-) TimerEvent: {}
+[22.394549] (-) TimerEvent: {}
+[22.495125] (-) TimerEvent: {}
+[22.595774] (-) TimerEvent: {}
+[22.696232] (-) TimerEvent: {}
+[22.796779] (-) TimerEvent: {}
+[22.897248] (-) TimerEvent: {}
+[22.997767] (-) TimerEvent: {}
+[23.098373] (-) TimerEvent: {}
+[23.198909] (-) TimerEvent: {}
+[23.299438] (-) TimerEvent: {}
+[23.399872] (-) TimerEvent: {}
+[23.500438] (-) TimerEvent: {}
+[23.600927] (-) TimerEvent: {}
+[23.701393] (-) TimerEvent: {}
+[23.801883] (-) TimerEvent: {}
+[23.847915] (arm_server) StderrLine: {'line': b'gmake[2]: *** [CMakeFiles/arm_action_server.dir/build.make:76: CMakeFiles/arm_action_server.dir/src/arm_action_server.cpp.o] Interrupt\n'}
+[23.848393] (arm_server) StderrLine: {'line': b'gmake[1]: *** [CMakeFiles/Makefile2:612: CMakeFiles/arm_action_server.dir/all] Interrupt\n'}
+[23.848943] (arm_server) StderrLine: {'line': b'gmake: *** [Makefile:146: all] Interrupt\n'}
+[23.902106] (-) TimerEvent: {}
+[23.919640] (arm_server) CommandEnded: {'returncode': -2}
+[23.937192] (arm_server) JobEnded: {'identifier': 'arm_server', 'rc': 'SIGINT'}
+[23.947864] (-) EventReactorShutdown: {}

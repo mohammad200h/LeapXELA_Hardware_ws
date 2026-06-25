@@ -1,0 +1,267 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-3108ebce705e1a57a9f3.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						18,
+						19
+					]
+				},
+				{
+					"build" : "arm_server__py",
+					"jsonFile" : "directory-arm_server__py-647c039f38e3c13ba081.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server/arm_server__py",
+					"targetIndexes" : 
+					[
+						5
+					]
+				},
+				{
+					"build" : "arm_server__rs",
+					"jsonFile" : "directory-arm_server__rs-48f709ffd5393dd066b5.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server/arm_server__rs",
+					"targetIndexes" : 
+					[
+						17
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "arm_server",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_arm_server_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_arm_server_egg-b2a50806e4aa53ab1d26.json",
+					"name" : "ament_cmake_python_build_arm_server_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_arm_server::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_arm_server-da3ce95d98a768c9b528.json",
+					"name" : "ament_cmake_python_copy_arm_server",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_action_server::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_action_server-2f419c2e1f0a8222acb2.json",
+					"name" : "arm_action_server",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server-4dcc5e0a69478298dfd2.json",
+					"name" : "arm_server",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__cpp-04ee02443eec6a644afb.json",
+					"name" : "arm_server__cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "arm_server__py::@5546fdb532e98d109c6f",
+					"jsonFile" : "target-arm_server__py-4a48983767437e20bbbb.json",
+					"name" : "arm_server__py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_generator_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_generator_c-8c43243f839b4d9e1795.json",
+					"name" : "arm_server__rosidl_generator_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_generator_py::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_generator_py-160b368e56602f85fe94.json",
+					"name" : "arm_server__rosidl_generator_py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_c-e02539ed5c8b33d2722e.json",
+					"name" : "arm_server__rosidl_typesupport_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_c__pyext-a699eaba57a675ebdb97.json",
+					"name" : "arm_server__rosidl_typesupport_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_cpp-81c40cc45d01c166c8ae.json",
+					"name" : "arm_server__rosidl_typesupport_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_fastrtps_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_fastrtps_c-8868b8886ee26b8bc274.json",
+					"name" : "arm_server__rosidl_typesupport_fastrtps_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_fastrtps_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_fastrtps_c__pyext-e42a0ecfd62e66925eed.json",
+					"name" : "arm_server__rosidl_typesupport_fastrtps_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_fastrtps_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_fastrtps_cpp-442fd0b0ccb98f496b8a.json",
+					"name" : "arm_server__rosidl_typesupport_fastrtps_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_introspection_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_introspection_c-cb335b5326ded5121141.json",
+					"name" : "arm_server__rosidl_typesupport_introspection_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_introspection_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_introspection_c__pyext-8c401dfa92e28ddb76e6.json",
+					"name" : "arm_server__rosidl_typesupport_introspection_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server__rosidl_typesupport_introspection_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server__rosidl_typesupport_introspection_cpp-848470680ec03c3bd597.json",
+					"name" : "arm_server__rosidl_typesupport_introspection_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "arm_server__rs::@13a5bb95a52138689e92",
+					"jsonFile" : "target-arm_server__rs-187d6d2a90d0e8916fac.json",
+					"name" : "arm_server__rs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "arm_server_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-arm_server_uninstall-bd4510455853914b3d3f.json",
+					"name" : "arm_server_uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-cef07dad110374844dca.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/build/arm_server",
+		"source" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/arm_server"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}
