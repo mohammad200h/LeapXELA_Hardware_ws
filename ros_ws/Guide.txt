@@ -1,25 +1,13 @@
-##### Franka Build Guide ######
-
-cd /workspace/LeapXELA_Hardware_ws/ros_ws/src/libfranka
-git submodule update --init --recursive
-
-cd /workspace/LeapXELA_Hardware_ws/ros_ws
-# 1. Import Franka dependencies
-vcs import src < src/franka_ros2/dependency.repos --recursive --skip-existing
-# 2. Install system deps (optional but recommended)
-rosdep install --from-paths src --ignore-src --rosdistro humble -y
-# 3. Build libfranka first (tests off avoids needing libgmock-dev)
-source /opt/ros/humble/setup.bash
-colcon build --packages-select libfranka \
-  --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=OFF -DBUILD_EXAMPLES=OFF
-# 4. Source the workspace, then build everything
-source install/setup.bash
-colcon build
 
 ###### Franka Launch guide #####
 Real Franka (FCI over network)
-ros2 launch franka_fr3_moveit_config moveit.launch.py load_gripper:=false robot_ip:=192.168.3.1
+ros2 launch franka_moveit_config moveit.launch.py \
+  robot_ip:=192.168.2.13 \
+  load_gripper:=false
 
 No robot (fake hardware — good for testing)
-ros2 launch franka_fr3_moveit_config moveit.launch.py robot_ip:=dont-care use_fake_hardware:=true load_gripper:=false
+ros2 launch franka_moveit_config sim_moveit.launch.py load_gripper:=false
+
+
+
 

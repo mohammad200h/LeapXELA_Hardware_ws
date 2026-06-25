@@ -1,0 +1,6 @@
+uint64 plan_id
+---
+bool success
+string message
+---
+float64 progress
