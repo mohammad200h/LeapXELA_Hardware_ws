@@ -1,0 +1,212 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-06-24-11-46-23-337844-Blade-16479
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [rviz2-1]: process started with pid [16499]
+[INFO] [robot_state_publisher-2]: process started with pid [16501]
+[INFO] [move_group-3]: process started with pid [16503]
+[INFO] [ros2_control_node-4]: process started with pid [16505]
+[INFO] [joint_state_publisher-5]: process started with pid [16507]
+[INFO] [spawner-6]: process started with pid [16509]
+[INFO] [franka_gripper_node-7]: process started with pid [16511]
+[INFO] [ros2-8]: process started with pid [16513]
+[INFO] [ros2-9]: process started with pid [16515]
+[rviz2-1] QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
+[franka_gripper_node-7] [INFO] [1782301584.389197199] [franka_gripper]: Trying to establish a connection with the gripper
+[ros2_control_node-4] [WARN] [1782301584.399175384] [controller_manager]: [Deprecated] Passing the robot description parameter directly to the control_manager node is deprecated. Use '~/robot_description' topic from 'robot_state_publisher' instead.
+[ros2_control_node-4] text not specified in the prefix tag
+[ros2_control_node-4] text not specified in the arm_prefix tag
+[ros2_control_node-4] [INFO] [1782301584.400115766] [resource_manager]: Loading hardware 'FrankaHardwareInterface' 
+[ros2_control_node-4] [INFO] [1782301584.421146050] [resource_manager]: Initialize hardware 'FrankaHardwareInterface' 
+[ros2_control_node-4] [INFO] [1782301584.422033225] [FrankaHardwareInterface]: Parsed Franka ros2_control interface version: 1.1.0
+[ros2_control_node-4] [INFO] [1782301584.422063477] [FrankaHardwareInterface]: Connecting to robot at "192.168.3.1" ...
+[ros2_control_node-4] [WARN] [1782301584.422218334] [FrankaHardwareInterface]: 
+[ros2_control_node-4] 
+[ros2_control_node-4] *NOTICE*
+[ros2_control_node-4] You are not using a real-time kernel.
+[ros2_control_node-4] Using a real-time kernel is strongly recommended!
+[ros2_control_node-4] Information about how to set up a real-time kernel can be found here:
+[ros2_control_node-4] https://frankarobotics.github.io/docs/installation_linux.html#setting-up-the-real-time-kernel
+[ros2_control_node-4] 
+[move_group-3] [WARN] [1782301584.439494684] [move_group.move_group]: Falling back to using the the move_group node namespace (deprecated behavior).
+[robot_state_publisher-2] [INFO] [1782301584.444513649] [robot_state_publisher]: got segment base
+[robot_state_publisher-2] [INFO] [1782301584.444665097] [robot_state_publisher]: got segment fr3_link0
+[robot_state_publisher-2] [INFO] [1782301584.444679351] [robot_state_publisher]: got segment fr3_link0_accelerometer_bottom
+[robot_state_publisher-2] [INFO] [1782301584.444687755] [robot_state_publisher]: got segment fr3_link0_accelerometer_top
+[robot_state_publisher-2] [INFO] [1782301584.444694670] [robot_state_publisher]: got segment fr3_link1
+[robot_state_publisher-2] [INFO] [1782301584.444701840] [robot_state_publisher]: got segment fr3_link1_accelerometer_bottom
+[robot_state_publisher-2] [INFO] [1782301584.444708723] [robot_state_publisher]: got segment fr3_link1_accelerometer_top
+[robot_state_publisher-2] [INFO] [1782301584.444715910] [robot_state_publisher]: got segment fr3_link2
+[robot_state_publisher-2] [INFO] [1782301584.444722978] [robot_state_publisher]: got segment fr3_link2_accelerometer_bottom
+[robot_state_publisher-2] [INFO] [1782301584.444730089] [robot_state_publisher]: got segment fr3_link2_accelerometer_top
+[robot_state_publisher-2] [INFO] [1782301584.444736926] [robot_state_publisher]: got segment fr3_link3
+[robot_state_publisher-2] [INFO] [1782301584.444743905] [robot_state_publisher]: got segment fr3_link3_accelerometer_bottom
+[robot_state_publisher-2] [INFO] [1782301584.444750742] [robot_state_publisher]: got segment fr3_link3_accelerometer_top
+[robot_state_publisher-2] [INFO] [1782301584.444757452] [robot_state_publisher]: got segment fr3_link4
+[robot_state_publisher-2] [INFO] [1782301584.444764130] [robot_state_publisher]: got segment fr3_link4_accelerometer_bottom
+[robot_state_publisher-2] [INFO] [1782301584.444770840] [robot_state_publisher]: got segment fr3_link4_accelerometer_top
+[robot_state_publisher-2] [INFO] [1782301584.444777716] [robot_state_publisher]: got segment fr3_link5
+[robot_state_publisher-2] [INFO] [1782301584.444784364] [robot_state_publisher]: got segment fr3_link5_accelerometer_bottom
+[robot_state_publisher-2] [INFO] [1782301584.444791101] [robot_state_publisher]: got segment fr3_link5_accelerometer_top
+[robot_state_publisher-2] [INFO] [1782301584.444797835] [robot_state_publisher]: got segment fr3_link6
+[robot_state_publisher-2] [INFO] [1782301584.444804512] [robot_state_publisher]: got segment fr3_link7
+[robot_state_publisher-2] [INFO] [1782301584.444811276] [robot_state_publisher]: got segment fr3_link8
+[move_group-3] [INFO] [1782301584.525047435] [moveit_rdf_loader.rdf_loader]: Loaded robot model in 0.0852761 seconds
+[move_group-3] [INFO] [1782301584.525106341] [moveit_robot_model.robot_model]: Loading robot model 'fr3'...
+[move_group-3] [INFO] [1782301584.603266554] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Publishing maintained planning scene on 'monitored_planning_scene'
+[move_group-3] [INFO] [1782301584.603531738] [moveit.ros_planning_interface.moveit_cpp]: Listening to 'joint_states' for joint states
+[move_group-3] [INFO] [1782301584.605344264] [moveit_ros.current_state_monitor]: Listening to joint states on topic 'joint_states'
+[move_group-3] [INFO] [1782301584.607647305] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Listening to '/attached_collision_object' for attached collision objects
+[move_group-3] [INFO] [1782301584.607678953] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Starting planning scene monitor
+[move_group-3] [INFO] [1782301584.609187477] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Listening to '/planning_scene'
+[move_group-3] [INFO] [1782301584.609215608] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Starting world geometry update monitor for collision objects, attached objects, octomap updates.
+[move_group-3] [INFO] [1782301584.610545369] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Listening to 'collision_object'
+[move_group-3] [INFO] [1782301584.611736573] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Listening to 'planning_scene_world' for planning scene world geometry
+[move_group-3] [WARN] [1782301584.612460563] [moveit.ros.occupancy_map_monitor.middleware_handle]: Resolution not specified for Octomap. Assuming resolution = 0.1 instead
+[move_group-3] [ERROR] [1782301584.612480391] [moveit.ros.occupancy_map_monitor.middleware_handle]: No 3D sensor plugin(s) defined for octomap updates
+[move_group-3] [INFO] [1782301584.617266559] [moveit.ros_planning_interface.moveit_cpp]: Loading planning pipeline 'move_group'
+[move_group-3] [INFO] [1782301584.639584229] [moveit.ros_planning.planning_pipeline]: Using planning interface 'OMPL'
+[move_group-3] [INFO] [1782301584.645268225] [moveit_ros.add_time_optimal_parameterization]: Param 'move_group.path_tolerance' was not set. Using default value: 0.100000
+[move_group-3] [INFO] [1782301584.645309653] [moveit_ros.add_time_optimal_parameterization]: Param 'move_group.resample_dt' was not set. Using default value: 0.100000
+[move_group-3] [INFO] [1782301584.645320817] [moveit_ros.add_time_optimal_parameterization]: Param 'move_group.min_angle_change' was not set. Using default value: 0.001000
+[move_group-3] [INFO] [1782301584.645379445] [moveit_ros.fix_workspace_bounds]: Param 'move_group.default_workspace_bounds' was not set. Using default value: 10.000000
+[move_group-3] [INFO] [1782301584.645413085] [moveit_ros.fix_start_state_bounds]: Param 'move_group.start_state_max_bounds_error' was set to 0.100000
+[move_group-3] [INFO] [1782301584.645423418] [moveit_ros.fix_start_state_bounds]: Param 'move_group.start_state_max_dt' was not set. Using default value: 0.500000
+[move_group-3] [INFO] [1782301584.645450787] [moveit_ros.fix_start_state_collision]: Param 'move_group.start_state_max_dt' was not set. Using default value: 0.500000
+[move_group-3] [INFO] [1782301584.645461138] [moveit_ros.fix_start_state_collision]: Param 'move_group.jiggle_fraction' was not set. Using default value: 0.020000
+[move_group-3] [INFO] [1782301584.645471900] [moveit_ros.fix_start_state_collision]: Param 'move_group.max_sampling_attempts' was not set. Using default value: 100
+[move_group-3] [INFO] [1782301584.645498460] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Add Time Optimal Parameterization'
+[move_group-3] [INFO] [1782301584.645507419] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Resolve constraint frames to robot links'
+[move_group-3] [INFO] [1782301584.645515538] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Fix Workspace Bounds'
+[move_group-3] [INFO] [1782301584.645524061] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Fix Start State Bounds'
+[move_group-3] [INFO] [1782301584.645531865] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Fix Start State In Collision'
+[move_group-3] [INFO] [1782301584.645539663] [moveit.ros_planning.planning_pipeline]: Using planning request adapter 'Fix Start State Path Constraints'
+[move_group-3] [INFO] [1782301584.711120607] [moveit.plugins.moveit_simple_controller_manager]: Added FollowJointTrajectory controller for fr3_arm_controller
+[move_group-3] [INFO] [1782301584.711178283] [moveit.plugins.moveit_simple_controller_manager]: Max effort set to 0.0
+[move_group-3] [INFO] [1782301584.713964081] [moveit.plugins.moveit_simple_controller_manager]: Added GripperCommand controller for fr3_gripper
+[move_group-3] [INFO] [1782301584.714165674] [moveit.plugins.moveit_simple_controller_manager]: Returned 2 controllers in list
+[move_group-3] [INFO] [1782301584.714206718] [moveit.plugins.moveit_simple_controller_manager]: Returned 2 controllers in list
+[move_group-3] [INFO] [1782301584.715150919] [moveit_ros.trajectory_execution_manager]: Trajectory execution is managing controllers
+[move_group-3] [INFO] [1782301584.715177283] [move_group.move_group]: MoveGroup debug mode is ON
+[move_group-3] [INFO] [1782301584.742272461] [move_group.move_group]: 
+[move_group-3] 
+[move_group-3] ********************************************************
+[move_group-3] * MoveGroup using: 
+[move_group-3] *     - ApplyPlanningSceneService
+[move_group-3] *     - ClearOctomapService
+[move_group-3] *     - CartesianPathService
+[move_group-3] *     - ExecuteTrajectoryAction
+[move_group-3] *     - GetPlanningSceneService
+[move_group-3] *     - KinematicsService
+[move_group-3] *     - MoveAction
+[move_group-3] *     - MotionPlanService
+[move_group-3] *     - QueryPlannersService
+[move_group-3] *     - StateValidationService
+[move_group-3] ********************************************************
+[move_group-3] 
+[move_group-3] [INFO] [1782301584.742342214] [moveit_move_group_capabilities_base.move_group_context]: MoveGroup context using planning plugin ompl_interface/OMPLPlanner
+[move_group-3] [INFO] [1782301584.742360071] [moveit_move_group_capabilities_base.move_group_context]: MoveGroup context initialization complete
+[move_group-3] [96mLoading 'move_group/ApplyPlanningSceneService'...
+[move_group-3] [0m[96mLoading 'move_group/ClearOctomapService'...
+[move_group-3] [0m[96mLoading 'move_group/MoveGroupCartesianPathService'...
+[move_group-3] [0m[96mLoading 'move_group/MoveGroupExecuteTrajectoryAction'...
+[move_group-3] [0m[96mLoading 'move_group/MoveGroupGetPlanningSceneService'...
+[move_group-3] [0m[96mLoading 'move_group/MoveGroupKinematicsService'...
+[move_group-3] [0m[96mLoading 'move_group/MoveGroupMoveAction'...
+[move_group-3] [0m[96mLoading 'move_group/MoveGroupPlanService'...
+[move_group-3] [0m[96mLoading 'move_group/MoveGroupQueryPlannersService'...
+[move_group-3] [0m[96mLoading 'move_group/MoveGroupStateValidationService'...
+[move_group-3] [0m[92m
+[move_group-3] You can start planning now!
+[move_group-3] 
+[joint_state_publisher-5] [INFO] [1782301584.829164830] [joint_state_publisher]: Waiting for robot_description to be published on the robot_description topic...
+[rviz2-1] [INFO] [1782301584.841507964] [rviz2]: Stereo is NOT SUPPORTED
+[rviz2-1] [INFO] [1782301584.841738889] [rviz2]: OpenGl version: 4.6 (GLSL 4.6)
+[spawner-6] [INFO] [1782301584.869997940] [spawner_franka_robot_state_broadcaster]: waiting for service /controller_manager/list_controllers to become available...
+[rviz2-1] [INFO] [1782301584.877903486] [rviz2]: Stereo is NOT SUPPORTED
+[rviz2-1] Warning: class_loader.impl: SEVERE WARNING!!! A namespace collision has occurred with plugin factory for class rviz_default_plugins::displays::InteractiveMarkerDisplay. New factory will OVERWRITE existing one. This situation occurs when libraries containing plugins are directly linked against an executable (the one running right now generating this message). Please separate plugins out into their own library or just don't link against the library and use either class_loader::ClassLoader/MultiLibraryClassLoader to open.
+[rviz2-1]          at line 253 in /opt/ros/humble/include/class_loader/class_loader/class_loader_core.hpp
+[rviz2-1] [INFO] [1782301585.208404539] [moveit_rdf_loader.rdf_loader]: Loaded robot model in 0.0582687 seconds
+[rviz2-1] [INFO] [1782301585.208501920] [moveit_robot_model.robot_model]: Loading robot model 'fr3'...
+[ros2-8] [INFO] [1782301585.251069557] [spawner_fr3_arm_controller]: waiting for service /controller_manager/list_controllers to become available...
+[ros2-9] [INFO] [1782301585.253635408] [spawner_joint_state_broadcaster]: waiting for service /controller_manager/list_controllers to become available...
+[franka_gripper_node-7] [FATAL] [1782301585.390625221] [franka_gripper]: libfranka: Connection timeout. Please check your network connection or settings.
+[franka_gripper_node-7] terminate called after throwing an instance of 'franka::Exception'
+[franka_gripper_node-7]   what():  libfranka: Connection timeout. Please check your network connection or settings.
+[ros2_control_node-4] [FATAL] [1782301585.422728779] [FrankaHardwareInterface]: Could not connect to robot
+[ros2_control_node-4] [FATAL] [1782301585.422851647] [FrankaHardwareInterface]: libfranka: Connection timeout. Please check your network connection or settings.
+[ros2_control_node-4] [INFO] [1782301585.422881992] [resource_manager]: Failed to initialize hardware 'FrankaHardwareInterface'
+[ros2_control_node-4] [WARN] [1782301585.422891586] [resource_manager]: System hardware component 'FrankaHardwareInterface' from plugin 'franka_hardware/FrankaHardwareInterface' failed to initialize.
+[ros2_control_node-4] terminate called after throwing an instance of 'std::runtime_error'
+[ros2_control_node-4]   what():  Wrong state or command interface configuration.
+[ros2_control_node-4] missing state interfaces:
+[ros2_control_node-4] ' fr3_joint1/position '	' fr3_joint1/velocity '	' fr3_joint1/effort '	' fr3_joint2/position '	' fr3_joint2/velocity '	' fr3_joint2/effort '	' fr3_joint3/position '	' fr3_joint3/velocity '	' fr3_joint3/effort '	' fr3_joint4/position '	' fr3_joint4/velocity '	' fr3_joint4/effort '	' fr3_joint5/position '	' fr3_joint5/velocity '	' fr3_joint5/effort '	' fr3_joint6/position '	' fr3_joint6/velocity '	' fr3_joint6/effort '	' fr3_joint7/position '	' fr3_joint7/velocity '	' fr3_joint7/effort '	' fr3_tcp/force.x '	' fr3_tcp/force.y '	' fr3_tcp/force.z '	' fr3_tcp/torque.x '	' fr3_tcp/torque.y '	' fr3_tcp/torque.z '	
+[ros2_control_node-4] missing command interfaces:
+[ros2_control_node-4] ' fr3_joint1/position '	' fr3_joint1/velocity '	' fr3_joint1/effort '	' fr3_joint2/position '	' fr3_joint2/velocity '	' fr3_joint2/effort '	' fr3_joint3/position '	' fr3_joint3/velocity '	' fr3_joint3/effort '	' fr3_joint4/position '	' fr3_joint4/velocity '	' fr3_joint4/effort '	' fr3_joint5/position '	' fr3_joint5/velocity '	' fr3_joint5/effort '	' fr3_joint6/position '	' fr3_joint6/velocity '	' fr3_joint6/effort '	' fr3_joint7/position '	' fr3_joint7/velocity '	' fr3_joint7/effort '	' vx/cartesian_velocity '	' vy/cartesian_velocity '	' vz/cartesian_velocity '	' wx/cartesian_velocity '	' wy/cartesian_velocity '	' wz/cartesian_velocity '	' joint_3_position/elbow_command '	' joint_4_sign/elbow_command '	' 0/cartesian_pose_command '	' 1/cartesian_pose_command '	' 2/cartesian_pose_command '	' 3/cartesian_pose_command '	' 4/cartesian_pose_command '	' 5/cartesian_pose_command '	' 6/cartesian_pose_command '	' 7/cartesian_pose_command '	' 8/cartesian_pose_command '	' 9/cartesian_pose_command '	' 10/cartesian_pose_command '	' 11/cartesian_pose_command '	' 12/cartesian_pose_command '	' 13/cartesian_pose_command '	' 14/cartesian_pose_command '	' 15/cartesian_pose_command '	
+[ros2_control_node-4] Stack trace (most recent call last):
+[ros2_control_node-4] #15   Object "", at 0xffffffffffffffff, in 
+[ros2_control_node-4] #14   Object "/opt/ros/humble/lib/controller_manager/ros2_control_node", at 0x5a72b2d65ec4, in 
+[ros2_control_node-4] #13   Object "/usr/lib/x86_64-linux-gnu/libc.so.6", at 0x7e8c6a60de3f, in __libc_start_main
+[ros2_control_node-4] #12   Object "/usr/lib/x86_64-linux-gnu/libc.so.6", at 0x7e8c6a60dd8f, in 
+[ros2_control_node-4] #11   Object "/opt/ros/humble/lib/controller_manager/ros2_control_node", at 0x5a72b2d6536f, in 
+[ros2_control_node-4] #10   Object "/opt/ros/humble/lib/libcontroller_manager.so", at 0x7e8c6ad2b48a, in controller_manager::ControllerManager::ControllerManager(std::shared_ptr<rclcpp::Executor>, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, rclcpp::NodeOptions const&)
+[ros2_control_node-4] #9    Object "/opt/ros/humble/lib/libcontroller_manager.so", at 0x7e8c6ad2643f, in controller_manager::ControllerManager::init_resource_manager(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&)
+[ros2_control_node-4] #8    Object "/opt/ros/humble/lib/libhardware_interface.so", at 0x7e8c6a4dc334, in hardware_interface::ResourceManager::load_urdf(std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > const&, bool, bool)
+[ros2_control_node-4] #7    Object "/opt/ros/humble/lib/libhardware_interface.so", at 0x7e8c6a4b8723, in 
+[ros2_control_node-4] #6    Object "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30", at 0x7e8c6a8dd4d7, in __cxa_throw
+[ros2_control_node-4] #5    Object "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30", at 0x7e8c6a8dd276, in std::terminate()
+[ros2_control_node-4] #4    Object "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30", at 0x7e8c6a8dd20b, in 
+[ros2_control_node-4] #3    Object "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30", at 0x7e8c6a8d1b9d, in 
+[ros2_control_node-4] #2    Object "/usr/lib/x86_64-linux-gnu/libc.so.6", at 0x7e8c6a60c7f2, in abort
+[ros2_control_node-4] #1    Object "/usr/lib/x86_64-linux-gnu/libc.so.6", at 0x7e8c6a626475, in raise
+[ros2_control_node-4] #0    Object "/usr/lib/x86_64-linux-gnu/libc.so.6", at 0x7e8c6a67a9fc, in pthread_kill
+[ros2_control_node-4] Aborted (Signal sent by tkill() 16505 0)
+[ERROR] [franka_gripper_node-7]: process has died [pid 16511, exit code -6, cmd '/workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/lib/franka_gripper/franka_gripper_node --ros-args -r __node:=franka_gripper -r __ns:=/ --params-file /tmp/launch_params_b1esskfb --params-file /workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_gripper/share/franka_gripper/config/franka_gripper_node.yaml'].
+[ERROR] [ros2_control_node-4]: process has died [pid 16505, exit code -6, cmd '/opt/ros/humble/lib/controller_manager/ros2_control_node --ros-args -r __ns:=/ --params-file /tmp/launch_params_pcrvw8hw --params-file /workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_fr3_moveit_config/share/franka_fr3_moveit_config/config/fr3_ros_controllers.yaml -r joint_states:=franka/joint_states'].
+[INFO] [launch]: process[ros2_control_node-4] was required: shutting down launched system
+[INFO] [ros2-9]: sending signal 'SIGINT' to process[ros2-9]
+[INFO] [ros2-8]: sending signal 'SIGINT' to process[ros2-8]
+[INFO] [spawner-6]: sending signal 'SIGINT' to process[spawner-6]
+[INFO] [joint_state_publisher-5]: sending signal 'SIGINT' to process[joint_state_publisher-5]
+[INFO] [move_group-3]: sending signal 'SIGINT' to process[move_group-3]
+[INFO] [robot_state_publisher-2]: sending signal 'SIGINT' to process[robot_state_publisher-2]
+[INFO] [rviz2-1]: sending signal 'SIGINT' to process[rviz2-1]
+[move_group-3] [INFO] [1782301585.669288387] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[robot_state_publisher-2] [INFO] [1782301585.671234375] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[rviz2-1] [INFO] [1782301585.673287264] [rclcpp]: signal_handler(SIGINT/SIGTERM)
+[move_group-3] [INFO] [1782301585.690807786] [moveit.ros_planning_interface.moveit_cpp]: Deleting MoveItCpp
+[move_group-3] [INFO] [1782301585.692099230] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Stopped publishing maintained planning scene.
+[move_group-3] [INFO] [1782301585.693218545] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Stopping world geometry monitor
+[move_group-3] [INFO] [1782301585.693801126] [moveit_ros.planning_scene_monitor.planning_scene_monitor]: Stopping planning scene monitor
+[move_group-3] Warning: class_loader.ClassLoader: SEVERE WARNING!!! Attempting to unload library while objects created by this loader exist in the heap! You should delete your objects before attempting to unload the library or destroying the ClassLoader. The library will NOT be unloaded.
+[move_group-3]          at line 127 in ./src/class_loader.cpp
+[move_group-3] Stack trace (most recent call last):
+[move_group-3] #16   Object "", at 0xffffffffffffffff, in 
+[move_group-3] #15   Object "/opt/ros/humble/lib/moveit_ros_move_group/move_group", at 0x56852e402724, in 
+[move_group-3] #14   Object "/usr/lib/x86_64-linux-gnu/libc.so.6", at 0x7bd158adce3f, in __libc_start_main
+[move_group-3] #13   Object "/usr/lib/x86_64-linux-gnu/libc.so.6", at 0x7bd158adcd8f, in 
+[move_group-3] #12   Object "/opt/ros/humble/lib/moveit_ros_move_group/move_group", at 0x56852e40165b, in 
+[move_group-3] #11   Object "/opt/ros/humble/lib/moveit_ros_move_group/move_group", at 0x56852e403709, in 
+[move_group-3] #10   Object "/opt/ros/humble/lib/libmoveit_cpp.so.2.5.9", at 0x7bd159448876, in moveit_cpp::MoveItCpp::~MoveItCpp()
+[move_group-3] #9    Object "/opt/ros/humble/lib/libmoveit_cpp.so.2.5.9", at 0x7bd159446ba9, in 
+[move_group-3] #8    Object "/opt/ros/humble/lib/libmoveit_trajectory_execution_manager.so.2.5.9", at 0x7bd1587d43b5, in trajectory_execution_manager::TrajectoryExecutionManager::~TrajectoryExecutionManager()
+[move_group-3] #7    Object "/opt/ros/humble/lib/libmoveit_trajectory_execution_manager.so.2.5.9", at 0x7bd1587e72d9, in 
+[move_group-3] #6    Object "/opt/ros/humble/lib/librclcpp.so", at 0x7bd1590abb8c, in rclcpp::Node::~Node()
+[move_group-3] #5    Object "/opt/ros/humble/lib/librclcpp.so", at 0x7bd1590abb2e, in rclcpp::Node::~Node()
+[move_group-3] #4    Object "/opt/ros/humble/lib/librclcpp.so", at 0x7bd159086d39, in 
+[move_group-3] #3    Object "/opt/ros/humble/lib/librclcpp.so", at 0x7bd1590b50b9, in 
+[move_group-3] #2    Object "/opt/ros/humble/lib/librclcpp.so", at 0x7bd1590b5000, in rclcpp::node_interfaces::NodeBase::~NodeBase()
+[move_group-3] #1    Object "/opt/ros/humble/lib/librclcpp.so", at 0x7bd159086d39, in 
+[move_group-3] #0    Object "/opt/ros/humble/lib/librclcpp.so", at 0x7bd15908bb31, in rclcpp::CallbackGroup::~CallbackGroup()
+[move_group-3] Segmentation fault (Address not mapped to object [0x7bd141348798])
+[INFO] [robot_state_publisher-2]: process has finished cleanly [pid 16501]
+[INFO] [joint_state_publisher-5]: process has finished cleanly [pid 16507]
+[INFO] [spawner-6]: process has finished cleanly [pid 16509]
+[ERROR] [move_group-3]: process has died [pid 16503, exit code -11, cmd '/opt/ros/humble/lib/moveit_ros_move_group/move_group --ros-args -r __ns:=/ --params-file /tmp/launch_params_n6_3x51x --params-file /tmp/launch_params__0jwgysz --params-file /tmp/launch_params_aft3wx0o --params-file /tmp/launch_params_ogh1jars --params-file /tmp/launch_params_m18k5is1 --params-file /tmp/launch_params_e1ztxfas --params-file /tmp/launch_params_2bhujhl_'].
+[move_group-3] [0m
+[rviz2-1] [ERROR] [1782301586.051855044] [rviz2]: Could not load display config: could not create subscription: rcl node's context is invalid, at ./src/rcl/node.c:428
+[ERROR] [rviz2-1]: process has died [pid 16499, exit code -11, cmd '/opt/ros/humble/lib/rviz2/rviz2 -d /workspace/LeapXELA_Hardware_ws/ros_ws/install/franka_fr3_moveit_config/share/franka_fr3_moveit_config/rviz/moveit.rviz --ros-args -r __node:=rviz2 --params-file /tmp/launch_params_t40nrv8_ --params-file /tmp/launch_params_27fhcxoq --params-file /tmp/launch_params_algntu1t --params-file /tmp/launch_params_1eow_6gz'].
+[ERROR] [ros2-9]: process[ros2-9] failed to terminate '5' seconds after receiving 'SIGINT', escalating to 'SIGTERM'
+[ERROR] [ros2-8]: process[ros2-8] failed to terminate '5' seconds after receiving 'SIGINT', escalating to 'SIGTERM'
+[INFO] [ros2-9]: sending signal 'SIGTERM' to process[ros2-9]
+[INFO] [ros2-8]: sending signal 'SIGTERM' to process[ros2-8]
+[ERROR] [ros2-9]: process has died [pid 16515, exit code -15, cmd 'ros2 run controller_manager spawner joint_state_broadcaster --controller-manager-timeout 60 --controller-manager controller_manager'].
+[ERROR] [ros2-8]: process has died [pid 16513, exit code -15, cmd 'ros2 run controller_manager spawner fr3_arm_controller --controller-manager-timeout 60 --controller-manager controller_manager'].

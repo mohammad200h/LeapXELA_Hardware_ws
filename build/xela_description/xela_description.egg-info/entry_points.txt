@@ -1,8 +1,0 @@
-[console_scripts]
-visulize = urdf.visulize_node:main
-visulize_finger = urdf.visulize_finger_node:main
-visulize_hand = urdf.visulize_hand_node:main
-visulize_mjcf = mjcf.visulize_mjcf:main
-visulize_palm = urdf.visulize_palm_node:main
-visulize_thumb = urdf.visulize_thumb_node:main
-

@@ -1,6 +1,0 @@
-[1.945s] Invoking command in '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example': /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/mujoco_c_example -- -j16 -l16
-[2.001s] [35m[1mConsolidate compiler generated dependencies of target load_model[0m
-[2.021s] [ 50%] Built target load_model
-[2.037s] [35m[1mConsolidate compiler generated dependencies of target load_only[0m
-[2.057s] [100%] Built target load_only
-[2.548s] Invoked command in '/workspace/LeapXELA_Hardware_ws/build/mujoco_c_example' returned '0': /usr/bin/cmake --build /workspace/LeapXELA_Hardware_ws/build/mujoco_c_example -- -j16 -l16

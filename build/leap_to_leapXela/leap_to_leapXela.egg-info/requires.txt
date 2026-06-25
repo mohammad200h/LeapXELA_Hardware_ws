@@ -1,5 +1,0 @@
-pybullet
-setuptools
-
-[test]
-pytest

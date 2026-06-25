@@ -1,6 +1,0 @@
-source;share/oculusTeleop/hook/pythonpath.ps1
-source;share/oculusTeleop/hook/pythonpath.dsv
-source;share/oculusTeleop/hook/pythonpath.sh
-source;share/oculusTeleop/hook/ament_prefix_path.ps1
-source;share/oculusTeleop/hook/ament_prefix_path.dsv
-source;share/oculusTeleop/hook/ament_prefix_path.sh

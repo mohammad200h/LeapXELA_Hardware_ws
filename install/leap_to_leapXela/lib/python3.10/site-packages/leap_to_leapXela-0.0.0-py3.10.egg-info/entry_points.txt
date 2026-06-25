@@ -1,4 +1,0 @@
-[console_scripts]
-leap_publisher = leap_to_leapXela.leap_publisher:main
-leap_xela_subscriber = leap_to_leapXela.leapXela_subscriber:main
-

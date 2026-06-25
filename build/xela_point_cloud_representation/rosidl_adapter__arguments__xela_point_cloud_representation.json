@@ -1,7 +1,0 @@
-{
-  "package_name": "xela_point_cloud_representation",
-  "non_idl_tuples": [
-    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_point_cloud_representation:msg/Texel.msg",
-    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_point_cloud_representation:msg/HandSensors.msg"
-  ]
-}

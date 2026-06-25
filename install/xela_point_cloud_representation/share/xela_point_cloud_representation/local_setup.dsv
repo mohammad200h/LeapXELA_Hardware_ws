@@ -1,4 +1,0 @@
-source;share/xela_point_cloud_representation/environment/ament_prefix_path.sh
-source;share/xela_point_cloud_representation/environment/library_path.sh
-source;share/xela_point_cloud_representation/environment/path.sh
-source;share/xela_point_cloud_representation/environment/pythonpath.sh

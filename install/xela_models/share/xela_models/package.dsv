@@ -1,8 +1,0 @@
-source;share/xela_models/hook/cmake_prefix_path.ps1
-source;share/xela_models/hook/cmake_prefix_path.dsv
-source;share/xela_models/hook/cmake_prefix_path.sh
-source;share/xela_models/local_setup.bash
-source;share/xela_models/local_setup.dsv
-source;share/xela_models/local_setup.ps1
-source;share/xela_models/local_setup.sh
-source;share/xela_models/local_setup.zsh
