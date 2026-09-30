@@ -30,6 +30,8 @@ setup(
         'console_scripts': [
             'sparsh_skin_demonstration = leapXela_sparshskin_data_collection.sparsh_skin_demonstration:main',
             'replay = leapXela_sparshskin_data_collection.replay:main',
+            'motion_action = leapXela_sparshskin_data_collection.motion_action:main',
+            'command_repeator = leapXela_sparshskin_data_collection.command_repeator:main',
         ],
     },
 )

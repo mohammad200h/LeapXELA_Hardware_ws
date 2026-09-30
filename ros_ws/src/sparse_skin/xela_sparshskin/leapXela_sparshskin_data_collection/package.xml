@@ -8,8 +8,13 @@
   <license>TODO: License declaration</license>
 
   <depend>rclpy</depend>
+  <depend>rclpy_action</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <exec_depend>leapxela_sparshskin_msgs</exec_depend>
+  <exec_depend>xela_description</exec_depend>
+  <exec_depend>oculusTeleop</exec_depend>
+  <exec_depend>leap_hand</exec_depend>
   <exec_depend>ros2bag</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
