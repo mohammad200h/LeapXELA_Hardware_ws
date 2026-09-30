@@ -1,0 +1,921 @@
+[0.000000] (-) TimerEvent: {}
+[0.000769] (-) JobUnselected: {'identifier': 'arm_server'}
+[0.000867] (-) JobUnselected: {'identifier': 'avp_stream'}
+[0.000894] (-) JobUnselected: {'identifier': 'dex_retargeting'}
+[0.000917] (-) JobUnselected: {'identifier': 'franka_bringup'}
+[0.000938] (-) JobUnselected: {'identifier': 'franka_control2'}
+[0.000960] (-) JobUnselected: {'identifier': 'franka_description'}
+[0.000980] (-) JobUnselected: {'identifier': 'franka_example_controllers'}
+[0.001001] (-) JobUnselected: {'identifier': 'franka_gripper'}
+[0.001022] (-) JobUnselected: {'identifier': 'franka_hardware'}
+[0.001042] (-) JobUnselected: {'identifier': 'franka_moveit_config'}
+[0.001063] (-) JobUnselected: {'identifier': 'franka_msgs'}
+[0.001086] (-) JobUnselected: {'identifier': 'franka_robot_state_broadcaster'}
+[0.001107] (-) JobUnselected: {'identifier': 'franka_semantic_components'}
+[0.001128] (-) JobUnselected: {'identifier': 'franka_simple_publishers'}
+[0.001149] (-) JobUnselected: {'identifier': 'garmi_bringup'}
+[0.001169] (-) JobUnselected: {'identifier': 'garmi_controllers'}
+[0.001190] (-) JobUnselected: {'identifier': 'garmi_description'}
+[0.001210] (-) JobUnselected: {'identifier': 'garmi_moveit_config'}
+[0.001231] (-) JobUnselected: {'identifier': 'hello'}
+[0.001253] (-) JobUnselected: {'identifier': 'leap_description'}
+[0.001273] (-) JobUnselected: {'identifier': 'leap_hand'}
+[0.001294] (-) JobUnselected: {'identifier': 'leap_to_leapXela'}
+[0.001316] (-) JobUnselected: {'identifier': 'libfranka'}
+[0.001338] (-) JobUnselected: {'identifier': 'libfranka'}
+[0.001359] (-) JobUnselected: {'identifier': 'mujoco_c_example'}
+[0.001379] (-) JobUnselected: {'identifier': 'mujoco_ros'}
+[0.001398] (-) JobUnselected: {'identifier': 'mujoco_ros2_control'}
+[0.001419] (-) JobUnselected: {'identifier': 'mujoco_ros2_control_system'}
+[0.001439] (-) JobUnselected: {'identifier': 'mujoco_ros2_dummy_plugin'}
+[0.001460] (-) JobUnselected: {'identifier': 'mujoco_ros2_sensors'}
+[0.001480] (-) JobUnselected: {'identifier': 'mujoco_ros_msgs'}
+[0.001500] (-) JobUnselected: {'identifier': 'mujoco_ros_pkgs'}
+[0.001521] (-) JobUnselected: {'identifier': 'multi_mode_control_msgs'}
+[0.001542] (-) JobUnselected: {'identifier': 'multi_mode_controller'}
+[0.001562] (-) JobUnselected: {'identifier': 'multi_mode_controller_impl'}
+[0.001583] (-) JobUnselected: {'identifier': 'nano17'}
+[0.001609] (-) JobUnselected: {'identifier': 'oculusTeleop'}
+[0.001640] (-) JobUnselected: {'identifier': 'panda_motion_generator_msgs'}
+[0.001662] (-) JobUnselected: {'identifier': 'panda_motion_generators'}
+[0.001683] (-) JobUnselected: {'identifier': 'tactile_ssl'}
+[0.001703] (-) JobUnselected: {'identifier': 'xela_data_collection'}
+[0.001724] (-) JobUnselected: {'identifier': 'xela_models'}
+[0.001744] (-) JobUnselected: {'identifier': 'xela_point_cloud_representation'}
+[0.001765] (-) JobUnselected: {'identifier': 'xela_pybullet_viewer'}
+[0.001785] (-) JobUnselected: {'identifier': 'xela_server_ros2'}
+[0.001811] (xela_description) JobQueued: {'identifier': 'xela_description', 'dependencies': OrderedDict()}
+[0.001840] (xela_sparshskin_sim) JobQueued: {'identifier': 'xela_sparshskin_sim', 'dependencies': OrderedDict([('xela_description', '/workspace/LeapXELA_Hardware_ws/install/xela_description')])}
+[0.001869] (xela_description) JobStarted: {'identifier': 'xela_description'}
+[0.099398] (-) TimerEvent: {}
+[0.199780] (-) TimerEvent: {}
+[0.300187] (-) TimerEvent: {}
+[0.400595] (-) TimerEvent: {}
+[0.501063] (-) TimerEvent: {}
+[0.601581] (-) TimerEvent: {}
+[0.701954] (-) TimerEvent: {}
+[0.802356] (-) TimerEvent: {}
+[0.902813] (-) TimerEvent: {}
+[1.003239] (-) TimerEvent: {}
+[1.103655] (-) TimerEvent: {}
+[1.204176] (-) TimerEvent: {}
+[1.257524] (xela_description) Command: {'cmd': ['/usr/bin/python3', '-W', 'ignore:setup.py install is deprecated', '-W', 'ignore:easy_install command is deprecated', 'setup.py', 'egg_info', '--egg-base', '../../../build/xela_description', 'build', '--build-base', '/workspace/LeapXELA_Hardware_ws/build/xela_description/build', 'install', '--record', '/workspace/LeapXELA_Hardware_ws/build/xela_description/install.log', '--single-version-externally-managed', 'install_data'], 'cwd': '/workspace/LeapXELA_Hardware_ws/ros_ws/src/xela_description', 'env': {'LESSOPEN': '| /usr/bin/lesspipe %s', 'LIBRARY_PATH': '/usr/local/cuda/lib64/stubs', 'NV_LIBCUBLAS_VERSION': '12.2.5.6-1', 'NV_NVPROF_DEV_PACKAGE': 'cuda-nvprof-12-2=12.2.142-1', 'NV_CUDA_COMPAT_PACKAGE': 'cuda-compat-12-2', 'NV_CUDA_NSIGHT_COMPUTE_VERSION': '12.2.2-1', 'HOSTNAME': 'Blade', 'GIT_ASKPASS': '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass.sh', 'SHLVL': '1', 'LD_LIBRARY_PATH': '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/tmp/1.4.341.1/x86_64/lib:/usr/local/lib', 'BROWSER': '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/helpers/browser.sh', 'NV_LIBNCCL_PACKAGE_VERSION': '2.19.3-1', 'LOCAL_USER_ID': '1000', 'HOME': '/root', 'NV_CUDNN_PACKAGE_NAME': 'libcudnn8', 'TERM_PROGRAM_VERSION': '3.4.20', 'NV_LIBCUBLAS_DEV_VERSION': '12.2.5.6-1', 'VSCODE_IPC_HOOK_CLI': '/tmp/vscode-ipc-4b79f63a-7885-4fa1-b4f1-e2185af2b39c.sock', 'ROS_PYTHON_VERSION': '3', 'VSCODE_GIT_ASKPASS_MAIN': '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass-main.js', 'VSCODE_GIT_ASKPASS_NODE': '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/node', 'NV_LIBNCCL_DEV_PACKAGE_VERSION': '2.19.3-1', 'COLORTERM': 'truecolor', 'NV_LIBNPP_PACKAGE': 'libnpp-12-2=12.2.1.4-1', 'NV_CUDNN_PACKAGE': 'libcudnn8=8.9.6.50-1+cuda12.2', 'CUDA_VERSION': '12.2.2', 'LOCAL_GID': '1000', 'NV_NVPROF_VERSION': '12.2.142-1', 'ROS_DISTRO': 'humble', 'OVSX_REGISTRY_URL': 'https://open-vsx.org', 'NV_LIBCUBLAS_PACKAGE_NAME': 'libcublas-12-2', 'NVIDIA_REQUIRE_CUDA': 'cuda>=12.2 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526', '_': '/usr/bin/colcon', 'ROS_VERSION': '2', 'NV_LIBCUSPARSE_VERSION': '12.1.2.141-1', 'NVIDIA_DRIVER_CAPABILITIES': 'all', 'VULKAN_SDK': '/tmp/1.4.341.1/x86_64', 'NV_CUDA_LIB_VERSION': '12.2.2-1', 'NV_LIBNCCL_PACKAGE_NAME': 'libnccl2', 'NV_NVML_DEV_VERSION': '12.2.140-1', 'NV_LIBNPP_DEV_PACKAGE': 'libnpp-dev-12-2=12.2.1.4-1', 'TERM': 'xterm-256color', 'NV_CUDA_CUDART_VERSION': '12.2.140-1', 'NV_CUDNN_PACKAGE_DEV': 'libcudnn8-dev=8.9.6.50-1+cuda12.2', 'ROS_LOCALHOST_ONLY': '0', 'QT_X11_NO_MITSHM': '1', 'PATH': '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/opt/ros/humble/bin:/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/tmp/1.4.341.1/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin', 'NV_LIBCUBLAS_DEV_PACKAGE_NAME': 'libcublas-dev-12-2', 'NV_LIBCUBLAS_PACKAGE': 'libcublas-12-2=12.2.5.6-1', 'NVARCH': 'x86_64', 'MUJOCO_DIR': '/usr/local', 'NV_LIBNCCL_DEV_PACKAGE_NAME': 'libnccl-dev', 'NV_LIBCUSPARSE_DEV_VERSION': '12.1.2.141-1', 'DISPLAY': ':0', 'NV_LIBNCCL_PACKAGE': 'libnccl2=2.19.3-1+cuda12.2', 'MUJOCO_GL': 'egl', 'NVIDIA_PRODUCT_NAME': 'CUDA', 'LANG': 'en_US.UTF-8', 'NV_CUDA_CUDART_DEV_VERSION': '12.2.140-1', 'LS_COLORS': 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:', 'VSCODE_GIT_IPC_HANDLE': '/tmp/vscode-git-b9b2478d3b.sock', 'TERM_PROGRAM': 'vscode', 'SSH_AUTH_SOCK': '/tmp/cursor-remote-ssh-d65a5de7-8b6b-480a-b00c-7b0d9bfb361d.sock', 'AMENT_PREFIX_PATH': '/opt/ros/humble', 'NV_LIBCUBLAS_DEV_PACKAGE': 'libcublas-dev-12-2=12.2.5.6-1', 'NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE': 'cuda-nsight-compute-12-2=12.2.2-1', 'NV_LIBNCCL_DEV_PACKAGE': 'libnccl-dev=2.19.3-1+cuda12.2', 'LESSCLOSE': '/usr/bin/lesspipe %s %s', 'VK_LAYER_PATH': '/tmp/1.4.341.1/x86_64/etc/vulkan/explicit_layer.d', 'NV_NVTX_VERSION': '12.2.140-1', 'NV_LIBNPP_VERSION': '12.2.1.4-1', 'VSCODE_GIT_IPC_AUTH_TOKEN': '2c792a8b2d825171c0613488d050b262377d54d09c71553f5b562924e4e510a0', 'VSCODE_GIT_ASKPASS_EXTRA_ARGS': '', 'NV_CUDNN_VERSION': '8.9.6.50', 'PWD': '/workspace/LeapXELA_Hardware_ws/build/xela_description', 'CUDA_HOME': '/usr/local/cuda', 'PYTHONPATH': '/workspace/LeapXELA_Hardware_ws/build/xela_description/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages::/usr/local/lib', 'NVIDIA_VISIBLE_DEVICES': 'all', 'NCCL_VERSION': '2.19.3-1', 'COLCON': '1', 'NV_LIBNPP_DEV_VERSION': '12.2.1.4-1', 'CMAKE_PREFIX_PATH': '/usr/local/lib/cmake:'}, 'shell': False}
+[1.304322] (-) TimerEvent: {}
+[1.404801] (-) TimerEvent: {}
+[1.505258] (-) TimerEvent: {}
+[1.605695] (-) TimerEvent: {}
+[1.706044] (-) TimerEvent: {}
+[1.791767] (xela_description) StdoutLine: {'line': b'running egg_info\n'}
+[1.806150] (-) TimerEvent: {}
+[1.826305] (xela_description) StdoutLine: {'line': b'creating ../../../build/xela_description/xela_description.egg-info\n'}
+[1.826598] (xela_description) StdoutLine: {'line': b'writing ../../../build/xela_description/xela_description.egg-info/PKG-INFO\n'}
+[1.827592] (xela_description) StdoutLine: {'line': b'writing dependency_links to ../../../build/xela_description/xela_description.egg-info/dependency_links.txt\n'}
+[1.828077] (xela_description) StdoutLine: {'line': b'writing entry points to ../../../build/xela_description/xela_description.egg-info/entry_points.txt\n'}
+[1.828419] (xela_description) StdoutLine: {'line': b'writing requirements to ../../../build/xela_description/xela_description.egg-info/requires.txt\n'}
+[1.828596] (xela_description) StdoutLine: {'line': b'writing top-level names to ../../../build/xela_description/xela_description.egg-info/top_level.txt\n'}
+[1.828748] (xela_description) StdoutLine: {'line': b"writing manifest file '../../../build/xela_description/xela_description.egg-info/SOURCES.txt'\n"}
+[1.906285] (-) TimerEvent: {}
+[1.915336] (xela_description) StdoutLine: {'line': b"reading manifest file '../../../build/xela_description/xela_description.egg-info/SOURCES.txt'\n"}
+[1.920422] (xela_description) StdoutLine: {'line': b"writing manifest file '../../../build/xela_description/xela_description.egg-info/SOURCES.txt'\n"}
+[1.920809] (xela_description) StdoutLine: {'line': b'running build\n'}
+[1.920914] (xela_description) StdoutLine: {'line': b'running build_py\n'}
+[1.921083] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf\n'}
+[1.921357] (xela_description) StdoutLine: {'line': b'copying mjcf/__init__.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf\n'}
+[1.921726] (xela_description) StdoutLine: {'line': b'copying mjcf/add_touch_point_cloud_to_model.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf\n'}
+[1.922042] (xela_description) StdoutLine: {'line': b'copying mjcf/generatehand_flexcom_sensor.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf\n'}
+[1.922404] (xela_description) StdoutLine: {'line': b'copying mjcf/visulize_mjcf.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf\n'}
+[1.922687] (xela_description) StdoutLine: {'line': b'copying mjcf/leap_taxel_map.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf\n'}
+[1.925828] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926001] (xela_description) StdoutLine: {'line': b'copying urdf/__init__.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926108] (xela_description) StdoutLine: {'line': b'copying urdf/visulize_hand_node.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926206] (xela_description) StdoutLine: {'line': b'copying urdf/visulize_finger_node.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926301] (xela_description) StdoutLine: {'line': b'copying urdf/visulize_node.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926397] (xela_description) StdoutLine: {'line': b'copying urdf/list_to_string.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926491] (xela_description) StdoutLine: {'line': b'copying urdf/finger.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926588] (xela_description) StdoutLine: {'line': b'copying urdf/visulize_palm_node.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926702] (xela_description) StdoutLine: {'line': b'copying urdf/thumb.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.926878] (xela_description) StdoutLine: {'line': b'copying urdf/palm.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.927086] (xela_description) StdoutLine: {'line': b'copying urdf/visulize_thumb_node.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.927203] (xela_description) StdoutLine: {'line': b'copying urdf/hand.py -> /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf\n'}
+[1.928083] (xela_description) StdoutLine: {'line': b'running install\n'}
+[1.936793] (xela_description) StdoutLine: {'line': b'running install_lib\n'}
+[1.975309] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf\n'}
+[1.975599] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf/__init__.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf\n'}
+[1.975832] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf/add_touch_point_cloud_to_model.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf\n'}
+[1.975999] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf/generatehand_flexcom_sensor.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf\n'}
+[1.976323] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf/visulize_mjcf.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf\n'}
+[1.976573] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/mjcf/leap_taxel_map.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf\n'}
+[1.976934] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.977107] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/__init__.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.977349] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/visulize_hand_node.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.977634] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/visulize_finger_node.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.977875] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/visulize_node.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.978060] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/list_to_string.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.978242] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/finger.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.978492] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/visulize_palm_node.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.978811] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/thumb.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.978991] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/palm.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.979203] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/visulize_thumb_node.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.979405] (xela_description) StdoutLine: {'line': b'copying /workspace/LeapXELA_Hardware_ws/build/xela_description/build/lib/urdf/hand.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf\n'}
+[1.980496] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf/__init__.py to __init__.cpython-310.pyc\n'}
+[1.980883] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf/add_touch_point_cloud_to_model.py to add_touch_point_cloud_to_model.cpython-310.pyc\n'}
+[1.986174] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf/generatehand_flexcom_sensor.py to generatehand_flexcom_sensor.cpython-310.pyc\n'}
+[2.006412] (-) TimerEvent: {}
+[2.007012] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf/visulize_mjcf.py to visulize_mjcf.cpython-310.pyc\n'}
+[2.007939] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/mjcf/leap_taxel_map.py to leap_taxel_map.cpython-310.pyc\n'}
+[2.012973] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/__init__.py to __init__.cpython-310.pyc\n'}
+[2.013322] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/visulize_hand_node.py to visulize_hand_node.cpython-310.pyc\n'}
+[2.018500] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/visulize_finger_node.py to visulize_finger_node.cpython-310.pyc\n'}
+[2.022902] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/visulize_node.py to visulize_node.cpython-310.pyc\n'}
+[2.024405] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/list_to_string.py to list_to_string.cpython-310.pyc\n'}
+[2.024798] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/finger.py to finger.cpython-310.pyc\n'}
+[2.032050] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/visulize_palm_node.py to visulize_palm_node.cpython-310.pyc\n'}
+[2.034311] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/thumb.py to thumb.cpython-310.pyc\n'}
+[2.040901] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/palm.py to palm.cpython-310.pyc\n'}
+[2.041910] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/visulize_thumb_node.py to visulize_thumb_node.cpython-310.pyc\n'}
+[2.045585] (xela_description) StdoutLine: {'line': b'byte-compiling /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/urdf/hand.py to hand.cpython-310.pyc\n'}
+[2.048589] (xela_description) StdoutLine: {'line': b'running install_data\n'}
+[2.048988] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/ament_index/resource_index/packages\n'}
+[2.049284] (xela_description) StdoutLine: {'line': b'copying resource/xela_description -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/ament_index/resource_index/packages\n'}
+[2.049584] (xela_description) StdoutLine: {'line': b'copying package.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description\n'}
+[2.049863] (xela_description) StdoutLine: {'line': b'copying urdf/robot.urdf -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description\n'}
+[2.050112] (xela_description) StdoutLine: {'line': b'copying urdf/finger.urdf -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description\n'}
+[2.050521] (xela_description) StdoutLine: {'line': b'copying urdf/thumb.urdf -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description\n'}
+[2.051059] (xela_description) StdoutLine: {'line': b'copying urdf/palm.urdf -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description\n'}
+[2.051338] (xela_description) StdoutLine: {'line': b'copying urdf/hand.urdf -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description\n'}
+[2.051648] (xela_description) StdoutLine: {'line': b'copying joint_config.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description\n'}
+[2.051868] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch\n'}
+[2.052003] (xela_description) StdoutLine: {'line': b'copying launch/visulize.launch.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch\n'}
+[2.052241] (xela_description) StdoutLine: {'line': b'copying launch/visulize_palm_launch.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch\n'}
+[2.052432] (xela_description) StdoutLine: {'line': b'copying launch/visulize_mjcf_launch.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch\n'}
+[2.052575] (xela_description) StdoutLine: {'line': b'copying launch/visulize_finger_launch.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch\n'}
+[2.052801] (xela_description) StdoutLine: {'line': b'copying launch/visulize_thumb_launch.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch\n'}
+[2.052944] (xela_description) StdoutLine: {'line': b'copying launch/visulize_hand_launch.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch\n'}
+[2.053137] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch/__pycache__\n'}
+[2.053288] (xela_description) StdoutLine: {'line': b'copying launch/__pycache__/visulize_finger_launch.cpython-310.pyc -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/launch/__pycache__\n'}
+[2.053504] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.053668] (xela_description) StdoutLine: {'line': b'copying mjcf/leapXela_base_model.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.053899] (xela_description) StdoutLine: {'line': b'copying mjcf/__init__.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.054066] (xela_description) StdoutLine: {'line': b'copying mjcf/add_touch_point_cloud_to_model.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.054280] (xela_description) StdoutLine: {'line': b'copying mjcf/leapXela_generated_flex_sensor.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.054782] (xela_description) StdoutLine: {'line': b'copying mjcf/scene.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.055011] (xela_description) StdoutLine: {'line': b'copying mjcf/scene_flex_sensor_Box.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.055215] (xela_description) StdoutLine: {'line': b'copying mjcf/sensor_joints.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.055466] (xela_description) StdoutLine: {'line': b'copying mjcf/scene_touch_point_cloud.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.055711] (xela_description) StdoutLine: {'line': b'copying mjcf/leapXela_touch_point_cloud.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.056815] (xela_description) StdoutLine: {'line': b'copying mjcf/config.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.057110] (xela_description) StdoutLine: {'line': b'copying mjcf/generatehand_flexcom_sensor.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.057346] (xela_description) StdoutLine: {'line': b'copying mjcf/visulize_mjcf.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.057495] (xela_description) StdoutLine: {'line': b'copying mjcf/4_6_sites.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.057642] (xela_description) StdoutLine: {'line': b'copying mjcf/leap_taxel_map.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.057834] (xela_description) StdoutLine: {'line': b'copying mjcf/leap_sensor_taxel_map.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.058076] (xela_description) StdoutLine: {'line': b'copying mjcf/fingertip_magnet_pose.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.058274] (xela_description) StdoutLine: {'line': b'copying mjcf/4_4_sites.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf\n'}
+[2.058598] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.058890] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/fingertop_unfied.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.059127] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/p4_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.060575] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thp0_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.061620] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_collision_1.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.061827] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/sphere.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.061979] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/fingertop_unfied.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.063455] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/p5_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.064646] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/palm_face.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.064836] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thfingertip_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.064972] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_v1_3_1.stl.mtl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.065098] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_collision_2.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.065217] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thconnector.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.066028] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/p3_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.066283] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_collision_5.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.066455] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thp1_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.066580] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/top_palm.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.067733] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_collision_6.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.068074] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/leap_hand_xela_motorholder.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.068346] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/clipper.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.068455] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/uspa46.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.068947] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/leap_hand_xela_motorholder.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.069725] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/leap_hand_xela_bottom.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.070876] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/leap_hand_xela_side_cover.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.071354] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/p5_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.071510] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/p4_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.071703] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_collision_3.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.071928] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/leap_hand_xela_side_cover.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.072126] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/clipper.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.072395] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/uspa46.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.072590] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thfingertip_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.074108] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/leap_hand_xela_back_cover.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.077286] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/top_palm.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.077474] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/palm_face.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.077571] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_v1_3_1.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.077677] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_v1_3_1.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.077904] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thp1_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.079307] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thconnector.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.079498] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thp0_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.079751] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_v1_3_1.stl.obj -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.080009] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/leap_hand_xela_back_cover.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.080144] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/p3_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.081499] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/leap_hand_xela_bottom.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.081798] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thp2_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.083164] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/outer_skin_collision_4.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.083374] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/p2_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.084683] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/p2_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.084994] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/thp2_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets\n'}
+[2.085291] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets/meshes\n'}
+[2.085467] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/meshes/leap_mount.obj -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets/meshes\n'}
+[2.085742] (xela_description) StdoutLine: {'line': b'copying mjcf/assets/meshes/dex_cube.obj -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/assets/meshes\n'}
+[2.085944] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela\n'}
+[2.086094] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/touch_sensor.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela\n'}
+[2.086275] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/taxel_layout.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela\n'}
+[2.086448] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/scene_builder.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela\n'}
+[2.086630] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/taxel_images.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela\n'}
+[2.086874] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/inhand_controller.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela\n'}
+[2.087043] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/visualize_taxel_layout.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela\n'}
+[2.087163] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/taxel_tip_pos.md -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela\n'}
+[2.087401] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.087544] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/find_and_store_sites_for_4_6.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.087794] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/scene.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.087934] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/attach_sensors_to_sites.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.088092] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/4x6.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.088649] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/config.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.088858] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/robot.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.089191] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/4_6_sites.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.089461] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/robot_with_sensors.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.090325] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/4_6.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.090509] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/fingertip.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.090855] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/add_sites_to_robot.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.091097] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/fingertip_magnet_pose.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.091228] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/4_4_sites.json -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.091372] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/robot_with_sites.xml -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.091509] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/produce_json.py -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud\n'}
+[2.091742] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.091934] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/p4_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.093721] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/thp0_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.094667] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/p5_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.095689] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/servo_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.096544] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/palm_face.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.096811] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/fingertip_fix.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.097784] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/part_2.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.098108] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/thconnector.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.099011] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/part10.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.099202] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/4_6_origin.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.099366] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/p3_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.099491] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/part10.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.101035] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/thp1_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.101248] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/top_palm.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.102498] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/4x6.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.103040] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/fingertip_fix.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.103176] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/leap_hand_xela_motorholder.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.103315] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/clipper.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.103428] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/uspa46.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.104050] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/leap_hand_xela_motorholder.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.104926] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/leap_hand_xela_bottom.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.106380] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/pointcloud.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.106569] (-) TimerEvent: {}
+[2.106802] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/origin.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.106938] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/leap_hand_xela_side_cover.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.107069] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/part_2.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.107238] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/p5_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.107402] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/ft_f.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.113751] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/p4_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.113999] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/origin.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.114390] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/leap_hand_xela_side_cover.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.116114] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/clipper.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.116445] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/ft_c.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.116856] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/uspa46.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.117087] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/leap_hand_xela_back_cover.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.118016] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/top_palm.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.118279] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/palm_face.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.119483] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/outer_skin_v1_3_1.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.119714] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/outer_skin_v1_3_1.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.120554] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/thp1_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.121814] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/thconnector.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.122054] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/thp0_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.122223] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/leap_hand_xela_back_cover.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.122375] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/p3_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.123452] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/leap_hand_xela_bottom.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.123645] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/pointcloud.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.124299] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/thp2_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.125785] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/p2_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.127306] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/4_6_origin.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.127822] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/p2_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.128073] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/thp2_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.128236] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/leapXela_pointcloud/assets/servo_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/leapXela_pointcloud/assets\n'}
+[2.128361] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/__pycache__\n'}
+[2.128517] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/__pycache__/taxel_layout.cpython-310.pyc -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/__pycache__\n'}
+[2.128658] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/__pycache__/taxel_layout.cpython-312.pyc -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/__pycache__\n'}
+[2.128915] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/data/leapxela_debug/layout\n'}
+[2.129143] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/data/leapxela_debug/layout/layout_closeup_fingers.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/data/leapxela_debug/layout\n'}
+[2.130151] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/data/leapxela_debug/layout/layout_fixed.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/data/leapxela_debug/layout\n'}
+[2.131002] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/data/leapxela_debug/layout/layout_closeup_thumb.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/data/leapxela_debug/layout\n'}
+[2.131768] (xela_description) StdoutLine: {'line': b'copying mjcf/leapxela/data/leapxela_debug/layout/layout_top.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/leapxela/data/leapxela_debug/layout\n'}
+[2.132330] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.132467] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/if_tip.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.132778] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/if_bs_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.133015] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/mf_px_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.133186] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/rf_tip.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.133415] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/mf_bs_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.133744] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/rf_px_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.134003] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/rf_md_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.134217] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/hand_taxel_heatmap.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.134619] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/uspa46_2.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.134970] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/th_ds_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.135218] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/rf_bs_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.135380] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/if_md_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.135556] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/if_px_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.135835] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/th_tip.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.136004] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/uspa46_1.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.136217] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/th_px_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.136439] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/mf_md_uspa44.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.136739] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/uspa46_3.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.136923] (xela_description) StdoutLine: {'line': b'copying mjcf/flex_sensor_heatmaps/mf_tip.png -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/flex_sensor_heatmaps\n'}
+[2.137213] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/meshes\n'}
+[2.137376] (xela_description) StdoutLine: {'line': b'copying mjcf/meshes/leap_mount.obj -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/meshes\n'}
+[2.137620] (xela_description) StdoutLine: {'line': b'copying mjcf/meshes/dex_cube.obj -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/mjcf/meshes\n'}
+[2.137914] (xela_description) StdoutLine: {'line': b'creating /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.138069] (xela_description) StdoutLine: {'line': b'copying urdf/assets/fingertop_unfied.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.138261] (xela_description) StdoutLine: {'line': b'copying urdf/assets/p4_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.139653] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thp0_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.140494] (xela_description) StdoutLine: {'line': b'copying urdf/assets/fingertop_unfied.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.141893] (xela_description) StdoutLine: {'line': b'copying urdf/assets/p5_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.142866] (xela_description) StdoutLine: {'line': b'copying urdf/assets/palm_face.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.143041] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thfingertip_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.143196] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thconnector.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.143913] (xela_description) StdoutLine: {'line': b'copying urdf/assets/p3_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.144179] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thp1_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.144445] (xela_description) StdoutLine: {'line': b'copying urdf/assets/top_palm.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.145340] (xela_description) StdoutLine: {'line': b'copying urdf/assets/leap_hand_xela_motorholder.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.145568] (xela_description) StdoutLine: {'line': b'copying urdf/assets/clipper.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.145792] (xela_description) StdoutLine: {'line': b'copying urdf/assets/uspa46.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.146280] (xela_description) StdoutLine: {'line': b'copying urdf/assets/leap_hand_xela_motorholder.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.147213] (xela_description) StdoutLine: {'line': b'copying urdf/assets/leap_hand_xela_bottom.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.148413] (xela_description) StdoutLine: {'line': b'copying urdf/assets/leap_hand_xela_side_cover.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.148810] (xela_description) StdoutLine: {'line': b'copying urdf/assets/p5_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.149052] (xela_description) StdoutLine: {'line': b'copying urdf/assets/p4_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.149199] (xela_description) StdoutLine: {'line': b'copying urdf/assets/leap_hand_xela_side_cover.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.149316] (xela_description) StdoutLine: {'line': b'copying urdf/assets/clipper.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.149459] (xela_description) StdoutLine: {'line': b'copying urdf/assets/uspa46.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.149689] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thfingertip_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.153074] (xela_description) StdoutLine: {'line': b'copying urdf/assets/leap_hand_xela_back_cover.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.153206] (xela_description) StdoutLine: {'line': b'copying urdf/assets/top_palm.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.153289] (xela_description) StdoutLine: {'line': b'copying urdf/assets/palm_face.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.153795] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thp1_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.155005] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thconnector.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.155232] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thp0_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.155376] (xela_description) StdoutLine: {'line': b'copying urdf/assets/leap_hand_xela_back_cover.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.155514] (xela_description) StdoutLine: {'line': b'copying urdf/assets/p3_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.156771] (xela_description) StdoutLine: {'line': b'copying urdf/assets/leap_hand_xela_bottom.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.157002] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thp2_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.158006] (xela_description) StdoutLine: {'line': b'copying urdf/assets/p2_unified.stl -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.159064] (xela_description) StdoutLine: {'line': b'copying urdf/assets/p2_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.159301] (xela_description) StdoutLine: {'line': b'copying urdf/assets/thp2_unified.part -> /workspace/LeapXELA_Hardware_ws/install/xela_description/share/xela_description/assets\n'}
+[2.159404] (xela_description) StdoutLine: {'line': b'running install_egg_info\n'}
+[2.196726] (xela_description) StdoutLine: {'line': b'Copying ../../../build/xela_description/xela_description.egg-info to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages/xela_description-0.0.0-py3.10.egg-info\n'}
+[2.197900] (xela_description) StdoutLine: {'line': b'running install_scripts\n'}
+[2.206680] (-) TimerEvent: {}
+[2.279833] (xela_description) StdoutLine: {'line': b'Installing visulize script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description\n'}
+[2.280205] (xela_description) StdoutLine: {'line': b'Installing visulize_finger script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description\n'}
+[2.280348] (xela_description) StdoutLine: {'line': b'Installing visulize_hand script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description\n'}
+[2.280512] (xela_description) StdoutLine: {'line': b'Installing visulize_mjcf script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description\n'}
+[2.280783] (xela_description) StdoutLine: {'line': b'Installing visulize_palm script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description\n'}
+[2.281035] (xela_description) StdoutLine: {'line': b'Installing visulize_thumb script to /workspace/LeapXELA_Hardware_ws/install/xela_description/lib/xela_description\n'}
+[2.282652] (xela_description) StdoutLine: {'line': b"writing list of installed files to '/workspace/LeapXELA_Hardware_ws/build/xela_description/install.log'\n"}
+[2.306844] (-) TimerEvent: {}
+[2.321763] (xela_description) CommandEnded: {'returncode': 0}
+[2.357670] (xela_description) JobEnded: {'identifier': 'xela_description', 'rc': 0}
+[2.359407] (xela_sparshskin_sim) JobStarted: {'identifier': 'xela_sparshskin_sim'}
+[2.372050] (xela_sparshskin_sim) JobProgress: {'identifier': 'xela_sparshskin_sim', 'progress': 'cmake'}
+[2.374869] (xela_sparshskin_sim) Command: {'cmd': ['/usr/bin/cmake', '/workspace/LeapXELA_Hardware_ws/ros_ws/src/sparse_skin/xela_sparshskin/xela_sparshskin_sim', '-DCMAKE_INSTALL_PREFIX=/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim'], 'cwd': '/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '12.2.5.6-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-12-2=12.2.142-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-12-2'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '12.2.2-1'), ('HOSTNAME', 'Blade'), ('GIT_ASKPASS', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/tmp/1.4.341.1/x86_64/lib:/usr/local/lib'), ('BROWSER', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/helpers/browser.sh'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.19.3-1'), ('LOCAL_USER_ID', '1000'), ('HOME', '/root'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('TERM_PROGRAM_VERSION', '3.4.20'), ('NV_LIBCUBLAS_DEV_VERSION', '12.2.5.6-1'), ('VSCODE_IPC_HOOK_CLI', '/tmp/vscode-ipc-4b79f63a-7885-4fa1-b4f1-e2185af2b39c.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/node'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.19.3-1'), ('COLORTERM', 'truecolor'), ('NV_LIBNPP_PACKAGE', 'libnpp-12-2=12.2.1.4-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.9.6.50-1+cuda12.2'), ('CUDA_VERSION', '12.2.2'), ('LOCAL_GID', '1000'), ('NV_NVPROF_VERSION', '12.2.142-1'), ('ROS_DISTRO', 'humble'), ('OVSX_REGISTRY_URL', 'https://open-vsx.org'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-12-2'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=12.2 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '12.1.2.141-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'all'), ('VULKAN_SDK', '/tmp/1.4.341.1/x86_64'), ('NV_CUDA_LIB_VERSION', '12.2.2-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '12.2.140-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-12-2=12.2.1.4-1'), ('TERM', 'xterm-256color'), ('NV_CUDA_CUDART_VERSION', '12.2.140-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.9.6.50-1+cuda12.2'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/opt/ros/humble/bin:/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/tmp/1.4.341.1/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-12-2'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-12-2=12.2.5.6-1'), ('NVARCH', 'x86_64'), ('MUJOCO_DIR', '/usr/local'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '12.1.2.141-1'), ('DISPLAY', ':0'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.19.3-1+cuda12.2'), ('MUJOCO_GL', 'egl'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '12.2.140-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/tmp/vscode-git-b9b2478d3b.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/tmp/cursor-remote-ssh-d65a5de7-8b6b-480a-b00c-7b0d9bfb361d.sock'), ('AMENT_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/install/xela_description:/opt/ros/humble'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-12-2=12.2.5.6-1'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-12-2=12.2.2-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.19.3-1+cuda12.2'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('VK_LAYER_PATH', '/tmp/1.4.341.1/x86_64/etc/vulkan/explicit_layer.d'), ('NV_NVTX_VERSION', '12.2.140-1'), ('NV_LIBNPP_VERSION', '12.2.1.4-1'), ('VSCODE_GIT_IPC_AUTH_TOKEN', '2c792a8b2d825171c0613488d050b262377d54d09c71553f5b562924e4e510a0'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('NV_CUDNN_VERSION', '8.9.6.50'), ('PWD', '/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim'), ('CUDA_HOME', '/usr/local/cuda'), ('PYTHONPATH', '/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.19.3-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '12.2.1.4-1'), ('CMAKE_PREFIX_PATH', '/usr/local/lib/cmake::/opt/ros/humble')]), 'shell': False}
+[2.406965] (-) TimerEvent: {}
+[2.507372] (-) TimerEvent: {}
+[2.609734] (-) TimerEvent: {}
+[2.649025] (xela_sparshskin_sim) StdoutLine: {'line': b'-- The C compiler identification is GNU 11.4.0\n'}
+[2.709887] (-) TimerEvent: {}
+[2.810405] (-) TimerEvent: {}
+[2.826058] (xela_sparshskin_sim) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 11.4.0\n'}
+[2.844520] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Detecting C compiler ABI info\n'}
+[2.912740] (-) TimerEvent: {}
+[2.972047] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Detecting C compiler ABI info - done\n'}
+[2.985358] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Check for working C compiler: /usr/bin/cc - skipped\n'}
+[2.989260] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Detecting C compile features\n'}
+[2.990390] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Detecting C compile features - done\n'}
+[2.996950] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[3.012851] (-) TimerEvent: {}
+[3.113266] (-) TimerEvent: {}
+[3.134778] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[3.158628] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ - skipped\n'}
+[3.159282] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[3.160570] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[3.172982] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found ament_cmake: 1.3.14 (/opt/ros/humble/share/ament_cmake/cmake)\n'}
+[3.213436] (-) TimerEvent: {}
+[3.313820] (-) TimerEvent: {}
+[3.414169] (-) TimerEvent: {}
+[3.514560] (-) TimerEvent: {}
+[3.614928] (-) TimerEvent: {}
+[3.715363] (-) TimerEvent: {}
+[3.815769] (-) TimerEvent: {}
+[3.916190] (-) TimerEvent: {}
+[3.917300] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter \n'}
+[4.016302] (-) TimerEvent: {}
+[4.116699] (-) TimerEvent: {}
+[4.117954] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found ament_index_cpp: 1.4.1 (/opt/ros/humble/share/ament_index_cpp/cmake)\n'}
+[4.123330] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found rclcpp: 16.0.19 (/opt/ros/humble/share/rclcpp/cmake)\n'}
+[4.216926] (-) TimerEvent: {}
+[4.223977] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found rosidl_generator_c: 3.1.8 (/opt/ros/humble/share/rosidl_generator_c/cmake)\n'}
+[4.236920] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found rosidl_adapter: 3.1.8 (/opt/ros/humble/share/rosidl_adapter/cmake)\n'}
+[4.259771] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found rosidl_generator_cpp: 3.1.8 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)\n'}
+[4.293997] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[4.317076] (-) TimerEvent: {}
+[4.332918] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[4.417281] (-) TimerEvent: {}
+[4.438584] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)\n'}
+[4.445734] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found rmw_fastrtps_cpp: 6.2.10 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)\n'}
+[4.517429] (-) TimerEvent: {}
+[4.617873] (-) TimerEvent: {}
+[4.624208] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "3.0.2")  \n'}
+[4.680810] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/humble/include  \n'}
+[4.718036] (-) TimerEvent: {}
+[4.768785] (xela_sparshskin_sim) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_fastrtps_cpp' as default\n"}
+[4.793073] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Looking for pthread.h\n'}
+[4.818192] (-) TimerEvent: {}
+[4.918617] (-) TimerEvent: {}
+[4.922541] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Looking for pthread.h - found\n'}
+[4.923514] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[5.018737] (-) TimerEvent: {}
+[5.051798] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n'}
+[5.053670] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[5.118854] (-) TimerEvent: {}
+[5.178789] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found rosidl_default_generators: 1.2.1 (/opt/ros/humble/share/rosidl_default_generators/cmake)\n'}
+[5.210761] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found sensor_msgs: 4.9.1 (/opt/ros/humble/share/sensor_msgs/cmake)\n'}
+[5.219009] (-) TimerEvent: {}
+[5.290844] (xela_sparshskin_sim) StderrLine: {'line': b'\x1b[33mCMake Warning (dev) at /usr/share/cmake-3.22/Modules/FindOpenGL.cmake:315 (message):\n'}
+[5.291121] (xela_sparshskin_sim) StderrLine: {'line': b'  Policy CMP0072 is not set: FindOpenGL prefers GLVND by default when\n'}
+[5.291225] (xela_sparshskin_sim) StderrLine: {'line': b'  available.  Run "cmake --help-policy CMP0072" for policy details.  Use the\n'}
+[5.291303] (xela_sparshskin_sim) StderrLine: {'line': b'  cmake_policy command to set the policy and suppress this warning.\n'}
+[5.291376] (xela_sparshskin_sim) StderrLine: {'line': b'\n'}
+[5.291453] (xela_sparshskin_sim) StderrLine: {'line': b'  FindOpenGL found both a legacy GL library:\n'}
+[5.291526] (xela_sparshskin_sim) StderrLine: {'line': b'\n'}
+[5.291596] (xela_sparshskin_sim) StderrLine: {'line': b'    OPENGL_gl_LIBRARY: /usr/lib/x86_64-linux-gnu/libGL.so\n'}
+[5.291702] (xela_sparshskin_sim) StderrLine: {'line': b'\n'}
+[5.291776] (xela_sparshskin_sim) StderrLine: {'line': b'  and GLVND libraries for OpenGL and GLX:\n'}
+[5.291847] (xela_sparshskin_sim) StderrLine: {'line': b'\n'}
+[5.291917] (xela_sparshskin_sim) StderrLine: {'line': b'    OPENGL_opengl_LIBRARY: /usr/lib/x86_64-linux-gnu/libOpenGL.so\n'}
+[5.292001] (xela_sparshskin_sim) StderrLine: {'line': b'    OPENGL_glx_LIBRARY: /usr/lib/x86_64-linux-gnu/libGLX.so\n'}
+[5.292077] (xela_sparshskin_sim) StderrLine: {'line': b'\n'}
+[5.292153] (xela_sparshskin_sim) StderrLine: {'line': b'  OpenGL_GL_PREFERENCE has not been set to "GLVND" or "LEGACY", so for\n'}
+[5.292226] (xela_sparshskin_sim) StderrLine: {'line': b'  compatibility with CMake 3.10 and below the legacy GL library will be used.\n'}
+[5.292300] (xela_sparshskin_sim) StderrLine: {'line': b'Call Stack (most recent call first):\n'}
+[5.292371] (xela_sparshskin_sim) StderrLine: {'line': b'  CMakeLists.txt:14 (find_package)\n'}
+[5.292528] (xela_sparshskin_sim) StderrLine: {'line': b'This warning is for project developers.  Use -Wno-dev to suppress it.\n'}
+[5.292601] (xela_sparshskin_sim) StderrLine: {'line': b'\x1b[0m\n'}
+[5.292707] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so   \n'}
+[5.319202] (-) TimerEvent: {}
+[5.419697] (-) TimerEvent: {}
+[5.520076] (-) TimerEvent: {}
+[5.620449] (-) TimerEvent: {}
+[5.720859] (-) TimerEvent: {}
+[5.821258] (-) TimerEvent: {}
+[5.832001] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found ament_cmake_ros: 0.10.0 (/opt/ros/humble/share/ament_cmake_ros/cmake)\n'}
+[5.921397] (-) TimerEvent: {}
+[6.021925] (-) TimerEvent: {}
+[6.122418] (-) TimerEvent: {}
+[6.222813] (-) TimerEvent: {}
+[6.323274] (-) TimerEvent: {}
+[6.423768] (-) TimerEvent: {}
+[6.524231] (-) TimerEvent: {}
+[6.525246] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[6.624367] (-) TimerEvent: {}
+[6.724847] (-) TimerEvent: {}
+[6.789111] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[6.824992] (-) TimerEvent: {}
+[6.845318] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.10.12", minimum required is "3.6") \n'}
+[6.849879] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found python_cmake_module: 0.10.0 (/opt/ros/humble/share/python_cmake_module/cmake)\n'}
+[6.911175] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found PythonLibs: /usr/lib/x86_64-linux-gnu/libpython3.10.so (found suitable version "3.10.12", minimum required is "3.5") \n'}
+[6.911444] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[6.911542] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Using PYTHON_INCLUDE_DIRS: /usr/include/python3.10\n'}
+[6.911634] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Using PYTHON_LIBRARIES: /usr/lib/x86_64-linux-gnu/libpython3.10.so\n'}
+[6.925149] (-) TimerEvent: {}
+[6.965158] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Found PythonExtra: .so  \n'}
+[7.025349] (-) TimerEvent: {}
+[7.125830] (-) TimerEvent: {}
+[7.194690] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Configuring done\n'}
+[7.225977] (-) TimerEvent: {}
+[7.256351] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Generating done\n'}
+[7.277465] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Build files have been written to: /workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim\n'}
+[7.293970] (xela_sparshskin_sim) CommandEnded: {'returncode': 0}
+[7.295042] (xela_sparshskin_sim) JobProgress: {'identifier': 'xela_sparshskin_sim', 'progress': 'build'}
+[7.296430] (xela_sparshskin_sim) Command: {'cmd': ['/usr/bin/cmake', '--build', '/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim', '--', '-j16', '-l16'], 'cwd': '/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '12.2.5.6-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-12-2=12.2.142-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-12-2'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '12.2.2-1'), ('HOSTNAME', 'Blade'), ('GIT_ASKPASS', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/tmp/1.4.341.1/x86_64/lib:/usr/local/lib'), ('BROWSER', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/helpers/browser.sh'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.19.3-1'), ('LOCAL_USER_ID', '1000'), ('HOME', '/root'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('TERM_PROGRAM_VERSION', '3.4.20'), ('NV_LIBCUBLAS_DEV_VERSION', '12.2.5.6-1'), ('VSCODE_IPC_HOOK_CLI', '/tmp/vscode-ipc-4b79f63a-7885-4fa1-b4f1-e2185af2b39c.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/node'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.19.3-1'), ('COLORTERM', 'truecolor'), ('NV_LIBNPP_PACKAGE', 'libnpp-12-2=12.2.1.4-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.9.6.50-1+cuda12.2'), ('CUDA_VERSION', '12.2.2'), ('LOCAL_GID', '1000'), ('NV_NVPROF_VERSION', '12.2.142-1'), ('ROS_DISTRO', 'humble'), ('OVSX_REGISTRY_URL', 'https://open-vsx.org'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-12-2'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=12.2 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '12.1.2.141-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'all'), ('VULKAN_SDK', '/tmp/1.4.341.1/x86_64'), ('NV_CUDA_LIB_VERSION', '12.2.2-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '12.2.140-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-12-2=12.2.1.4-1'), ('TERM', 'xterm-256color'), ('NV_CUDA_CUDART_VERSION', '12.2.140-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.9.6.50-1+cuda12.2'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/opt/ros/humble/bin:/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/tmp/1.4.341.1/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-12-2'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-12-2=12.2.5.6-1'), ('NVARCH', 'x86_64'), ('MUJOCO_DIR', '/usr/local'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '12.1.2.141-1'), ('DISPLAY', ':0'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.19.3-1+cuda12.2'), ('MUJOCO_GL', 'egl'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '12.2.140-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/tmp/vscode-git-b9b2478d3b.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/tmp/cursor-remote-ssh-d65a5de7-8b6b-480a-b00c-7b0d9bfb361d.sock'), ('AMENT_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/install/xela_description:/opt/ros/humble'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-12-2=12.2.5.6-1'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-12-2=12.2.2-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.19.3-1+cuda12.2'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('VK_LAYER_PATH', '/tmp/1.4.341.1/x86_64/etc/vulkan/explicit_layer.d'), ('NV_NVTX_VERSION', '12.2.140-1'), ('NV_LIBNPP_VERSION', '12.2.1.4-1'), ('VSCODE_GIT_IPC_AUTH_TOKEN', '2c792a8b2d825171c0613488d050b262377d54d09c71553f5b562924e4e510a0'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('NV_CUDNN_VERSION', '8.9.6.50'), ('PWD', '/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim'), ('CUDA_HOME', '/usr/local/cuda'), ('PYTHONPATH', '/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.19.3-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '12.2.1.4-1'), ('CMAKE_PREFIX_PATH', '/usr/local/lib/cmake::/opt/ros/humble')]), 'shell': False}
+[7.326102] (-) TimerEvent: {}
+[7.366702] (xela_sparshskin_sim) StdoutLine: {'line': b'[  2%] \x1b[34m\x1b[1mGenerating C code for ROS interfaces\x1b[0m\n'}
+[7.382033] (xela_sparshskin_sim) StdoutLine: {'line': b'[  4%] \x1b[34m\x1b[1mGenerating Rust code for ROS interfaces\x1b[0m\n'}
+[7.382514] (xela_sparshskin_sim) StdoutLine: {'line': b'[  6%] \x1b[34m\x1b[1mGenerating C++ code for ROS interfaces\x1b[0m\n'}
+[7.383117] (xela_sparshskin_sim) StdoutLine: {'line': b'[  9%] \x1b[32mBuilding CXX object CMakeFiles/process_hand_sensors_into_pointcloud.dir/src/process_hand_sensors_into_pointcloud.cc.o\x1b[0m\n'}
+[7.383367] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 11%] \x1b[32mBuilding CXX object CMakeFiles/process_hand_sensors_into_pointcloud.dir/src/camera_control.cc.o\x1b[0m\n'}
+[7.396784] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 11%] Built target ament_cmake_python_copy_xela_sparshskin_sim\n'}
+[7.426232] (-) TimerEvent: {}
+[7.526722] (-) TimerEvent: {}
+[7.627224] (-) TimerEvent: {}
+[7.727665] (-) TimerEvent: {}
+[7.765496] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 11%] Built target xela_sparshskin_sim__rs\n'}
+[7.825814] (xela_sparshskin_sim) StdoutLine: {'line': b'running egg_info\n'}
+[7.827866] (-) TimerEvent: {}
+[7.859751] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 11%] Built target xela_sparshskin_sim__cpp\n'}
+[7.861233] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_generator_c.dir/rosidl_generator_c/xela_sparshskin_sim/msg/detail/hand_sensors__functions.c.o\x1b[0m\n'}
+[7.861469] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 16%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_generator_c.dir/rosidl_generator_c/xela_sparshskin_sim/msg/detail/texel__functions.c.o\x1b[0m\n'}
+[7.864024] (xela_sparshskin_sim) StdoutLine: {'line': b'creating xela_sparshskin_sim.egg-info\n'}
+[7.864359] (xela_sparshskin_sim) StdoutLine: {'line': b'writing xela_sparshskin_sim.egg-info/PKG-INFO\n'}
+[7.864856] (xela_sparshskin_sim) StdoutLine: {'line': b'writing dependency_links to xela_sparshskin_sim.egg-info/dependency_links.txt\n'}
+[7.865296] (xela_sparshskin_sim) StdoutLine: {'line': b'writing top-level names to xela_sparshskin_sim.egg-info/top_level.txt\n'}
+[7.865514] (xela_sparshskin_sim) StdoutLine: {'line': b"writing manifest file 'xela_sparshskin_sim.egg-info/SOURCES.txt'\n"}
+[7.875344] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 18%] \x1b[34m\x1b[1mGenerating C++ introspection for ROS interfaces\x1b[0m\n'}
+[7.875730] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 20%] \x1b[34m\x1b[1mGenerating C++ type support dispatch for ROS interfaces\x1b[0m\n'}
+[7.875912] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 23%] \x1b[34m\x1b[1mGenerating C++ type support for eProsima Fast-RTPS\x1b[0m\n'}
+[7.930689] (-) TimerEvent: {}
+[7.946743] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 25%] \x1b[32m\x1b[1mLinking C shared library libxela_sparshskin_sim__rosidl_generator_c.so\x1b[0m\n'}
+[7.980930] (xela_sparshskin_sim) StdoutLine: {'line': b"reading manifest file 'xela_sparshskin_sim.egg-info/SOURCES.txt'\n"}
+[7.983030] (xela_sparshskin_sim) StdoutLine: {'line': b"writing manifest file 'xela_sparshskin_sim.egg-info/SOURCES.txt'\n"}
+[8.010308] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 25%] Built target xela_sparshskin_sim__rosidl_generator_c\n'}
+[8.026397] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 27%] \x1b[34m\x1b[1mGenerating C type support for eProsima Fast-RTPS\x1b[0m\n'}
+[8.026854] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 32%] \x1b[34m\x1b[1mGenerating C type support dispatch for ROS interfaces\x1b[0m\n'}
+[8.027031] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 32%] \x1b[34m\x1b[1mGenerating C introspection for ROS interfaces\x1b[0m\n'}
+[8.030787] (-) TimerEvent: {}
+[8.039808] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 32%] Built target ament_cmake_python_build_xela_sparshskin_sim_egg\n'}
+[8.130921] (-) TimerEvent: {}
+[8.231345] (-) TimerEvent: {}
+[8.290987] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 34%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/xela_sparshskin_sim/msg/texel__type_support.cpp.o\x1b[0m\n'}
+[8.291782] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 37%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_cpp.dir/rosidl_typesupport_cpp/xela_sparshskin_sim/msg/hand_sensors__type_support.cpp.o\x1b[0m\n'}
+[8.306859] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 39%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/xela_sparshskin_sim/msg/detail/texel__type_support.cpp.o\x1b[0m\n'}
+[8.307408] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 41%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_cpp.dir/rosidl_typesupport_introspection_cpp/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.cpp.o\x1b[0m\n'}
+[8.331478] (-) TimerEvent: {}
+[8.375411] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 44%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_sparshskin_sim/msg/detail/dds_fastrtps/texel__type_support.cpp.o\x1b[0m\n'}
+[8.380876] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 46%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp.dir/rosidl_typesupport_fastrtps_cpp/xela_sparshskin_sim/msg/detail/dds_fastrtps/hand_sensors__type_support.cpp.o\x1b[0m\n'}
+[8.431636] (-) TimerEvent: {}
+[8.439715] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 48%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_c.dir/rosidl_typesupport_c/xela_sparshskin_sim/msg/texel__type_support.cpp.o\x1b[0m\n'}
+[8.440317] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 51%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_c.dir/rosidl_typesupport_c/xela_sparshskin_sim/msg/hand_sensors__type_support.cpp.o\x1b[0m\n'}
+[8.494949] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 53%] \x1b[32m\x1b[1mLinking CXX shared library libxela_sparshskin_sim__rosidl_typesupport_c.so\x1b[0m\n'}
+[8.525566] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 55%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/xela_sparshskin_sim/msg/detail/texel__type_support_c.cpp.o\x1b[0m\n'}
+[8.530739] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 58%] \x1b[32mBuilding CXX object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_fastrtps_c.dir/rosidl_typesupport_fastrtps_c/xela_sparshskin_sim/msg/detail/hand_sensors__type_support_c.cpp.o\x1b[0m\n'}
+[8.531663] (-) TimerEvent: {}
+[8.572471] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 58%] Built target xela_sparshskin_sim__rosidl_typesupport_c\n'}
+[8.573501] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 60%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/texel__type_support.c.o\x1b[0m\n'}
+[8.578445] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 62%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.c.o\x1b[0m\n'}
+[8.631832] (-) TimerEvent: {}
+[8.638140] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 65%] \x1b[32m\x1b[1mLinking C shared library libxela_sparshskin_sim__rosidl_typesupport_introspection_c.so\x1b[0m\n'}
+[8.687204] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 65%] Built target xela_sparshskin_sim__rosidl_typesupport_introspection_c\n'}
+[8.731960] (-) TimerEvent: {}
+[8.832388] (-) TimerEvent: {}
+[8.899280] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 67%] \x1b[32m\x1b[1mLinking CXX shared library libxela_sparshskin_sim__rosidl_typesupport_cpp.so\x1b[0m\n'}
+[8.932544] (-) TimerEvent: {}
+[8.965240] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 67%] Built target xela_sparshskin_sim__rosidl_typesupport_cpp\n'}
+[9.032710] (-) TimerEvent: {}
+[9.133246] (-) TimerEvent: {}
+[9.177584] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 69%] \x1b[32m\x1b[1mLinking CXX shared library libxela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp.so\x1b[0m\n'}
+[9.181502] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 72%] \x1b[32m\x1b[1mLinking CXX shared library libxela_sparshskin_sim__rosidl_typesupport_fastrtps_c.so\x1b[0m\n'}
+[9.181777] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 74%] \x1b[32m\x1b[1mLinking CXX shared library libxela_sparshskin_sim__rosidl_typesupport_introspection_cpp.so\x1b[0m\n'}
+[9.233380] (-) TimerEvent: {}
+[9.299374] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 74%] Built target xela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp\n'}
+[9.300907] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 74%] Built target xela_sparshskin_sim__rosidl_typesupport_fastrtps_c\n'}
+[9.302414] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 74%] Built target xela_sparshskin_sim__rosidl_typesupport_introspection_cpp\n'}
+[9.333578] (-) TimerEvent: {}
+[9.334068] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 74%] Built target xela_sparshskin_sim\n'}
+[9.366939] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 76%] \x1b[34m\x1b[1mGenerating Python code for ROS interfaces\x1b[0m\n'}
+[9.433790] (-) TimerEvent: {}
+[9.534195] (-) TimerEvent: {}
+[9.634715] (-) TimerEvent: {}
+[9.735213] (-) TimerEvent: {}
+[9.835654] (-) TimerEvent: {}
+[9.936032] (-) TimerEvent: {}
+[9.971306] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 76%] Built target xela_sparshskin_sim__py\n'}
+[10.004212] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 79%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_generator_py.dir/rosidl_generator_py/xela_sparshskin_sim/msg/_texel_s.c.o\x1b[0m\n'}
+[10.004580] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 81%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_generator_py.dir/rosidl_generator_py/xela_sparshskin_sim/msg/_hand_sensors_s.c.o\x1b[0m\n'}
+[10.036213] (-) TimerEvent: {}
+[10.136774] (-) TimerEvent: {}
+[10.213009] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 83%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/xela_sparshskin_sim/libxela_sparshskin_sim__rosidl_generator_py.so\x1b[0m\n'}
+[10.236894] (-) TimerEvent: {}
+[10.279155] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 83%] Built target xela_sparshskin_sim__rosidl_generator_py\n'}
+[10.311070] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 86%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_fastrtps_c__pyext.dir/rosidl_generator_py/xela_sparshskin_sim/_xela_sparshskin_sim_s.ep.rosidl_typesupport_fastrtps_c.c.o\x1b[0m\n'}
+[10.311714] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 88%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_c__pyext.dir/rosidl_generator_py/xela_sparshskin_sim/_xela_sparshskin_sim_s.ep.rosidl_typesupport_introspection_c.c.o\x1b[0m\n'}
+[10.311982] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 90%] \x1b[32mBuilding C object CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_c__pyext.dir/rosidl_generator_py/xela_sparshskin_sim/_xela_sparshskin_sim_s.ep.rosidl_typesupport_c.c.o\x1b[0m\n'}
+[10.337027] (-) TimerEvent: {}
+[10.437497] (-) TimerEvent: {}
+[10.460817] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 95%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\x1b[0m\n'}
+[10.461120] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 95%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\x1b[0m\n'}
+[10.462715] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 97%] \x1b[32m\x1b[1mLinking C shared library rosidl_generator_py/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\x1b[0m\n'}
+[10.510848] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 97%] Built target xela_sparshskin_sim__rosidl_typesupport_c__pyext\n'}
+[10.512208] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 97%] Built target xela_sparshskin_sim__rosidl_typesupport_introspection_c__pyext\n'}
+[10.512639] (xela_sparshskin_sim) StdoutLine: {'line': b'[ 97%] Built target xela_sparshskin_sim__rosidl_typesupport_fastrtps_c__pyext\n'}
+[10.537650] (-) TimerEvent: {}
+[10.638152] (-) TimerEvent: {}
+[10.738699] (-) TimerEvent: {}
+[10.839214] (-) TimerEvent: {}
+[10.939785] (-) TimerEvent: {}
+[11.040316] (-) TimerEvent: {}
+[11.140841] (-) TimerEvent: {}
+[11.241354] (-) TimerEvent: {}
+[11.341867] (-) TimerEvent: {}
+[11.442358] (-) TimerEvent: {}
+[11.542853] (-) TimerEvent: {}
+[11.643306] (-) TimerEvent: {}
+[11.743835] (-) TimerEvent: {}
+[11.844304] (-) TimerEvent: {}
+[11.944859] (-) TimerEvent: {}
+[12.045334] (-) TimerEvent: {}
+[12.145772] (-) TimerEvent: {}
+[12.246274] (-) TimerEvent: {}
+[12.346828] (-) TimerEvent: {}
+[12.447301] (-) TimerEvent: {}
+[12.547884] (-) TimerEvent: {}
+[12.648343] (-) TimerEvent: {}
+[12.748749] (-) TimerEvent: {}
+[12.849253] (-) TimerEvent: {}
+[12.952289] (-) TimerEvent: {}
+[13.052731] (-) TimerEvent: {}
+[13.153181] (-) TimerEvent: {}
+[13.253576] (-) TimerEvent: {}
+[13.354123] (-) TimerEvent: {}
+[13.454659] (-) TimerEvent: {}
+[13.555191] (-) TimerEvent: {}
+[13.655708] (-) TimerEvent: {}
+[13.756231] (-) TimerEvent: {}
+[13.856746] (-) TimerEvent: {}
+[13.957209] (-) TimerEvent: {}
+[14.057807] (-) TimerEvent: {}
+[14.158357] (-) TimerEvent: {}
+[14.258890] (-) TimerEvent: {}
+[14.359431] (-) TimerEvent: {}
+[14.459964] (-) TimerEvent: {}
+[14.560471] (-) TimerEvent: {}
+[14.660991] (-) TimerEvent: {}
+[14.761588] (-) TimerEvent: {}
+[14.862265] (-) TimerEvent: {}
+[14.962897] (-) TimerEvent: {}
+[15.063411] (-) TimerEvent: {}
+[15.163867] (-) TimerEvent: {}
+[15.264399] (-) TimerEvent: {}
+[15.364892] (-) TimerEvent: {}
+[15.465305] (-) TimerEvent: {}
+[15.565829] (-) TimerEvent: {}
+[15.666295] (-) TimerEvent: {}
+[15.766779] (-) TimerEvent: {}
+[15.867191] (-) TimerEvent: {}
+[15.967679] (-) TimerEvent: {}
+[16.068172] (-) TimerEvent: {}
+[16.168797] (-) TimerEvent: {}
+[16.269294] (-) TimerEvent: {}
+[16.369765] (-) TimerEvent: {}
+[16.470357] (-) TimerEvent: {}
+[16.570992] (-) TimerEvent: {}
+[16.671643] (-) TimerEvent: {}
+[16.772210] (-) TimerEvent: {}
+[16.872778] (-) TimerEvent: {}
+[16.973353] (-) TimerEvent: {}
+[17.073816] (-) TimerEvent: {}
+[17.174297] (-) TimerEvent: {}
+[17.274721] (-) TimerEvent: {}
+[17.375198] (-) TimerEvent: {}
+[17.475636] (-) TimerEvent: {}
+[17.576098] (-) TimerEvent: {}
+[17.676511] (-) TimerEvent: {}
+[17.776936] (-) TimerEvent: {}
+[17.877498] (-) TimerEvent: {}
+[17.977943] (-) TimerEvent: {}
+[18.078420] (-) TimerEvent: {}
+[18.178900] (-) TimerEvent: {}
+[18.279370] (-) TimerEvent: {}
+[18.379933] (-) TimerEvent: {}
+[18.480435] (-) TimerEvent: {}
+[18.580870] (-) TimerEvent: {}
+[18.681346] (-) TimerEvent: {}
+[18.781829] (-) TimerEvent: {}
+[18.882258] (-) TimerEvent: {}
+[18.982748] (-) TimerEvent: {}
+[19.083171] (-) TimerEvent: {}
+[19.184161] (-) TimerEvent: {}
+[19.284635] (-) TimerEvent: {}
+[19.385093] (-) TimerEvent: {}
+[19.485517] (-) TimerEvent: {}
+[19.586044] (-) TimerEvent: {}
+[19.686593] (-) TimerEvent: {}
+[19.787093] (-) TimerEvent: {}
+[19.887561] (-) TimerEvent: {}
+[19.988045] (-) TimerEvent: {}
+[20.088616] (-) TimerEvent: {}
+[20.189007] (-) TimerEvent: {}
+[20.289503] (-) TimerEvent: {}
+[20.389980] (-) TimerEvent: {}
+[20.490403] (-) TimerEvent: {}
+[20.590855] (-) TimerEvent: {}
+[20.691333] (-) TimerEvent: {}
+[20.791782] (-) TimerEvent: {}
+[20.892253] (-) TimerEvent: {}
+[20.992753] (-) TimerEvent: {}
+[21.093187] (-) TimerEvent: {}
+[21.193692] (-) TimerEvent: {}
+[21.294192] (-) TimerEvent: {}
+[21.394642] (-) TimerEvent: {}
+[21.495015] (-) TimerEvent: {}
+[21.595389] (-) TimerEvent: {}
+[21.695749] (-) TimerEvent: {}
+[21.796119] (-) TimerEvent: {}
+[21.896548] (-) TimerEvent: {}
+[21.996979] (-) TimerEvent: {}
+[22.097350] (-) TimerEvent: {}
+[22.197777] (-) TimerEvent: {}
+[22.300713] (-) TimerEvent: {}
+[22.401141] (-) TimerEvent: {}
+[22.501666] (-) TimerEvent: {}
+[22.602090] (-) TimerEvent: {}
+[22.702580] (-) TimerEvent: {}
+[22.803097] (-) TimerEvent: {}
+[22.903665] (-) TimerEvent: {}
+[23.004208] (-) TimerEvent: {}
+[23.090445] (xela_sparshskin_sim) StdoutLine: {'line': b'[100%] \x1b[32m\x1b[1mLinking CXX executable process_hand_sensors_into_pointcloud\x1b[0m\n'}
+[23.104318] (-) TimerEvent: {}
+[23.204773] (-) TimerEvent: {}
+[23.305152] (-) TimerEvent: {}
+[23.405549] (-) TimerEvent: {}
+[23.505950] (-) TimerEvent: {}
+[23.606424] (-) TimerEvent: {}
+[23.706905] (-) TimerEvent: {}
+[23.807300] (-) TimerEvent: {}
+[23.893481] (xela_sparshskin_sim) StdoutLine: {'line': b'[100%] Built target process_hand_sensors_into_pointcloud\n'}
+[23.907417] (-) TimerEvent: {}
+[23.914288] (xela_sparshskin_sim) CommandEnded: {'returncode': 0}
+[23.915763] (xela_sparshskin_sim) JobProgress: {'identifier': 'xela_sparshskin_sim', 'progress': 'install'}
+[23.931915] (xela_sparshskin_sim) Command: {'cmd': ['/usr/bin/cmake', '--install', '/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim'], 'cwd': '/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('LIBRARY_PATH', '/usr/local/cuda/lib64/stubs'), ('NV_LIBCUBLAS_VERSION', '12.2.5.6-1'), ('NV_NVPROF_DEV_PACKAGE', 'cuda-nvprof-12-2=12.2.142-1'), ('NV_CUDA_COMPAT_PACKAGE', 'cuda-compat-12-2'), ('NV_CUDA_NSIGHT_COMPUTE_VERSION', '12.2.2-1'), ('HOSTNAME', 'Blade'), ('GIT_ASKPASS', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass.sh'), ('SHLVL', '1'), ('LD_LIBRARY_PATH', '/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/tmp/1.4.341.1/x86_64/lib:/usr/local/lib'), ('BROWSER', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/helpers/browser.sh'), ('NV_LIBNCCL_PACKAGE_VERSION', '2.19.3-1'), ('LOCAL_USER_ID', '1000'), ('HOME', '/root'), ('NV_CUDNN_PACKAGE_NAME', 'libcudnn8'), ('TERM_PROGRAM_VERSION', '3.4.20'), ('NV_LIBCUBLAS_DEV_VERSION', '12.2.5.6-1'), ('VSCODE_IPC_HOOK_CLI', '/tmp/vscode-ipc-4b79f63a-7885-4fa1-b4f1-e2185af2b39c.sock'), ('ROS_PYTHON_VERSION', '3'), ('VSCODE_GIT_ASKPASS_MAIN', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/node'), ('NV_LIBNCCL_DEV_PACKAGE_VERSION', '2.19.3-1'), ('COLORTERM', 'truecolor'), ('NV_LIBNPP_PACKAGE', 'libnpp-12-2=12.2.1.4-1'), ('NV_CUDNN_PACKAGE', 'libcudnn8=8.9.6.50-1+cuda12.2'), ('CUDA_VERSION', '12.2.2'), ('LOCAL_GID', '1000'), ('NV_NVPROF_VERSION', '12.2.142-1'), ('ROS_DISTRO', 'humble'), ('OVSX_REGISTRY_URL', 'https://open-vsx.org'), ('NV_LIBCUBLAS_PACKAGE_NAME', 'libcublas-12-2'), ('NVIDIA_REQUIRE_CUDA', 'cuda>=12.2 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('NV_LIBCUSPARSE_VERSION', '12.1.2.141-1'), ('NVIDIA_DRIVER_CAPABILITIES', 'all'), ('VULKAN_SDK', '/tmp/1.4.341.1/x86_64'), ('NV_CUDA_LIB_VERSION', '12.2.2-1'), ('NV_LIBNCCL_PACKAGE_NAME', 'libnccl2'), ('NV_NVML_DEV_VERSION', '12.2.140-1'), ('NV_LIBNPP_DEV_PACKAGE', 'libnpp-dev-12-2=12.2.1.4-1'), ('TERM', 'xterm-256color'), ('NV_CUDA_CUDART_VERSION', '12.2.140-1'), ('NV_CUDNN_PACKAGE_DEV', 'libcudnn8-dev=8.9.6.50-1+cuda12.2'), ('ROS_LOCALHOST_ONLY', '0'), ('QT_X11_NO_MITSHM', '1'), ('PATH', '/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/opt/ros/humble/bin:/root/.cursor-server/bin/0cf8b06883f54e26bb4f0fb8647c9500ccb43310/bin/remote-cli:/tmp/1.4.341.1/x86_64/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'), ('NV_LIBCUBLAS_DEV_PACKAGE_NAME', 'libcublas-dev-12-2'), ('NV_LIBCUBLAS_PACKAGE', 'libcublas-12-2=12.2.5.6-1'), ('NVARCH', 'x86_64'), ('MUJOCO_DIR', '/usr/local'), ('NV_LIBNCCL_DEV_PACKAGE_NAME', 'libnccl-dev'), ('NV_LIBCUSPARSE_DEV_VERSION', '12.1.2.141-1'), ('DISPLAY', ':0'), ('NV_LIBNCCL_PACKAGE', 'libnccl2=2.19.3-1+cuda12.2'), ('MUJOCO_GL', 'egl'), ('NVIDIA_PRODUCT_NAME', 'CUDA'), ('LANG', 'en_US.UTF-8'), ('NV_CUDA_CUDART_DEV_VERSION', '12.2.140-1'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.webp=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/tmp/vscode-git-b9b2478d3b.sock'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/tmp/cursor-remote-ssh-d65a5de7-8b6b-480a-b00c-7b0d9bfb361d.sock'), ('AMENT_PREFIX_PATH', '/workspace/LeapXELA_Hardware_ws/install/xela_description:/opt/ros/humble'), ('NV_LIBCUBLAS_DEV_PACKAGE', 'libcublas-dev-12-2=12.2.5.6-1'), ('NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE', 'cuda-nsight-compute-12-2=12.2.2-1'), ('NV_LIBNCCL_DEV_PACKAGE', 'libnccl-dev=2.19.3-1+cuda12.2'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('VK_LAYER_PATH', '/tmp/1.4.341.1/x86_64/etc/vulkan/explicit_layer.d'), ('NV_NVTX_VERSION', '12.2.140-1'), ('NV_LIBNPP_VERSION', '12.2.1.4-1'), ('VSCODE_GIT_IPC_AUTH_TOKEN', '2c792a8b2d825171c0613488d050b262377d54d09c71553f5b562924e4e510a0'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('NV_CUDNN_VERSION', '8.9.6.50'), ('PWD', '/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim'), ('CUDA_HOME', '/usr/local/cuda'), ('PYTHONPATH', '/workspace/LeapXELA_Hardware_ws/install/xela_description/lib/python3.10/site-packages:/opt/ros/humble/lib/python3.10/site-packages:/opt/ros/humble/local/lib/python3.10/dist-packages:/usr/local/lib'), ('NVIDIA_VISIBLE_DEVICES', 'all'), ('NCCL_VERSION', '2.19.3-1'), ('COLCON', '1'), ('NV_LIBNPP_DEV_VERSION', '12.2.1.4-1'), ('CMAKE_PREFIX_PATH', '/usr/local/lib/cmake::/opt/ros/humble')]), 'shell': False}
+[23.944621] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Install configuration: ""\n'}
+[23.945051] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/ament_index/resource_index/rosidl_interfaces/xela_sparshskin_sim\n'}
+[23.945316] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim\n'}
+[23.945489] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg\n'}
+[23.945586] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail\n'}
+[23.945693] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__functions.h\n'}
+[23.945871] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__struct.h\n'}
+[23.946045] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__functions.c\n'}
+[23.946147] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__functions.c\n'}
+[23.946250] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__functions.h\n'}
+[23.946402] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.h\n'}
+[23.946559] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__struct.h\n'}
+[23.946769] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__type_support.h\n'}
+[23.946906] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/hand_sensors.h\n'}
+[23.947006] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/texel.h\n'}
+[23.947103] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/rosidl_generator_c__visibility_control.h\n'}
+[23.947241] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/environment/library_path.sh\n'}
+[23.947385] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/environment/library_path.dsv\n'}
+[23.947569] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_generator_c.so\n'}
+[23.948450] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_generator_c.so" to ""\n'}
+[23.948549] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim\n'}
+[23.948711] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg\n'}
+[23.948818] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail\n'}
+[23.948910] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__rosidl_typesupport_fastrtps_c.h\n'}
+[23.949054] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__rosidl_typesupport_fastrtps_c.h\n'}
+[23.949151] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/rosidl_typesupport_fastrtps_c__visibility_control.h\n'}
+[23.949283] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_fastrtps_c.so\n'}
+[23.949623] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_fastrtps_c.so" to ""\n'}
+[23.949766] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim\n'}
+[23.949915] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg\n'}
+[23.950017] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail\n'}
+[23.950114] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__builder.hpp\n'}
+[23.950247] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__traits.hpp\n'}
+[23.950418] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__struct.hpp\n'}
+[23.950520] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__traits.hpp\n'}
+[23.950634] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.hpp\n'}
+[23.950786] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__struct.hpp\n'}
+[23.950887] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__builder.hpp\n'}
+[23.951029] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__type_support.hpp\n'}
+[23.951180] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/hand_sensors.hpp\n'}
+[23.951269] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/texel.hpp\n'}
+[23.951355] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/rosidl_generator_cpp__visibility_control.hpp\n'}
+[23.951499] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim\n'}
+[23.951584] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg\n'}
+[23.951697] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail\n'}
+[23.951790] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[23.951919] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__rosidl_typesupport_fastrtps_cpp.hpp\n'}
+[23.952080] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/dds_fastrtps\n'}
+[23.952172] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/rosidl_typesupport_fastrtps_cpp__visibility_control.h\n'}
+[23.952256] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp.so\n'}
+[23.952575] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp.so" to ""\n'}
+[23.952724] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim\n'}
+[23.952857] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg\n'}
+[23.952947] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail\n'}
+[23.953037] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.c\n'}
+[23.953162] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__rosidl_typesupport_introspection_c.h\n'}
+[23.953295] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__type_support.c\n'}
+[23.953443] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__rosidl_typesupport_introspection_c.h\n'}
+[23.953540] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/rosidl_typesupport_introspection_c__visibility_control.h\n'}
+[23.953684] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_introspection_c.so\n'}
+[23.953972] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_introspection_c.so" to ""\n'}
+[23.954105] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_c.so\n'}
+[23.954484] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_c.so" to ""\n'}
+[23.954653] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim\n'}
+[23.954764] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg\n'}
+[23.954900] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail\n'}
+[23.955058] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__rosidl_typesupport_introspection_cpp.hpp\n'}
+[23.955155] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/texel__type_support.cpp\n'}
+[23.955247] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.cpp\n'}
+[23.955385] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/xela_sparshskin_sim/xela_sparshskin_sim/msg/detail/hand_sensors__rosidl_typesupport_introspection_cpp.hpp\n'}
+[23.955470] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_introspection_cpp.so\n'}
+[23.955840] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_introspection_cpp.so" to ""\n'}
+[23.955984] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_cpp.so\n'}
+[23.956350] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_typesupport_cpp.so" to ""\n'}
+[23.956488] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/environment/pythonpath.sh\n'}
+[23.956631] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/environment/pythonpath.dsv\n'}
+[23.956780] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim-0.0.0-py3.10.egg-info\n'}
+[23.956963] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim-0.0.0-py3.10.egg-info/dependency_links.txt\n'}
+[23.957091] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim-0.0.0-py3.10.egg-info/SOURCES.txt\n'}
+[23.957221] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim-0.0.0-py3.10.egg-info/PKG-INFO\n'}
+[23.957354] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim-0.0.0-py3.10.egg-info/top_level.txt\n'}
+[23.957518] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim\n'}
+[23.957671] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/__init__.py\n'}
+[23.957813] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[23.957945] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[23.958091] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/_xela_sparshskin_sim_s.ep.rosidl_typesupport_c.c\n'}
+[23.958226] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/_xela_sparshskin_sim_s.ep.rosidl_typesupport_introspection_c.c\n'}
+[23.958360] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[23.958505] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/_xela_sparshskin_sim_s.ep.rosidl_typesupport_fastrtps_c.c\n'}
+[23.958642] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/libxela_sparshskin_sim__rosidl_generator_py.so\n'}
+[23.958801] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg\n'}
+[23.958936] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg/__init__.py\n'}
+[23.959062] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg/_hand_sensors_s.c\n'}
+[23.959204] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg/_hand_sensors.py\n'}
+[23.959363] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg/_texel_s.c\n'}
+[23.959503] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg/_texel.py\n'}
+[24.007593] (-) TimerEvent: {}
+[24.026133] (xela_sparshskin_sim) StdoutLine: {'line': b"Listing '/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim'...\n"}
+[24.026470] (xela_sparshskin_sim) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/__init__.py'...\n"}
+[24.026664] (xela_sparshskin_sim) StdoutLine: {'line': b"Listing '/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg'...\n"}
+[24.026833] (xela_sparshskin_sim) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg/__init__.py'...\n"}
+[24.026987] (xela_sparshskin_sim) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg/_hand_sensors.py'...\n"}
+[24.027148] (xela_sparshskin_sim) StdoutLine: {'line': b"Compiling '/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/msg/_texel.py'...\n"}
+[24.034948] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so\n'}
+[24.035299] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_fastrtps_c.cpython-310-x86_64-linux-gnu.so" to ""\n'}
+[24.035550] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so\n'}
+[24.035894] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_introspection_c.cpython-310-x86_64-linux-gnu.so" to ""\n'}
+[24.036124] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so\n'}
+[24.036509] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/local/lib/python3.10/dist-packages/xela_sparshskin_sim/xela_sparshskin_sim_s__rosidl_typesupport_c.cpython-310-x86_64-linux-gnu.so" to ""\n'}
+[24.036742] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_generator_py.so\n'}
+[24.037067] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/libxela_sparshskin_sim__rosidl_generator_py.so" to ""\n'}
+[24.037280] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/ament_index/resource_index/rust_packages/xela_sparshskin_sim\n'}
+[24.037505] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/rust\n'}
+[24.037684] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/rust/Cargo.toml\n'}
+[24.037920] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/rust/src\n'}
+[24.038109] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/rust/src/lib.rs\n'}
+[24.038266] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/rust/src/msg.rs\n'}
+[24.038425] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/rust/src/msg\n'}
+[24.038575] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/rust/src/msg/rmw.rs\n'}
+[24.038803] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/rust/build.rs\n'}
+[24.038994] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/msg/Texel.idl\n'}
+[24.039152] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/msg/HandSensors.idl\n'}
+[24.039346] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/msg/Texel.msg\n'}
+[24.039486] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/msg/HandSensors.msg\n'}
+[24.039642] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/xela_sparshskin_sim/process_hand_sensors_into_pointcloud\n'}
+[24.044544] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Set runtime path of "/workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/xela_sparshskin_sim/process_hand_sensors_into_pointcloud" to ""\n'}
+[24.044877] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/xela_sparshskin_sim/hand_controller.py\n'}
+[24.045081] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/xela_sparshskin_sim/hand_touch_point_cloud.py\n'}
+[24.045233] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/xela_sparshskin_sim/leap_taxel_map.py\n'}
+[24.045468] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/xela_sparshskin_sim/sensor_value_publisher_fake.py\n'}
+[24.045707] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/lib/xela_sparshskin_sim/leap_sensor_taxel_map.json\n'}
+[24.045922] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include/\n'}
+[24.046073] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Up-to-date: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include//xela_sparshskin_sim\n'}
+[24.046223] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include//xela_sparshskin_sim/process_hand_sensors_into_pointcloud.h\n'}
+[24.046381] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/include//xela_sparshskin_sim/camera_control.hpp\n'}
+[24.046540] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/launch\n'}
+[24.046770] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/ament_index/resource_index/package_run_dependencies/xela_sparshskin_sim\n'}
+[24.046949] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/ament_index/resource_index/parent_prefix_path/xela_sparshskin_sim\n'}
+[24.047091] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/environment/ament_prefix_path.sh\n'}
+[24.047239] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/environment/ament_prefix_path.dsv\n'}
+[24.047396] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/environment/path.sh\n'}
+[24.047535] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/environment/path.dsv\n'}
+[24.047788] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/local_setup.bash\n'}
+[24.047948] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/local_setup.sh\n'}
+[24.048085] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/local_setup.zsh\n'}
+[24.050698] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/local_setup.dsv\n'}
+[24.050932] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/package.dsv\n'}
+[24.051040] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/ament_index/resource_index/packages/xela_sparshskin_sim\n'}
+[24.051196] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_generator_cExport.cmake\n'}
+[24.051292] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_generator_cExport-noconfig.cmake\n'}
+[24.051383] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_typesupport_fastrtps_cExport.cmake\n'}
+[24.051525] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_typesupport_fastrtps_cExport-noconfig.cmake\n'}
+[24.051622] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_generator_cppExport.cmake\n'}
+[24.051769] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_typesupport_fastrtps_cppExport.cmake\n'}
+[24.051864] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_typesupport_fastrtps_cppExport-noconfig.cmake\n'}
+[24.051959] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_sim__rosidl_typesupport_introspection_cExport.cmake\n'}
+[24.052052] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_sim__rosidl_typesupport_introspection_cExport-noconfig.cmake\n'}
+[24.052144] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_sim__rosidl_typesupport_cExport.cmake\n'}
+[24.052236] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_sim__rosidl_typesupport_cExport-noconfig.cmake\n'}
+[24.052329] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_sim__rosidl_typesupport_introspection_cppExport.cmake\n'}
+[24.052421] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_sim__rosidl_typesupport_introspection_cppExport-noconfig.cmake\n'}
+[24.052505] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_sim__rosidl_typesupport_cppExport.cmake\n'}
+[24.052635] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_sim__rosidl_typesupport_cppExport-noconfig.cmake\n'}
+[24.052807] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_generator_pyExport.cmake\n'}
+[24.052899] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/export_xela_sparshskin_sim__rosidl_generator_pyExport-noconfig.cmake\n'}
+[24.052986] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/rosidl_cmake-extras.cmake\n'}
+[24.053073] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/ament_cmake_export_include_directories-extras.cmake\n'}
+[24.053209] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/ament_cmake_export_libraries-extras.cmake\n'}
+[24.053385] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/ament_cmake_export_targets-extras.cmake\n'}
+[24.053516] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/rosidl_cmake_export_typesupport_targets-extras.cmake\n'}
+[24.053643] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/ament_cmake_export_dependencies-extras.cmake\n'}
+[24.053732] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/rosidl_cmake_export_typesupport_libraries-extras.cmake\n'}
+[24.053821] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_simConfig.cmake\n'}
+[24.053958] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/cmake/xela_sparshskin_simConfig-version.cmake\n'}
+[24.054041] (xela_sparshskin_sim) StdoutLine: {'line': b'-- Installing: /workspace/LeapXELA_Hardware_ws/install/xela_sparshskin_sim/share/xela_sparshskin_sim/package.xml\n'}
+[24.057238] (xela_sparshskin_sim) CommandEnded: {'returncode': 0}
+[24.082691] (xela_sparshskin_sim) JobEnded: {'identifier': 'xela_sparshskin_sim', 'rc': 0}
+[24.083911] (-) EventReactorShutdown: {}

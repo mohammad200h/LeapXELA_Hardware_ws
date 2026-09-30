@@ -42,19 +42,27 @@ def _format_demo_label(session_name: str, meta: Dict[str, Any]) -> str:
     object_name = meta.get("object_name") or session_name
     mode = meta.get("mode", "?")
     started = meta.get("started_at", "")
+    count = meta.get("object_count", "")
+    rollout = meta.get("rollout", "")
+    suffix = ""
+    if count != "" or rollout != "":
+        suffix = f"  count={count}  rollout={rollout}"
     if started:
-        return f"{session_name}  |  {object_name}  [{mode}]  {started}"
-    return f"{session_name}  |  {object_name}  [{mode}]"
+        return f"{session_name}  |  {object_name}{suffix}  [{mode}]  {started}"
+    return f"{session_name}  |  {object_name}{suffix}  [{mode}]"
 
 
 def _format_metadata(meta: Dict[str, Any], bag_uri: Path) -> str:
     topics = meta.get("topics") or []
     topics_str = "\n".join(f"  - {t}" for t in topics) if topics else "  (none)"
+    rel = meta.get("session_relpath") or bag_uri.parent.name
     lines = [
-        f"Session: {bag_uri.parent.name}",
+        f"Session: {rel}",
         f"Bag: {bag_uri}",
         f"Object name: {meta.get('object_name', '')}",
         f"Object count: {meta.get('object_count', '')}",
+        f"Rollout: {meta.get('rollout', '')}",
+        f"Naming template: {meta.get('naming_template', '')}",
         f"Object shape: {meta.get('object_shape', '')}",
         f"Scale: {meta.get('scale', '')}",
         f"Mass (kg): {meta.get('mass', '')}",
@@ -94,15 +102,47 @@ class SparshSkinReplay(Node):
         self._build_and_launch_ui()
 
     def _scan_demonstrations(self) -> List[str]:
-        """Refresh ``self._demos`` and return sorted session labels for the dropdown."""
+        """Refresh ``self._demos`` and return sorted session labels for the dropdown.
+
+        Supports both legacy flat sessions (``data_dir/<session>/``) and the
+        nested layout (``data_dir/<object_name>/<object_count>/<rollout>/``).
+        """
         demos: Dict[str, Dict[str, Any]] = {}
         if not self._data_dir.is_dir():
             self._demos = demos
             return []
 
-        for session_dir in sorted(self._data_dir.iterdir(), reverse=True):
+        session_dirs: List[Path] = []
+        # Prefer directories that own a demonstration metadata.json (not rosbag's).
+        for meta_path in self._data_dir.rglob("metadata.json"):
+            if not meta_path.is_file():
+                continue
+            # Skip rosbag2 metadata.yaml siblings: demonstration meta is JSON.
+            session_dirs.append(meta_path.parent)
+
+        # Also pick up legacy / incomplete sessions that only have a bag folder.
+        for path in self._data_dir.rglob("rosbag"):
+            if path.is_dir() and _is_bag_dir(path):
+                session_dirs.append(path.parent)
+
+        # Deduplicate while preserving discovery order.
+        seen: set[Path] = set()
+        unique_sessions: List[Path] = []
+        for session_dir in session_dirs:
+            resolved = session_dir.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            unique_sessions.append(session_dir)
+
+        for session_dir in sorted(unique_sessions, key=lambda p: str(p), reverse=True):
             if not session_dir.is_dir():
                 continue
+
+            try:
+                rel_name = str(session_dir.relative_to(self._data_dir))
+            except ValueError:
+                rel_name = session_dir.name
 
             meta_path = session_dir / "metadata.json"
             bag_uri = session_dir / "rosbag"
@@ -110,15 +150,16 @@ class SparshSkinReplay(Node):
                 try:
                     meta = json.loads(meta_path.read_text(encoding="utf-8"))
                 except (OSError, json.JSONDecodeError) as exc:
-                    self.get_logger().warning(f"Skipping {session_dir.name}: {exc}")
+                    self.get_logger().warning(f"Skipping {rel_name}: {exc}")
                     continue
                 bag_from_meta = meta.get("bag_uri")
                 if bag_from_meta:
                     candidate = Path(bag_from_meta)
                     if _is_bag_dir(candidate):
                         bag_uri = candidate
+                meta.setdefault("session_relpath", rel_name)
             else:
-                meta = {"object_name": session_dir.name}
+                meta = {"object_name": session_dir.name, "session_relpath": rel_name}
 
             if not _is_bag_dir(bag_uri):
                 # Fallback: any rosbag2-looking subdirectory.
@@ -130,7 +171,7 @@ class SparshSkinReplay(Node):
                     continue
                 bag_uri = found
 
-            demos[session_dir.name] = {"bag_uri": bag_uri, "meta": meta}
+            demos[rel_name] = {"bag_uri": bag_uri, "meta": meta}
 
         self._demos = demos
         return [_format_demo_label(name, info["meta"]) for name, info in demos.items()]

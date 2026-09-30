@@ -1,0 +1,4 @@
+Page: https://akashsharma02.github.io/sparsh-skin-ssl/
+Paper: https://arxiv.org/abs/2505.11420
+Code: https://github.com/facebookresearch/sparsh-multisensory-touch
+Data_Set: https://huggingface.co/datasets/facebook/sparsh-skin-dataset

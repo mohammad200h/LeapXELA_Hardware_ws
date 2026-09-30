@@ -1,0 +1,17 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.c.o"
+  "CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.c.o.d"
+  "CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/texel__type_support.c.o"
+  "CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_c.dir/rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/texel__type_support.c.o.d"
+  "libxela_sparshskin_sim__rosidl_typesupport_introspection_c.pdb"
+  "libxela_sparshskin_sim__rosidl_typesupport_introspection_c.so"
+  "rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/hand_sensors__rosidl_typesupport_introspection_c.h"
+  "rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/hand_sensors__type_support.c"
+  "rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/texel__rosidl_typesupport_introspection_c.h"
+  "rosidl_typesupport_introspection_c/xela_sparshskin_sim/msg/detail/texel__type_support.c"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C)
+  include(CMakeFiles/xela_sparshskin_sim__rosidl_typesupport_introspection_c.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

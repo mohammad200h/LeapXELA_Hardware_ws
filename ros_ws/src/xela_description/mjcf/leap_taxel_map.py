@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import pprint
+import matplotlib.pyplot as plt
 
 LEAP_XELA_ID = np.array(
     [
@@ -33,6 +34,43 @@ LEAP_XELA_ID = np.array(
     ],
     dtype=object,
 )
+
+
+def visulize_grid_taxel_map():
+    """
+    create an image where background is represented by 6e6 and foreground is represented by the taxel id
+    the grid is made of squares
+    """
+    grid = np.array(LEAP_XELA_ID, dtype=float)
+    rows, cols = grid.shape
+    bg = 6e6
+
+    # Binary image: 0 = background (6e6), 1 = taxel foreground
+    display = np.where(grid == bg, 0.0, 1.0)
+
+    fig, ax = plt.subplots(figsize=(cols * 0.35, rows * 0.35))
+    ax.imshow(display, cmap="gray_r", vmin=0, vmax=1, aspect="equal", interpolation="nearest")
+
+    # Draw square cell borders
+    ax.set_xticks(np.arange(-0.5, cols, 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, rows, 1), minor=True)
+    ax.grid(which="minor", color="white", linestyle="-", linewidth=0.6)
+    ax.tick_params(which="both", bottom=False, left=False, labelbottom=False, labelleft=False)
+
+    # Annotate each taxel cell with its id
+    for r in range(rows):
+        for c in range(cols):
+            val = grid[r, c]
+            if val != bg:
+                ax.text(
+                    c, r, f"{int(val)}",
+                    ha="center", va="center",
+                    fontsize=8, fontweight="bold", color="white",
+                )
+
+    ax.set_title("LEAP XELA Taxel Grid Map")
+    plt.tight_layout()
+    plt.show()
 
 def taxel_location_map_for_image_representation(img):
     row, col = np.where(img != 6e6)
@@ -315,3 +353,5 @@ if __name__ == "__main__":
     print(LEAP_XELA_ID.shape)
     print("\n")
     taxel_location_map_for_image_representation(LEAP_XELA_ID)
+
+    visulize_grid_taxel_map()

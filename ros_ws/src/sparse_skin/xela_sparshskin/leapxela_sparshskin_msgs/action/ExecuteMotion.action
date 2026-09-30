@@ -1,0 +1,23 @@
+# Goal: name of a predefined hand motion to execute.
+string motion_name
+
+# Grasp profile overrides for PROFILE_MOTIONS (squeeze, regrasp, tap, shear, hold, pulse).
+# Negative values mean "use server default".
+float32 grip_fraction -1.0
+float32 thumb_grip_fraction -1.0
+float32 pregrip_fraction -1.0
+float32 thumb_delay -1.0
+float32 pulse_hz -1.0
+float32 pulse_amplitude -1.0
+float32 shear_amplitude -1.0
+int32 squeeze_steps -1
+# Motion duration in seconds. Negative means use the server profile_duration_s param.
+float32 duration_s -1.0
+---
+# Result
+bool success
+string message
+---
+# Feedback
+float32 progress
+string status

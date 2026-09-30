@@ -170,7 +170,7 @@ RUN apt-get update && apt-get install -y \
     zlib1g-dev \
     clang-12 \
     && rm -rf /var/lib/apt/lists/*
-ARG MUJOCO_VERSION=3.2.0
+ARG MUJOCO_VERSION=3.11.0
 RUN cd /tmp && \
     git clone -b ${MUJOCO_VERSION} https://github.com/google-deepmind/mujoco.git && \
     cd mujoco && mkdir build && cd build && \
@@ -183,6 +183,12 @@ RUN pip install mujoco==${MUJOCO_VERSION}
 RUN pip install perlin-noise
 ###### open3d ######
 RUN pip install open3d
+###### leapXela_taxels_forewardkinematic (fk_taxels_demo) ######
+# einops + pytorch_kinematics for Allegro/Xela taxel FK visualization.
+RUN python3 -m pip install --no-cache-dir \
+    "einops" \
+    "pytorch-kinematics" \
+    "scipy"
 ##### Keyboard Control #######
 RUN pip install pynput
 ###### xacro ######
@@ -226,7 +232,10 @@ RUN cd /tmp && \
     cd / && rm -rf /tmp/libfranka
 
 ENV CMAKE_PREFIX_PATH=/usr/local/lib/cmake:${CMAKE_PREFIX_PATH}
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+# Source-built libmujoco in /usr/local/lib is for C++ (mujoco_ros). The pip
+# package ships a different libmujoco.so; Python MjSpec bindings must load that
+# one first or string attrs (e.g. flex.vertbody) raise UnicodeDecodeError.
+ENV LD_LIBRARY_PATH=/usr/local/lib/python3.10/dist-packages/mujoco:${LD_LIBRARY_PATH}:/usr/local/lib
 
 # dqrobotics
 RUN add-apt-repository -y ppa:dqrobotics-dev/release && apt-get update && \

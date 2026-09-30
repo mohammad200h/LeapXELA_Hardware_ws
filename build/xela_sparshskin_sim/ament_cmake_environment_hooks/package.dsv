@@ -1,0 +1,4 @@
+source;share/xela_sparshskin_sim/local_setup.bash
+source;share/xela_sparshskin_sim/local_setup.dsv
+source;share/xela_sparshskin_sim/local_setup.sh
+source;share/xela_sparshskin_sim/local_setup.zsh

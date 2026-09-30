@@ -19,6 +19,7 @@ from rclpy.executors import SingleThreadedExecutor
 import argparse
 import importlib
 
+from std_msgs.msg import Header
 from xela_server_ros2.msg import SensStream, SensorFull, Taxel, Forces
 from xela_server_ros2.srv import XelaSensorStream
 
@@ -430,7 +431,7 @@ class ServiceNode(Node):
                 response.data = [self.data.get(str(request.sensor), not_avail)]
         return response
 
-    def publish(self, data):
+    def publish(self, data, time_stamp):
         """
         Publish sensor data.
 
@@ -439,11 +440,11 @@ class ServiceNode(Node):
         """
         with self.__lock:
             self.data = data
-        obj = SensStream()
-        obj.header.stamp = self.get_clock().now().to_msg()
-        obj.header.frame_id = "xela"
-        obj.sensors = tuple(data.values())
-        self.publisher_.publish(obj)
+            print(f"data: {data}")
+            obj = SensStream()
+            obj.header = Header(stamp=rclpy.time.Time(nanoseconds=time_stamp * 1e9).to_msg())
+            obj.sensors = tuple(data.values())
+            self.publisher_.publish(obj)
 
     def reset(self):
         """Reset the node by clearing all stored data"""
@@ -534,7 +535,7 @@ def on_message(wsapp, message):
     try:
         data = json.loads(message)
         # info(f"data::keys {data.keys()}")
-        # info(f"data::message {data['message']}")
+        # info(f"data::message {data['time']}")
     except Exception:
         warn(f"JSON Error for `{message}`")
     else:
@@ -544,6 +545,7 @@ def on_message(wsapp, message):
             else:
                 elements = get_numeric(data.keys())
                 data_container = {}
+                time_stamp = data['time']
                 for key in elements:
                     try:
                         resp = message_parser(data[key], data['message'])
@@ -555,7 +557,7 @@ def on_message(wsapp, message):
                         error(f"Parser failure: {e2t(e)}")
                         traceback.print_exception(e)
                         pass
-                the_node.publish(data_container)
+                the_node.publish(data_container, time_stamp)
         except Exception as e:
             warn(f"Message parsing failed: {e2t(e)}")
             pass  # ignore message as it's probably invalid

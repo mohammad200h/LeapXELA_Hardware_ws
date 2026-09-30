@@ -1,10 +1,10 @@
 <?xml version="1.0" ?>
 <!-- Generated using onshape-to-robot -->
 <!-- Onshape https://cad.onshape.com/documents/8570a76a8c0c31c84724c6f7/w/c9d7fe5a7e1c98ade57ae24b/e/499423712fdad43c5ed79313 -->
-<mujoco model="leapXela_with_markers">
+<mujoco model="leapXela_with_4_4_markers">
   <compiler angle="radian" meshdir="assets" autolimits="true"/>
   <default>
-    <default class="leapXela_with_markers">
+    <default class="leapXela_with_4_4_markers">
       <joint frictionloss="0.1" armature="0.005"/>
       <position kp="50" dampratio="1"/>
       <default class="visual">
@@ -17,7 +17,7 @@
   </default>
   <worldbody>
     <!-- Link leap_hand_xela_back_cover -->
-    <body name="leap_hand_xela_back_cover" pos="0 0 0" quat="1 0 0 0" childclass="leapXela_with_markers">
+    <body name="leap_hand_xela_back_cover" pos="0 0 0" quat="1 0 0 0" childclass="leapXela_with_4_4_markers">
       <freejoint name="leap_hand_xela_back_cover_freejoint"/>
       <inertial pos="-0.000453272 -0.00768016 0.0745327" mass="1.56832" fullinertia="0.00361568 0.00457887 0.00189274 7.85185e-05 -0.00021118 0.000267856"/>
       <!-- Part leap_hand_xela_motorholder -->
@@ -62,18 +62,27 @@
       <!-- Part 4_4_origin -->
       <geom type="mesh" class="visual" pos="0.01908 -0.026 0.128974" quat="0 -0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
       <geom type="mesh" class="collision" pos="0.01908 -0.026 0.128974" quat="0 -0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+      <!-- Part 4_4_origin_2 -->
+      <geom type="mesh" class="visual" pos="-0.00352 -0.026 0.153574" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
+      <geom type="mesh" class="collision" pos="-0.00352 -0.026 0.153574" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
       <!-- Part uspa44_mockup -->
       <geom type="mesh" class="visual" pos="0.0140067 -0.0148736 0.120638" quat="0 0 0 -1" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
       <geom type="mesh" class="collision" pos="0.0140067 -0.0148736 0.120638" quat="0 0 0 -1" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
-      <!-- Part 4_4_origin_2 -->
+      <!-- Part 4_4_origin_3 -->
       <geom type="mesh" class="visual" pos="-0.02637 -0.026 0.128974" quat="0 -0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
       <geom type="mesh" class="collision" pos="-0.02637 -0.026 0.128974" quat="0 -0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+      <!-- Part 4_4_origin_4 -->
+      <geom type="mesh" class="visual" pos="-0.04897 -0.026 0.153574" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
+      <geom type="mesh" class="collision" pos="-0.04897 -0.026 0.153574" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
       <!-- Part uspa44_mockup_2 -->
       <geom type="mesh" class="visual" pos="-0.0314433 -0.0148736 0.120638" quat="0 0 0 -1" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
       <geom type="mesh" class="collision" pos="-0.0314433 -0.0148736 0.120638" quat="0 0 0 -1" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
-      <!-- Part 4_4_origin_3 -->
+      <!-- Part 4_4_origin_5 -->
       <geom type="mesh" class="visual" pos="0.06453 -0.026 0.128974" quat="0 -0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
       <geom type="mesh" class="collision" pos="0.06453 -0.026 0.128974" quat="0 -0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+      <!-- Part 4_4_origin_6 -->
+      <geom type="mesh" class="visual" pos="0.04193 -0.026 0.153574" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
+      <geom type="mesh" class="collision" pos="0.04193 -0.026 0.153574" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
       <!-- Part uspa44_mockup_3 -->
       <geom type="mesh" class="visual" pos="0.0594567 -0.0148736 0.120638" quat="0 0 0 -1" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
       <geom type="mesh" class="collision" pos="0.0594567 -0.0148736 0.120638" quat="0 0 0 -1" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -93,9 +102,12 @@
           <!-- Part p3_unified -->
           <geom type="mesh" class="visual" pos="0 0.0075 -0" quat="0.5 -0.5 -0.5 -0.5" mesh="p3_unified" material="p3_unified_material"/>
           <geom type="mesh" class="collision" pos="0 0.0075 -0" quat="0.5 -0.5 -0.5 -0.5" mesh="p3_unified" material="p3_unified_material"/>
-          <!-- Part 4_4_origin_4 -->
+          <!-- Part 4_4_origin_7 -->
           <geom type="mesh" class="visual" pos="0.0112619 -5.87232e-05 0.023" quat="0 -0 -1 0" mesh="4_4_origin" material="4_4_origin_material"/>
           <geom type="mesh" class="collision" pos="0.0112619 -5.87232e-05 0.023" quat="0 -0 -1 0" mesh="4_4_origin" material="4_4_origin_material"/>
+          <!-- Part 4_4_origin_8 -->
+          <geom type="mesh" class="visual" pos="-0.0113381 0.0245413 0.023" quat="0.707107 -0 -0 -0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+          <geom type="mesh" class="collision" pos="-0.0113381 0.0245413 0.023" quat="0.707107 -0 -0 -0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
           <!-- Part uspa44_mockup_4 -->
           <geom type="mesh" class="visual" pos="0.0061886 -0.00839453 0.0118736" quat="0 -0 -0.707107 -0.707107" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
           <geom type="mesh" class="collision" pos="0.0061886 -0.00839453 0.0118736" quat="0 -0 -0.707107 -0.707107" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -107,9 +119,12 @@
             <!-- Part p2_unified -->
             <geom type="mesh" class="visual" pos="0.00905 -0 -0.0145" quat="0.5 0.5 0.5 -0.5" mesh="p2_unified" material="p2_unified_material"/>
             <geom type="mesh" class="collision" pos="0.00905 -0 -0.0145" quat="0.5 0.5 0.5 -0.5" mesh="p2_unified" material="p2_unified_material"/>
-            <!-- Part 4_4_origin_5 -->
+            <!-- Part 4_4_origin_9 -->
             <geom type="mesh" class="visual" pos="0.020626 0.0095 -0.0033" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
             <geom type="mesh" class="collision" pos="0.020626 0.0095 -0.0033" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
+            <!-- Part 4_4_origin_10 -->
+            <geom type="mesh" class="visual" pos="0.045226 0.0095 -0.0259" quat="0 -0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+            <geom type="mesh" class="collision" pos="0.045226 0.0095 -0.0259" quat="0 -0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
             <!-- Part uspa44_mockup_5 -->
             <geom type="mesh" class="visual" pos="0.0122902 -0.0016264 -0.00837334" quat="0.707107 -0 0.707107 -0" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
             <geom type="mesh" class="collision" pos="0.0122902 -0.0016264 -0.00837334" quat="0.707107 -0 0.707107 -0" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -141,9 +156,12 @@
           <!-- Part p3_unified_2 -->
           <geom type="mesh" class="visual" pos="-0 0.0075 -0" quat="0.5 -0.5 -0.5 -0.5" mesh="p3_unified" material="p3_unified_material"/>
           <geom type="mesh" class="collision" pos="-0 0.0075 -0" quat="0.5 -0.5 -0.5 -0.5" mesh="p3_unified" material="p3_unified_material"/>
-          <!-- Part 4_4_origin_6 -->
+          <!-- Part 4_4_origin_11 -->
           <geom type="mesh" class="visual" pos="0.0112619 -5.87232e-05 0.023" quat="0 -0 -1 0" mesh="4_4_origin" material="4_4_origin_material"/>
           <geom type="mesh" class="collision" pos="0.0112619 -5.87232e-05 0.023" quat="0 -0 -1 0" mesh="4_4_origin" material="4_4_origin_material"/>
+          <!-- Part 4_4_origin_12 -->
+          <geom type="mesh" class="visual" pos="-0.0113381 0.0245413 0.023" quat="0.707107 -0 -0 -0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+          <geom type="mesh" class="collision" pos="-0.0113381 0.0245413 0.023" quat="0.707107 -0 -0 -0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
           <!-- Part uspa44_mockup_6 -->
           <geom type="mesh" class="visual" pos="0.0061886 -0.00839453 0.0118736" quat="0 0 0.707107 0.707107" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
           <geom type="mesh" class="collision" pos="0.0061886 -0.00839453 0.0118736" quat="0 0 0.707107 0.707107" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -155,9 +173,12 @@
             <!-- Part p2_unified_2 -->
             <geom type="mesh" class="visual" pos="0.00905 -0 -0.0145" quat="0.5 0.5 0.5 -0.5" mesh="p2_unified" material="p2_unified_material"/>
             <geom type="mesh" class="collision" pos="0.00905 -0 -0.0145" quat="0.5 0.5 0.5 -0.5" mesh="p2_unified" material="p2_unified_material"/>
-            <!-- Part 4_4_origin_7 -->
+            <!-- Part 4_4_origin_13 -->
             <geom type="mesh" class="visual" pos="0.020626 0.0095 -0.0033" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
             <geom type="mesh" class="collision" pos="0.020626 0.0095 -0.0033" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
+            <!-- Part 4_4_origin_14 -->
+            <geom type="mesh" class="visual" pos="0.045226 0.0095 -0.0259" quat="0 0 -0.707107 -0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+            <geom type="mesh" class="collision" pos="0.045226 0.0095 -0.0259" quat="0 0 -0.707107 -0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
             <!-- Part uspa44_mockup_7 -->
             <geom type="mesh" class="visual" pos="0.0122902 -0.0016264 -0.00837334" quat="0.707107 -0 0.707107 -0" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
             <geom type="mesh" class="collision" pos="0.0122902 -0.0016264 -0.00837334" quat="0.707107 -0 0.707107 -0" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -189,9 +210,12 @@
           <!-- Part p3_unified_3 -->
           <geom type="mesh" class="visual" pos="0 0.0075 -0" quat="0.5 -0.5 -0.5 -0.5" mesh="p3_unified" material="p3_unified_material"/>
           <geom type="mesh" class="collision" pos="0 0.0075 -0" quat="0.5 -0.5 -0.5 -0.5" mesh="p3_unified" material="p3_unified_material"/>
-          <!-- Part 4_4_origin_8 -->
+          <!-- Part 4_4_origin_15 -->
           <geom type="mesh" class="visual" pos="0.0112619 -5.87232e-05 0.023" quat="0 -0 -1 0" mesh="4_4_origin" material="4_4_origin_material"/>
           <geom type="mesh" class="collision" pos="0.0112619 -5.87232e-05 0.023" quat="0 -0 -1 0" mesh="4_4_origin" material="4_4_origin_material"/>
+          <!-- Part 4_4_origin_16 -->
+          <geom type="mesh" class="visual" pos="-0.0113381 0.0245413 0.023" quat="0.707107 -0 -0 -0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+          <geom type="mesh" class="collision" pos="-0.0113381 0.0245413 0.023" quat="0.707107 -0 -0 -0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
           <!-- Part uspa44_mockup_8 -->
           <geom type="mesh" class="visual" pos="0.0061886 -0.00839453 0.0118736" quat="0 -0 -0.707107 -0.707107" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
           <geom type="mesh" class="collision" pos="0.0061886 -0.00839453 0.0118736" quat="0 -0 -0.707107 -0.707107" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -203,9 +227,12 @@
             <!-- Part p2_unified_3 -->
             <geom type="mesh" class="visual" pos="0.00905 -0 -0.0145" quat="0.5 0.5 0.5 -0.5" mesh="p2_unified" material="p2_unified_material"/>
             <geom type="mesh" class="collision" pos="0.00905 -0 -0.0145" quat="0.5 0.5 0.5 -0.5" mesh="p2_unified" material="p2_unified_material"/>
-            <!-- Part 4_4_origin_9 -->
+            <!-- Part 4_4_origin_17 -->
             <geom type="mesh" class="visual" pos="0.020626 0.0095 -0.0033" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
             <geom type="mesh" class="collision" pos="0.020626 0.0095 -0.0033" quat="0.5 0.5 0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
+            <!-- Part 4_4_origin_18 -->
+            <geom type="mesh" class="visual" pos="0.045226 0.0095 -0.0259" quat="0 0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+            <geom type="mesh" class="collision" pos="0.045226 0.0095 -0.0259" quat="0 0 0.707107 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
             <!-- Part uspa44_mockup_9 -->
             <geom type="mesh" class="visual" pos="0.0122902 -0.0016264 -0.00837334" quat="0.707107 -0 0.707107 -0" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
             <geom type="mesh" class="collision" pos="0.0122902 -0.0016264 -0.00837334" quat="0.707107 -0 0.707107 -0" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -248,9 +275,12 @@
             <!-- Part thp1_unified -->
             <geom type="mesh" class="visual" pos="-0 0.0245 0.0145" quat="1 0 0 0" mesh="thp1_unified" material="thp1_unified_material"/>
             <geom type="mesh" class="collision" pos="-0 0.0245 0.0145" quat="1 0 0 0" mesh="thp1_unified" material="thp1_unified_material"/>
-            <!-- Part 4_4_origin_10 -->
+            <!-- Part 4_4_origin_19 -->
             <geom type="mesh" class="visual" pos="-0.01 -0.0045 0.0258" quat="0.707107 0 0.707107 -0" mesh="4_4_origin" material="4_4_origin_material"/>
             <geom type="mesh" class="collision" pos="-0.01 -0.0045 0.0258" quat="0.707107 0 0.707107 -0" mesh="4_4_origin" material="4_4_origin_material"/>
+            <!-- Part 4_4_origin_20 -->
+            <geom type="mesh" class="visual" pos="-0.01 0.0201 0.0032" quat="0.5 0.5 -0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
+            <geom type="mesh" class="collision" pos="-0.01 0.0201 0.0032" quat="0.5 0.5 -0.5 -0.5" mesh="4_4_origin" material="4_4_origin_material"/>
             <!-- Part uspa44_mockup_10 -->
             <geom type="mesh" class="visual" pos="0.0011264 -0.0128358 0.0207267" quat="0.5 -0.5 0.5 0.5" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
             <geom type="mesh" class="collision" pos="0.0011264 -0.0128358 0.0207267" quat="0.5 -0.5 0.5 0.5" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -262,9 +292,12 @@
               <!-- Part thfingertip_unified -->
               <geom type="mesh" class="visual" pos="-0 -0.0275 0.014504" quat="0.707107 0.707107 0 -0" mesh="thfingertip_unified" material="thfingertip_unified_material"/>
               <geom type="mesh" class="collision" pos="-0 -0.0275 0.014504" quat="0.707107 0.707107 0 -0" mesh="thfingertip_unified" material="thfingertip_unified_material"/>
-              <!-- Part 4_4_origin_11 -->
+              <!-- Part 4_4_origin_21 -->
               <geom type="mesh" class="visual" pos="0.01 0.0045 0.0258" quat="0 -0.707107 0 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
               <geom type="mesh" class="collision" pos="0.01 0.0045 0.0258" quat="0 -0.707107 0 0.707107" mesh="4_4_origin" material="4_4_origin_material"/>
+              <!-- Part 4_4_origin_22 -->
+              <geom type="mesh" class="visual" pos="0.01 -0.0201 0.0032" quat="0.5 0.5 0.5 0.5" mesh="4_4_origin" material="4_4_origin_material"/>
+              <geom type="mesh" class="collision" pos="0.01 -0.0201 0.0032" quat="0.5 0.5 0.5 0.5" mesh="4_4_origin" material="4_4_origin_material"/>
               <!-- Part uspa44_mockup_11 -->
               <geom type="mesh" class="visual" pos="-0.0011264 0.0128358 0.0207267" quat="0.5 0.5 0.5 -0.5" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
               <geom type="mesh" class="collision" pos="-0.0011264 0.0128358 0.0207267" quat="0.5 0.5 0.5 -0.5" mesh="uspa44_mockup" material="uspa44_mockup_material"/>
@@ -275,26 +308,26 @@
     </body>
   </worldbody>
   <asset>
+    <mesh file="4_4_origin.stl"/>
     <mesh file="leap_hand_xela_back_cover.stl"/>
+    <mesh file="thp0_unified.stl"/>
+    <mesh file="leap_hand_xela_side_cover.stl"/>
+    <mesh file="p2_unified.stl"/>
+    <mesh file="fingertop_unfied.stl"/>
+    <mesh file="thp2_unified.stl"/>
+    <mesh file="uspa44_mockup.stl"/>
     <mesh file="p4_unified.stl"/>
     <mesh file="thp1_unified.stl"/>
-    <mesh file="leap_hand_xela_motorholder.stl"/>
-    <mesh file="uspa44_mockup.stl"/>
-    <mesh file="clipper.stl"/>
-    <mesh file="fingertop_unfied.stl"/>
-    <mesh file="leap_hand_xela_side_cover.stl"/>
-    <mesh file="leap_hand_xela_bottom.stl"/>
-    <mesh file="thfingertip_unified.stl"/>
     <mesh file="p5_unified.stl"/>
-    <mesh file="uspa46.stl"/>
-    <mesh file="palm_face.stl"/>
-    <mesh file="thp2_unified.stl"/>
-    <mesh file="4_4_origin.stl"/>
-    <mesh file="thp0_unified.stl"/>
-    <mesh file="p3_unified.stl"/>
-    <mesh file="p2_unified.stl"/>
     <mesh file="top_palm.stl"/>
+    <mesh file="thfingertip_unified.stl"/>
+    <mesh file="clipper.stl"/>
+    <mesh file="leap_hand_xela_bottom.stl"/>
+    <mesh file="uspa46.stl"/>
+    <mesh file="leap_hand_xela_motorholder.stl"/>
+    <mesh file="p3_unified.stl"/>
     <mesh file="thconnector.stl"/>
+    <mesh file="palm_face.stl"/>
     <material name="leap_hand_xela_motorholder_material" rgba="0.792157 0.819608 0.933333 1"/>
     <material name="uspa46_material" rgba="0.792157 0.819608 0.933333 1"/>
     <material name="thp0_unified_material" rgba="0.498039 0.498039 0.498039 1"/>
@@ -317,22 +350,22 @@
     <material name="thfingertip_unified_material" rgba="0.498039 0.498039 0.498039 1"/>
   </asset>
   <actuator>
-    <position class="leapXela_with_markers" name="rf_mcp" joint="rf_mcp" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="rf_rot" joint="rf_rot" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="rf_pip" joint="rf_pip" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="rf_dip" joint="rf_dip" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="mf_mcp" joint="mf_mcp" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="mf_rot" joint="mf_rot" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="mf_pip" joint="mf_pip" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="mf_dip" joint="mf_dip" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="if_mcp" joint="if_mcp" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="if_rot" joint="if_rot" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="if_pip" joint="if_pip" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="if_dip" joint="if_dip" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="th_cmc" joint="th_cmc" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="th_axl" joint="th_axl" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="th_mcp" joint="th_mcp" inheritrange="1"/>
-    <position class="leapXela_with_markers" name="th_ipl" joint="th_ipl" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="rf_mcp" joint="rf_mcp" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="rf_rot" joint="rf_rot" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="rf_pip" joint="rf_pip" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="rf_dip" joint="rf_dip" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="mf_mcp" joint="mf_mcp" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="mf_rot" joint="mf_rot" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="mf_pip" joint="mf_pip" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="mf_dip" joint="mf_dip" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="if_mcp" joint="if_mcp" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="if_rot" joint="if_rot" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="if_pip" joint="if_pip" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="if_dip" joint="if_dip" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="th_cmc" joint="th_cmc" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="th_axl" joint="th_axl" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="th_mcp" joint="th_mcp" inheritrange="1"/>
+    <position class="leapXela_with_4_4_markers" name="th_ipl" joint="th_ipl" inheritrange="1"/>
   </actuator>
   <equality/>
 </mujoco>

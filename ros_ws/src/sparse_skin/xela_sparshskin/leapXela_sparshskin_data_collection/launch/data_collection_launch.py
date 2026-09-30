@@ -3,8 +3,9 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
@@ -14,6 +15,9 @@ def generate_launch_description() -> LaunchDescription:
     render_hz = LaunchConfiguration("render_hz")
     mode = LaunchConfiguration("mode")
     server_port = ParameterValue(LaunchConfiguration("server_port"), value_type=int)
+
+    is_sim = PythonExpression(["'", mode, "' == 'sim'"])
+    is_hardware = PythonExpression(["'", mode, "' == 'hardware'"])
 
     sim_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -27,13 +31,36 @@ def generate_launch_description() -> LaunchDescription:
             "joint_topic": joint_topic,
             "render_hz": render_hz,
         }.items(),
+        condition=IfCondition(is_sim),
     )
 
-    fk_taxels_demo = Node(
+    # Sim: joints from hand_controller, sensors from MuJoCo HandSensors.
+    fk_taxels_demo_sim = Node(
         package="leapXela_taxels_forewardkinematic",
         executable="fk_taxels_demo",
         name="fk_taxels_demo",
         output="screen",
+        parameters=[
+            {
+                "joint_topic": joint_topic,
+                "hand_sensors_topic": "hand_sensors",
+            }
+        ],
+        condition=IfCondition(is_sim),
+    )
+
+    # Hardware: joints from leap_state (forces stay unused; SensStream ≠ HandSensors).
+    fk_taxels_demo_hardware = Node(
+        package="leapXela_taxels_forewardkinematic",
+        executable="fk_taxels_demo",
+        name="fk_taxels_demo",
+        output="screen",
+        parameters=[
+            {
+                "joint_topic": "leap_state",
+            }
+        ],
+        condition=IfCondition(is_hardware),
     )
 
     sparsh_skin_demonstration = Node(
@@ -54,7 +81,7 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "joint_topic",
                 default_value="xela_joint_publisher",
-                description="JointState topic for the simulator / hand controller.",
+                description="JointState topic for the simulator / hand controller (sim mode).",
             ),
             DeclareLaunchArgument(
                 "render_hz",
@@ -64,7 +91,10 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "mode",
                 default_value="sim",
-                description="Data collection mode: 'sim' or 'real'.",
+                description=(
+                    "Data collection mode: 'sim' (MuJoCo) or 'hardware' "
+                    "(record /cmd_xela, /leap_state, /oculus_teleop_joint_commands, /xServTopic)."
+                ),
             ),
             DeclareLaunchArgument(
                 "server_port",
@@ -72,7 +102,8 @@ def generate_launch_description() -> LaunchDescription:
                 description="Gradio UI port for sparsh_skin_demonstration.",
             ),
             sim_launch,
-            fk_taxels_demo,
+            fk_taxels_demo_sim,
+            fk_taxels_demo_hardware,
             sparsh_skin_demonstration,
         ]
     )

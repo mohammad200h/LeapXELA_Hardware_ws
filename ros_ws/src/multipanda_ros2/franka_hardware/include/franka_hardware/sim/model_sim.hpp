@@ -507,7 +507,7 @@ class ModelSim : public virtual ModelBase{  // NOLINT(cppcoreguidelines-pro-type
     // Mass matrix is symmetric, so it shouldn't matter. 
     std::array<double, 49> result{0};
     double *M = new double[model_->nv * model_->nv];
-    mj_fullM(model_, M, data_->qM);
+    mj_fullM(model_, data_, M);
     int m_i = 0;
     for(int i=0; i<7; i++){
       for(int j=0; j<7; j++){

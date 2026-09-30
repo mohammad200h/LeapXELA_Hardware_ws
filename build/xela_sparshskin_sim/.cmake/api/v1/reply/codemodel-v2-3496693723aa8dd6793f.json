@@ -1,0 +1,267 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-c09a0deedaa628dc4641.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						19
+					]
+				},
+				{
+					"build" : "xela_sparshskin_sim__py",
+					"jsonFile" : "directory-xela_sparshskin_sim__py-88d0f8d512ebcb07a7d0.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim/xela_sparshskin_sim__py",
+					"targetIndexes" : 
+					[
+						6
+					]
+				},
+				{
+					"build" : "xela_sparshskin_sim__rs",
+					"jsonFile" : "directory-xela_sparshskin_sim__rs-dec0672017fa12ef406c.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.12"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim/xela_sparshskin_sim__rs",
+					"targetIndexes" : 
+					[
+						18
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2
+					],
+					"name" : "xela_sparshskin_sim",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_build_xela_sparshskin_sim_egg::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_build_xela_sparshskin_sim_egg-d371f93630d5af2788e6.json",
+					"name" : "ament_cmake_python_build_xela_sparshskin_sim_egg",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ament_cmake_python_copy_xela_sparshskin_sim::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ament_cmake_python_copy_xela_sparshskin_sim-b056d5ea0c7752f958f2.json",
+					"name" : "ament_cmake_python_copy_xela_sparshskin_sim",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "process_hand_sensors_into_pointcloud::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-process_hand_sensors_into_pointcloud-3f2ca4d38132d2e4818b.json",
+					"name" : "process_hand_sensors_into_pointcloud",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-uninstall-a731d066825ae5fd968d.json",
+					"name" : "uninstall",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim-5ccbf3df0363c7c9e1bf.json",
+					"name" : "xela_sparshskin_sim",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__cpp-da54266dd8ad951ca1ef.json",
+					"name" : "xela_sparshskin_sim__cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "xela_sparshskin_sim__py::@375e76c3ce01a1df3370",
+					"jsonFile" : "target-xela_sparshskin_sim__py-995a50517451c32ec10f.json",
+					"name" : "xela_sparshskin_sim__py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_generator_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_generator_c-59f81f12995a2fc9b1a9.json",
+					"name" : "xela_sparshskin_sim__rosidl_generator_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_generator_py::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_generator_py-9f78f00a285f0b40385e.json",
+					"name" : "xela_sparshskin_sim__rosidl_generator_py",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_c-c46a7e92eabe4d907355.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_c__pyext-4ca48883504b662dd7b0.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_cpp-765327a5514bedae51c4.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_fastrtps_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_fastrtps_c-79397f89728537c649f8.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_fastrtps_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_fastrtps_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_fastrtps_c__pyext-c4c169af949674adab6e.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_fastrtps_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp-bdd9d7e729514fa88690.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_fastrtps_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_introspection_c::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_introspection_c-71d6aaaf15bf6bf7a323.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_introspection_c",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_introspection_c__pyext::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_introspection_c__pyext-a4878cb08291b580d7f0.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_introspection_c__pyext",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim__rosidl_typesupport_introspection_cpp::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim__rosidl_typesupport_introspection_cpp-e53f8edfd353108c4342.json",
+					"name" : "xela_sparshskin_sim__rosidl_typesupport_introspection_cpp",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "xela_sparshskin_sim__rs::@f1ae9e115b17d483c203",
+					"jsonFile" : "target-xela_sparshskin_sim__rs-5c80e66bddfd8d8bbe58.json",
+					"name" : "xela_sparshskin_sim__rs",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "xela_sparshskin_sim_uninstall::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-xela_sparshskin_sim_uninstall-b7e342bc55122d0f648c.json",
+					"name" : "xela_sparshskin_sim_uninstall",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/workspace/LeapXELA_Hardware_ws/build/xela_sparshskin_sim",
+		"source" : "/workspace/LeapXELA_Hardware_ws/ros_ws/src/sparse_skin/xela_sparshskin/xela_sparshskin_sim"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

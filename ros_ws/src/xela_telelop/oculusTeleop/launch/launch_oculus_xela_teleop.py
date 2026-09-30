@@ -16,7 +16,7 @@ def generate_launch_description():
     )
     quest_ip_arg = DeclareLaunchArgument(
         "quest_ip",
-        default_value="192.168.2.48",  # UCL IP
+        default_value="192.168.2.10",  # UCL IP
         # default_value="192.168.1.65",  # Home IP
         description="Quest / AVP headset IP for UDP tracking",
     )

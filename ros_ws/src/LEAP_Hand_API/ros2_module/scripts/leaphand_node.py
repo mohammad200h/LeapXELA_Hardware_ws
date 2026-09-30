@@ -77,17 +77,19 @@ class LeapXELANode(Node):
         self.create_subscription(JointState, 'cmd_xela', self._receive_pose, 10)
 
         self.pub = self.create_publisher(JointState, 'leap_state', 10)
-        self.timer = self.create_timer(0.1, self.publish_state)
+        # self.timer = self.create_timer(0.1, self.publish_state)
 
     def publish_state(self):
         with self._hw_mutex:
-            pos, vel, cur = self._leapXela.dxl_client.read_pos_vel_cur()
+            # pos, vel, cur = self._leapXela.dxl_client.read_pos_vel_cur()
+            pos = self._leapXela.dxl_client.read_pos()
             msg = JointState()
             msg.header.stamp = self.get_clock().now().to_msg()
+
             msg.name = self.joint_names
             msg.position = pos.tolist()
-            msg.velocity = vel.tolist()
-            msg.effort = cur.tolist()
+            # msg.velocity = vel.tolist()
+            # msg.effort = cur.tolist()
             self.pub.publish(msg)
 
     # Receive LEAP pose and directly control the robot

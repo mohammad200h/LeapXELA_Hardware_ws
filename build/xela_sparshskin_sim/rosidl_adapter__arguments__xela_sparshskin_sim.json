@@ -1,0 +1,7 @@
+{
+  "package_name": "xela_sparshskin_sim",
+  "non_idl_tuples": [
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/sparse_skin/xela_sparshskin/xela_sparshskin_sim:msg/Texel.msg",
+    "/workspace/LeapXELA_Hardware_ws/ros_ws/src/sparse_skin/xela_sparshskin/xela_sparshskin_sim:msg/HandSensors.msg"
+  ]
+}

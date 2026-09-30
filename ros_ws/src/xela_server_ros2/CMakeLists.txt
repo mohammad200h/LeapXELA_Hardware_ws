@@ -34,6 +34,7 @@ ament_export_dependencies(
     rclpy 
     std_msgs 
     geometry_msgs
+    rosidl_runtime_py
 )
 
 ###########
