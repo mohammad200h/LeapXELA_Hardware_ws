@@ -1,0 +1,3 @@
+### Running the test ####
+colcon test --packages-select conversions --pytest-args -k conversion_node -q
+colcon test-result --verbose --all

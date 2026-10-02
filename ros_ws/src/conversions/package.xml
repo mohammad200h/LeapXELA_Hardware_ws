@@ -1,18 +1,20 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>leapXela_taxels_forewardkinematic</name>
+  <name>conversions</name>
   <version>0.0.0</version>
-  <description>Live FK visualization of Leap/Xela taxel forces from ROS topics</description>
+  <description>Joint-space conversions between LEAP/XELA sim and hardware frames</description>
   <maintainer email="mohammad200h@hotmail.com">root</maintainer>
   <license>TODO: License declaration</license>
 
   <depend>rclpy</depend>
-  <depend>ament_index_python</depend>
   <depend>sensor_msgs</depend>
-  <depend>leapxela_sparshskin_msgs</depend>
-  <depend>xela_description</depend>
-  <depend>xela_sparshskin_sim</depend>
+
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>xela_description</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-pybullet</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

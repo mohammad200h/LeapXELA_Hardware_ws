@@ -1,0 +1,7 @@
+Traceback (most recent call last):
+  File "xela_viz.py", line 13, in <module>
+  File "xelatools_viz.pyx", line 2662, in xelatools_viz.XELA_Viz.__init__
+  File "xelatools_viz.pyx", line 2671, in xelatools_viz.XELA_Viz.startup
+  File "xelatools_viz.pyx", line 403, in xelatools_viz.Updater.update
+  File "xelatools.py", line 232, in save
+PermissionError: [Errno 13] Permission denied: '/etc/xela/LOG/filelog.xdbg'

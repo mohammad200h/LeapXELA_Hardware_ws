@@ -1,6 +1,8 @@
 from setuptools import find_packages, setup
+import os
+from glob import glob
 
-package_name = 'leapXela_taxels_forewardkinematic'
+package_name = 'leapXela_sparshskin_data_collection_pratik'
 
 setup(
     name=package_name,
@@ -10,12 +12,14 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
+        (os.path.join('share', package_name, 'launch'),
+            glob('launch/*.py')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='root',
     maintainer_email='mohammad200h@hotmail.com',
-    description='Live FK visualization of Leap/Xela taxel forces from ROS topics',
+    description='TODO: Package description',
     license='TODO: License declaration',
     extras_require={
         'test': [
@@ -24,8 +28,10 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'fk_taxels = leapXela_taxels_forewardkinematic.fk_taxels:main',
-            'fk_taxels_viewer = leapXela_taxels_forewardkinematic.fk_taxels_viewer:main',
+            'sparsh_skin_demonstration = leapXela_sparshskin_data_collection_pratik.sparsh_skin_demonstration:main',
+            'replay = leapXela_sparshskin_data_collection_pratik.replay:main',
+            'motion_action = leapXela_sparshskin_data_collection_pratik.motion_action:main',
+            'command_repeator = leapXela_sparshskin_data_collection_pratik.command_repeator:main',
         ],
     },
 )

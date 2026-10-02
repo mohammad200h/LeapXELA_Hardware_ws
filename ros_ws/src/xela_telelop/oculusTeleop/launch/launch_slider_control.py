@@ -65,7 +65,7 @@ def generate_launch_description() -> LaunchDescription:
                 ],
             ),
             Node(
-                package="oculusTeleop",
+                package="conversions",
                 executable="convert_sim_to_hardware",
                 name="convert_sim_to_hardware",
                 output="screen",

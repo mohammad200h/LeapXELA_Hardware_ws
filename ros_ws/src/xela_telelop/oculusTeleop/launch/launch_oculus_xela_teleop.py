@@ -87,7 +87,7 @@ def generate_launch_description():
     )
 
     leap_xela_sim_to_hardware_conversion = Node(
-        package="oculusTeleop",
+        package="conversions",
         executable="convert_sim_to_hardware",
         name="convert_sim_to_hardware",
         output="screen",

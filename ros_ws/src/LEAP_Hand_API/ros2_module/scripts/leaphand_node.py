@@ -77,7 +77,7 @@ class LeapXELANode(Node):
         self.create_subscription(JointState, 'cmd_xela', self._receive_pose, 10)
 
         self.pub = self.create_publisher(JointState, 'leap_state', 10)
-        # self.timer = self.create_timer(0.1, self.publish_state)
+        self.timer = self.create_timer(0.1, self.publish_state)
 
     def publish_state(self):
         with self._hw_mutex:

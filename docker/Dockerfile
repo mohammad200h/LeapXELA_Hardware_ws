@@ -152,7 +152,11 @@ RUN apt-get update && apt-get install -y vulkan-tools
 RUN pip install pybullet
 ######onshape-to-robot ######
 RUN python3 -m pip install --no-cache-dir "uv>=0.5" "uv-build>=0.5"
-RUN cd /tmp && \
+# --no-build-isolation builds commentjson with the image setuptools, which
+# passes strip_trailing_zero to packaging.utils.canonicalize_version. That
+# argument exists only in packaging>=22, so upgrade it before the install.
+RUN python3 -m pip install --no-cache-dir --upgrade "packaging>=24" && \
+    cd /tmp && \
     git clone https://github.com/Rhoban/onshape-to-robot.git && \
     cd onshape-to-robot && \
     python3 -m pip install --no-cache-dir --no-build-isolation .
