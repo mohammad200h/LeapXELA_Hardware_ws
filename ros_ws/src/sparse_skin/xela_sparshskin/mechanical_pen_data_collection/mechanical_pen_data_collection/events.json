@@ -1,0 +1,39 @@
+{
+    "events": {
+        "episode_start": {
+            "type": "episode",
+            "description": "There is an action coming from /cmd_xela",
+            "source": "/cmd_xela"
+        },
+        "terminal": {
+            "type": "episode",
+            "description": "The episode has been terminated because a success or failure condition has been met",
+            "source": "JEV detecting the success or failure condition"
+        },
+        "truncated": {
+            "type": "episode",
+            "description": "The episode has been truncated because the maximum number of steps has been reached",
+            "source": "Maximum number of steps reached (maybe a timer being published on a topic)"
+        },
+        "success": {
+            "type": "reward",
+            "description": "The episode has been terminated because a success condition has been met. The tip of the pen can be seen fully on the camera feed",
+            "source": "JEV detecting the success  which is the tip of the pen being visible on the camera feed"
+        },
+        "fell_off": {
+            "type": "reward",
+            "description": "The pen has fallen off the palm of the hand",
+            "source": "JEV detecting the pen falling off the palm of the hand"
+        },
+        "slipping": {
+            "type": "reward",
+            "description": "The pen is slipping on the palm of the hand",
+            "source": "JEV detecting the pen slipping on the palm of the hand"
+        },
+        "flying": {
+            "type": "reward",
+            "description": "The pen is flying in the air",
+            "source": "JEV detecting the pen flying in the air"
+        }
+    }
+}

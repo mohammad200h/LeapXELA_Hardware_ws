@@ -30,8 +30,9 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'sparsh_skin_data_processor = '
-            'mechanical_pen_data_collection.sparsh_skin_data_processor:main',
+            'rosbag_recorder = '
+            'mechanical_pen_data_collection.rosbag_recorder:main',
+            'bag_viewer = mechanical_pen_data_collection.bag_viewer:main',
         ],
     },
 )

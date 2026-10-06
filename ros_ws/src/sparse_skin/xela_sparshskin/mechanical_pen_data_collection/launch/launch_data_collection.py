@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 
@@ -14,15 +14,9 @@ def generate_launch_description() -> LaunchDescription:
     hardware_topic = LaunchConfiguration("hardware_topic")
     sim_topic = LaunchConfiguration("sim_topic")
     teleop_topic = LaunchConfiguration("teleop_topic")
-    taxel_frames_topic = LaunchConfiguration("taxel_frames_topic")
 
     return LaunchDescription(
         [
-            DeclareLaunchArgument(
-                "fk_viewer",
-                default_value="false",
-                description="Launch the Open3D taxel FK viewer",
-            ),
             DeclareLaunchArgument(
                 "hardware_topic",
                 default_value="leap_state",
@@ -31,7 +25,7 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "sim_topic",
                 default_value="leap_state_sim",
-                description="Sim-frame JointState topic (convert_hardware_to_sim output, fk_taxels input)",
+                description="Sim-frame JointState topic published by convert_hardware_to_sim",
             ),
             DeclareLaunchArgument(
                 "teleop_topic",
@@ -39,9 +33,14 @@ def generate_launch_description() -> LaunchDescription:
                 description="Sim-frame joint commands consumed by convert_sim_to_hardware",
             ),
             DeclareLaunchArgument(
-                "taxel_frames_topic",
-                default_value="taxel_frames",
-                description="TaxelFrames topic published by fk_taxels",
+                "bag_dir",
+                default_value="",
+                description="Directory the recorded bag is written into (defaults to ros_ws/rosbag)",
+            ),
+            DeclareLaunchArgument(
+                "bag_name",
+                default_value="",
+                description="Bag name (defaults to session_<timestamp>)",
             ),
             DeclareLaunchArgument(
                 "xela_config",
@@ -77,6 +76,17 @@ def generate_launch_description() -> LaunchDescription:
                     )
                 )
             ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution(
+                        [
+                            FindPackageShare("realsense_ros2_camera"),
+                            "launch",
+                            "rs.launch.py",
+                        ]
+                    )
+                )
+            ),
             Node(
                 package="conversions",
                 executable="convert_hardware_to_sim",
@@ -99,31 +109,13 @@ def generate_launch_description() -> LaunchDescription:
                 ],
             ),
             Node(
-                package="leapXela_taxels_forewardkinematic",
-                executable="fk_taxels",
-                name="fk_taxels",
-                output="screen",
-                parameters=[
-                    {"joint_topic": sim_topic},
-                    {"taxel_frames_topic": taxel_frames_topic},
-                ],
-            ),
-            Node(
-                package="leapXela_taxels_forewardkinematic",
-                executable="fk_taxels_viewer",
-                name="fk_taxels_viewer",
-                output="screen",
-                parameters=[{"taxel_frames_topic": taxel_frames_topic}],
-                condition=IfCondition(LaunchConfiguration("fk_viewer")),
-            ),
-            Node(
                 package="mechanical_pen_data_collection",
-                executable="sparsh_skin_data_processor",
-                name="sparsh_skin_data_processor",
+                executable="rosbag_recorder",
+                name="rosbag_recorder",
                 output="screen",
                 parameters=[
-                    {"taxel_fk_topic": taxel_frames_topic},
-                    {"xela_topic": "xServTopic"},
+                    {"bag_dir": ParameterValue(LaunchConfiguration("bag_dir"), value_type=str)},
+                    {"bag_name": ParameterValue(LaunchConfiguration("bag_name"), value_type=str)},
                 ],
             ),
         ]
