@@ -14,13 +14,17 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (
             os.path.join('share', package_name),
-            [os.path.join(package_name, 'events.json')],
+            [
+                os.path.join(package_name, 'events.json'),
+                os.path.join(package_name, 'crop.json'),
+            ],
         ),
         (
             os.path.join('share', package_name, 'launch'),
             [
                 os.path.join('launch', 'launch_jev.py'),
                 os.path.join('launch', 'launch_jev_omni.py'),
+                os.path.join('launch', 'launch_crop_vlm.py'),
             ],
         ),
     ],
@@ -40,6 +44,8 @@ setup(
             'jev_laya_vision_detector = jev_event_detector.jev_laya_vision_detector:main',
             'jev_omni_event_detector = jev_event_detector.jev_omni_event_detector:main',
             'jev_viewer = jev_event_detector.jev_viewer:main',
+            'crop_vlm = jev_event_detector.crop_vlm:main',
+            'crop_vlm_viewer = jev_event_detector.crop_vlm_viewer:main',
         ],
     },
 )

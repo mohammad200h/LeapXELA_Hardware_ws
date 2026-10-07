@@ -52,6 +52,10 @@ def default_events_file() -> str:
     return os.path.join(get_package_share_directory("jev_event_detector"), "events.json")
 
 
+def default_crop_file() -> str:
+    return os.path.join(get_package_share_directory("jev_event_detector"), "crop.json")
+
+
 def load_events(events_file: str) -> dict:
     with open(events_file) as f:
         return json.load(f)["events"]
