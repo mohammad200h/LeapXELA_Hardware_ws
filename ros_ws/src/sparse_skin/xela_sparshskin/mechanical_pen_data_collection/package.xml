@@ -19,12 +19,14 @@
   <exec_depend>rosbag2_py</exec_depend>
   <exec_depend>rosidl_runtime_py</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
   <exec_depend>xela_data_collection</exec_depend>
   <exec_depend>xela_description</exec_depend>
   <exec_depend>xela_sparshskin_sim</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-pyqt5</exec_depend>
   <exec_depend>python3-pyqtgraph</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

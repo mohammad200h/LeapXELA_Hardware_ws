@@ -1,27 +1,35 @@
 #!/usr/bin/env python3
 """Replay a bag recorded by ``rosbag_recorder`` in a Qt window.
 
-Reads the bag straight from disk; nothing is published on ROS.
+Reads the bag straight from disk; nothing is published on ROS. The only write
+is "Add event", which stores the selected event from ``events.json`` at the
+current time in the bag on ``EVENT_TOPIC``; events are bookmarked on the play bar.
 
 Usage:
-  ros2 run mechanical_pen_data_collection bag_viewer [--bag PATH] [--speed 1.0]
+  ros2 run mechanical_pen_data_collection bag_viewer [--bag PATH] [--speed 1.0] [--events FILE]
 """
 
 from __future__ import annotations
 
 import argparse
+import json
+import os
 import sys
 import time
 
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets  # imported before pyqtgraph so it binds to PyQt5
 import pyqtgraph as pg
+from ament_index_python.packages import PackageNotFoundError, get_package_share_directory
 
 from mechanical_pen_data_collection.bag_data import (
+    EVENT_TOPIC,
     IMAGE_TOPIC,
     XELA_TOPIC,
     BagData,
+    BagEvent,
     default_bag_dir,
+    list_bags,
     newest_bag,
 )
 from xela_data_collection.leapXelaMap import LEAP_XELA_ID
@@ -31,13 +39,117 @@ PLOTTED_JOINT_TOPICS = ("/leap_state_sim", "/leap_state", "/cmd_xela")  # top to
 SPEEDS = (0.25, 0.5, 1.0, 2.0, 4.0)
 SLIDER_STEPS_PER_SEC = 1000
 MEAN_MODE = "Per-sensor mean |delta|"
+UNKNOWN_EVENT_COLOR = "#9e9e9e"  # events in the bag that are no longer in events.json
 
 pg.setConfigOptions(imageAxisOrder="row-major", antialias=False)
+
+
+def default_events_file() -> str:
+    try:
+        share = get_package_share_directory("mechanical_pen_data_collection")
+        path = os.path.join(share, "events.json")
+        if os.path.exists(path):
+            return path
+    except PackageNotFoundError:
+        pass
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "events.json")
+
+
+def load_event_definitions(path: str) -> dict[str, dict]:
+    with open(path) as f:
+        return json.load(f)["events"]
 
 
 def index_at(t: np.ndarray, now: float) -> int:
     """Index of the last sample at or before ``now`` (-1 if none)."""
     return int(np.searchsorted(t, now, side="right")) - 1
+
+
+class BookmarkSlider(QtWidgets.QSlider):
+    """Horizontal slider that paints coloured bookmarks (with hover tooltips) over its groove."""
+
+    def __init__(self) -> None:
+        super().__init__(QtCore.Qt.Horizontal)
+        self._marks: list[tuple[int, QtGui.QColor, str]] = []  # (slider value, colour, tooltip)
+        self.setMinimumHeight(26)
+        self.setMouseTracking(True)
+
+    def set_marks(self, marks: list[tuple[int, QtGui.QColor, str]]) -> None:
+        self._marks = marks
+        self.update()
+
+    def _mark_x(self, value: int) -> int:
+        opt = QtWidgets.QStyleOptionSlider()
+        self.initStyleOption(opt)
+        style = self.style()
+        groove = style.subControlRect(QtWidgets.QStyle.CC_Slider, opt, QtWidgets.QStyle.SC_SliderGroove, self)
+        handle = style.subControlRect(QtWidgets.QStyle.CC_Slider, opt, QtWidgets.QStyle.SC_SliderHandle, self)
+        span = groove.width() - handle.width()
+        offset = QtWidgets.QStyle.sliderPositionFromValue(self.minimum(), self.maximum(), value, span)
+        return groove.x() + handle.width() // 2 + offset
+
+    def paintEvent(self, ev) -> None:
+        super().paintEvent(ev)
+        if not self._marks:
+            return
+        painter = QtGui.QPainter(self)
+        h = self.height()
+        for value, color, _ in self._marks:
+            x = self._mark_x(value)
+            painter.setPen(QtGui.QPen(color, 3))
+            painter.drawLine(x, 2, x, h - 3)
+        painter.end()
+
+    def event(self, ev) -> bool:
+        if ev.type() == QtCore.QEvent.ToolTip:
+            x = ev.pos().x()
+            hits = [tip for value, _, tip in self._marks if abs(self._mark_x(value) - x) <= 4]
+            if hits:
+                QtWidgets.QToolTip.showText(ev.globalPos(), "\n".join(hits), self)
+            else:
+                QtWidgets.QToolTip.hideText()
+                ev.ignore()
+            return True
+        return super().event(ev)
+
+
+class EditEventDialog(QtWidgets.QDialog):
+    """Warning-style confirmation with a dropdown to pick the event's new name."""
+
+    def __init__(self, parent, event: BagEvent, event_defs: dict[str, dict], color_of) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Edit event")
+        icon = QtWidgets.QLabel()
+        size = self.style().pixelMetric(QtWidgets.QStyle.PM_MessageBoxIconSize)
+        icon.setPixmap(self.style().standardIcon(QtWidgets.QStyle.SP_MessageBoxWarning).pixmap(size))
+        text = QtWidgets.QLabel(
+            f"Change '{event.name}' at {event.t:.2f} s to the event below?\n"
+            "The bag will be updated."
+        )
+        self.combo = QtWidgets.QComboBox()
+        for name in event_defs:
+            swatch = QtGui.QPixmap(12, 12)
+            swatch.fill(color_of(name))
+            self.combo.addItem(QtGui.QIcon(swatch), name, name)
+        if event.name in event_defs:
+            self.combo.setCurrentIndex(list(event_defs).index(event.name))
+        buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        buttons.button(QtWidgets.QDialogButtonBox.Cancel).setDefault(True)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+        body = QtWidgets.QVBoxLayout()
+        body.addWidget(text)
+        body.addWidget(self.combo)
+        top = QtWidgets.QHBoxLayout()
+        top.addWidget(icon, alignment=QtCore.Qt.AlignTop)
+        top.addLayout(body, stretch=1)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addLayout(top)
+        layout.addWidget(buttons)
+
+    def name(self) -> str:
+        return self.combo.currentData()
 
 
 def no_data(plot: pg.PlotItem, topic: str) -> None:
@@ -273,14 +385,25 @@ class Open3DTaxelView(QtWidgets.QWidget):
 
 
 class BagViewer(QtWidgets.QMainWindow):
-    def __init__(self, data: BagData, speed: float = 1.0, counts_per_unit: float = 1000.0) -> None:
+    bag_requested = QtCore.pyqtSignal(str)  # the user picked another bag in the bag dropdown
+
+    def __init__(
+        self,
+        data: BagData,
+        speed: float = 1.0,
+        counts_per_unit: float = 1000.0,
+        event_defs: dict[str, dict] | None = None,
+    ) -> None:
         super().__init__()
         self.data = data
         self.counts_per_unit = counts_per_unit
+        self.event_defs = event_defs or {}
         self.now = 0.0
         self.playing = False
         self._last_tick = time.monotonic()
         self._cursors: list[pg.InfiniteLine] = []
+        self._time_plots: list[pg.PlotItem] = []
+        self._event_lines: list[tuple[pg.PlotItem, pg.InfiniteLine]] = []
 
         self.setWindowTitle(f"Bag viewer - {data.uri}")
         self.resize(1600, 950)
@@ -294,10 +417,12 @@ class BagViewer(QtWidgets.QMainWindow):
         layout.addWidget(splitter, stretch=1)
         layout.addLayout(self._build_transport(speed))
         self.setCentralWidget(central)
+        self._build_events_panel()
 
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self._tick)
         self._timer.start(33)
+        self._refresh_bookmarks()
         self.render()
 
     # ---------------------------------------------------------------- layout
@@ -307,6 +432,14 @@ class BagViewer(QtWidgets.QMainWindow):
         self._left = left
         vbox = QtWidgets.QVBoxLayout(left)
         vbox.setContentsMargins(0, 0, 0, 0)
+        bag_row = QtWidgets.QHBoxLayout()
+        bag_row.addWidget(QtWidgets.QLabel("Bag:"))
+        self.bag_combo = QtWidgets.QComboBox()
+        self.bag_combo.activated.connect(self._on_bag_chosen)
+        bag_row.addWidget(self.bag_combo, stretch=1)
+        vbox.addLayout(bag_row)
+        self._fill_bag_combo()
+
         if self.data.image_t.size:
             h, w = self.data.image_at(0).shape[:2]
             self._camera_aspect = h / w
@@ -349,6 +482,33 @@ class BagViewer(QtWidgets.QMainWindow):
             self._taxel_cols = np.array([cells[i][1] for i in self._taxel_ids])
             self._grid_shape = ids.shape
         return left
+
+    def _fill_bag_combo(self) -> None:
+        """Bags next to the open one (newest first), plus a Browse... entry."""
+        current = os.path.normpath(self.data.uri)
+        bags = [os.path.normpath(b) for b in list_bags(os.path.dirname(current))]
+        if current not in bags:
+            bags.insert(0, current)
+        self.bag_combo.clear()
+        for bag in bags:
+            self.bag_combo.addItem(os.path.basename(bag), bag)
+            self.bag_combo.setItemData(self.bag_combo.count() - 1, bag, QtCore.Qt.ToolTipRole)
+        self.bag_combo.addItem("Browse...", None)
+        self.bag_combo.setCurrentIndex(bags.index(current))
+
+    def _on_bag_chosen(self, index: int) -> None:
+        bag = self.bag_combo.itemData(index)
+        if bag is None:
+            bag = QtWidgets.QFileDialog.getExistingDirectory(
+                self, "Open bag folder", os.path.dirname(self.data.uri)
+            )
+            if bag and not os.path.exists(os.path.join(bag, "metadata.yaml")):
+                QtWidgets.QMessageBox.warning(self, "Open bag", f"No metadata.yaml in {bag}; not a rosbag2 bag.")
+                bag = ""
+        if not bag or os.path.normpath(bag) == os.path.normpath(self.data.uri):
+            self._fill_bag_combo()
+            return
+        self.bag_requested.emit(bag)
 
     def _balance_left(self) -> None:
         """Size the camera so the frame covers the same area as the three taxel grids."""
@@ -425,6 +585,7 @@ class BagViewer(QtWidgets.QMainWindow):
         cursor.sigDragged.connect(lambda line: self.seek(line.value()))
         plot.addItem(cursor, ignoreBounds=True)
         self._cursors.append(cursor)
+        self._time_plots.append(plot)
 
     def _build_transport(self, speed: float) -> QtWidgets.QHBoxLayout:
         bar = QtWidgets.QHBoxLayout()
@@ -439,7 +600,7 @@ class BagViewer(QtWidgets.QMainWindow):
         self.speed_combo.setCurrentIndex(nearest)
         bar.addWidget(self.speed_combo)
 
-        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider = BookmarkSlider()
         self.slider.setRange(0, int(self.data.duration * SLIDER_STEPS_PER_SEC))
         self.slider.sliderMoved.connect(lambda v: self.seek(v / SLIDER_STEPS_PER_SEC))
         bar.addWidget(self.slider, stretch=1)
@@ -447,7 +608,157 @@ class BagViewer(QtWidgets.QMainWindow):
         self.time_label = QtWidgets.QLabel()
         self.time_label.setMinimumWidth(140)
         bar.addWidget(self.time_label)
+
+        self.event_combo = QtWidgets.QComboBox()
+        for name, info in self.event_defs.items():
+            swatch = QtGui.QPixmap(12, 12)
+            swatch.fill(self._event_color(name))
+            self.event_combo.addItem(QtGui.QIcon(swatch), name, name)
+            self.event_combo.setItemData(
+                self.event_combo.count() - 1,
+                f"[{info.get('type', '')}] {info.get('description', '')}",
+                QtCore.Qt.ToolTipRole,
+            )
+        bar.addWidget(self.event_combo)
+        self.add_event_button = QtWidgets.QPushButton("Add event")
+        self.add_event_button.setToolTip(f"Store the selected event at the current time in the bag ({EVENT_TOPIC})")
+        self.add_event_button.clicked.connect(self.add_event)
+        bar.addWidget(self.add_event_button)
+        if not self.event_defs:
+            self.event_combo.setEnabled(False)
+            self.add_event_button.setEnabled(False)
         return bar
+
+    def _build_events_panel(self) -> None:
+        """Dockable list of the bookmarked events in the order they were added; click to seek."""
+        panel = QtWidgets.QWidget()
+        vbox = QtWidgets.QVBoxLayout(panel)
+        vbox.setContentsMargins(2, 2, 2, 2)
+        self.event_list = QtWidgets.QListWidget()
+        self.event_list.setMinimumWidth(220)
+        self.event_list.itemClicked.connect(self._on_event_item)
+        self.event_list.itemActivated.connect(self._on_event_item)
+        self.event_list.itemSelectionChanged.connect(self._update_event_buttons)
+        vbox.addWidget(self.event_list, stretch=1)
+        buttons = QtWidgets.QHBoxLayout()
+        self.edit_event_button = QtWidgets.QPushButton("Edit")
+        self.edit_event_button.clicked.connect(self.edit_selected_event)
+        self.delete_event_button = QtWidgets.QPushButton("Delete")
+        self.delete_event_button.clicked.connect(self.delete_selected_event)
+        buttons.addWidget(self.edit_event_button)
+        buttons.addWidget(self.delete_event_button)
+        vbox.addLayout(buttons)
+        self._update_event_buttons()
+
+        dock = QtWidgets.QDockWidget("Events", self)
+        dock.setObjectName("events_dock")
+        dock.setWidget(panel)
+        dock.setFeatures(QtWidgets.QDockWidget.DockWidgetMovable | QtWidgets.QDockWidget.DockWidgetFloatable)
+        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
+        self.resizeDocks([dock], [230], QtCore.Qt.Horizontal)
+
+    def _on_event_item(self, item: QtWidgets.QListWidgetItem) -> None:
+        self.seek(self.data.events[item.data(QtCore.Qt.UserRole)].t)
+
+    def _selected_event(self) -> BagEvent | None:
+        item = self.event_list.currentItem()
+        if item is None or not item.isSelected():
+            return None
+        return self.data.events[item.data(QtCore.Qt.UserRole)]
+
+    def _update_event_buttons(self) -> None:
+        selected = self._selected_event() is not None
+        self.edit_event_button.setEnabled(selected and bool(self.event_defs))
+        self.delete_event_button.setEnabled(selected)
+
+    def delete_selected_event(self) -> None:
+        event = self._selected_event()
+        if event is None:
+            return
+        answer = QtWidgets.QMessageBox.warning(
+            self,
+            "Delete event",
+            f"Delete '{event.name}' at {event.t:.2f} s from the bag?\nThis cannot be undone.",
+            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel,
+            QtWidgets.QMessageBox.Cancel,
+        )
+        if answer != QtWidgets.QMessageBox.Ok:
+            return
+        try:
+            self.data.delete_event(event)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Delete event", f"Could not delete the event from the bag:\n{e}")
+            return
+        self._refresh_bookmarks()
+
+    def edit_selected_event(self) -> None:
+        event = self._selected_event()
+        if event is None:
+            return
+        dialog = EditEventDialog(self, event, self.event_defs, self._event_color)
+        if dialog.exec_() != QtWidgets.QDialog.Accepted or dialog.name() == event.name:
+            return
+        row = self.event_list.currentRow()
+        try:
+            self.data.rename_event(event, dialog.name(), self.event_defs[dialog.name()].get("type", ""))
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Edit event", f"Could not edit the event in the bag:\n{e}")
+            return
+        self._refresh_bookmarks()
+        self.event_list.setCurrentRow(row)
+
+    # ---------------------------------------------------------------- events
+    def _event_color(self, name: str) -> QtGui.QColor:
+        return QtGui.QColor(self.event_defs.get(name, {}).get("color", UNKNOWN_EVENT_COLOR))
+
+    def add_event(self) -> None:
+        name = self.event_combo.currentData()
+        if name is None:
+            return
+        try:
+            self.data.add_event(name, self.event_defs[name].get("type", ""), self.now)
+        except ValueError as e:
+            QtWidgets.QMessageBox.information(self, "Add event", str(e))
+            return
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Add event", f"Could not write the event to the bag:\n{e}")
+            return
+        self._refresh_bookmarks()
+        self.event_list.scrollToBottom()
+
+    def _refresh_bookmarks(self) -> None:
+        marks = []
+        for plot, line in self._event_lines:
+            plot.removeItem(line)
+        self._event_lines = []
+        self.event_list.clear()
+        for i, event in enumerate(self.data.events, start=1):
+            color = self._event_color(event.name)
+            swatch = QtGui.QPixmap(12, 12)
+            swatch.fill(color)
+            item = QtWidgets.QListWidgetItem(QtGui.QIcon(swatch), f"{i}. {event.name}  @ {event.t:.2f} s")
+            item.setData(QtCore.Qt.UserRole, i - 1)
+            self.event_list.addItem(item)
+            marks.append((int(event.t * SLIDER_STEPS_PER_SEC), color, f"{event.name} @ {event.t:.2f} s"))
+            for plot in self._time_plots:
+                line = pg.InfiniteLine(
+                    pos=event.t, angle=90, movable=False,
+                    pen=pg.mkPen(color, width=1.5, style=QtCore.Qt.DashLine),
+                )
+                plot.addItem(line, ignoreBounds=True)
+                self._event_lines.append((plot, line))
+        self.slider.set_marks(marks)
+        self._update_add_event_button()
+
+    def _update_add_event_button(self) -> None:
+        if not self.event_defs:
+            return
+        existing = self.data.event_at(self.now)
+        self.add_event_button.setEnabled(existing is None)
+        self.add_event_button.setToolTip(
+            f"'{existing.name}' is already at this time" if existing is not None
+            else f"Store the selected event at the current time in the bag ({EVENT_TOPIC})"
+        )
 
     # -------------------------------------------------------------- playback
     def toggle_play(self) -> None:
@@ -510,13 +821,12 @@ class BagViewer(QtWidgets.QMainWindow):
         self.slider.setValue(int(now * SLIDER_STEPS_PER_SEC))
         self.slider.blockSignals(False)
         self.time_label.setText(f"{now:7.2f} / {self.data.duration:.2f} s")
+        self._update_add_event_button()
 
         if self.data.image_t.size:
-            idx = index_at(self.data.image_t, now)
-            if idx >= 0:
-                frame = self.data.image_at(idx)
-                levels = (0, 255) if frame.dtype == np.uint8 else None
-                self.camera_image.setImage(frame, autoLevels=levels is None, levels=levels)
+            frame = self.data.image_at(max(index_at(self.data.image_t, now), 0))
+            levels = (0, 255) if frame.dtype == np.uint8 else None
+            self.camera_image.setImage(frame, autoLevels=levels is None, levels=levels)
 
         xela = self.data.xela
         if xela is not None:
@@ -542,16 +852,50 @@ def main(args=None) -> None:
         default=1000.0,
         help="Raw Xela counts per force unit for the 3D FK deformation/arrows",
     )
+    parser.add_argument(
+        "--events", help="Events JSON for the 'Add event' dropdown (default: installed events.json)"
+    )
     opts, qt_args = parser.parse_known_args(args)
 
     bag = opts.bag or newest_bag()
     if bag is None:
         parser.error(f"No bag given and none found under {default_bag_dir()}")
+    events_file = opts.events or default_events_file()
+    try:
+        event_defs = load_event_definitions(events_file)
+    except (OSError, ValueError, KeyError) as e:
+        print(f"Could not load events from {events_file}: {e}", file=sys.stderr)
+        event_defs = {}
 
     app = QtWidgets.QApplication([sys.argv[0], *qt_args])
-    print(f"Loading {bag} ...", flush=True)
-    viewer = BagViewer(BagData(bag), speed=opts.speed, counts_per_unit=opts.counts_per_unit)
-    viewer.show()
+    viewers: list[BagViewer] = []  # keeps the open window alive
+
+    def open_bag(path: str, old: BagViewer | None = None) -> None:
+        print(f"Loading {path} ...", flush=True)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            data = BagData(path)
+        except Exception as e:
+            QtWidgets.QApplication.restoreOverrideCursor()
+            if old is None:
+                raise
+            QtWidgets.QMessageBox.warning(old, "Open bag", f"Could not open {path}:\n{e}")
+            old._fill_bag_combo()
+            return
+        speed = old.speed_combo.currentData() if old is not None else opts.speed
+        viewer = BagViewer(data, speed=speed, counts_per_unit=opts.counts_per_unit, event_defs=event_defs)
+        viewer.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        viewer.bag_requested.connect(lambda p: open_bag(p, viewer))
+        if old is not None:
+            viewer.setGeometry(old.geometry())
+        viewer.show()
+        QtWidgets.QApplication.restoreOverrideCursor()
+        if old is not None:
+            old.close()
+            viewers.remove(old)
+        viewers.append(viewer)
+
+    open_bag(bag)
     sys.exit(app.exec_())
 
 

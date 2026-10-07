@@ -11,7 +11,7 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name, ['package.xml', os.path.join(package_name, 'events.json')]),
         (
             os.path.join('share', package_name, 'launch'),
             [os.path.join('launch', 'launch_data_collection.py')],
