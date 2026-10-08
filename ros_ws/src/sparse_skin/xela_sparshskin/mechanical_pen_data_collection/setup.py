@@ -14,7 +14,10 @@ setup(
         ('share/' + package_name, ['package.xml', os.path.join(package_name, 'events.json')]),
         (
             os.path.join('share', package_name, 'launch'),
-            [os.path.join('launch', 'launch_data_collection.py')],
+            [
+                os.path.join('launch', 'launch_data_collection.py'),
+                os.path.join('launch', 'launch_record_demonstration.py'),
+            ],
         ),
     ],
     install_requires=['setuptools'],
@@ -33,6 +36,8 @@ setup(
             'rosbag_recorder = '
             'mechanical_pen_data_collection.rosbag_recorder:main',
             'bag_viewer = mechanical_pen_data_collection.bag_viewer:main',
+            'record_demonstration = '
+            'mechanical_pen_data_collection.record_demonstration:main',
         ],
     },
 )

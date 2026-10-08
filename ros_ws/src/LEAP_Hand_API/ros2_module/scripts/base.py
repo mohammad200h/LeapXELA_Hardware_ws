@@ -14,11 +14,11 @@ def load_pose(pose_name):
     return pose[pose_name]
 
 class LeapXelaBase:
-    def __init__(self):
-        self.kP = 600
-        self.kI = 0
-        self.kD = 200
-        self.curr_lim = 550
+    def __init__(self, kP=600, kI=0, kD=200, curr_lim=550):
+        self.kP = kP
+        self.kI = kI
+        self.kD = kD
+        self.curr_lim = curr_lim
         self.prev_pos = self.pos = self.curr_pos = lhu.allegro_to_LEAPhand(np.zeros(16))
         self.motors = motors = [i for i in range(16)]
         try:
@@ -43,6 +43,12 @@ class LeapXelaBase:
                     print("Connected via COM13")
         self.dxl_client.sync_write(motors, np.ones(len(motors))*5, 11, 1)
         self.dxl_client.set_torque_enabled(motors, True)
+        self.set_gains(self.kP, self.kI, self.kD, self.curr_lim)
+
+    def set_gains(self, kP, kI, kD, curr_lim):
+        """Position PID gains and goal current of all motors (RAM, applied with torque on)."""
+        self.kP, self.kI, self.kD, self.curr_lim = kP, kI, kD, curr_lim
+        motors = self.motors
         self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kP, 84, 2)
         self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kP * 0.75), 84, 2)
         self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kI, 82, 2)

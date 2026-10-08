@@ -4,6 +4,7 @@ import json
 import os
 import numpy as np
 import rclpy
+from rcl_interfaces.msg import SetParametersResult
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
 from std_msgs.msg import String
@@ -73,7 +74,27 @@ class LeapXELANode(Node):
         self.create_service(LeapEffort, 'leap_effort', self.eff_srv)
         self.create_service(LeapState, 'leap_state', self.state_srv)
 
-        self._leapXela = LeapXelaBase()
+        # Compliant mode: low gains and the goal follows the hand when it is pushed,
+        # so the fingers can be posed by hand (kinesthetic teaching).
+        self.compliant = self.declare_parameter('compliant', False).value
+        self.compliant_deadband = self.declare_parameter('compliant_deadband', 0.05).value
+        # While cmd_xela is streaming the commander owns the goal (e.g. a held finger); following
+        # the hand then would fight it and make the finger oscillate.
+        self.compliant_cmd_timeout = self.declare_parameter('compliant_cmd_timeout', 0.5).value
+        self._last_cmd_time = None
+        kP = self.declare_parameter('compliant_kP', 60.0).value
+        kD = self.declare_parameter('compliant_kD', 40.0).value
+        curr_lim = self.declare_parameter('compliant_curr_lim', 120.0).value
+        if self.compliant:
+            self._leapXela = LeapXelaBase(kP=kP, kI=0, kD=kD, curr_lim=curr_lim)
+            with self._hw_mutex:
+                self._goal = self._leapXela.dxl_client.read_pos().copy()
+                self._leapXela.set_joints_radians(self._goal)
+            self.get_logger().info('Compliant mode: fingers can be moved by hand')
+        else:
+            self._leapXela = LeapXelaBase()
+        # compliant_* can be changed at runtime (e.g. from record_demonstration's Settings tab).
+        self.add_on_set_parameters_callback(self._on_set_parameters)
         self.create_subscription(JointState, 'cmd_xela', self._receive_pose, 10)
 
         self.pub = self.create_publisher(JointState, 'leap_state', 10)
@@ -92,6 +113,48 @@ class LeapXELANode(Node):
             # msg.effort = cur.tolist()
             self.pub.publish(msg)
 
+            if self.compliant and not self._commanded_recently():
+                # The deadband keeps gravity sag from slowly dragging the goal down.
+                pushed = np.abs(pos - self._goal) > self.compliant_deadband
+                if pushed.any():
+                    self._goal[pushed] = pos[pushed]
+                    self._leapXela.set_joints_radians(self._goal)
+
+    def _commanded_recently(self):
+        if self._last_cmd_time is None:
+            return False
+        elapsed = (self.get_clock().now() - self._last_cmd_time).nanoseconds * 1e-9
+        return elapsed < self.compliant_cmd_timeout
+
+    def _on_set_parameters(self, params):
+        values = {p.name: p.value for p in params}
+        if 'compliant' in values and values['compliant'] != self.compliant:
+            return SetParametersResult(successful=False, reason="'compliant' is fixed at startup")
+        gains = {'compliant_kP', 'compliant_kD', 'compliant_curr_lim'} & values.keys()
+        if gains and not self.compliant:
+            return SetParametersResult(
+                successful=False, reason='compliant mode is off; restart with compliant:=true'
+            )
+        for name, value in values.items():
+            if name.startswith('compliant_') and (not isinstance(value, (int, float)) or value < 0):
+                return SetParametersResult(successful=False, reason=f'{name} must be >= 0')
+        if 'compliant_deadband' in values:
+            self.compliant_deadband = float(values['compliant_deadband'])
+        if 'compliant_cmd_timeout' in values:
+            self.compliant_cmd_timeout = float(values['compliant_cmd_timeout'])
+        if gains:
+            base = self._leapXela
+            kP = float(values.get('compliant_kP', base.kP))
+            kD = float(values.get('compliant_kD', base.kD))
+            curr_lim = float(values.get('compliant_curr_lim', base.curr_lim))
+            try:
+                with self._hw_mutex:
+                    base.set_gains(kP, 0, kD, curr_lim)
+            except Exception as e:
+                return SetParametersResult(successful=False, reason=f'writing gains failed: {e}')
+            self.get_logger().info(f'Compliant gains: kP={kP:g} kD={kD:g} curr_lim={curr_lim:g}')
+        return SetParametersResult(successful=True)
+
     # Receive LEAP pose and directly control the robot
     def _receive_pose(self, msg):
         pose = msg.position
@@ -99,6 +162,9 @@ class LeapXELANode(Node):
         self.curr_pos = np.array(pose)
         
         with self._hw_mutex:
+            if self.compliant:
+                self._goal = self.curr_pos.astype(float).copy()
+                self._last_cmd_time = self.get_clock().now()
             # self._leapXela.set_joints_degrees(self.curr_pos)
             self._leapXela.set_joints_radians(self.curr_pos)
 
