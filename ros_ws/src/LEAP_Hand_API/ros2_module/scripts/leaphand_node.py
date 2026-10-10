@@ -85,11 +85,29 @@ class LeapXELANode(Node):
         kP = self.declare_parameter('compliant_kP', 60.0).value
         kD = self.declare_parameter('compliant_kD', 40.0).value
         curr_lim = self.declare_parameter('compliant_curr_lim', 120.0).value
+        self._compliant_gains = {'kP': float(kP), 'kD': float(kD), 'curr_lim': float(curr_lim)}
+        # In compliant mode the joints named in stiff_joints (comma-separated, e.g. the fingers
+        # a commander is playing back or holding) use the stiff_* gains so they track the
+        # commands; the other joints keep the compliant gains.
+        self._stiff_gains = {
+            'kP': float(self.declare_parameter('stiff_kP', 600.0).value),
+            'kD': float(self.declare_parameter('stiff_kD', 200.0).value),
+            'curr_lim': float(self.declare_parameter('stiff_curr_lim', 550.0).value),
+        }
+        self._motor_of = dict(zip(self.joint_names, self.idx))
+        self._stiff_motors: set[int] = set()
+        stiff_joints = self.declare_parameter('stiff_joints', '').value
+        motors = self._parse_stiff_joints(stiff_joints)
+        if isinstance(motors, str):
+            raise ValueError(motors)
+        self._stiff_motors = motors
         if self.compliant:
             self._leapXela = LeapXelaBase(kP=kP, kI=0, kD=kD, curr_lim=curr_lim)
             with self._hw_mutex:
                 self._goal = self._leapXela.dxl_client.read_pos().copy()
                 self._leapXela.set_joints_radians(self._goal)
+            if self._stiff_motors:
+                self._apply_gains()
             self.get_logger().info('Compliant mode: fingers can be moved by hand')
         else:
             self._leapXela = LeapXelaBase()
@@ -126,33 +144,81 @@ class LeapXELANode(Node):
         elapsed = (self.get_clock().now() - self._last_cmd_time).nanoseconds * 1e-9
         return elapsed < self.compliant_cmd_timeout
 
+    def _parse_stiff_joints(self, text):
+        """Motor ids of the comma-separated joint names in ``text``, or an error message."""
+        names = [n.strip() for n in str(text).split(',') if n.strip()]
+        unknown = [n for n in names if n not in self._motor_of]
+        if unknown:
+            return f"unknown joints in stiff_joints: {', '.join(unknown)}"
+        return {self._motor_of[n] for n in names}
+
+    def _apply_gains(self):
+        """Compliant gains on the motors not in stiff_joints, stiff gains on the others."""
+        if not self.compliant:
+            return
+        base = self._leapXela
+        compliant = [m for m in base.motors if m not in self._stiff_motors]
+        stiff = [m for m in base.motors if m in self._stiff_motors]
+        c, s = self._compliant_gains, self._stiff_gains
+        with self._hw_mutex:
+            base.set_motor_gains(compliant, c['kP'], 0, c['kD'], c['curr_lim'])
+            base.set_motor_gains(stiff, s['kP'], 0, s['kD'], s['curr_lim'])
+        base.kP, base.kD, base.curr_lim = c['kP'], c['kD'], c['curr_lim']
+
     def _on_set_parameters(self, params):
         values = {p.name: p.value for p in params}
         if 'compliant' in values and values['compliant'] != self.compliant:
             return SetParametersResult(successful=False, reason="'compliant' is fixed at startup")
-        gains = {'compliant_kP', 'compliant_kD', 'compliant_curr_lim'} & values.keys()
+        gain_names = {
+            'compliant_kP': (self._compliant_gains, 'kP'),
+            'compliant_kD': (self._compliant_gains, 'kD'),
+            'compliant_curr_lim': (self._compliant_gains, 'curr_lim'),
+            'stiff_kP': (self._stiff_gains, 'kP'),
+            'stiff_kD': (self._stiff_gains, 'kD'),
+            'stiff_curr_lim': (self._stiff_gains, 'curr_lim'),
+        }
+        gains = gain_names.keys() & values.keys()
         if gains and not self.compliant:
             return SetParametersResult(
                 successful=False, reason='compliant mode is off; restart with compliant:=true'
             )
         for name, value in values.items():
-            if name.startswith('compliant_') and (not isinstance(value, (int, float)) or value < 0):
+            if name.startswith(('compliant_', 'stiff_')) and name != 'stiff_joints' and (
+                not isinstance(value, (int, float)) or value < 0
+            ):
                 return SetParametersResult(successful=False, reason=f'{name} must be >= 0')
+        stiff_motors = self._stiff_motors
+        if 'stiff_joints' in values:
+            stiff_motors = self._parse_stiff_joints(values['stiff_joints'])
+            if isinstance(stiff_motors, str):
+                return SetParametersResult(successful=False, reason=stiff_motors)
         if 'compliant_deadband' in values:
             self.compliant_deadband = float(values['compliant_deadband'])
         if 'compliant_cmd_timeout' in values:
             self.compliant_cmd_timeout = float(values['compliant_cmd_timeout'])
+        if not gains and stiff_motors == self._stiff_motors:
+            return SetParametersResult(successful=True)
+        old = ({**self._compliant_gains}, {**self._stiff_gains}, self._stiff_motors)
+        for name in gains:
+            group, key = gain_names[name]
+            group[key] = float(values[name])
+        self._stiff_motors = stiff_motors
+        try:
+            self._apply_gains()
+        except Exception as e:
+            self._compliant_gains.update(old[0])
+            self._stiff_gains.update(old[1])
+            self._stiff_motors = old[2]
+            return SetParametersResult(successful=False, reason=f'writing gains failed: {e}')
         if gains:
-            base = self._leapXela
-            kP = float(values.get('compliant_kP', base.kP))
-            kD = float(values.get('compliant_kD', base.kD))
-            curr_lim = float(values.get('compliant_curr_lim', base.curr_lim))
-            try:
-                with self._hw_mutex:
-                    base.set_gains(kP, 0, kD, curr_lim)
-            except Exception as e:
-                return SetParametersResult(successful=False, reason=f'writing gains failed: {e}')
-            self.get_logger().info(f'Compliant gains: kP={kP:g} kD={kD:g} curr_lim={curr_lim:g}')
+            c, s = self._compliant_gains, self._stiff_gains
+            self.get_logger().info(
+                f"Compliant gains: kP={c['kP']:g} kD={c['kD']:g} curr_lim={c['curr_lim']:g}; "
+                f"stiff gains: kP={s['kP']:g} kD={s['kD']:g} curr_lim={s['curr_lim']:g}"
+            )
+        if stiff_motors != old[2]:
+            names = [n for n, m in self._motor_of.items() if m in stiff_motors]
+            self.get_logger().info(f"Stiff joints: {', '.join(names) or '(none)'}")
         return SetParametersResult(successful=True)
 
     # Receive LEAP pose and directly control the robot

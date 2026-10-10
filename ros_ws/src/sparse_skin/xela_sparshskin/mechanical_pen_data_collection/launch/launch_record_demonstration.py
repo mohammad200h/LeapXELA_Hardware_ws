@@ -8,6 +8,7 @@ from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from launch_ros.substitutions import FindPackageShare
+from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 
 
 def generate_launch_description() -> LaunchDescription:
@@ -48,6 +49,53 @@ def generate_launch_description() -> LaunchDescription:
                 "compliant",
                 default_value="true",
                 description="Low-gain LEAP hand so the fingers can be moved by hand",
+            ),
+            DeclareLaunchArgument(
+                "xela",
+                default_value="true",
+                description="Start xela_server / xela_service (xela_server_ros2 service.launch)",
+            ),
+            DeclareLaunchArgument(
+                "xela_config",
+                default_value="/etc/xela/xServ.ini",
+                description="xela_server config file",
+            ),
+            DeclareLaunchArgument(
+                "xela_port",
+                default_value="5000",
+                description="xela_server port",
+            ),
+            DeclareLaunchArgument(
+                "xela_ip",
+                default_value="127.0.0.1",
+                description="xela_server IP",
+            ),
+            DeclareLaunchArgument(
+                "xela_topic",
+                default_value="/xServTopic",
+                description="SensStream topic of xela_service shown on the FK taxels "
+                "(empty disables it)",
+            ),
+            DeclareLaunchArgument(
+                "counts_per_unit",
+                default_value="1000.0",
+                description="Raw Xela counts per unit of taxel force in the FK taxel view",
+            ),
+            DeclareLaunchArgument(
+                "events_file",
+                default_value="",
+                description="Events JSON for the Edit tab (defaults to the installed events.json)",
+            ),
+            IncludeLaunchDescription(
+                XMLLaunchDescriptionSource(
+                    PathJoinSubstitution([FindPackageShare("xela_server_ros2"), "service.launch"])
+                ),
+                launch_arguments={
+                    "file": LaunchConfiguration("xela_config"),
+                    "port": LaunchConfiguration("xela_port"),
+                    "ip": LaunchConfiguration("xela_ip"),
+                }.items(),
+                condition=IfCondition(LaunchConfiguration("xela")),
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
@@ -94,6 +142,17 @@ def generate_launch_description() -> LaunchDescription:
                         )
                     },
                     {"demo_dir": ParameterValue(LaunchConfiguration("demo_dir"), value_type=str)},
+                    {"xela_topic": ParameterValue(LaunchConfiguration("xela_topic"), value_type=str)},
+                    {
+                        "events_file": ParameterValue(
+                            LaunchConfiguration("events_file"), value_type=str
+                        )
+                    },
+                    {
+                        "counts_per_unit": ParameterValue(
+                            LaunchConfiguration("counts_per_unit"), value_type=float
+                        )
+                    },
                 ],
             ),
         ]

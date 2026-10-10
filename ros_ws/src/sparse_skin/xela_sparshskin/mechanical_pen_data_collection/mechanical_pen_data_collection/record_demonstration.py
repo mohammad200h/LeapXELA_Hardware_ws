@@ -3,35 +3,58 @@
 
 Create tab: one live plot per finger, each with its own Record and Play controls. A finger's
 Record saves a take of that finger only, named after the text box next to it (a timestamped
-default is filled in); "Record all fingers" saves a take for every finger. Takes (the full hand
+default is filled in). Takes (the full hand
 is stored alongside for reference) go to ``<demo_dir>/fingers/<finger>/<name>.npz``. The camera
 feed of the take is written to ``<demo_dir>/camera/<name>.mp4``; every take stores its path as
 ``video`` and the frame times as ``video_t`` (same time axis as ``t``). The sim-frame joints
 from ``sim_topic`` (``convert_hardware_to_sim``) are stored as ``sim_t`` / ``sim_hand_q`` /
-``sim_hand_joint_names``; the plots only show ``joint_topic``. Play sends the take chosen in
+``sim_hand_joint_names``; the raw Xela readings on ``xela_topic`` as ``xela_t`` / ``xela``
+(L, T, 3) with the live view's baseline at recording time as ``xela_baseline``. The plots only
+show ``joint_topic``. Play sends the take chosen in
 the dropdown next to it to the hand on ``cmd_topic``, starting from the play bar position.
 A finger's Hold switch keeps it at the pose it had when the switch was turned on. While any
 finger is held or playing, the other fingers can still be moved by hand. Under the camera, the
-taxels of the hand are placed live by forward kinematics (``taxel_fk_util``) from ``sim_topic``.
+taxels of the hand are placed live by forward kinematics (``taxel_fk_util``) from ``sim_topic``;
+the Xela readings on ``xela_topic`` (change from a baseline, divided by ``counts_per_unit``)
+deform and color them and are drawn as force vectors. Zero takes a new baseline. Under each
+finger's joint plot, a second plot shows the magnitude of each of its 30 fingertip taxels
+(same baseline and scaling; hover to name a taxel). Next to that
+live view, a Playback column shows the camera recording and FK taxels (with the recorded Xela
+forces) of the take being played, at the position Play has reached (empty while nothing plays).
+
+Edit tab: same layout as the Create tab without Record / Play / Hold. Each finger picks one of
+its takes; its plots (joints, and fingertip taxel magnitudes when the take has Xela readings)
+show the whole take and the play bar (or the plot cursor) scrubs through
+it, with the camera recording and the FK taxels / Xela forces of the take following. As in the bag viewer,
+an event from ``events_file`` (default: installed ``events.json``) is added at the play bar
+position; events are bookmarked on the play bar and the plot, listed next to the plot (click
+to seek, Edit / Delete) and saved in the take as ``events`` (JSON list of t, name, type, added,
+end). Events with ``"length": "duration"`` are marked with two clicks (start, then end) and
+their span is shaded on the play bar and the plot; ``end`` is null for instant events.
 
 Compose tab: pick one take per finger with a time offset and speed; fingers without a
 take hold the base pose. The result is resampled on a common timeline and saved as
 ``<demo_dir>/composed/<name>.npz`` with ``t`` (N,), ``q`` (N, 16), ``joint_names`` and
 ``meta`` (JSON of the settings, so the composition can be loaded and edited again).
 
-Settings tab: command rate, playback ramp and free-finger deadband used while fingers are held
+Settings tab: the folder takes are saved into (``demo_dir``, can be changed while running), the
+command rate, playback ramp and free-finger deadband used while fingers are held
 or playing (applied immediately), and the compliant gains / deadband of ``hand_node``
-(leaphand_node), read and set through its ROS parameters.
+(leaphand_node), read and set through its ROS parameters. Fingers that are playing or held
+use the hand node's stiffer playback gains (``stiff_kP`` / ``stiff_kD`` / ``stiff_curr_lim``,
+set through ``stiff_joints``) so they track the take; the other fingers stay compliant.
 
 Usage:
   ros2 run mechanical_pen_data_collection record_demonstration \
       [--ros-args -p joint_topic:=leap_state -p sim_topic:=leap_state_sim -p cmd_topic:=cmd_xela \
                   -p image_topic:=/camera/color/image_raw -p demo_dir:=PATH \
-                  -p hand_node:=leaphand_node]
+                  -p hand_node:=leaphand_node -p xela_topic:=/xServTopic \
+                  -p counts_per_unit:=1000.0 -p events_file:=PATH]
 """
 
 from __future__ import annotations
 
+import functools
 import json
 import os
 import re
@@ -40,7 +63,7 @@ import sys
 import threading
 import time
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 
 import numpy as np
@@ -61,7 +84,20 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, JointState
 
-from mechanical_pen_data_collection.bag_data import default_bag_dir, image_to_array
+from mechanical_pen_data_collection.bag_data import (
+    EVENT_TIME_RESOLUTION,
+    default_bag_dir,
+    image_to_array,
+)
+from mechanical_pen_data_collection.bag_viewer import (
+    SLIDER_STEPS_PER_SEC,
+    UNKNOWN_EVENT_COLOR,
+    BookmarkSlider,
+    EditEventDialog,
+    default_events_file,
+    index_at,
+    load_event_definitions,
+)
 
 FINGERS = (("th", "Thumb"), ("if", "Index"), ("mf", "Middle"), ("rf", "Ring"))
 FINGER_LABEL = dict(FINGERS)
@@ -91,7 +127,16 @@ PLAY_RAMP_S = 0.5
 # ``compliant_deadband`` so gravity sag does not drag them down.
 COMPLIANT_DEADBAND = 0.05
 PLAY_BAR_STEPS = 1000
+# Xela header stamps further than this from the ROS clock are replaced by the receive time.
+XELA_MAX_CLOCK_OFFSET_S = 1.0
 HOLD_BASE = "— hold base pose —"
+# Fingertip patch of each finger in ``taxel_fk_util.XELA_FLATTEN_ORDER``.
+TIP_LINKS = {
+    "th": "3aftc_palm_link",
+    "if": "0aftc_palm_link",
+    "mf": "1aftc_palm_link",
+    "rf": "2aftc_palm_link",
+}
 # leaphand_node parameters shown in the Settings tab:
 # (name, label, max, step, decimals, suffix, tooltip).
 HAND_PARAMS = (
@@ -105,6 +150,14 @@ HAND_PARAMS = (
      "leaphand_node moves a joint's goal to where it is once it is pushed further than this "
      "(rad), so fingers stay where they are posed. Paused while fingers are held or playing "
      "(this GUI's free-finger deadband applies then)"),
+    ("stiff_kP", "Playback kP", 2000.0, 5.0, 0, "",
+     "Position P gain of the fingers that are playing or held (the others keep the compliant "
+     "gains). Higher = they track the take more closely"),
+    ("stiff_kD", "Playback kD", 2000.0, 5.0, 0, "",
+     "Position D gain (damping) of the fingers that are playing or held"),
+    ("stiff_curr_lim", "Playback current limit", 1000.0, 10.0, 0, "",
+     "Goal current of the fingers that are playing or held (Dynamixel units). Raise it if a "
+     "played finger cannot push hard enough, e.g. to click the pen"),
 )
 
 pg.setConfigOptions(antialias=True)
@@ -127,6 +180,28 @@ def take_columns(joint_names: list[str], take: FingerTake) -> list[int]:
     if all(name in joint_names for name in take.joint_names):
         return [joint_names.index(name) for name in take.joint_names]
     return finger_indices(joint_names, take.finger)
+
+
+@functools.cache
+def fingertip_taxel_ids() -> dict[str, np.ndarray] | None:
+    """Hardware Xela ids of each finger's fingertip taxels (None if taxel_fk_util cannot load)."""
+    try:
+        from mechanical_pen_data_collection import taxel_fk_util as fk
+    except Exception:
+        return None
+    links = list(fk.XELA_FLATTEN_ORDER)
+    starts = np.cumsum([0, *fk.XELA_FLATTEN_ORDER.values()])
+    return {
+        finger: fk.TAXEL_IDS_IN_FK_ORDER[starts[links.index(link)]: starts[links.index(link) + 1]]
+        for finger, link in TIP_LINKS.items()
+    }
+
+
+def taxel_magnitudes(
+    readings: np.ndarray, baseline: np.ndarray, ids: np.ndarray, counts_per_unit: float
+) -> np.ndarray:
+    """(N, len(ids)) |reading - baseline| / counts_per_unit of taxels ``ids`` from (N, T, 3)."""
+    return np.linalg.norm((readings[:, ids] - baseline[ids]) / counts_per_unit, axis=-1)
 
 
 def safe_name(name: str) -> str:
@@ -166,6 +241,18 @@ def parameter_value(value: ParameterValue):
 
 
 @dataclass
+class TakeEvent:
+    t: float  # seconds from the start of the take
+    name: str  # key of events.json
+    type: str = ""
+    added: float = 0.0  # wall-clock time it was labelled
+    end: float | None = None  # end of an event with ``"length": "duration"`` (None if instant)
+
+    def span_text(self) -> str:
+        return f"{self.t:.2f} s" if self.end is None else f"{self.t:.2f}-{self.end:.2f} s"
+
+
+@dataclass
 class FingerTake:
     finger: str
     path: str
@@ -179,6 +266,11 @@ class FingerTake:
     sim_t: np.ndarray = field(default_factory=lambda: np.empty(0))  # (K,) sim_topic times
     sim_hand_q: np.ndarray = field(default_factory=lambda: np.empty((0, NUM_JOINTS)))  # (K, 16)
     sim_hand_joint_names: list[str] = field(default_factory=list)
+    xela_t: np.ndarray = field(default_factory=lambda: np.empty(0))  # (L,) xela_topic times
+    xela: np.ndarray = field(default_factory=lambda: np.empty((0, 0, 3)))  # (L, T, 3) raw x, y, z
+    # (T, 3) no-contact reading the forces are measured from (live view's at recording time)
+    xela_baseline: np.ndarray = field(default_factory=lambda: np.empty((0, 3)))
+    events: list[TakeEvent] = field(default_factory=list)  # in the order they were added
 
     @property
     def name(self) -> str:
@@ -190,7 +282,7 @@ class FingerTake:
 
     def save(self) -> None:
         os.makedirs(os.path.dirname(self.path), exist_ok=True)
-        np.savez(
+        np.savez_compressed(
             self.path,
             finger=self.finger,
             t=self.t,
@@ -203,7 +295,15 @@ class FingerTake:
             sim_t=self.sim_t,
             sim_hand_q=self.sim_hand_q,
             sim_hand_joint_names=np.array(self.sim_hand_joint_names),
+            xela_t=self.xela_t,
+            xela=self.xela,
+            xela_baseline=self.xela_baseline,
+            events=json.dumps([asdict(e) for e in self.events]),
         )
+
+    def event_at(self, t: float) -> TakeEvent | None:
+        """The event at ``t`` (within ``EVENT_TIME_RESOLUTION``), if there is one."""
+        return next((e for e in self.events if abs(e.t - t) < EVENT_TIME_RESOLUTION), None)
 
     @classmethod
     def load(cls, path: str) -> FingerTake:
@@ -225,6 +325,16 @@ class FingerTake:
                 sim_hand_joint_names=(
                     [str(n) for n in data["sim_hand_joint_names"]]
                     if "sim_hand_joint_names" in data.files
+                    else []
+                ),
+                xela_t=data["xela_t"] if "xela_t" in data.files else np.empty(0),
+                xela=data["xela"] if "xela" in data.files else np.empty((0, 0, 3)),
+                xela_baseline=(
+                    data["xela_baseline"] if "xela_baseline" in data.files else np.empty((0, 3))
+                ),
+                events=(
+                    [TakeEvent(**e) for e in json.loads(str(data["events"]))]
+                    if "events" in data.files
                     else []
                 ),
             )
@@ -280,6 +390,22 @@ class TakeStore:
             self._cache[path] = cached
         return cached[1]
 
+    def delete(self, path: str) -> None:
+        """Removes the take at ``path``, and its camera recording unless another finger's take
+        of the same recording still uses it."""
+        try:
+            video = self.load(path).video
+        except Exception:
+            video = ""
+        os.remove(path)
+        self._cache.pop(path, None)
+        name = os.path.splitext(os.path.basename(path))[0]
+        shared = any(
+            os.path.exists(self.take_path(finger, name)) for finger, _ in FINGERS
+        )
+        if video and not shared and os.path.exists(video):
+            os.remove(video)
+
 
 @dataclass
 class Recording:
@@ -290,6 +416,8 @@ class Recording:
     sim_t: np.ndarray  # (K,) sim_topic times on the same axis as ``t``
     sim_q: np.ndarray  # (K, 16)
     sim_joint_names: list[str]
+    xela_t: np.ndarray  # (L,) xela_topic times on the same axis as ``t``
+    xela: np.ndarray  # (L, T, 3) raw Xela readings by hardware id
 
 
 class LeapStateListener(Node):
@@ -302,6 +430,9 @@ class LeapStateListener(Node):
         self.sim_topic = self.declare_parameter("sim_topic", "leap_state_sim").value
         cmd_topic = self.declare_parameter("cmd_topic", "cmd_xela").value
         self.image_topic = self.declare_parameter("image_topic", "/camera/color/image_raw").value
+        self.xela_topic = self.declare_parameter("xela_topic", "/xServTopic").value
+        self.counts_per_unit = float(self.declare_parameter("counts_per_unit", 1000.0).value)
+        self.events_file = self.declare_parameter("events_file", "").value or default_events_file()
         self.demo_dir = os.path.expanduser(
             self.declare_parameter("demo_dir", "").value or default_demo_dir()
         )
@@ -320,11 +451,23 @@ class LeapStateListener(Node):
         self._sim: tuple[int, list[str], np.ndarray | None] = (0, [], None)  # (seq, names, q)
         self._rec_sim_t: list[float] = []
         self._rec_sim_q: list[np.ndarray] = []
+        self._xela: tuple[int, np.ndarray | None] = (0, None)  # (seq, (T, 3) raw x, y, z)
+        self._rec_xela_t: list[float] = []
+        self._rec_xela: list[np.ndarray] = []
+        self._xela_history: deque[tuple[float, np.ndarray]] = deque(maxlen=HISTORY_LEN)
 
         self.create_subscription(JointState, topic, self._on_state, 10)
         self.create_subscription(JointState, self.sim_topic, self._on_sim_state, 10)
         if self.image_topic:
             self.create_subscription(Image, self.image_topic, self._on_image, qos_profile_sensor_data)
+        if self.xela_topic:
+            try:
+                from xela_server_ros2.msg import SensStream
+            except ImportError as e:
+                self.get_logger().warn(f"xela_server_ros2 not available, no taxel forces: {e}")
+                self.xela_topic = ""
+            else:
+                self.create_subscription(SensStream, self.xela_topic, self._on_xela, 10)
         self._cmd_pub = self.create_publisher(JointState, cmd_topic, 10)
         self.hand_node = self.declare_parameter("hand_node", "leaphand_node").value
         self._get_params = self.create_client(GetParameters, f"{self.hand_node}/get_parameters")
@@ -332,7 +475,8 @@ class LeapStateListener(Node):
             SetParametersAtomically, f"{self.hand_node}/set_parameters_atomically"
         )
         self.get_logger().info(
-            f"Listening on '{topic}', '{self.sim_topic}' and '{self.image_topic or '(no camera)'}', "
+            f"Listening on '{topic}', '{self.sim_topic}', '{self.image_topic or '(no camera)'}' "
+            f"and '{self.xela_topic or '(no xela)'}', "
             f"playing takes on '{cmd_topic}', saving demonstrations to '{self.demo_dir}'"
         )
 
@@ -368,13 +512,17 @@ class LeapStateListener(Node):
             done,
         )
 
-    def set_hand_params(self, values: dict[str, float], done) -> None:
-        """Sets double parameters of the hand node at once; ``done`` gets the
+    def set_hand_params(self, values: dict[str, float | str], done) -> None:
+        """Sets double / string parameters of the hand node at once; ``done`` gets the
         ``SetParametersResult`` or an exception."""
         params = [
             Parameter(
                 name=name,
-                value=ParameterValue(type=ParameterType.PARAMETER_DOUBLE, double_value=float(v)),
+                value=(
+                    ParameterValue(type=ParameterType.PARAMETER_STRING, string_value=v)
+                    if isinstance(v, str)
+                    else ParameterValue(type=ParameterType.PARAMETER_DOUBLE, double_value=float(v))
+                ),
             )
             for name, v in values.items()
         ]
@@ -384,6 +532,21 @@ class LeapStateListener(Node):
             lambda res: res.result,
             done,
         )
+
+    def set_stiff_joints(self, names: list[str]) -> bool:
+        """Makes the hand node use its stiff_* gains on ``names`` (compliant gains elsewhere).
+        False if the hand node is not up."""
+        if not self.hand_params_ready():
+            return False
+        joints = ",".join(names)
+
+        def done(result) -> None:
+            if isinstance(result, Exception) or not result.successful:
+                reason = result if isinstance(result, Exception) else result.reason
+                self.get_logger().warn(f"Could not set stiff_joints to '{joints}': {reason}")
+
+        self.set_hand_params({"stiff_joints": joints}, done)
+        return True
 
     def _stamp(self, header) -> float:
         stamp = header.stamp.sec + header.stamp.nanosec * 1e-9
@@ -446,6 +609,38 @@ class LeapStateListener(Node):
                 self._rec_sim_t.append(stamp)
                 self._rec_sim_q.append(q)
 
+    def _on_xela(self, msg) -> None:
+        # Sensors concatenated in order give the hardware taxel ids.
+        readings = np.array(
+            [[t.x, t.y, t.z] for s in msg.sensors for t in s.taxels], dtype=np.float64
+        ).reshape(-1, 3)
+        stamp = self._stamp(msg.header)
+        now = self.get_clock().now().nanoseconds * 1e-9
+        if abs(stamp - now) > XELA_MAX_CLOCK_OFFSET_S:
+            # xela_server stamping with another clock would misalign the takes and the plots.
+            stamp = now
+        with self._lock:
+            self._xela = (self._xela[0] + 1, readings)
+            self._xela_history.append((stamp, readings))
+            # A take holds one taxel count; readings of another size are dropped.
+            if self._recording and (
+                not self._rec_xela or len(readings) == len(self._rec_xela[0])
+            ):
+                self._rec_xela_t.append(stamp)
+                self._rec_xela.append(readings.astype(np.float32))
+
+    def latest_xela(self) -> tuple[int, np.ndarray | None]:
+        """(sequence number, (T, 3) raw Xela readings by hardware id) of the latest message."""
+        with self._lock:
+            return self._xela
+
+    def xela_since(self, seq: int) -> tuple[int, list[tuple[float, np.ndarray]]]:
+        """(latest sequence number, (stamp, raw readings) of the messages after ``seq``)."""
+        with self._lock:
+            latest = self._xela[0]
+            n = min(latest - seq, len(self._xela_history))
+            return latest, list(self._xela_history)[len(self._xela_history) - n:] if n > 0 else []
+
     def latest_sim(self) -> tuple[int, list[str], np.ndarray | None]:
         """(sequence number, joint names, positions) of the latest ``sim_topic`` message."""
         with self._lock:
@@ -487,6 +682,7 @@ class LeapStateListener(Node):
         with self._lock:
             self._rec_t, self._rec_q, self._rec_frame_t = [], [], []
             self._rec_sim_t, self._rec_sim_q = [], []
+            self._rec_xela_t, self._rec_xela = [], []
             self._video_path = video_path
             self._recording = True
 
@@ -504,6 +700,9 @@ class LeapStateListener(Node):
             sim_t = np.array(self._rec_sim_t)
             sim_q = np.stack(self._rec_sim_q) if self._rec_sim_q else np.empty((0, NUM_JOINTS))
             sim_names = list(self._sim[1])
+            xela_t = np.array(self._rec_xela_t)
+            xela = np.stack(self._rec_xela) if self._rec_xela else np.empty((0, 0, 3), np.float32)
+            self._rec_xela_t, self._rec_xela = [], []
         t0 = t[0] if len(t) else (video_t[0] if len(video_t) else 0.0)
         return Recording(
             t=t - t0,
@@ -513,6 +712,8 @@ class LeapStateListener(Node):
             sim_t=sim_t - t0,
             sim_q=sim_q,
             sim_joint_names=sim_names,
+            xela_t=xela_t - t0,
+            xela=xela,
         )
 
 
@@ -526,6 +727,11 @@ class CameraView(QtWidgets.QLabel):
         self.setSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         self.setStyleSheet("background-color: black; color: white;")
         self._pixmap: QtGui.QPixmap | None = None
+
+    def set_message(self, text: str) -> None:
+        self._pixmap = None
+        self.clear()
+        self.setText(text)
 
     def set_frame(self, frame: np.ndarray) -> None:
         h, w = frame.shape[:2]
@@ -544,38 +750,161 @@ class CameraView(QtWidgets.QLabel):
         self._show()
 
 
-class HandView(QtWidgets.QStackedWidget):
-    """Taxels of the hand placed by forward kinematics from sim-frame joint angles (no taxel
-    values)."""
+class TakeVideo:
+    """Reads frames of a take's camera recording by index (sequentially when possible)."""
+
+    def __init__(self) -> None:
+        self._cap: cv2.VideoCapture | None = None
+        self._path = ""
+        self._index = -1
+
+    def read(self, path: str, index: int) -> np.ndarray | None:
+        """RGB frame ``index`` of ``path``; None if it is already shown or cannot be read."""
+        if path != self._path:
+            self.release()
+            self._cap = cv2.VideoCapture(path)
+            self._path = path
+        if index == self._index:
+            return None
+        if index != self._index + 1:
+            self._cap.set(cv2.CAP_PROP_POS_FRAMES, index)
+        ok, bgr = self._cap.read()
+        if not ok:
+            self._index = -1
+            return None
+        self._index = index
+        return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+
+    def release(self) -> None:
+        if self._cap is not None:
+            self._cap.release()
+        self._cap, self._path, self._index = None, "", -1
+
+
+def show_take_at(
+    take: FingerTake, t: float, camera: CameraView, hand: HandView, video: TakeVideo
+) -> None:
+    """Camera frame and FK taxels of ``take`` at ``t`` seconds into it."""
+    if take.video and len(take.video_t) and os.path.exists(take.video):
+        frame = video.read(take.video, max(index_at(take.video_t, t), 0))
+        if frame is not None:
+            camera.set_frame(frame)
+    else:
+        video.release()
+        camera.set_message(f"No camera recording in {take.name}")
+    if len(take.sim_t):
+        j = max(index_at(take.sim_t, t), 0)
+        hand.set_joints(take.sim_hand_joint_names, take.sim_hand_q[j])
+    new_take = hand.take_path != take.path
+    if new_take:
+        hand.take_path = take.path
+        hand.take_xela_index = -1
+        hand.set_baseline(take.xela_baseline if len(take.xela_baseline) else None)
+    if len(take.xela_t):
+        k = max(index_at(take.xela_t, t), 0)
+        if k != hand.take_xela_index:
+            hand.take_xela_index = k
+            hand.set_readings(take.xela[k], source=f"Recorded Xela of {take.name}")
+    elif new_take:
+        hand.clear_readings(f"No Xela readings in {take.name}")
+
+
+def side_column(title: QtWidgets.QLabel, camera: CameraView, hand: HandView) -> QtWidgets.QWidget:
+    """``title`` above the camera and the FK taxels (split vertically)."""
+    split = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+    split.addWidget(camera)
+    split.addWidget(hand)
+    column = QtWidgets.QWidget()
+    layout = QtWidgets.QVBoxLayout(column)
+    layout.setContentsMargins(0, 0, 0, 0)
+    layout.addWidget(title)
+    layout.addWidget(split, 1)
+    return column
+
+
+def rgba(colors: np.ndarray) -> np.ndarray:
+    return np.column_stack([colors, np.ones(len(colors))])
+
+
+class HandView(QtWidgets.QWidget):
+    """Taxels of the hand placed by forward kinematics from sim-frame joint angles, deformed,
+    colored and given force vectors by the live Xela readings (change from a baseline taken at
+    the first reading or with Zero), as in the bag viewer."""
 
     TAXEL_SIZE = 0.003  # m
 
-    def __init__(self, topic: str) -> None:
+    def __init__(
+        self,
+        sim_topic: str,
+        xela_topic: str,
+        counts_per_unit: float,
+        waiting: str | None = None,
+        no_xela: str = "No taxel forces (xela_topic is empty)",
+    ) -> None:
+        """``waiting`` / ``no_xela`` replace the default texts shown before joints arrive and
+        when there is no Xela topic."""
         super().__init__()
         self.setMinimumSize(320, 240)
+        self.xela_topic = xela_topic
+        self.counts_per_unit = counts_per_unit
         self._last: np.ndarray | None = None
+        self._pos: np.ndarray | None = None  # (368, 3) FK taxel positions
+        self._rot: np.ndarray | None = None  # (368, 3, 3) taxel local -> world
+        self._readings: np.ndarray | None = None  # (T, 3) latest raw Xela readings by id
+        self._baseline: np.ndarray | None = None  # (368, 3)
+        self.take_path: str | None = None  # take whose recorded readings are shown
+        self.take_xela_index = -1  # index into that take's ``xela`` shown
         self._fk = None
+
+        self.deform_box = QtWidgets.QCheckBox("Deform")
+        self.deform_box.setToolTip("Move and color the taxels by their force")
+        self.vectors_box = QtWidgets.QCheckBox("Force vectors")
+        self.zero_btn = QtWidgets.QPushButton("Zero")
+        self.zero_btn.setToolTip("Use the current Xela reading as the no-contact baseline")
+        self.status = QtWidgets.QLabel()
+        for box in (self.deform_box, self.vectors_box):
+            box.setChecked(True)
+            box.toggled.connect(lambda _: self._redraw())
+        self.zero_btn.clicked.connect(self._zero)
+        controls = QtWidgets.QHBoxLayout()
+        for w in (self.deform_box, self.vectors_box, self.zero_btn):
+            controls.addWidget(w)
+        controls.addWidget(self.status, 1)
+        self.stack = QtWidgets.QStackedWidget()
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(controls)
+        layout.addWidget(self.stack, 1)
+        self._set_status(f"Waiting for {xela_topic} ..." if xela_topic else no_xela)
+
         try:
             import pyqtgraph.opengl as gl
 
             from mechanical_pen_data_collection import taxel_fk_util as fk
         except Exception as e:
-            self.addWidget(self._message(f"Hand view unavailable: {e}"))
+            self.stack.addWidget(self._message(f"Hand view unavailable: {e}"))
+            self._enable_controls(False)
             return
         self._fk = fk
+        self._patch_colors = rgba(fk.taxel_patch_colors(fk.PATCH_IDS_IN_FK_ORDER))
         self.view = gl.GLViewWidget()
         self.view.setBackgroundColor((20, 20, 26))
-        colors = fk.taxel_patch_colors(fk.PATCH_IDS_IN_FK_ORDER)
         self._scatter = gl.GLScatterPlotItem(
             pos=np.zeros((fk.NUM_TAXELS, 3)),
-            color=np.column_stack([colors, np.ones(len(colors))]),
+            color=self._patch_colors,
             size=self.TAXEL_SIZE,
             pxMode=False,
         )
+        self._vectors = gl.GLLinePlotItem(mode="lines", width=2, antialias=True)
+        self._vectors.hide()
         self.view.addItem(self._scatter)
+        self.view.addItem(self._vectors)
         self.view.addItem(gl.GLAxisItem(size=QtGui.QVector3D(0.04, 0.04, 0.04)))
-        self.addWidget(self._message(f"Waiting for {topic} (convert_hardware_to_sim) ..."))
-        self.addWidget(self.view)
+        self.stack.addWidget(
+            self._message(waiting or f"Waiting for {sim_topic} (convert_hardware_to_sim) ...")
+        )
+        self.stack.addWidget(self.view)
+        self._enable_controls(bool(xela_topic))
 
     @staticmethod
     def _message(text: str) -> QtWidgets.QLabel:
@@ -585,26 +914,118 @@ class HandView(QtWidgets.QStackedWidget):
         label.setStyleSheet("background-color: black; color: white;")
         return label
 
+    def _enable_controls(self, on: bool) -> None:
+        for w in (self.deform_box, self.vectors_box, self.zero_btn):
+            w.setEnabled(on)
+
+    def _set_status(self, text: str, error: bool = False) -> None:
+        self.status.setText(f"<span style='color:#d32f2f'>{text}</span>" if error else text)
+
+    def _valid_readings(self) -> np.ndarray | None:
+        r = self._readings
+        return r[: self._fk.NUM_TAXELS] if r is not None and len(r) >= self._fk.NUM_TAXELS else None
+
+    def _zero(self) -> None:
+        readings = self._valid_readings() if self._fk is not None else None
+        if readings is not None:
+            self._baseline = readings.copy()
+            self._redraw()
+
+    def clear(self) -> None:
+        """Back to the waiting text until the next ``set_joints``."""
+        self.take_path = None
+        if self._fk is not None:
+            self._last = None
+            self.stack.setCurrentIndex(0)
+
+    @property
+    def baseline(self) -> np.ndarray | None:
+        return self._baseline
+
+    def set_baseline(self, baseline: np.ndarray | None) -> None:
+        """Use ``baseline`` as the no-contact reading (None: the next reading)."""
+        if self._fk is not None and baseline is not None and len(baseline) >= self._fk.NUM_TAXELS:
+            self._baseline = np.asarray(baseline[: self._fk.NUM_TAXELS], dtype=np.float64)
+        else:
+            self._baseline = None
+
+    def clear_readings(self, status: str) -> None:
+        """Drop the readings (taxels keep their patch colors) and show ``status``."""
+        self._readings = None
+        self._enable_controls(False)
+        self._set_status(status)
+        self._redraw()
+
     def set_joints(self, names: list[str], q: np.ndarray) -> None:
         if self._fk is None or (self._last is not None and np.array_equal(q, self._last)):
             return
-        first = self._last is None
+        first = self._pos is None
         self._last = q.copy()
         try:
-            pos, _ = self._fk.get_fk_taxel_frames(self._fk.joint_angles_in_fk_order(names, q))
+            pos, rot = self._fk.get_fk_taxel_frames(self._fk.joint_angles_in_fk_order(names, q))
         except Exception as e:
             self._fk = None
-            self.addWidget(self._message(f"Hand view failed: {e}"))
-            self.setCurrentIndex(self.count() - 1)
+            self._enable_controls(False)
+            self.stack.addWidget(self._message(f"Hand view failed: {e}"))
+            self.stack.setCurrentIndex(self.stack.count() - 1)
             return
-        self._scatter.setData(pos=pos[0])
+        self._pos, self._rot = pos[0], rot[0]
+        self._redraw()
+        self.stack.setCurrentWidget(self.view)
         if first:
-            self.setCurrentWidget(self.view)
             # Side view as in the MuJoCo scene: fingers along +Y, Z up.
-            center = pos[0].mean(axis=0)
+            center = self._pos.mean(axis=0)
             self.view.setCameraPosition(
                 pos=QtGui.QVector3D(*center), distance=0.35, elevation=20, azimuth=-125
             )
+
+    def set_readings(self, readings: np.ndarray, source: str | None = None) -> None:
+        """Show raw Xela ``readings``; ``source`` names them in the status (default: live topic)."""
+        if self._fk is None:
+            return
+        self._readings = readings
+        valid = self._valid_readings()
+        if valid is None:
+            self._set_status(
+                f"{len(readings)} taxels in {source or self.xela_topic}, "
+                f"expected {self._fk.NUM_TAXELS}",
+                error=True,
+            )
+        else:
+            if self._baseline is None:
+                self._baseline = valid.copy()
+            self._enable_controls(True)
+            self._set_status(source or f"{self.xela_topic} live")
+        self._redraw()
+
+    def _redraw(self) -> None:
+        if self._fk is None or self._pos is None:
+            return
+        fk = self._fk
+        readings = self._valid_readings()
+        forces_local = None
+        if readings is not None and self._baseline is not None:
+            forces_local = fk.taxel_readings_to_local_forces(
+                readings, self._baseline, self.counts_per_unit
+            )
+        pos, colors = self._pos, self._patch_colors
+        if forces_local is not None and self.deform_box.isChecked():
+            pos = fk.deform_taxel_positions(self._pos, self._rot, forces_local)
+            vmax = max(float(np.percentile(np.linalg.norm(forces_local, axis=-1), 98)), 1e-6)
+            colors = rgba(fk.force_magnitude_colors(forces_local, vmax=vmax))
+        self._scatter.setData(pos=pos, color=colors)
+
+        starts = np.empty((0, 3))
+        if forces_local is not None and self.vectors_box.isChecked():
+            forces_world = fk.local_forces_to_world(forces_local, self._rot)
+            starts, ends, vector_colors = fk.force_vector_segments(pos, forces_world)
+        if len(starts) == 0:
+            self._vectors.hide()
+            return
+        segments = np.empty((2 * len(starts), 3))
+        segments[0::2], segments[1::2] = starts, ends
+        self._vectors.setData(pos=segments, color=np.repeat(rgba(vector_colors), 2, axis=0))
+        self._vectors.show()
 
 
 STOP_STYLE = "background-color: #d32f2f; color: white;"
@@ -667,6 +1088,103 @@ class ToggleSwitch(QtWidgets.QAbstractButton):
         p.drawEllipse(QtCore.QRectF(x, rect.y() + 2, d, d))
 
 
+class TipTaxelPlot(pg.PlotWidget):
+    """|force| of each fingertip taxel of one finger over time (one curve per taxel), scaled as
+    in ``HandView``. Hovering highlights the nearest curve and names its Xela taxel id."""
+
+    TITLE = "Fingertip taxels"
+
+    def __init__(self, finger: str) -> None:
+        super().__init__()
+        ids = fingertip_taxel_ids()
+        self.ids = ids[finger] if ids is not None else np.empty(0, dtype=int)
+        n = len(self.ids)
+        item = self.getPlotItem()
+        item.showGrid(x=True, y=True, alpha=0.3)
+        item.setLabel("bottom", "time", "s")
+        item.setLabel("left", "|force|")
+        item.setClipToView(True)
+        item.setDownsampling(auto=True, mode="peak")
+        item.enableAutoRange(axis="x", enable=False)  # follows the joint plot it is linked to
+        self._pens = [pg.mkPen(pg.intColor(i, hues=max(n, 1)), width=1) for i in range(n)]
+        self.curves = [item.plot(pen=pen, antialias=False) for pen in self._pens]
+        # Recorded magnitudes of the take being played; the live ``curves`` are dashed meanwhile.
+        self.demo_curves = [
+            item.plot(pen=pg.mkPen(pen.color(), width=1.5), antialias=False) for pen in self._pens
+        ]
+        self._live_style = QtCore.Qt.SolidLine
+        self._t = np.empty(0)
+        self._mags = np.empty((0, n))
+        self._status = ""
+        self._hovered: int | None = None
+        self.set_status("" if ids is not None else "taxel map unavailable")
+        self.scene().sigMouseMoved.connect(self._on_hover)
+
+    def set_status(self, text: str) -> None:
+        """Shown after the title (e.g. why there is no data)."""
+        self._status = text
+        self._show_title()
+
+    def set_data(self, t: np.ndarray, mags: np.ndarray) -> None:
+        """``mags`` (N, 30): magnitude of each taxel of ``ids`` at times ``t``."""
+        self._t, self._mags = t, mags
+        for j, curve in enumerate(self.curves):
+            curve.setData(t, mags[:, j])
+
+    def clear_data(self, status: str) -> None:
+        self.set_data(np.empty(0), np.empty((0, len(self.ids))))
+        self.set_status(status)
+
+    def set_playing(self, on: bool) -> None:
+        """While playing: demonstration solid, measured taxels dashed."""
+        self._live_style = QtCore.Qt.DashLine if on else QtCore.Qt.SolidLine
+        for j, curve in enumerate(self.curves):
+            curve.setPen(self._live_pen(j, 3 if j == self._hovered else 1))
+        if not on:
+            self.set_demo_data(np.empty(0), np.empty((0, len(self.ids))))
+        self._show_title()
+
+    def set_demo_data(self, t: np.ndarray, mags: np.ndarray) -> None:
+        """``mags`` (N, 30): recorded magnitudes of the take being played at times ``t``."""
+        for j, curve in enumerate(self.demo_curves):
+            curve.setData(t, mags[:, j] if len(mags) else mags)
+
+    def _live_pen(self, j: int, width: float) -> QtGui.QPen:
+        return pg.mkPen(self._pens[j].color(), width=width, style=self._live_style)
+
+    def _show_title(self, extra: str = "") -> None:
+        if self._live_style != QtCore.Qt.SolidLine:
+            status = "solid: demonstration, dashed: measured"
+        else:
+            status = self._status
+        parts = [self.TITLE] + [p for p in (status, extra) if p]
+        self.getPlotItem().setTitle(" - ".join(parts), size="9pt")
+
+    def _highlight(self, j: int | None) -> None:
+        if j == self._hovered:
+            return
+        for k in (self._hovered, j):
+            if k is not None:
+                self.curves[k].setPen(self._live_pen(k, 3 if k == j else 1))
+        if j is not None:
+            self.curves[j].setZValue(1)
+        if self._hovered is not None:
+            self.curves[self._hovered].setZValue(0)
+        self._hovered = j
+
+    def _on_hover(self, pos) -> None:
+        vb = self.getPlotItem().getViewBox()
+        if len(self._t) == 0 or not vb.sceneBoundingRect().contains(pos):
+            self._highlight(None)
+            self._show_title()
+            return
+        p = vb.mapSceneToView(pos)
+        i = int(np.clip(np.searchsorted(self._t, p.x()), 0, len(self._t) - 1))
+        j = int(np.argmin(np.abs(self._mags[i] - p.y())))
+        self._highlight(j)
+        self._show_title(f"taxel {int(self.ids[j])}: {self._mags[i, j]:.3f}")
+
+
 class FingerPanel(QtWidgets.QWidget):
     """Hold switch, take name + Record, take picker + Play and a play bar above the live plot of
     one finger."""
@@ -717,11 +1235,31 @@ class FingerPanel(QtWidgets.QWidget):
         item.setLabel("left", "position", "rad")
         self.legend = item.addLegend(offset=(5, 5))
         self.curves = [item.plot(pen=pg.mkPen(color, width=2)) for color in JOINT_COLORS]
+        # What Play commands from the take; the measured ``curves`` are dashed meanwhile.
+        self.demo_curves = [item.plot(pen=pg.mkPen(color, width=2)) for color in JOINT_COLORS]
+        self.tip_plot = TipTaxelPlot(finger)
+        self.tip_plot.setXLink(self.plot)
+        plots = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        plots.addWidget(self.plot)
+        plots.addWidget(self.tip_plot)
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(controls)
-        layout.addWidget(self.plot, 1)
+        layout.addWidget(plots, 1)
+
+    def set_playing(self, on: bool) -> None:
+        """While playing: demonstration solid, measured joints and taxels dashed."""
+        style = QtCore.Qt.DashLine if on else QtCore.Qt.SolidLine
+        for curve, color in zip(self.curves, JOINT_COLORS):
+            curve.setPen(pg.mkPen(color, width=2, style=style))
+        if not on:
+            for curve in self.demo_curves:
+                curve.setData([], [])
+        self.plot.getPlotItem().setTitle(
+            "solid: demonstration, dashed: measured" if on else None, size="9pt"
+        )
+        self.tip_plot.set_playing(on)
 
     def fill_takes(self, store: TakeStore, select: str | None = None) -> None:
         """Lists the takes of this finger, selecting ``select`` (default: keep the selection)."""
@@ -752,6 +1290,17 @@ def sample_take(take: FingerTake, local: float) -> np.ndarray:
     return np.array([np.interp(local, take.t, take.q[:, j]) for j in range(take.q.shape[1])])
 
 
+def take_tip_magnitudes(
+    take: FingerTake, ids: np.ndarray, counts_per_unit: float
+) -> np.ndarray | None:
+    """(L, len(ids)) magnitudes of taxels ``ids`` at ``take.xela_t``, from the take's baseline
+    (its first reading for takes without one); None if the take has no usable Xela readings."""
+    if len(take.xela_t) == 0 or len(ids) == 0 or take.xela.shape[1] <= ids.max():
+        return None
+    baseline = take.xela_baseline if len(take.xela_baseline) > ids.max() else take.xela[0]
+    return taxel_magnitudes(take.xela, baseline, ids, counts_per_unit)
+
+
 @dataclass
 class Playback:
     take: FingerTake
@@ -760,14 +1309,24 @@ class Playback:
     from_q: np.ndarray  # finger joints at the start of the ramp
     offset: float  # take time reached at the end of the ramp
     to_q: np.ndarray  # finger joints at ``offset``
+    local: float = 0.0  # take time last commanded
+    # (ROS time, commanded hand pose) of every command step, plotted against ``leap_state``.
+    history: deque[tuple[float, np.ndarray]] = field(
+        default_factory=lambda: deque(maxlen=HISTORY_LEN)
+    )
+    # (ROS time, take time commanded) of every command step, to plot the take's taxels.
+    local_history: deque[tuple[float, float]] = field(
+        default_factory=lambda: deque(maxlen=HISTORY_LEN)
+    )
+    tip_mags: np.ndarray | None = None  # (L, 30) recorded fingertip magnitudes (None: no Xela)
 
 
 class CreateTab(QtWidgets.QWidget):
     """One live plot per finger with Record / Play buttons, plus the camera.
 
-    A finger's Record saves a take of that finger under the name in its text box; "Record all
-    fingers" saves a take of every finger. Play sends the take selected in the finger's dropdown
-    to the hand, starting from the play bar position. Hold keeps a finger at its pose.
+    A finger's Record saves a take of that finger under the name in its text box. Play sends the
+    take selected in the finger's dropdown to the hand, starting from the play bar position. Hold
+    keeps a finger at its pose.
 
     While any finger is held or playing, the whole hand is commanded on ``cmd_topic``; the other
     ("free") fingers mimic leaphand_node's compliant mode so they can still be posed by hand.
@@ -782,6 +1341,16 @@ class CreateTab(QtWidgets.QWidget):
         self.settings = settings
         self._frame_seq = 0
         self._sim_seq = 0
+        self._xela_seq = 0
+        # Live fingertip plots: (stamp, readings of ``_tip_ids``) over the last LIVE_WINDOW_S.
+        tip_ids = fingertip_taxel_ids()
+        self._tip_ids = (
+            np.concatenate([tip_ids[f] for f, _ in FINGERS]) if tip_ids else np.empty(0, int)
+        )
+        self._tip_seq = 0
+        self._tip_history: deque[tuple[float, np.ndarray]] = deque()
+        self._tip_baseline: np.ndarray | None = None  # baseline the plots were drawn with
+        self._tip_waiting = False  # plots show the waiting text
         self._take_name = ""
         self._rec_fingers: tuple[str, ...] = ()
         self._rec_btn: QtWidgets.QPushButton | None = None
@@ -789,13 +1358,7 @@ class CreateTab(QtWidgets.QWidget):
         self._last_cmd: np.ndarray | None = None
         self._playing: dict[str, Playback] = {}
         self._held: dict[str, np.ndarray] = {}  # finger -> joint positions it is held at
-
-        self.record_all_btn = QtWidgets.QPushButton("Record all fingers")
-        self.record_all_btn.setMinimumHeight(40)
-        all_fingers = tuple(finger for finger, _ in FINGERS)
-        self.record_all_btn.clicked.connect(
-            lambda: self.toggle_recording(all_fingers, self.record_all_btn)
-        )
+        self._stiff_sent: tuple[str, ...] = ()  # joints last given the hand's stiff gains
 
         grid = QtWidgets.QWidget()
         grid_layout = QtWidgets.QGridLayout(grid)
@@ -818,25 +1381,36 @@ class CreateTab(QtWidgets.QWidget):
         self._legend_names: list[str] = []
 
         self.camera = CameraView(node.image_topic)
-        self.hand = HandView(node.sim_topic)
-        side = QtWidgets.QSplitter(QtCore.Qt.Vertical)
-        side.addWidget(self.camera)
-        side.addWidget(self.hand)
+        self.hand = HandView(node.sim_topic, node.xela_topic, node.counts_per_unit)
+        # The recording of the take being played, next to the live view.
+        self.play_title = QtWidgets.QLabel()
+        self.play_camera = CameraView("")
+        self.play_hand = HandView(
+            "", "", node.counts_per_unit,
+            waiting="Press Play to see the take's taxels",
+            no_xela="Press Play to see the take's Xela readings",
+        )
+        self._play_video = TakeVideo()
+        self._shown_play: str | None = None  # finger whose take the playback column shows
+        self._clear_playback_view()
+        sides = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        sides.addWidget(side_column(QtWidgets.QLabel("<b>Live</b>"), self.camera, self.hand))
+        sides.addWidget(side_column(self.play_title, self.play_camera, self.play_hand))
         splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         splitter.addWidget(grid)
-        splitter.addWidget(side)
-        splitter.setStretchFactor(0, 3)
-        splitter.setStretchFactor(1, 2)
+        splitter.addWidget(sides)
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 1)
 
         layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(self.record_all_btn)
+        layout.addSpacing(40)
         layout.addWidget(splitter, 1)
 
         self._cmd_timer = QtCore.QTimer(self)
         self._cmd_timer.timeout.connect(self._command_step)
 
     def _record_buttons(self) -> list[QtWidgets.QPushButton]:
-        return [self.record_all_btn] + [p.record_btn for p in self.panels.values()]
+        return [p.record_btn for p in self.panels.values()]
 
     def _new_default_name(self, panel: FingerPanel) -> str:
         panel.default_name = self.store.new_take_name(panel.label.lower())
@@ -898,7 +1472,6 @@ class CreateTab(QtWidgets.QWidget):
         for btn in self._record_buttons():
             btn.setEnabled(True)
             btn.setStyleSheet("")
-        self.record_all_btn.setText("Record all fingers")
         for panel in self.panels.values():
             panel.record_btn.setText("Record")
             panel.name_edit.setEnabled(True)
@@ -913,6 +1486,13 @@ class CreateTab(QtWidgets.QWidget):
             self.node.get_logger().warn(
                 f"No '{self.node.sim_topic}' messages during the take; saving it without sim joints"
             )
+        if self.node.xela_topic and len(rec.xela_t) == 0:
+            self.node.get_logger().warn(
+                f"No '{self.node.xela_topic}' messages during the take; saving it without taxels"
+            )
+        baseline = self.hand.baseline
+        if baseline is None or (len(rec.xela) and len(baseline) > rec.xela.shape[1]):
+            baseline = rec.xela[0] if len(rec.xela) else np.empty((0, 3))
         hand_names = self.node.joint_names
         for finger in self._rec_fingers:
             idx = finger_indices(hand_names, finger)
@@ -930,6 +1510,9 @@ class CreateTab(QtWidgets.QWidget):
                 sim_t=rec.sim_t,
                 sim_hand_q=rec.sim_q,
                 sim_hand_joint_names=rec.sim_joint_names,
+                xela_t=rec.xela_t,
+                xela=rec.xela,
+                xela_baseline=np.asarray(baseline, dtype=np.float32),
             ).save()
             panel = self.panels[finger]
             self._new_default_name(panel)
@@ -970,10 +1553,15 @@ class CreateTab(QtWidgets.QWidget):
             from_q=self._current_goal(q)[cols],
             offset=offset,
             to_q=sample_take(take, offset),
+            tip_mags=take_tip_magnitudes(take, panel.tip_plot.ids, self.node.counts_per_unit),
         )
         panel.take_combo.setEnabled(False)
         panel.play_btn.setText("Stop")
         panel.play_btn.setStyleSheet(STOP_STYLE)
+        panel.set_playing(True)
+        self._update_stiff_joints()
+        self._shown_play = finger
+        self.play_title.setText(f"<b>Playback</b>: {panel.label} - {take.name}")
 
     def _stop_play(self, finger: str, rewind: bool = False) -> None:
         """Stops ``finger`` where it was last commanded; it then follows the hand again."""
@@ -984,13 +1572,47 @@ class CreateTab(QtWidgets.QWidget):
         panel.take_combo.setEnabled(True)
         panel.play_btn.setText("Play")
         panel.play_btn.setStyleSheet("")
+        panel.set_playing(False)
         if rewind:
             panel.set_position(0.0)
         self._stop_commanding_if_idle()
+        self._update_stiff_joints()
+        if finger == self._shown_play:
+            self._shown_play = next(iter(self._playing), None)
+            if self._shown_play is None:
+                self._clear_playback_view()
+            else:
+                shown = self._playing[self._shown_play]
+                self.play_title.setText(
+                    f"<b>Playback</b>: {FINGER_LABEL[self._shown_play]} - {shown.take.name}"
+                )
+
+    def _clear_playback_view(self) -> None:
+        self._play_video.release()
+        self.play_title.setText("<b>Playback</b>")
+        self.play_camera.set_message("Press Play to see the take's camera recording")
+        self.play_hand.clear()
+
+    def close_video(self) -> None:
+        self._play_video.release()
 
     def stop_all_playback(self) -> None:
         for finger in list(self._playing):
             self._stop_play(finger)
+
+    def forget_take(self, path: str) -> None:
+        """Stops playing the take at ``path`` (about to be deleted)."""
+        for finger, playback in list(self._playing.items()):
+            if playback.take.path == path:
+                self._stop_play(finger, rewind=True)
+
+    def reload_takes(self) -> None:
+        """Re-lists every finger's takes and default names, e.g. after the folder changed."""
+        for finger, panel in self.panels.items():
+            if panel.name_edit.text() == panel.default_name:
+                self._new_default_name(panel)
+            panel.fill_takes(self.store)
+            self._on_take_selected(finger)
 
     # ---- hold ---------------------------------------------------------------------------
 
@@ -1003,6 +1625,7 @@ class CreateTab(QtWidgets.QWidget):
                 self._free[cols] = held
             panel.update_play_enabled()
             self._stop_commanding_if_idle()
+            self._update_stiff_joints()
             return
         q = self.node.latest()
         if q is None:
@@ -1014,6 +1637,23 @@ class CreateTab(QtWidgets.QWidget):
         if finger in self._playing:
             self._stop_play(finger)
         panel.update_play_enabled()
+        self._update_stiff_joints()
+
+    def _update_stiff_joints(self) -> None:
+        """Playing and held fingers use the hand's stiff (playback) gains, the others stay
+        compliant."""
+        names = self.node.joint_names
+        fingers = set(self._playing) | set(self._held)
+        joints = tuple(
+            names[i] for finger, _ in FINGERS if finger in fingers
+            for i in finger_indices(names, finger)
+        )
+        if joints != self._stiff_sent and self.node.set_stiff_joints(list(joints)):
+            self._stiff_sent = joints
+
+    def release_stiff_joints(self) -> None:
+        if self._stiff_sent and self.node.set_stiff_joints([]):
+            self._stiff_sent = ()
 
     # ---- commanding the hand ------------------------------------------------------------
 
@@ -1062,9 +1702,14 @@ class CreateTab(QtWidgets.QWidget):
                 q[p.cols] = sample_take(p.take, local)
                 if local >= p.take.duration:
                     finished.append(finger)
+            p.local = local
             self.panels[finger].set_position(local)
         self.node.send_command(q)
         self._last_cmd = q
+        stamp = self.node.get_clock().now().nanoseconds * 1e-9
+        for p in self._playing.values():
+            p.history.append((stamp, q.copy()))
+            p.local_history.append((stamp, p.local))
         for finger in finished:
             self._stop_play(finger, rewind=True)
 
@@ -1078,6 +1723,61 @@ class CreateTab(QtWidgets.QWidget):
             panel.legend.clear()
             for curve, i in zip(panel.curves, finger_indices(names, finger)):
                 panel.legend.addItem(curve, names[i])
+
+    def _refresh_tip_plots(self) -> None:
+        """Fingertip taxel magnitudes of the last LIVE_WINDOW_S, from the live view's baseline."""
+        if len(self._tip_ids) == 0:
+            return
+        self._tip_seq, new = self.node.xela_since(self._tip_seq)
+        for stamp, readings in new:
+            if len(readings) > self._tip_ids.max():
+                self._tip_history.append((stamp, readings[self._tip_ids].astype(np.float32)))
+        baseline = self.hand.baseline
+        if not self._tip_history or baseline is None:
+            if not self._tip_waiting:
+                self._tip_waiting = True
+                self._tip_baseline = None
+                status = (
+                    f"waiting for {self.node.xela_topic}" if self.node.xela_topic else "no xela_topic"
+                )
+                for panel in self.panels.values():
+                    panel.tip_plot.clear_data(status)
+            return
+        self._tip_waiting = False
+        if not new and baseline is self._tip_baseline:
+            return
+        latest = self._tip_history[-1][0]
+        while self._tip_history[0][0] < latest - LIVE_WINDOW_S:
+            self._tip_history.popleft()
+        if self._tip_baseline is None:
+            for panel in self.panels.values():
+                panel.tip_plot.set_status(f"{self.node.xela_topic} live")
+        self._tip_baseline = baseline
+        t = np.array([s for s, _ in self._tip_history]) - latest
+        readings = np.stack([r for _, r in self._tip_history])  # (N, 4 * 30, 3)
+        mags = np.linalg.norm(
+            (readings - baseline[self._tip_ids]) / self.node.counts_per_unit, axis=-1
+        )
+        per_finger = len(self._tip_ids) // len(FINGERS)
+        for k, (finger, _) in enumerate(FINGERS):
+            self.panels[finger].tip_plot.set_data(t, mags[:, k * per_finger: (k + 1) * per_finger])
+
+    def _refresh_tip_demo(self) -> None:
+        """Recorded fingertip magnitudes of the playing takes at the take time each command step
+        sent, on the time axis of the live fingertip plots."""
+        now = (
+            self._tip_history[-1][0]
+            if self._tip_history
+            else self.node.get_clock().now().nanoseconds * 1e-9
+        )
+        for finger, p in self._playing.items():
+            if p.tip_mags is None or not p.local_history:
+                continue
+            stamps = np.array([s for s, _ in p.local_history])
+            local = np.array([v for _, v in p.local_history])
+            shown = stamps >= now - LIVE_WINDOW_S
+            k = np.clip(np.searchsorted(p.take.xela_t, local[shown], side="right") - 1, 0, None)
+            self.panels[finger].tip_plot.set_demo_data(stamps[shown] - now, p.tip_mags[k])
 
     def refresh(self) -> None:
         if self.node.recording and self._rec_btn is not None:
@@ -1094,6 +1794,17 @@ class CreateTab(QtWidgets.QWidget):
             self._sim_seq = sim_seq
             self.hand.set_joints(sim_names, sim_q)
 
+        xela_seq, readings = self.node.latest_xela()
+        if readings is not None and xela_seq != self._xela_seq:
+            self._xela_seq = xela_seq
+            self.hand.set_readings(readings)
+        self._refresh_tip_plots()
+        self._refresh_tip_demo()
+
+        shown = self._playing.get(self._shown_play) if self._shown_play else None
+        if shown is not None:
+            show_take_at(shown.take, shown.local, self.play_camera, self.play_hand, self._play_video)
+
         names = self.node.joint_names
         self._update_legends(names)
         t, q = self.node.history()
@@ -1104,6 +1815,601 @@ class CreateTab(QtWidgets.QWidget):
         for finger, panel in self.panels.items():
             for curve, i in zip(panel.curves, finger_indices(names, finger)):
                 curve.setData(rel, q[keep, i])
+        for finger, p in self._playing.items():
+            if not p.history:
+                continue
+            cmd_t = np.array([s for s, _ in p.history])
+            cmd_q = np.stack([c for _, c in p.history])
+            shown = cmd_t >= t[-1] - LIVE_WINDOW_S
+            for curve, i in zip(self.panels[finger].demo_curves, finger_indices(names, finger)):
+                curve.setData(cmd_t[shown] - t[-1], cmd_q[shown, i])
+
+
+def color_swatch(color: QtGui.QColor) -> QtGui.QIcon:
+    swatch = QtGui.QPixmap(12, 12)
+    swatch.fill(color)
+    return QtGui.QIcon(swatch)
+
+
+class SpanBookmarkSlider(BookmarkSlider):
+    """``BookmarkSlider`` that also shades spans (duration events) over its groove."""
+
+    SPAN_ALPHA = 90
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._spans: list[tuple[int, int, QtGui.QColor, str]] = []  # (from, to, colour, tooltip)
+
+    def set_spans(self, spans: list[tuple[int, int, QtGui.QColor, str]]) -> None:
+        self._spans = spans
+        self.update()
+
+    def paintEvent(self, ev) -> None:
+        super().paintEvent(ev)
+        if not self._spans:
+            return
+        painter = QtGui.QPainter(self)
+        h = self.height()
+        for start, end, color, _ in self._spans:
+            x0, x1 = self._mark_x(start), self._mark_x(end)
+            fill = QtGui.QColor(color)
+            fill.setAlpha(self.SPAN_ALPHA)
+            painter.fillRect(QtCore.QRect(x0, 4, max(x1 - x0, 1), h - 8), fill)
+        painter.end()
+
+    def event(self, ev) -> bool:
+        if ev.type() == QtCore.QEvent.ToolTip:
+            x = ev.pos().x()
+            hits = [tip for value, _, tip in self._marks if abs(self._mark_x(value) - x) <= 4]
+            hits += [
+                tip for start, end, _, tip in self._spans
+                if self._mark_x(start) - 4 <= x <= self._mark_x(end) + 4
+            ]
+            if hits:
+                QtWidgets.QToolTip.showText(ev.globalPos(), "\n".join(dict.fromkeys(hits)), self)
+            else:
+                QtWidgets.QToolTip.hideText()
+                ev.ignore()
+            return True
+        return super().event(ev)
+
+
+class EditFingerPanel(QtWidgets.QWidget):
+    """Take picker, play bar with event bookmarks, event picker + Add event above the plot of
+    one finger's take, with the take's events listed next to it (click to seek).
+
+    Events with ``"length": "duration"`` in ``events.json`` take two clicks: the first marks
+    where they start, the second where they end; the span is shaded on the play bar and plot.
+    """
+
+    seeked = QtCore.pyqtSignal(str)  # finger
+    delete_requested = QtCore.pyqtSignal(str)  # path of the take, confirmed by the user
+
+    CURSOR_PEN = pg.mkPen("#ffd600", width=1.5)
+    REGION_ALPHA = 50
+    PENDING_ALPHA = 30
+
+    def __init__(
+        self,
+        finger: str,
+        label: str,
+        store: TakeStore,
+        event_defs: dict[str, dict],
+        counts_per_unit: float,
+    ) -> None:
+        super().__init__()
+        self.finger = finger
+        self.store = store
+        self.counts_per_unit = counts_per_unit
+        self.event_defs = event_defs
+        self.take: FingerTake | None = None
+        self.now = 0.0
+        self._event_items: list[pg.GraphicsObject] = []  # event lines / regions on the plot
+        self._marks: list[tuple[int, QtGui.QColor, str]] = []  # saved events on the play bar
+        self._spans: list[tuple[int, int, QtGui.QColor, str]] = []
+        self._pending: TakeEvent | None = None  # duration event whose end is not marked yet
+        self._pending_items: list[pg.GraphicsObject] = []
+
+        self.take_combo = QtWidgets.QComboBox()
+        self.take_combo.setToolTip("Recorded takes of this finger, newest first")
+        self.take_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        self.take_combo.setMinimumContentsLength(10)
+        self.delete_take_btn = QtWidgets.QPushButton("Delete take")
+        self.delete_take_btn.setMinimumWidth(90)
+        self.delete_take_btn.setToolTip("Delete the selected take from disk")
+        self.event_combo = QtWidgets.QComboBox()
+        for name, info in event_defs.items():
+            text = f"{name}  (duration)" if self._is_duration(name) else name
+            self.event_combo.addItem(color_swatch(self._color(name)), text, name)
+            self.event_combo.setItemData(
+                self.event_combo.count() - 1,
+                f"[{info.get('type', '')}] {info.get('description', '')}",
+                QtCore.Qt.ToolTipRole,
+            )
+        self.add_btn = QtWidgets.QPushButton("Add event")
+        self.add_btn.setMinimumWidth(90)
+        self.cancel_btn = QtWidgets.QPushButton("Cancel")
+        self.cancel_btn.setToolTip("Discard the duration event being marked")
+        self.cancel_btn.hide()
+        event_buttons = QtWidgets.QHBoxLayout()
+        event_buttons.addWidget(self.add_btn)
+        event_buttons.addWidget(self.cancel_btn)
+        self.slider = SpanBookmarkSlider()
+        self.slider.setToolTip("Position in the take: drag to scrub")
+        self.time_label = QtWidgets.QLabel()
+
+        bar_row = QtWidgets.QHBoxLayout()
+        bar_row.addWidget(self.slider, 1)
+        bar_row.addWidget(self.time_label)
+        controls = QtWidgets.QGridLayout()
+        controls.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"), 0, 0, 1, 2)
+        controls.addWidget(self.take_combo, 1, 0)
+        controls.addWidget(self.delete_take_btn, 1, 1)
+        controls.addWidget(self.event_combo, 2, 0)
+        controls.addLayout(event_buttons, 2, 1)
+        controls.addLayout(bar_row, 3, 0, 1, 2)
+        controls.setColumnStretch(0, 1)
+
+        self.plot = pg.PlotWidget()
+        item = self.plot.getPlotItem()
+        item.showGrid(x=True, y=True, alpha=0.3)
+        item.setLabel("bottom", "time", "s")
+        item.setLabel("left", "position", "rad")
+        self.legend = item.addLegend(offset=(5, 5))
+        self.curves = [item.plot(pen=pg.mkPen(color, width=2)) for color in JOINT_COLORS]
+        self.cursor = pg.InfiniteLine(pos=0.0, angle=90, movable=True, pen=self.CURSOR_PEN)
+        self.cursor.setToolTip("Drag to scrub")
+        item.addItem(self.cursor, ignoreBounds=True)
+        self.tip_plot = TipTaxelPlot(finger)
+        self.tip_plot.setXLink(self.plot)
+        self.tip_cursor = pg.InfiniteLine(pos=0.0, angle=90, movable=True, pen=self.CURSOR_PEN)
+        self.tip_cursor.setToolTip("Drag to scrub")
+        self.tip_plot.getPlotItem().addItem(self.tip_cursor, ignoreBounds=True)
+        plots = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        plots.addWidget(self.plot)
+        plots.addWidget(self.tip_plot)
+
+        self.event_list = QtWidgets.QListWidget()
+        self.event_list.setFixedWidth(180)
+        self.edit_btn = QtWidgets.QPushButton("Edit")
+        self.delete_btn = QtWidgets.QPushButton("Delete")
+        list_buttons = QtWidgets.QHBoxLayout()
+        list_buttons.addWidget(self.edit_btn)
+        list_buttons.addWidget(self.delete_btn)
+        events_box = QtWidgets.QVBoxLayout()
+        events_box.addWidget(QtWidgets.QLabel("Events"))
+        events_box.addWidget(self.event_list, 1)
+        events_box.addLayout(list_buttons)
+        body = QtWidgets.QHBoxLayout()
+        body.addWidget(plots, 1)
+        body.addLayout(events_box)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(controls)
+        layout.addLayout(body, 1)
+
+        self.take_combo.currentIndexChanged.connect(lambda _: self._load_selected())
+        self.delete_take_btn.clicked.connect(self._confirm_delete_take)
+        self.slider.valueChanged.connect(lambda v: self.seek(v / SLIDER_STEPS_PER_SEC))
+        self.cursor.sigPositionChanged.connect(lambda line: self.seek(line.value()))
+        self.tip_cursor.sigPositionChanged.connect(lambda line: self.seek(line.value()))
+        self.add_btn.clicked.connect(self.add_event)
+        self.cancel_btn.clicked.connect(self.cancel_pending)
+        self.event_combo.currentIndexChanged.connect(lambda _: self._update_buttons())
+        self.edit_btn.clicked.connect(self.edit_selected_event)
+        self.delete_btn.clicked.connect(self.delete_selected_event)
+        self.event_list.itemClicked.connect(self._on_event_item)
+        self.event_list.itemActivated.connect(self._on_event_item)
+        self.event_list.itemSelectionChanged.connect(self._update_buttons)
+        self._load_selected()
+
+    def _color(self, name: str, alpha: int = 255) -> QtGui.QColor:
+        color = QtGui.QColor(self.event_defs.get(name, {}).get("color", UNKNOWN_EVENT_COLOR))
+        color.setAlpha(alpha)
+        return color
+
+    def _is_duration(self, name: str) -> bool:
+        return self.event_defs.get(name, {}).get("length") == "duration"
+
+    # ---- takes --------------------------------------------------------------------------
+
+    def fill_takes(self) -> None:
+        """Lists the takes of this finger, keeping the selection if it still exists."""
+        keep = self.take_combo.currentData()
+        self.take_combo.blockSignals(True)
+        self.take_combo.clear()
+        for path in self.store.list(self.finger):
+            self.take_combo.addItem(os.path.splitext(os.path.basename(path))[0], path)
+        index = self.take_combo.findData(keep) if keep else 0
+        self.take_combo.setCurrentIndex(max(index, 0))
+        self.take_combo.blockSignals(False)
+        self._load_selected()
+
+    def _confirm_delete_take(self) -> None:
+        path = self.take_combo.currentData()
+        if path is None:
+            return
+        box = QtWidgets.QMessageBox(self)
+        box.setIcon(QtWidgets.QMessageBox.Warning)
+        box.setWindowTitle("Delete take")
+        box.setText(f"Delete the take '{self.take_combo.currentText()}'?")
+        box.setInformativeText(
+            "Its file, events and (if no other finger uses it) its camera recording are removed "
+            "from disk. This cannot be undone."
+        )
+        cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
+        confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
+        box.setDefaultButton(cancel)
+        box.exec_()
+        if box.clickedButton() is confirm:
+            self.delete_requested.emit(path)
+
+    def _load_selected(self) -> None:
+        path = self.take_combo.currentData()
+        previous = self.take.path if self.take is not None else None
+        if path != previous:
+            self._pending = None
+        self.take = None
+        if path is not None:
+            try:
+                self.take = self.store.load(path)
+            except Exception as e:
+                self.time_label.setText(f"<span style='color:#d32f2f'>load failed: {e}</span>")
+        if self.take is None or self.take.path != previous:
+            self.now = 0.0
+        take = self.take
+        duration = take.duration if take is not None else 0.0
+        self.slider.blockSignals(True)
+        self.slider.setRange(0, int(round(duration * SLIDER_STEPS_PER_SEC)))
+        self.slider.blockSignals(False)
+        self.legend.clear()
+        for j, curve in enumerate(self.curves):
+            if take is not None and j < take.q.shape[1]:
+                curve.setData(take.t, take.q[:, j])
+                self.legend.addItem(curve, take.joint_names[j])
+            else:
+                curve.setData([], [])
+        self._show_tip_taxels()
+        self.cursor.setVisible(take is not None)
+        self.tip_cursor.setVisible(take is not None)
+        self.delete_take_btn.setEnabled(path is not None)
+        for w in (self.slider, self.event_list):
+            w.setEnabled(take is not None)
+        if take is None:
+            self._pending = None
+        self._refresh_events()
+        if take is not None:
+            self.seek(self.now)
+        elif path is None:
+            self.time_label.setText("no takes")
+
+    def _show_tip_taxels(self) -> None:
+        """Fingertip taxel magnitudes over the whole take, from the take's baseline."""
+        take = self.take
+        if take is None:
+            self.tip_plot.clear_data("")
+            return
+        mags = take_tip_magnitudes(take, self.tip_plot.ids, self.counts_per_unit)
+        if mags is None:
+            self.tip_plot.clear_data(f"no Xela readings in {take.name}")
+            return
+        self.tip_plot.set_data(take.xela_t, mags)
+        self.tip_plot.set_status(take.name)
+
+    # ---- position -----------------------------------------------------------------------
+
+    def seek(self, t: float) -> None:
+        if self.take is None:
+            return
+        self.now = float(np.clip(t, 0.0, self.take.duration))
+        self.slider.blockSignals(True)
+        self.slider.setValue(int(round(self.now * SLIDER_STEPS_PER_SEC)))
+        self.slider.blockSignals(False)
+        for cursor in (self.cursor, self.tip_cursor):
+            cursor.blockSignals(True)
+            cursor.setValue(self.now)
+            cursor.blockSignals(False)
+        self.time_label.setText(f"{self.now:.2f} / {self.take.duration:.2f} s")
+        if self._pending is not None:
+            self._show_pending()
+        self._update_buttons()
+        self.seeked.emit(self.finger)
+
+    # ---- events -------------------------------------------------------------------------
+
+    @staticmethod
+    def _slider_value(t: float) -> int:
+        return int(round(t * SLIDER_STEPS_PER_SEC))
+
+    def _event_line(self, t: float, color: QtGui.QColor) -> pg.InfiniteLine:
+        return pg.InfiniteLine(
+            pos=t, angle=90, movable=False,
+            pen=pg.mkPen(color, width=1.5, style=QtCore.Qt.DashLine),
+        )
+
+    def _event_region(self, start: float, end: float, name: str, alpha: int) -> pg.LinearRegionItem:
+        region = pg.LinearRegionItem(
+            values=(start, end), movable=False, brush=pg.mkBrush(self._color(name, alpha)),
+        )
+        for line in region.lines:
+            line.setPen(pg.mkPen(self._color(name), width=1.5, style=QtCore.Qt.DashLine))
+        region.setZValue(-10)
+        return region
+
+    def _refresh_events(self) -> None:
+        plot = self.plot.getPlotItem()
+        for item in self._event_items:
+            plot.removeItem(item)
+        self._event_items = []
+        self.event_list.clear()
+        self._marks, self._spans = [], []
+        events = self.take.events if self.take is not None else []
+        for i, event in enumerate(events, start=1):
+            color = self._color(event.name)
+            tip = f"{event.name} @ {event.span_text()}"
+            item = QtWidgets.QListWidgetItem(color_swatch(color), f"{i}. {tip}")
+            item.setData(QtCore.Qt.UserRole, i - 1)
+            self.event_list.addItem(item)
+            self._marks.append((self._slider_value(event.t), color, tip))
+            if event.end is None:
+                plot_item = self._event_line(event.t, color)
+            else:
+                self._marks.append((self._slider_value(event.end), color, tip))
+                self._spans.append(
+                    (self._slider_value(event.t), self._slider_value(event.end), color, tip)
+                )
+                plot_item = self._event_region(event.t, event.end, event.name, self.REGION_ALPHA)
+            plot.addItem(plot_item, ignoreBounds=True)
+            self._event_items.append(plot_item)
+        self._show_pending()
+        self._update_buttons()
+
+    def _show_pending(self) -> None:
+        """Play bar / plot with the saved events plus the duration event being marked, shaded
+        from its start to the current position."""
+        plot = self.plot.getPlotItem()
+        for item in self._pending_items:
+            plot.removeItem(item)
+        self._pending_items = []
+        marks, spans = list(self._marks), list(self._spans)
+        p = self._pending
+        if p is not None:
+            color = self._color(p.name)
+            start, end = sorted((p.t, self.now))
+            tip = f"{p.name} from {p.t:.2f} s (end not marked yet)"
+            marks.append((self._slider_value(p.t), color, tip))
+            spans.append((self._slider_value(start), self._slider_value(end), color, tip))
+            self._pending_items = [
+                self._event_region(start, end, p.name, self.PENDING_ALPHA),
+                self._event_line(p.t, color),
+            ]
+            for item in self._pending_items:
+                plot.addItem(item, ignoreBounds=True)
+        self.slider.set_marks(marks)
+        self.slider.set_spans(spans)
+
+    def _selected_event(self) -> TakeEvent | None:
+        item = self.event_list.currentItem()
+        if self.take is None or item is None or not item.isSelected():
+            return None
+        return self.take.events[item.data(QtCore.Qt.UserRole)]
+
+    def _update_buttons(self) -> None:
+        selected = self._selected_event() is not None
+        self.edit_btn.setEnabled(selected and bool(self.event_defs))
+        self.delete_btn.setEnabled(selected)
+        p = self._pending
+        self.cancel_btn.setVisible(p is not None)
+        self.event_combo.setEnabled(self.take is not None and p is None)
+        if self.take is None or not self.event_defs:
+            self.add_btn.setText("Add event")
+            self.add_btn.setEnabled(False)
+            return
+        if p is not None:
+            self.add_btn.setText("End event")
+            self.add_btn.setEnabled(True)
+            self.add_btn.setToolTip(
+                f"Mark the end of '{p.name}' (started at {p.t:.2f} s) at the current time"
+            )
+            return
+        duration = self._is_duration(self.event_combo.currentData())
+        self.add_btn.setText("Start event" if duration else "Add event")
+        existing = self.take.event_at(self.now)
+        self.add_btn.setEnabled(existing is None)
+        self.add_btn.setToolTip(
+            f"'{existing.name}' already starts at this time" if existing is not None
+            else "Mark where the selected event starts; click again where it ends" if duration
+            else f"Store the selected event at the current time in {self.take.name}.npz"
+        )
+
+    def _on_event_item(self, item: QtWidgets.QListWidgetItem) -> None:
+        if self.take is not None:
+            self.seek(self.take.events[item.data(QtCore.Qt.UserRole)].t)
+
+    def _save_events(self, events: list[TakeEvent], title: str) -> bool:
+        old = self.take.events
+        self.take.events = events
+        try:
+            self.take.save()
+        except Exception as e:
+            self.take.events = old
+            QtWidgets.QMessageBox.warning(self, title, f"Could not save {self.take.path}:\n{e}")
+            return False
+        self._refresh_events()
+        return True
+
+    def add_event(self) -> None:
+        """Adds an instant event at the play bar, or starts / ends a duration event there."""
+        if self.take is None:
+            return
+        if self._pending is not None:
+            self._end_pending()
+            return
+        name = self.event_combo.currentData()
+        if name is None:
+            return
+        existing = self.take.event_at(self.now)
+        if existing is not None:
+            QtWidgets.QMessageBox.information(
+                self, "Add event", f"There is already a '{existing.name}' event at {existing.t:.3f} s"
+            )
+            return
+        event = TakeEvent(
+            t=self.now, name=name, type=self.event_defs[name].get("type", ""), added=time.time()
+        )
+        if self._is_duration(name):
+            self._pending = event
+            self._show_pending()
+            self._update_buttons()
+        elif self._save_events(self.take.events + [event], "Add event"):
+            self.event_list.scrollToBottom()
+
+    def _end_pending(self) -> None:
+        p = self._pending
+        start, end = sorted((p.t, self.now))
+        if end - start < EVENT_TIME_RESOLUTION:
+            QtWidgets.QMessageBox.information(
+                self, "End event", f"Move the play bar to where '{p.name}' ends, then click again."
+            )
+            return
+        existing = self.take.event_at(start) if start != p.t else None
+        if existing is not None:
+            QtWidgets.QMessageBox.information(
+                self, "End event", f"There is already a '{existing.name}' event at {existing.t:.3f} s"
+            )
+            return
+        event = TakeEvent(t=start, name=p.name, type=p.type, added=p.added, end=end)
+        self._pending = None
+        if self._save_events(self.take.events + [event], "End event"):
+            self.event_list.scrollToBottom()
+        else:
+            self._pending = p
+            self._show_pending()
+            self._update_buttons()
+
+    def cancel_pending(self) -> None:
+        self._pending = None
+        self._show_pending()
+        self._update_buttons()
+
+    def edit_selected_event(self) -> None:
+        event = self._selected_event()
+        if event is None:
+            return
+        # Only events of the same length, so an instant event never gets (or loses) an end.
+        same_length = {
+            name: info for name, info in self.event_defs.items()
+            if self._is_duration(name) == (event.end is not None)
+        }
+        dialog = EditEventDialog(
+            self, event, same_length, self._color, note=f"{self.take.name}.npz will be updated."
+        )
+        if dialog.exec_() != QtWidgets.QDialog.Accepted or dialog.name() == event.name:
+            return
+        row = self.event_list.currentRow()
+        name = dialog.name()
+        renamed = TakeEvent(
+            t=event.t, name=name, type=self.event_defs[name].get("type", ""),
+            added=event.added, end=event.end,
+        )
+        events = [renamed if e is event else e for e in self.take.events]
+        if self._save_events(events, "Edit event"):
+            self.event_list.setCurrentRow(row)
+
+    def delete_selected_event(self) -> None:
+        event = self._selected_event()
+        if event is None:
+            return
+        answer = QtWidgets.QMessageBox.warning(
+            self,
+            "Delete event",
+            f"Delete '{event.name}' at {event.span_text()} from {self.take.name}.npz?\n"
+            "This cannot be undone.",
+            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel,
+            QtWidgets.QMessageBox.Cancel,
+        )
+        if answer == QtWidgets.QMessageBox.Ok:
+            self._save_events([e for e in self.take.events if e is not event], "Delete event")
+
+
+class EditTab(QtWidgets.QWidget):
+    """Same layout as the Create tab, for labelling recorded takes with events.
+
+    Each finger picks one of its takes; the plot shows the whole take and the play bar / plot
+    cursor scrub through it (nothing is sent to the hand). The camera and the FK taxels show the
+    take's recording at the position of the finger last scrubbed. Events from ``events.json``
+    are added at the play bar position and saved in the finger's take as ``events``. Delete take
+    removes the selected take from disk after a confirmation.
+    """
+
+    delete_requested = QtCore.pyqtSignal(str)  # path of the take
+
+    def __init__(
+        self, store: TakeStore, event_defs: dict[str, dict], counts_per_unit: float
+    ) -> None:
+        super().__init__()
+        self.store = store
+        self._video = TakeVideo()
+
+        grid = QtWidgets.QWidget()
+        grid_layout = QtWidgets.QGridLayout(grid)
+        grid_layout.setContentsMargins(0, 0, 0, 0)
+        self.panels: dict[str, EditFingerPanel] = {}
+        for n, (finger, label) in enumerate(FINGERS):
+            panel = EditFingerPanel(finger, label, store, event_defs, counts_per_unit)
+            self.panels[finger] = panel
+            grid_layout.addWidget(panel, n // 2, n % 2)
+            panel.seeked.connect(self._show)
+            panel.delete_requested.connect(self.delete_requested)
+
+        self.camera = CameraView("")
+        self.camera.set_message("Scrub a take to see its camera recording")
+        self.hand = HandView(
+            "", "", counts_per_unit,
+            waiting="Scrub a take to see its taxels",
+            no_xela="Scrub a take to see its Xela readings",
+        )
+        side = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        side.addWidget(self.camera)
+        side.addWidget(self.hand)
+        splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        splitter.addWidget(grid)
+        splitter.addWidget(side)
+        splitter.setStretchFactor(0, 3)
+        splitter.setStretchFactor(1, 2)
+
+        hint = QtWidgets.QLabel(
+            "Pick a take per finger, scrub with the play bar or the yellow cursor, then add the "
+            "selected event at that time (duration events: click once at the start, once at the "
+            "end). Click an event in a list to jump to it."
+            if event_defs
+            else "<span style='color:#d32f2f'>No event definitions loaded (events_file).</span>"
+        )
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(hint)
+        layout.addWidget(splitter, 1)
+        self.refresh_takes()
+
+    def refresh_takes(self) -> None:
+        for panel in self.panels.values():
+            panel.fill_takes()
+
+    def _show(self, finger: str) -> None:
+        """Camera frame and FK taxels of ``finger``'s take at its play bar position."""
+        panel = self.panels[finger]
+        if panel.take is not None:
+            show_take_at(panel.take, panel.now, self.camera, self.hand, self._video)
+
+    def forget_take(self, path: str) -> None:
+        """Stops showing the take at ``path`` (about to be deleted)."""
+        if self.hand.take_path == path:
+            self._video.release()
+            self.hand.clear()
+            self.camera.set_message("Scrub a take to see its camera recording")
+
+    def close_video(self) -> None:
+        self._video.release()
 
 
 class FingerRow:
@@ -1415,17 +2721,34 @@ class SettingsTab(QtWidgets.QWidget):
     gains of the hand node (applied with "Apply to hand")."""
 
     settings_changed = QtCore.pyqtSignal()
+    demo_dir_changed = QtCore.pyqtSignal(str)
     # Emitted from the executor thread; Qt queues them to the GUI thread.
     _hand_loaded = QtCore.pyqtSignal(object)
     _hand_applied = QtCore.pyqtSignal(object)
 
     RETRY_MS = 2000
 
-    def __init__(self, node: LeapStateListener, settings: HoldSettings) -> None:
+    def __init__(self, node: LeapStateListener, store: TakeStore, settings: HoldSettings) -> None:
         super().__init__()
         self.node = node
+        self.store = store
         self.settings = settings
         self._hand_compliant: bool | None = None  # None until read from the hand node
+
+        self.dir_edit = QtWidgets.QLineEdit(store.demo_dir)
+        self.dir_edit.setToolTip(
+            "Folder takes are saved into (fingers/, camera/ and composed/ inside it). "
+            "Press Enter to apply"
+        )
+        browse_btn = QtWidgets.QPushButton("Browse...")
+        dir_row = QtWidgets.QHBoxLayout()
+        dir_row.addWidget(self.dir_edit, 1)
+        dir_row.addWidget(browse_btn)
+        dir_box = QtWidgets.QGroupBox("Recordings")
+        dir_form = QtWidgets.QFormLayout(dir_box)
+        dir_form.addRow("Save to:", dir_row)
+        self.dir_edit.editingFinished.connect(lambda: self._set_demo_dir(self.dir_edit.text()))
+        browse_btn.clicked.connect(self._browse_demo_dir)
 
         self.rate_spin = double_spin(
             5.0, 100.0, 5.0, 0, " Hz",
@@ -1475,6 +2798,7 @@ class SettingsTab(QtWidgets.QWidget):
         self._hand_applied.connect(self._on_hand_applied)
 
         layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(dir_box)
         layout.addWidget(gui_box)
         layout.addWidget(self.hand_box)
         layout.addStretch(1)
@@ -1484,6 +2808,29 @@ class SettingsTab(QtWidgets.QWidget):
         self._retry.timeout.connect(self._reload_hand)
         self._set_hand_enabled(False)
         self._reload_hand()
+
+    # ---- recordings folder --------------------------------------------------------------
+
+    def _browse_demo_dir(self) -> None:
+        path = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Recordings folder", self.store.demo_dir
+        )
+        if path:
+            self._set_demo_dir(path)
+
+    def _set_demo_dir(self, text: str) -> None:
+        path = os.path.abspath(os.path.expanduser(text.strip())) if text.strip() else ""
+        if not path or path == self.store.demo_dir:
+            self.dir_edit.setText(self.store.demo_dir)
+            return
+        if self.node.recording:
+            self.dir_edit.setText(self.store.demo_dir)
+            QtWidgets.QMessageBox.warning(
+                self, "Recordings", "Stop the recording before changing the folder."
+            )
+            return
+        self.dir_edit.setText(path)
+        self.demo_dir_changed.emit(path)
 
     # ---- this GUI -----------------------------------------------------------------------
 
@@ -1581,16 +2928,26 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
         self.node = node
         self.setWindowTitle(f"Record demonstration - {node.demo_dir}")
-        self.resize(1300, 900)
-        store = TakeStore(node.demo_dir)
+        self.resize(1600, 900)
+        self.store = TakeStore(node.demo_dir)
         settings = HoldSettings()
-        self.create_tab = CreateTab(node, store, settings)
-        self.compose_tab = ComposeTab(node, store)
-        self.settings_tab = SettingsTab(node, settings)
+        try:
+            event_defs = load_event_definitions(node.events_file)
+        except Exception as e:
+            node.get_logger().warn(f"Could not load events from {node.events_file}: {e}")
+            event_defs = {}
+        self.create_tab = CreateTab(node, self.store, settings)
+        self.edit_tab = EditTab(self.store, event_defs, node.counts_per_unit)
+        self.compose_tab = ComposeTab(node, self.store)
+        self.settings_tab = SettingsTab(node, self.store, settings)
         self.create_tab.takes_changed.connect(self.compose_tab.refresh_takes)
+        self.create_tab.takes_changed.connect(self.edit_tab.refresh_takes)
+        self.edit_tab.delete_requested.connect(self._delete_take)
         self.settings_tab.settings_changed.connect(self.create_tab.apply_settings)
+        self.settings_tab.demo_dir_changed.connect(self._set_demo_dir)
         tabs = QtWidgets.QTabWidget()
         tabs.addTab(self.create_tab, "Create")
+        tabs.addTab(self.edit_tab, "Edit")
         tabs.addTab(self.compose_tab, "Compose")
         tabs.addTab(self.settings_tab, "Settings")
         self.setCentralWidget(tabs)
@@ -1598,6 +2955,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.create_tab.refresh)
         self._timer.start(REFRESH_MS)
+
+    def _delete_take(self, path: str) -> None:
+        self.create_tab.forget_take(path)
+        self.edit_tab.forget_take(path)
+        try:
+            self.store.delete(path)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(self, "Delete take", f"Could not delete {path}:\n{e}")
+        else:
+            self.node.get_logger().info(f"Deleted take '{path}'")
+        self.create_tab.reload_takes()
+        self.edit_tab.refresh_takes()
+        self.compose_tab.refresh_takes()
+
+    def _set_demo_dir(self, path: str) -> None:
+        self.create_tab.stop_all_playback()
+        self.node.demo_dir = path
+        self.store.demo_dir = path
+        self.setWindowTitle(f"Record demonstration - {path}")
+        self.node.get_logger().info(f"Saving demonstrations to '{path}'")
+        self.create_tab.reload_takes()
+        self.edit_tab.refresh_takes()
+        self.compose_tab.refresh_takes()
 
     def closeEvent(self, ev) -> None:
         self.create_tab.stop_all_playback()
@@ -1615,6 +2995,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 video = self.node.stop_recording().video
                 if video:
                     os.remove(video)
+        for finger in list(self.create_tab._held):
+            self.create_tab.panels[finger].hold_switch.setChecked(False)
+        self.create_tab.release_stiff_joints()
+        self.create_tab.close_video()
+        self.edit_tab.close_video()
         super().closeEvent(ev)
 
 

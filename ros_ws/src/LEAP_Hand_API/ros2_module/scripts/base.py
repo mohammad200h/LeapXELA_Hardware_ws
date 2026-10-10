@@ -48,13 +48,23 @@ class LeapXelaBase:
     def set_gains(self, kP, kI, kD, curr_lim):
         """Position PID gains and goal current of all motors (RAM, applied with torque on)."""
         self.kP, self.kI, self.kD, self.curr_lim = kP, kI, kD, curr_lim
-        motors = self.motors
-        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kP, 84, 2)
-        self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kP * 0.75), 84, 2)
-        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kI, 82, 2)
-        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.kD, 80, 2)
-        self.dxl_client.sync_write([0,4,8], np.ones(3) * (self.kD * 0.75), 80, 2)
-        self.dxl_client.sync_write(motors, np.ones(len(motors)) * self.curr_lim, 102, 2)
+        self.set_motor_gains(self.motors, kP, kI, kD, curr_lim)
+
+    def set_motor_gains(self, motors, kP, kI, kD, curr_lim):
+        """Position PID gains and goal current of ``motors`` only; motors 0, 4 and 8 get 75% of
+        kP and kD."""
+        motors = list(motors)
+        if not motors:
+            return
+        scaled = [m for m in motors if m in (0, 4, 8)]
+        n = len(motors)
+        self.dxl_client.sync_write(motors, np.ones(n) * kP, 84, 2)
+        self.dxl_client.sync_write(motors, np.ones(n) * kI, 82, 2)
+        self.dxl_client.sync_write(motors, np.ones(n) * kD, 80, 2)
+        if scaled:
+            self.dxl_client.sync_write(scaled, np.ones(len(scaled)) * (kP * 0.75), 84, 2)
+            self.dxl_client.sync_write(scaled, np.ones(len(scaled)) * (kD * 0.75), 80, 2)
+        self.dxl_client.sync_write(motors, np.ones(n) * curr_lim, 102, 2)
  
     def set_joints_degrees(self, degrees_array):
         """Set all 16 joints using degree values (list or np.array of length 16)."""

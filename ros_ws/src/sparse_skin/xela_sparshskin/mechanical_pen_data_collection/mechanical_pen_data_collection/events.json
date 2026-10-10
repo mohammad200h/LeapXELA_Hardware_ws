@@ -4,43 +4,79 @@
             "type": "episode",
             "description": "There is an action coming from /cmd_xela",
             "source": "/cmd_xela",
-            "color": "#00c853"
+            "color": "#00c853",
+            "length":"instant"
         },
         "terminal": {
             "type": "episode",
             "description": "The episode has been terminated because a success or failure condition has been met",
             "source": "JEV detecting the success or failure condition",
-            "color": "#ff1744"
+            "color": "#ff1744",
+            "length":"instant"
         },
         "truncated": {
             "type": "episode",
             "description": "The episode has been truncated because the maximum number of steps has been reached",
             "source": "Maximum number of steps reached (maybe a timer being published on a topic)",
-            "color": "#ff9100"
+            "color": "#ff9100",
+            "length":"instant"
         },
         "success": {
             "type": "reward",
             "description": "The episode has been terminated because a success condition has been met. The tip of the pen can be seen fully on the camera feed",
             "source": "JEV detecting the success  which is the tip of the pen being visible on the camera feed",
-            "color": "#2979ff"
+            "color": "#2979ff",
+            "length":"instant"
         },
         "fell_off": {
             "type": "reward",
             "description": "The pen has fallen off the palm of the hand",
             "source": "JEV detecting the pen falling off the palm of the hand",
-            "color": "#d500f9"
+            "color": "#d500f9",
+            "length":"duration"
         },
         "slipping": {
             "type": "reward",
             "description": "The pen is slipping on the palm of the hand",
             "source": "JEV detecting the pen slipping on the palm of the hand",
-            "color": "#ffea00"
+            "color": "#ffea00",
+            "length":"duration"
         },
         "flying": {
             "type": "reward",
             "description": "The pen is flying in the air",
             "source": "JEV detecting the pen flying in the air",
-            "color": "#00e5ff"
+            "color": "#00e5ff",
+            "length":"duration"
+        },
+        "fingers_touching_pen": {
+            "type": "reward",
+            "description": "The fingers (MF or IF or RF) are touching the pen",
+            "source": "Haptic feedback from the pen to the fingers",
+            "color": "#aeea00",
+            "length":"duration"
+
+        },
+        "Thumb_has_found_the_pen": {
+            "type": "reward",
+            "description": "The thumb has found the pen",
+            "source": "JEV and Haptic feedback from the pen to the thumb",
+            "color": "#c51162",
+            "length":"instant"
+        },
+        "Thumb_is_clicking_the_pen": {
+            "type": "reward",
+            "description": "The thumb is clicking the pen",
+            "source": "JEV detecting the thumb clicking the pen",
+            "color": "#8d6e63",
+            "length":"duration"
+        },
+        "Thumb_has_clicked_the_pen": {
+            "type": "reward",
+            "description": "The thumb has clicked the pen",
+            "source": "JEV detecting the thumb clicking the pen",
+            "color": "#8d6e63",
+            "length":"instant"
         }
     }
 }

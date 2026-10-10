@@ -116,16 +116,20 @@ class BookmarkSlider(QtWidgets.QSlider):
 class EditEventDialog(QtWidgets.QDialog):
     """Warning-style confirmation with a dropdown to pick the event's new name."""
 
-    def __init__(self, parent, event: BagEvent, event_defs: dict[str, dict], color_of) -> None:
+    def __init__(
+        self,
+        parent,
+        event: BagEvent,
+        event_defs: dict[str, dict],
+        color_of,
+        note: str = "The bag will be updated.",
+    ) -> None:
         super().__init__(parent)
         self.setWindowTitle("Edit event")
         icon = QtWidgets.QLabel()
         size = self.style().pixelMetric(QtWidgets.QStyle.PM_MessageBoxIconSize)
         icon.setPixmap(self.style().standardIcon(QtWidgets.QStyle.SP_MessageBoxWarning).pixmap(size))
-        text = QtWidgets.QLabel(
-            f"Change '{event.name}' at {event.t:.2f} s to the event below?\n"
-            "The bag will be updated."
-        )
+        text = QtWidgets.QLabel(f"Change '{event.name}' at {event.t:.2f} s to the event below?\n{note}")
         self.combo = QtWidgets.QComboBox()
         for name in event_defs:
             swatch = QtGui.QPixmap(12, 12)

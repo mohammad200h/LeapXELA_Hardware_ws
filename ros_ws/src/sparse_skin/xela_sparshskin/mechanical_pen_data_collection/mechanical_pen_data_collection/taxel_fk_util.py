@@ -14,12 +14,18 @@ Logic taken from ``leapXela_taxels_forewardkinematic`` (``fk_taxels.py`` and
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 
 import einops
 import numpy as np
-import pytorch_kinematics as pk
-import torch
+
+# Only the URDF parser is needed. pytorch_kinematics skips its MJCF parser on ImportError;
+# that parser imports MuJoCo, which sets PYOPENGL_PLATFORM=egl when MUJOCO_GL=egl and breaks
+# the Qt (GLX) taxel views.
+sys.modules.setdefault("pytorch_kinematics.mjcf", None)
+import pytorch_kinematics as pk  # noqa: E402
+import torch  # noqa: E402
 
 # Patch link frames in hand_ss.urdf (same taxel counts as Allegro XELA flatten order).
 # Proximal "B" pads use unprefixed names in the Leap URDF.
@@ -561,6 +567,30 @@ def make_taxel_spheres(positions, colors, radius: float = 0.002, resolution: int
     mesh.vertex_colors = o3d.utility.Vector3dVector(np.repeat(np.asarray(colors, np.float64), m, axis=0))
     mesh.compute_vertex_normals()
     return mesh
+
+
+def force_vector_segments(
+    positions,
+    forces_world,
+    arrow_scale: float = 0.08,
+    max_len: float = 0.045,
+    min_mag: float = 0.01,
+):
+    """(starts, ends, colors) of the taxel force vectors drawn by ``make_force_arrows``.
+
+    Only taxels with ``|f| >= min_mag`` are returned; vectors are ``f * arrow_scale``
+    clipped to ``max_len``, colored by ``force_magnitude_colors``.
+    """
+    positions = np.asarray(positions, dtype=np.float64)
+    forces_world = np.asarray(forces_world, dtype=np.float64)
+    keep = np.linalg.norm(forces_world, axis=-1) >= min_mag
+    if not np.any(keep):
+        return np.empty((0, 3)), np.empty((0, 3)), np.empty((0, 3))
+    vecs = forces_world[keep] * arrow_scale
+    lengths = np.linalg.norm(vecs, axis=-1)
+    vecs = vecs * np.where(lengths > max_len, max_len / (lengths + 1e-12), 1.0)[:, None]
+    starts = positions[keep]
+    return starts, starts + vecs, force_magnitude_colors(forces_world[keep])
 
 
 def make_force_arrows(
