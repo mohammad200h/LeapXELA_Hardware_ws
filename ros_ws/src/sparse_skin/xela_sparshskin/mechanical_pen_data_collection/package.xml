@@ -7,6 +7,7 @@
   <maintainer email="mohammad200h@hotmail.com">root</maintainer>
   <license>TODO: License declaration</license>
 
+  <exec_depend>bounding_box_sam</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>launch_xml</exec_depend>

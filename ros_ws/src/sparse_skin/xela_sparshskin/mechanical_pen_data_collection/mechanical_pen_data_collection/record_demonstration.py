@@ -6,14 +6,18 @@ Record saves a take of that finger only, named after the text box next to it (a 
 default is filled in). Takes (the full hand
 is stored alongside for reference) go to ``<demo_dir>/fingers/<finger>/<name>.npz``. The camera
 feed of the take is written to ``<demo_dir>/camera/<name>.mp4``; every take stores its path as
-``video`` and the frame times as ``video_t`` (same time axis as ``t``). The sim-frame joints
+``video`` and the frame times as ``video_t`` (same time axis as ``t``). The SAM 3 mask and pen
+box from ``bounding_box_sam`` (``sam_prefix``) are drawn on a frame only when their stamp is
+that frame's stamp. Only the frame with the highest detection probability is shown; the rest
+are ignored. They are stored as ``sam_t`` / ``sam_mask`` / ``sam_boxes``.
+The sim-frame joints
 from ``sim_topic`` (``convert_hardware_to_sim``) are stored as ``sim_t`` / ``sim_hand_q`` /
 ``sim_hand_joint_names``; the raw Xela readings on ``xela_topic`` as ``xela_t`` / ``xela``
 (L, T, 3) with the live view's baseline at recording time as ``xela_baseline``. The plots only
 show ``joint_topic``. Play sends the take chosen in
 the dropdown next to it to the hand on ``cmd_topic``, starting from the play bar position.
-A finger's Hold switch keeps it at the pose it had when the switch was turned on. While any
-finger is held or playing, the other fingers can still be moved by hand. Under the camera, the
+While a finger is playing, the other fingers can still be moved by hand. The Recorded pen pose
+switch draws that recording's pen box on the live camera, in yellow. Under the camera, the
 taxels of the hand are placed live by forward kinematics (``taxel_fk_util``) from ``sim_topic``;
 the Xela readings on ``xela_topic`` (change from a baseline, divided by ``counts_per_unit``)
 deform and color them and are drawn as force vectors. Zero takes a new baseline. Under each
@@ -22,7 +26,7 @@ finger's joint plot, a second plot shows the magnitude of each of its 30 fingert
 live view, a Playback column shows the camera recording and FK taxels (with the recorded Xela
 forces) of the take being played, at the position Play has reached (empty while nothing plays).
 
-Edit tab: same layout as the Create tab without Record / Play / Hold. Each finger picks one of
+Edit tab: same layout as the Create tab without Record / Play. Each finger picks one of
 its takes; its plots (joints, and fingertip taxel magnitudes when the take has Xela readings)
 show the whole take and the play bar (or the plot cursor) scrubs through
 it, with the camera recording and the FK taxels / Xela forces of the take following. As in the bag viewer,
@@ -38,9 +42,9 @@ take hold the base pose. The result is resampled on a common timeline and saved 
 ``meta`` (JSON of the settings, so the composition can be loaded and edited again).
 
 Settings tab: the folder takes are saved into (``demo_dir``, can be changed while running), the
-command rate, playback ramp and free-finger deadband used while fingers are held
-or playing (applied immediately), and the compliant gains / deadband of ``hand_node``
-(leaphand_node), read and set through its ROS parameters. Fingers that are playing or held
+command rate, playback ramp and free-finger deadband used while fingers are
+playing (applied immediately), and the compliant gains / deadband of ``hand_node``
+(leaphand_node), read and set through its ROS parameters. Fingers that are playing
 use the hand node's stiffer playback gains (``stiff_kP`` / ``stiff_kD`` / ``stiff_curr_lim``,
 set through ``stiff_joints``) so they track the take; the other fingers stay compliant.
 
@@ -49,6 +53,7 @@ Usage:
       [--ros-args -p joint_topic:=leap_state -p sim_topic:=leap_state_sim -p cmd_topic:=cmd_xela \
                   -p image_topic:=/camera/color/image_raw -p demo_dir:=PATH \
                   -p hand_node:=leaphand_node -p xela_topic:=/xServTopic \
+                  -p sam_prefix:=/bounding_box_sam \
                   -p counts_per_unit:=1000.0 -p events_file:=PATH]
 """
 
@@ -83,6 +88,7 @@ from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, JointState
+from std_msgs.msg import String
 
 from mechanical_pen_data_collection.bag_data import (
     EVENT_TIME_RESOLUTION,
@@ -129,6 +135,16 @@ COMPLIANT_DEADBAND = 0.05
 PLAY_BAR_STEPS = 1000
 # Xela header stamps further than this from the ROS clock are replaced by the receive time.
 XELA_MAX_CLOCK_OFFSET_S = 1.0
+# Same header stamp. Far below the 30 Hz camera period, so a detection cannot attach to a neighbor.
+SAM_STAMP_TOL_S = 1e-4
+# Incomplete SAM image/mask/box sets kept while their partners arrive.
+SAM_PART_LIMIT = 8
+# Channel values draw_boxes writes into the RGB frame (bounding_box_sam.boxes).
+SAM_BEST_COLOR = (46, 204, 113)
+SAM_OTHER_COLOR = (241, 196, 15)
+SAM_LABEL_COLOR = (255, 255, 255)
+# Median recorded pen box drawn on the live camera.
+RECORDED_POSE_COLOR = (255, 255, 0)
 HOLD_BASE = "— hold base pose —"
 # Fingertip patch of each finger in ``taxel_fk_util.XELA_FLATTEN_ORDER``.
 TIP_LINKS = {
@@ -271,6 +287,9 @@ class FingerTake:
     # (T, 3) no-contact reading the forces are measured from (live view's at recording time)
     xela_baseline: np.ndarray = field(default_factory=lambda: np.empty((0, 3)))
     events: list[TakeEvent] = field(default_factory=list)  # in the order they were added
+    sam_t: np.ndarray = field(default_factory=lambda: np.empty(0))  # SAM frame stamps, on ``t``
+    sam_mask: np.ndarray = field(default_factory=lambda: np.empty((0, 0, 0), np.uint8))
+    sam_boxes: list = field(default_factory=list)  # detections JSON for each ``sam_t``
 
     @property
     def name(self) -> str:
@@ -299,6 +318,9 @@ class FingerTake:
             xela=self.xela,
             xela_baseline=self.xela_baseline,
             events=json.dumps([asdict(e) for e in self.events]),
+            sam_t=self.sam_t,
+            sam_mask=self.sam_mask,
+            sam_boxes=json.dumps(self.sam_boxes),
         )
 
     def event_at(self, t: float) -> TakeEvent | None:
@@ -336,6 +358,13 @@ class FingerTake:
                     [TakeEvent(**e) for e in json.loads(str(data["events"]))]
                     if "events" in data.files
                     else []
+                ),
+                sam_t=data["sam_t"] if "sam_t" in data.files else np.empty(0),
+                sam_mask=(
+                    data["sam_mask"] if "sam_mask" in data.files else np.empty((0, 0, 0), np.uint8)
+                ),
+                sam_boxes=(
+                    json.loads(str(data["sam_boxes"])) if "sam_boxes" in data.files else []
                 ),
             )
 
@@ -418,6 +447,9 @@ class Recording:
     sim_joint_names: list[str]
     xela_t: np.ndarray  # (L,) xela_topic times on the same axis as ``t``
     xela: np.ndarray  # (L, T, 3) raw Xela readings by hardware id
+    sam_t: np.ndarray  # stamps of frames SAM segmented, on the same axis as ``t`` / ``video_t``
+    sam_mask: np.ndarray  # (K, H, W) uint8 mask for each ``sam_t``
+    sam_boxes: list  # detections for each ``sam_t``
 
 
 class LeapStateListener(Node):
@@ -430,6 +462,9 @@ class LeapStateListener(Node):
         self.sim_topic = self.declare_parameter("sim_topic", "leap_state_sim").value
         cmd_topic = self.declare_parameter("cmd_topic", "cmd_xela").value
         self.image_topic = self.declare_parameter("image_topic", "/camera/color/image_raw").value
+        self.sam_prefix = (
+            self.declare_parameter("sam_prefix", "/bounding_box_sam").value.rstrip("/")
+        )
         self.xela_topic = self.declare_parameter("xela_topic", "/xServTopic").value
         self.counts_per_unit = float(self.declare_parameter("counts_per_unit", 1000.0).value)
         self.events_file = self.declare_parameter("events_file", "").value or default_events_file()
@@ -445,6 +480,14 @@ class LeapStateListener(Node):
         self._rec_q: list[np.ndarray] = []
         self._frame: np.ndarray | None = None  # latest RGB camera frame
         self._frame_seq = 0
+        self._display_frame: np.ndarray | None = None  # frame the camera widget shows
+        self._display_seq = 0
+        self._sam_locked = False  # once a matched SAM frame exists, do not show a newer raw frame
+        self._sam_best_score: float | None = None  # highest detection score shown so far
+        self._sam_parts: dict[float, dict] = {}  # stamp -> image / mask / boxes still arriving
+        self._rec_sam_t: list[float] = []
+        self._rec_sam_mask: list[np.ndarray] = []
+        self._rec_sam_boxes: list[list] = []
         self._video_path = ""
         self._video: cv2.VideoWriter | None = None
         self._rec_frame_t: list[float] = []
@@ -460,6 +503,14 @@ class LeapStateListener(Node):
         self.create_subscription(JointState, self.sim_topic, self._on_sim_state, 10)
         if self.image_topic:
             self.create_subscription(Image, self.image_topic, self._on_image, qos_profile_sensor_data)
+        if self.sam_prefix:
+            self.create_subscription(
+                Image, f"{self.sam_prefix}/image", self._on_sam_image, qos_profile_sensor_data
+            )
+            self.create_subscription(
+                Image, f"{self.sam_prefix}/mask", self._on_sam_mask, qos_profile_sensor_data
+            )
+            self.create_subscription(String, f"{self.sam_prefix}/boxes", self._on_sam_boxes, 10)
         if self.xela_topic:
             try:
                 from xela_server_ros2.msg import SensStream
@@ -475,8 +526,8 @@ class LeapStateListener(Node):
             SetParametersAtomically, f"{self.hand_node}/set_parameters_atomically"
         )
         self.get_logger().info(
-            f"Listening on '{topic}', '{self.sim_topic}', '{self.image_topic or '(no camera)'}' "
-            f"and '{self.xela_topic or '(no xela)'}', "
+            f"Listening on '{topic}', '{self.sim_topic}', '{self.image_topic or '(no camera)'}', "
+            f"'{self.xela_topic or '(no xela)'}' and SAM '{self.sam_prefix or '(off)'}', "
             f"playing takes on '{cmd_topic}', saving demonstrations to '{self.demo_dir}'"
         )
 
@@ -554,19 +605,18 @@ class LeapStateListener(Node):
 
     def _on_image(self, msg: Image) -> None:
         try:
-            frame = image_to_array(msg)
+            frame = rgb_frame(msg)
         except ValueError as e:
             self.get_logger().warn(str(e), throttle_duration_sec=5.0)
             return
-        if frame.ndim == 2:
-            if frame.dtype != np.uint8:
-                frame = (frame >> 8).astype(np.uint8)
-            frame = np.repeat(frame[..., None], 3, axis=2)
-        frame = np.ascontiguousarray(frame)
         stamp = self._stamp(msg.header)
         with self._lock:
             self._frame = frame
             self._frame_seq += 1
+            # A newer camera frame must not inherit the previous SAM mask and box.
+            if not self._sam_locked:
+                self._display_frame = frame
+                self._display_seq += 1
             if not (self._recording and self._video_path):
                 return
             if self._video is None:
@@ -577,6 +627,102 @@ class LeapStateListener(Node):
                 )
             self._video.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
             self._rec_frame_t.append(stamp)
+
+    def _header_stamp(self, header) -> float | None:
+        """Header stamp in seconds, or None when the message was not stamped."""
+        stamp = header.stamp.sec + header.stamp.nanosec * 1e-9
+        return stamp if stamp != 0.0 else None
+
+    def _on_sam_image(self, msg: Image) -> None:
+        stamp = self._header_stamp(msg.header)
+        if stamp is None:
+            return
+        try:
+            frame = rgb_frame(msg)
+        except ValueError as e:
+            self.get_logger().warn(str(e), throttle_duration_sec=5.0)
+            return
+        with self._lock:
+            self._sam_put(stamp, "image", frame)
+
+    def _on_sam_mask(self, msg: Image) -> None:
+        stamp = self._header_stamp(msg.header)
+        if stamp is None:
+            return
+        try:
+            mask = image_to_array(msg)
+        except ValueError as e:
+            self.get_logger().warn(str(e), throttle_duration_sec=5.0)
+            return
+        if mask.ndim == 3:
+            mask = mask[:, :, 0]
+        with self._lock:
+            self._sam_put(stamp, "mask", np.ascontiguousarray(mask).copy())
+
+    def _on_sam_boxes(self, msg: String) -> None:
+        try:
+            payload = json.loads(msg.data)
+            stamp = float(payload["stamp"])
+            boxes = payload.get("detections") or []
+            if not isinstance(boxes, list):
+                raise TypeError("detections is not a list")
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
+            self.get_logger().warn(f"Could not read SAM boxes: {e}", throttle_duration_sec=5.0)
+            return
+        with self._lock:
+            self._sam_put(stamp, "boxes", boxes)
+
+    def _sam_put(self, stamp: float, key: str, value) -> None:
+        """Store one SAM part under the stamp it was computed for. Caller holds ``_lock``."""
+        bucket = stamp
+        for existing in self._sam_parts:
+            if abs(existing - stamp) <= SAM_STAMP_TOL_S:
+                bucket = existing
+                break
+        part = self._sam_parts.get(bucket)
+        if part is None:
+            if len(self._sam_parts) >= SAM_PART_LIMIT:
+                self._sam_parts.pop(min(self._sam_parts), None)
+            part = {}
+            self._sam_parts[bucket] = part
+        part[key] = value
+        if key == "image":
+            part["header_stamp"] = stamp
+        self._finish_sam(bucket)
+
+    def _finish_sam(self, stamp: float) -> None:
+        """Show and record a SAM result once its image, mask and boxes share one stamp."""
+        part = self._sam_parts.get(stamp)
+        if part is None or "image" not in part or "mask" not in part or "boxes" not in part:
+            return
+        image, mask, boxes = part["image"], part["mask"], part["boxes"]
+        header_stamp = float(part.get("header_stamp", stamp))
+        del self._sam_parts[stamp]
+        picked = highest_detection(boxes)
+        if picked is None:
+            return
+        if mask.shape[:2] != image.shape[:2]:
+            self.get_logger().warn(
+                "SAM mask size does not match its image; dropping this frame",
+                throttle_duration_sec=5.0,
+            )
+            return
+        score, best_box = picked
+        # Keep the one frame shown, and record that same frame.
+        if self._sam_best_score is not None and score <= self._sam_best_score:
+            return
+        self._sam_best_score = score
+        if self._recording:
+            self._rec_sam_t = [header_stamp]
+            self._rec_sam_mask = [mask]
+            self._rec_sam_boxes = [[best_box]]
+        self._display_frame = image
+        self._display_seq += 1
+        if not self._sam_locked:
+            self._sam_locked = True
+            self.get_logger().info(
+                "Showing only the camera frame with the highest SAM probability"
+            )
 
     def _on_state(self, msg: JointState) -> None:
         if len(msg.position) != NUM_JOINTS:
@@ -664,7 +810,16 @@ class LeapStateListener(Node):
             return self._history[-1][1].copy() if self._history else None
 
     def latest_frame(self) -> tuple[int, np.ndarray | None]:
-        """(sequence number, latest RGB frame); the number changes with every new frame."""
+        """(sequence number, RGB frame to show).
+
+        Before the first SAM result this is the latest camera frame. After that it is the
+        camera frame SAM segmented, and only when that frame's stamp matches the mask and box.
+        """
+        with self._lock:
+            return self._display_seq, self._display_frame
+
+    def latest_raw_frame(self) -> tuple[int, np.ndarray | None]:
+        """(sequence number, latest camera frame), without a SAM overlay."""
         with self._lock:
             return self._frame_seq, self._frame
 
@@ -683,6 +838,8 @@ class LeapStateListener(Node):
             self._rec_t, self._rec_q, self._rec_frame_t = [], [], []
             self._rec_sim_t, self._rec_sim_q = [], []
             self._rec_xela_t, self._rec_xela = [], []
+            self._rec_sam_t, self._rec_sam_mask, self._rec_sam_boxes = [], [], []
+            self._sam_best_score = None
             self._video_path = video_path
             self._recording = True
 
@@ -703,6 +860,24 @@ class LeapStateListener(Node):
             xela_t = np.array(self._rec_xela_t)
             xela = np.stack(self._rec_xela) if self._rec_xela else np.empty((0, 0, 3), np.float32)
             self._rec_xela_t, self._rec_xela = [], []
+            sam_t = np.array(self._rec_sam_t, dtype=np.float64)
+            sam_mask = (
+                np.stack(self._rec_sam_mask)
+                if self._rec_sam_mask
+                else np.empty((0, 0, 0), np.uint8)
+            )
+            sam_boxes = list(self._rec_sam_boxes)
+            self._rec_sam_t, self._rec_sam_mask, self._rec_sam_boxes = [], [], []
+        if len(video_t) and len(sam_t):
+            keep = [i for i, s in enumerate(sam_t) if stamp_matches(video_t, float(s))]
+            sam_t = sam_t[keep]
+            sam_mask = sam_mask[keep] if len(sam_mask) else sam_mask
+            sam_boxes = [sam_boxes[i] for i in keep]
+        if len(sam_t):
+            order = np.argsort(sam_t)
+            sam_t = sam_t[order]
+            sam_mask = sam_mask[order]
+            sam_boxes = [sam_boxes[int(i)] for i in order]
         t0 = t[0] if len(t) else (video_t[0] if len(video_t) else 0.0)
         return Recording(
             t=t - t0,
@@ -714,6 +889,9 @@ class LeapStateListener(Node):
             sim_joint_names=sim_names,
             xela_t=xela_t - t0,
             xela=xela,
+            sam_t=sam_t - t0 if len(sam_t) else sam_t,
+            sam_mask=sam_mask,
+            sam_boxes=sam_boxes,
         )
 
 
@@ -781,13 +959,215 @@ class TakeVideo:
         self._cap, self._path, self._index = None, "", -1
 
 
+def rgb_frame(msg: Image) -> np.ndarray:
+    """RGB uint8 copy of a camera image."""
+    frame = image_to_array(msg)
+    if frame.ndim == 2:
+        if frame.dtype != np.uint8:
+            frame = (frame >> 8).astype(np.uint8)
+        frame = np.repeat(frame[..., None], 3, axis=2)
+    return np.ascontiguousarray(frame).copy()
+
+
+def stamp_matches(stamps: np.ndarray, stamp: float, tol: float = SAM_STAMP_TOL_S) -> bool:
+    """True when ``stamp`` equals one value in sorted ``stamps`` (within ``tol``)."""
+    if len(stamps) == 0:
+        return False
+    k = int(np.searchsorted(stamps, stamp))
+    return any(
+        0 <= j < len(stamps) and abs(float(stamps[j]) - stamp) <= tol for j in (k - 1, k)
+    )
+
+
+def sam_at_stamp(
+    sam_t: np.ndarray, sam_mask: np.ndarray, sam_boxes: list, stamp: float
+) -> tuple[np.ndarray, list] | None:
+    """Mask and boxes whose timestamp equals ``stamp``, or None if this frame has none."""
+    if len(sam_t) == 0:
+        return None
+    k = int(np.searchsorted(sam_t, stamp))
+    best_j = None
+    best_dt = SAM_STAMP_TOL_S
+    for j in (k - 1, k):
+        if not 0 <= j < len(sam_t):
+            continue
+        dt = abs(float(sam_t[j]) - float(stamp))
+        if dt <= best_dt:
+            best_j = j
+            best_dt = dt
+    if best_j is None:
+        return None
+    mask = None
+    if getattr(sam_mask, "ndim", 0) == 3 and best_j < len(sam_mask):
+        mask = sam_mask[best_j]
+    boxes = sam_boxes[best_j] if best_j < len(sam_boxes) else []
+    return mask, boxes
+
+
+def highest_detection(boxes: list) -> tuple[float, dict] | None:
+    """The detection with the highest score, or None when nothing was scored."""
+    best = None
+    score = 0.0
+    found = False
+    for box in boxes if isinstance(boxes, list) else []:
+        if not isinstance(box, dict):
+            continue
+        value = box.get("score")
+        if not isinstance(value, (int, float)):
+            continue
+        if not found or float(value) > score:
+            found = True
+            score = float(value)
+            best = box
+    if best is None:
+        return None
+    chosen = dict(best)
+    chosen["best"] = True
+    return score, chosen
+
+
+def _detection_corners(box: dict) -> np.ndarray | None:
+    """(4, 2) corners of one recorded detection, or None."""
+    rotated = box.get("rotated") if isinstance(box, dict) else None
+    if not isinstance(rotated, dict):
+        return None
+    corners = rotated.get("corners")
+    if corners:
+        pts = np.asarray(corners, dtype=np.float64)
+        if pts.shape == (4, 2) and np.isfinite(pts).all():
+            return pts
+    try:
+        cx, cy = float(rotated["cx"]), float(rotated["cy"])
+        width, height = float(rotated["width"]), float(rotated["height"])
+        angle = float(rotated["angle_deg"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    theta = np.deg2rad(angle)
+    along = np.array([np.cos(theta), np.sin(theta)])
+    across = np.array([-np.sin(theta), np.cos(theta)])
+    center = np.array([cx, cy])
+    half_w, half_h = width / 2.0, height / 2.0
+    return np.array(
+        [
+            center - half_w * along - half_h * across,
+            center + half_w * along - half_h * across,
+            center + half_w * along + half_h * across,
+            center - half_w * along - half_h * across,
+        ],
+        dtype=np.float64,
+    )
+
+
+def recorded_frame_pen_pose(store: TakeStore) -> np.ndarray | None:
+    """Corners of the pen box saved with the newest recording, or None.
+
+    This is that frame's own box. Nothing is combined across frames or takes.
+    """
+    newest: tuple[float, str] | None = None
+    seen: set[str] = set()
+    for finger, _ in FINGERS:
+        for path in store.list(finger):
+            name = os.path.basename(path)
+            if name in seen:
+                continue
+            seen.add(name)
+            try:
+                mtime = os.path.getmtime(path)
+            except OSError:
+                continue
+            if newest is None or mtime > newest[0]:
+                newest = (mtime, path)
+    if newest is None:
+        return None
+    try:
+        take = store.load(newest[1])
+    except Exception:
+        return None
+    best_pts = None
+    best_score = None
+    for index, sample in enumerate(take.sam_boxes):
+        items = sample if isinstance(sample, list) else []
+        picked = highest_detection(items)
+        if picked is None:
+            continue
+        if len(take.video_t) and index < len(take.sam_t):
+            if not stamp_matches(take.video_t, float(take.sam_t[index])):
+                continue
+        pts = _detection_corners(picked[1])
+        if pts is None:
+            continue
+        if best_score is None or picked[0] > best_score:
+            best_score = picked[0]
+            best_pts = pts
+    if best_pts is None:
+        return None
+    return np.asarray(best_pts, dtype=np.float32)
+
+
+def draw_recorded_pen_pose(frame: np.ndarray, corners: np.ndarray) -> np.ndarray:
+    """Draw one recorded pen box on a copy of ``frame``, in yellow."""
+    vis = np.ascontiguousarray(frame.copy())
+    pts = np.round(np.asarray(corners, dtype=np.float32)).astype(np.int32)
+    cv2.polylines(vis, [pts], True, RECORDED_POSE_COLOR, 2)
+    top = int(pts[:, 1].min())
+    left = int(pts[:, 0].min())
+    cv2.putText(
+        vis, "recorded", (left, max(top - 8, 16)),
+        cv2.FONT_HERSHEY_SIMPLEX, 0.6, RECORDED_POSE_COLOR, 2, cv2.LINE_AA,
+    )
+    return vis
+
+
+def overlay_sam(frame: np.ndarray, mask: np.ndarray | None, boxes: list) -> np.ndarray:
+    """Draw the highest-probability mask and box onto a copy of their image."""
+    vis = np.ascontiguousarray(frame.copy())
+    picked = highest_detection(boxes)
+    boxes = [] if picked is None else [picked[1]]
+    if mask is not None and mask.shape[:2] == vis.shape[:2] and int(np.count_nonzero(mask)):
+        color = SAM_BEST_COLOR
+        if boxes and not any(box.get("best") for box in boxes if isinstance(box, dict)):
+            color = SAM_OTHER_COLOR
+        tint = vis.copy()
+        tint[mask > 0] = color
+        vis = cv2.addWeighted(tint, 0.35, vis, 0.65, 0)
+    for box in boxes:
+        if not isinstance(box, dict):
+            continue
+        corners = (box.get("rotated") or {}).get("corners")
+        if not corners:
+            continue
+        pts = np.round(np.asarray(corners, dtype=np.float32)).astype(np.int32)
+        color = SAM_BEST_COLOR if box.get("best") else SAM_OTHER_COLOR
+        cv2.polylines(vis, [pts], True, color, 2)
+        score = box.get("score")
+        label = (
+            f"{'pen' if box.get('best') else 'pen?'} {score:.2f}"
+            if isinstance(score, (int, float))
+            else "pen"
+        )
+        top = int(pts[:, 1].min())
+        left = int(pts[:, 0].min())
+        cv2.putText(
+            vis, label, (left, max(top - 8, 16)),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.6, SAM_LABEL_COLOR, 2, cv2.LINE_AA,
+        )
+    return vis
+
+
 def show_take_at(
     take: FingerTake, t: float, camera: CameraView, hand: HandView, video: TakeVideo
 ) -> None:
     """Camera frame and FK taxels of ``take`` at ``t`` seconds into it."""
     if take.video and len(take.video_t) and os.path.exists(take.video):
-        frame = video.read(take.video, max(index_at(take.video_t, t), 0))
+        index = max(index_at(take.video_t, t), 0)
+        frame = video.read(take.video, index)
         if frame is not None:
+            # The mask and box for this frame only — not the latest detection.
+            hit = sam_at_stamp(
+                take.sam_t, take.sam_mask, take.sam_boxes, float(take.video_t[index])
+            )
+            if hit is not None:
+                frame = overlay_sam(frame, hit[0], hit[1])
             camera.set_frame(frame)
     else:
         video.release()
@@ -809,7 +1189,7 @@ def show_take_at(
         hand.clear_readings(f"No Xela readings in {take.name}")
 
 
-def side_column(title: QtWidgets.QLabel, camera: CameraView, hand: HandView) -> QtWidgets.QWidget:
+def side_column(title: QtWidgets.QWidget, camera: CameraView, hand: HandView) -> QtWidgets.QWidget:
     """``title`` above the camera and the FK taxels (split vertically)."""
     split = QtWidgets.QSplitter(QtCore.Qt.Vertical)
     split.addWidget(camera)
@@ -1186,8 +1566,7 @@ class TipTaxelPlot(pg.PlotWidget):
 
 
 class FingerPanel(QtWidgets.QWidget):
-    """Hold switch, take name + Record, take picker + Play and a play bar above the live plot of
-    one finger."""
+    """Take name + Record, take picker + Play and a play bar above the live plot of one finger."""
 
     def __init__(self, finger: str, label: str) -> None:
         super().__init__()
@@ -1209,13 +1588,9 @@ class FingerPanel(QtWidgets.QWidget):
         self.play_bar.setRange(0, PLAY_BAR_STEPS)
         self.play_bar.setToolTip("Playback position: drag to choose where Play starts, or to seek")
         self.time_label = QtWidgets.QLabel()
-        self.hold_switch = ToggleSwitch()
-        self.hold_switch.setToolTip("Hold this finger at its current pose")
 
         header = QtWidgets.QHBoxLayout()
         header.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"), 1)
-        header.addWidget(QtWidgets.QLabel("Hold"))
-        header.addWidget(self.hold_switch)
         bar_row = QtWidgets.QHBoxLayout()
         bar_row.addWidget(self.play_bar, 1)
         bar_row.addWidget(self.time_label)
@@ -1274,7 +1649,7 @@ class FingerPanel(QtWidgets.QWidget):
         self.update_play_enabled()
 
     def update_play_enabled(self) -> None:
-        self.play_btn.setEnabled(self.take_combo.count() > 0 and not self.hold_switch.isChecked())
+        self.play_btn.setEnabled(self.take_combo.count() > 0)
 
     def bar_time(self) -> float:
         return self.play_bar.value() / PLAY_BAR_STEPS * self.duration
@@ -1325,11 +1700,11 @@ class CreateTab(QtWidgets.QWidget):
     """One live plot per finger with Record / Play buttons, plus the camera.
 
     A finger's Record saves a take of that finger under the name in its text box. Play sends the
-    take selected in the finger's dropdown to the hand, starting from the play bar position. Hold
-    keeps a finger at its pose.
+    take selected in the finger's dropdown to the hand, starting from the play bar position.
 
-    While any finger is held or playing, the whole hand is commanded on ``cmd_topic``; the other
+    While any finger is playing, the whole hand is commanded on ``cmd_topic``; the other
     ("free") fingers mimic leaphand_node's compliant mode so they can still be posed by hand.
+    Recorded pen pose draws the pen box from the newest recording on the live camera.
     """
 
     takes_changed = QtCore.pyqtSignal()
@@ -1354,11 +1729,11 @@ class CreateTab(QtWidgets.QWidget):
         self._take_name = ""
         self._rec_fingers: tuple[str, ...] = ()
         self._rec_btn: QtWidgets.QPushButton | None = None
-        self._free: np.ndarray | None = None  # goal of the fingers neither held nor playing
+        self._free: np.ndarray | None = None  # goal of the fingers that are not playing
         self._last_cmd: np.ndarray | None = None
         self._playing: dict[str, Playback] = {}
-        self._held: dict[str, np.ndarray] = {}  # finger -> joint positions it is held at
         self._stiff_sent: tuple[str, ...] = ()  # joints last given the hand's stiff gains
+        self._recorded_pen_corners: np.ndarray | None = None  # (4, 2) while the switch is on
 
         grid = QtWidgets.QWidget()
         grid_layout = QtWidgets.QGridLayout(grid)
@@ -1374,7 +1749,6 @@ class CreateTab(QtWidgets.QWidget):
             panel.play_btn.clicked.connect(lambda _, f=finger: self.toggle_play(f))
             panel.take_combo.currentIndexChanged.connect(lambda _, f=finger: self._on_take_selected(f))
             panel.play_bar.valueChanged.connect(lambda _, f=finger: self._on_seek(f))
-            panel.hold_switch.toggled.connect(lambda on, f=finger: self.set_hold(f, on))
             self._new_default_name(panel)
             panel.fill_takes(store)
             self._on_take_selected(finger)
@@ -1382,6 +1756,18 @@ class CreateTab(QtWidgets.QWidget):
 
         self.camera = CameraView(node.image_topic)
         self.hand = HandView(node.sim_topic, node.xela_topic, node.counts_per_unit)
+        self.show_recorded_pen_pose = ToggleSwitch()
+        self.show_recorded_pen_pose.setToolTip(
+            "Draw the pen box from the newest recording on the live camera, in yellow"
+        )
+        self.show_recorded_pen_pose.toggled.connect(self._on_show_recorded_pen_pose)
+        live_title = QtWidgets.QWidget()
+        live_row = QtWidgets.QHBoxLayout(live_title)
+        live_row.setContentsMargins(0, 0, 0, 0)
+        live_row.addWidget(QtWidgets.QLabel("<b>Live</b>"))
+        live_row.addStretch(1)
+        live_row.addWidget(QtWidgets.QLabel("Recorded pen pose"))
+        live_row.addWidget(self.show_recorded_pen_pose)
         # The recording of the take being played, next to the live view.
         self.play_title = QtWidgets.QLabel()
         self.play_camera = CameraView("")
@@ -1394,7 +1780,7 @@ class CreateTab(QtWidgets.QWidget):
         self._shown_play: str | None = None  # finger whose take the playback column shows
         self._clear_playback_view()
         sides = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
-        sides.addWidget(side_column(QtWidgets.QLabel("<b>Live</b>"), self.camera, self.hand))
+        sides.addWidget(side_column(live_title, self.camera, self.hand))
         sides.addWidget(side_column(self.play_title, self.play_camera, self.play_hand))
         splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         splitter.addWidget(grid)
@@ -1490,6 +1876,11 @@ class CreateTab(QtWidgets.QWidget):
             self.node.get_logger().warn(
                 f"No '{self.node.xela_topic}' messages during the take; saving it without taxels"
             )
+        if self.node.sam_prefix and len(rec.sam_t) == 0:
+            self.node.get_logger().warn(
+                f"No SAM mask or box on '{self.node.sam_prefix}' during the take; "
+                "saving it without them"
+            )
         baseline = self.hand.baseline
         if baseline is None or (len(rec.xela) and len(baseline) > rec.xela.shape[1]):
             baseline = rec.xela[0] if len(rec.xela) else np.empty((0, 3))
@@ -1513,6 +1904,9 @@ class CreateTab(QtWidgets.QWidget):
                 xela_t=rec.xela_t,
                 xela=rec.xela,
                 xela_baseline=np.asarray(baseline, dtype=np.float32),
+                sam_t=rec.sam_t,
+                sam_mask=rec.sam_mask,
+                sam_boxes=rec.sam_boxes,
             ).save()
             panel = self.panels[finger]
             self._new_default_name(panel)
@@ -1520,6 +1914,7 @@ class CreateTab(QtWidgets.QWidget):
                 panel.fill_takes(self.store, select=path)
                 self._on_take_selected(finger)
         self.takes_changed.emit()
+        self._refresh_recorded_pen_pose()
 
     # ---- playback -----------------------------------------------------------------------
 
@@ -1613,37 +2008,48 @@ class CreateTab(QtWidgets.QWidget):
                 self._new_default_name(panel)
             panel.fill_takes(self.store)
             self._on_take_selected(finger)
+        self._refresh_recorded_pen_pose()
 
-    # ---- hold ---------------------------------------------------------------------------
+    # ---- recorded pen pose --------------------------------------------------------------
 
-    def set_hold(self, finger: str, on: bool) -> None:
-        panel = self.panels[finger]
-        cols = finger_indices(self.node.joint_names, finger)
+    def _on_show_recorded_pen_pose(self, on: bool) -> None:
+        """Show or hide the recorded frame's pen box on the live camera."""
         if not on:
-            held = self._held.pop(finger, None)
-            if held is not None and self._free is not None:
-                self._free[cols] = held
-            panel.update_play_enabled()
-            self._stop_commanding_if_idle()
-            self._update_stiff_joints()
+            self._recorded_pen_corners = None
+            self._frame_seq = -1
             return
-        q = self.node.latest()
-        if q is None:
-            panel.hold_switch.setChecked(False)
-            QtWidgets.QMessageBox.warning(self, "Hold", "No leap_state received yet.")
+        corners = recorded_frame_pen_pose(self.store)
+        if corners is None:
+            self.show_recorded_pen_pose.blockSignals(True)
+            self.show_recorded_pen_pose.setChecked(False)
+            self.show_recorded_pen_pose.blockSignals(False)
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Recorded pen pose",
+                "No pen bounding box has been recorded yet.",
+            )
             return
-        self._start_commanding(q)
-        self._held[finger] = self._current_goal(q)[cols].copy()
-        if finger in self._playing:
-            self._stop_play(finger)
-        panel.update_play_enabled()
-        self._update_stiff_joints()
+        self._recorded_pen_corners = corners
+        self._frame_seq = -1
+
+    def _refresh_recorded_pen_pose(self) -> None:
+        """Load the newest recording's pen box again, if the switch is on."""
+        if not self.show_recorded_pen_pose.isChecked():
+            return
+        corners = recorded_frame_pen_pose(self.store)
+        if corners is None:
+            self._recorded_pen_corners = None
+            self.show_recorded_pen_pose.blockSignals(True)
+            self.show_recorded_pen_pose.setChecked(False)
+            self.show_recorded_pen_pose.blockSignals(False)
+        else:
+            self._recorded_pen_corners = corners
+        self._frame_seq = -1
 
     def _update_stiff_joints(self) -> None:
-        """Playing and held fingers use the hand's stiff (playback) gains, the others stay
-        compliant."""
+        """Playing fingers use the hand's stiff (playback) gains; the others stay compliant."""
         names = self.node.joint_names
-        fingers = set(self._playing) | set(self._held)
+        fingers = set(self._playing)
         joints = tuple(
             names[i] for finger, _ in FINGERS if finger in fingers
             for i in finger_indices(names, finger)
@@ -1674,7 +2080,7 @@ class CreateTab(QtWidgets.QWidget):
             self._cmd_timer.setInterval(self.settings.interval_ms)
 
     def _stop_commanding_if_idle(self) -> None:
-        if not self._playing and not self._held:
+        if not self._playing:
             self._cmd_timer.stop()
             self._last_cmd = None
             self._free = None
@@ -1686,9 +2092,6 @@ class CreateTab(QtWidgets.QWidget):
             pushed = np.abs(measured - self._free) > self.settings.deadband
             self._free[pushed] = measured[pushed]
         q = self._free.copy()
-        names = self.node.joint_names
-        for finger, held in self._held.items():
-            q[finger_indices(names, finger)] = held
         finished = []
         ramp = self.settings.ramp_s
         for finger, p in self._playing.items():
@@ -1784,9 +2187,14 @@ class CreateTab(QtWidgets.QWidget):
             duration, frames = self.node.recorded_count()
             self._rec_btn.setText(f"Stop  ({duration:.1f} s, {frames} frames)")
 
-        seq, frame = self.node.latest_frame()
+        if self._recorded_pen_corners is not None:
+            seq, frame = self.node.latest_raw_frame()
+        else:
+            seq, frame = self.node.latest_frame()
         if frame is not None and seq != self._frame_seq:
             self._frame_seq = seq
+            if self._recorded_pen_corners is not None:
+                frame = draw_recorded_pen_pose(frame, self._recorded_pen_corners)
             self.camera.set_frame(frame)
 
         sim_seq, sim_names, sim_q = self.node.latest_sim()
@@ -2717,7 +3125,7 @@ def double_spin(
 
 
 class SettingsTab(QtWidgets.QWidget):
-    """Hold / playback / compliance values of this GUI (applied immediately) and the compliant
+    """Playback / compliance values of this GUI (applied immediately) and the compliant
     gains of the hand node (applied with "Apply to hand")."""
 
     settings_changed = QtCore.pyqtSignal()
@@ -2752,7 +3160,7 @@ class SettingsTab(QtWidgets.QWidget):
 
         self.rate_spin = double_spin(
             5.0, 100.0, 5.0, 0, " Hz",
-            "How often held and playing fingers are commanded on cmd_topic",
+            "How often playing fingers are commanded on cmd_topic",
         )
         self.ramp_spin = double_spin(
             0.0, 5.0, 0.1, 2, " s",
@@ -2760,10 +3168,10 @@ class SettingsTab(QtWidgets.QWidget):
         )
         self.deadband_spin = double_spin(
             0.0, 0.5, 0.005, 3, " rad",
-            "While a finger is held or playing, the other fingers follow the hand once pushed "
+            "While a finger is playing, the other fingers follow the hand once pushed "
             "further than this. Lower = easier to pose, higher = less drift from gravity sag",
         )
-        gui_box = QtWidgets.QGroupBox("Hold && playback (this GUI, applied immediately)")
+        gui_box = QtWidgets.QGroupBox("Playback (this GUI, applied immediately)")
         gui_form = QtWidgets.QFormLayout(gui_box)
         gui_form.addRow("Command rate:", self.rate_spin)
         gui_form.addRow("Playback ramp:", self.ramp_spin)
@@ -2995,8 +3403,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 video = self.node.stop_recording().video
                 if video:
                     os.remove(video)
-        for finger in list(self.create_tab._held):
-            self.create_tab.panels[finger].hold_switch.setChecked(False)
         self.create_tab.release_stiff_joints()
         self.create_tab.close_video()
         self.edit_tab.close_video()

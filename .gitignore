@@ -5,4 +5,5 @@ ros_ws/install/
 ros_ws/log/
 ros_ws/data/
 ros_ws/rosbag/
+ros_ws/demonstrations/
 shell/linux_1.8.0_208601/

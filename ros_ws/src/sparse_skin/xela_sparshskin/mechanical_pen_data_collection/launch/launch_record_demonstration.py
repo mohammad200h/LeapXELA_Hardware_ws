@@ -86,6 +86,16 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="",
                 description="Events JSON for the Edit tab (defaults to the installed events.json)",
             ),
+            DeclareLaunchArgument(
+                "sam",
+                default_value="true",
+                description="Start bounding_box_sam (mask and box for the matching camera frame)",
+            ),
+            DeclareLaunchArgument(
+                "sam_prefix",
+                default_value="/bounding_box_sam",
+                description="Prefix of the SAM annotated image, mask, and boxes topics",
+            ),
             IncludeLaunchDescription(
                 XMLLaunchDescriptionSource(
                     PathJoinSubstitution([FindPackageShare("xela_server_ros2"), "service.launch"])
@@ -112,6 +122,22 @@ def generate_launch_description() -> LaunchDescription:
                     )
                 ),
                 condition=IfCondition(LaunchConfiguration("camera")),
+            ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution([
+                        FindPackageShare("bounding_box_sam"),
+                        "launch",
+                        "launch_bounding_box_sam.py",
+                    ])
+                ),
+                launch_arguments={
+                    "camera": "false",
+                    "viewer": "false",
+                    "image_topic": LaunchConfiguration("image_topic"),
+                    "topic_prefix": LaunchConfiguration("sam_prefix"),
+                }.items(),
+                condition=IfCondition(LaunchConfiguration("sam")),
             ),
             Node(
                 package="conversions",
@@ -142,6 +168,11 @@ def generate_launch_description() -> LaunchDescription:
                         )
                     },
                     {"demo_dir": ParameterValue(LaunchConfiguration("demo_dir"), value_type=str)},
+                    {
+                        "sam_prefix": ParameterValue(
+                            LaunchConfiguration("sam_prefix"), value_type=str
+                        )
+                    },
                     {"xela_topic": ParameterValue(LaunchConfiguration("xela_topic"), value_type=str)},
                     {
                         "events_file": ParameterValue(
