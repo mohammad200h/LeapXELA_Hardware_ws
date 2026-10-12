@@ -16,8 +16,8 @@ from ``sim_topic`` (``convert_hardware_to_sim``) are stored as ``sim_t`` / ``sim
 (L, T, 3) with the live view's baseline at recording time as ``xela_baseline``. The plots only
 show ``joint_topic``. Play sends the take chosen in
 the dropdown next to it to the hand on ``cmd_topic``, starting from the play bar position.
-While a finger is playing, the other fingers can still be moved by hand. The Recorded pen pose
-switch draws that recording's pen box on the live camera, in yellow. Under the camera, the
+While a finger is playing, the other fingers can still be moved by hand. Each finger's Pose
+switch draws that finger's selected recording's pen box on the live camera, in yellow. Under the camera, the
 taxels of the hand are placed live by forward kinematics (``taxel_fk_util``) from ``sim_topic``;
 the Xela readings on ``xela_topic`` (change from a baseline, divided by ``counts_per_unit``)
 deform and color them and are drawn as force vectors. Zero takes a new baseline. Under each
@@ -1058,31 +1058,11 @@ def _detection_corners(box: dict) -> np.ndarray | None:
     )
 
 
-def recorded_frame_pen_pose(store: TakeStore) -> np.ndarray | None:
-    """Corners of the pen box saved with the newest recording, or None.
+def recorded_take_pen_pose(take: FingerTake) -> np.ndarray | None:
+    """Corners of the pen box saved with ``take``, or None.
 
     This is that frame's own box. Nothing is combined across frames or takes.
     """
-    newest: tuple[float, str] | None = None
-    seen: set[str] = set()
-    for finger, _ in FINGERS:
-        for path in store.list(finger):
-            name = os.path.basename(path)
-            if name in seen:
-                continue
-            seen.add(name)
-            try:
-                mtime = os.path.getmtime(path)
-            except OSError:
-                continue
-            if newest is None or mtime > newest[0]:
-                newest = (mtime, path)
-    if newest is None:
-        return None
-    try:
-        take = store.load(newest[1])
-    except Exception:
-        return None
     best_pts = None
     best_score = None
     for index, sample in enumerate(take.sam_boxes):
@@ -1104,7 +1084,9 @@ def recorded_frame_pen_pose(store: TakeStore) -> np.ndarray | None:
     return np.asarray(best_pts, dtype=np.float32)
 
 
-def draw_recorded_pen_pose(frame: np.ndarray, corners: np.ndarray) -> np.ndarray:
+def draw_recorded_pen_pose(
+    frame: np.ndarray, corners: np.ndarray, label: str = "recorded"
+) -> np.ndarray:
     """Draw one recorded pen box on a copy of ``frame``, in yellow."""
     vis = np.ascontiguousarray(frame.copy())
     pts = np.round(np.asarray(corners, dtype=np.float32)).astype(np.int32)
@@ -1112,7 +1094,7 @@ def draw_recorded_pen_pose(frame: np.ndarray, corners: np.ndarray) -> np.ndarray
     top = int(pts[:, 1].min())
     left = int(pts[:, 0].min())
     cv2.putText(
-        vis, "recorded", (left, max(top - 8, 16)),
+        vis, label, (left, max(top - 8, 16)),
         cv2.FONT_HERSHEY_SIMPLEX, 0.6, RECORDED_POSE_COLOR, 2, cv2.LINE_AA,
     )
     return vis
@@ -1168,6 +1150,12 @@ def show_take_at(
             )
             if hit is not None:
                 frame = overlay_sam(frame, hit[0], hit[1])
+            else:
+                # Only one SAM frame is stored (the highest-score detection), so Play would
+                # otherwise show the box on that frame alone.
+                corners = recorded_take_pen_pose(take)
+                if corners is not None:
+                    frame = draw_recorded_pen_pose(frame, corners)
             camera.set_frame(frame)
     else:
         video.release()
@@ -1566,7 +1554,8 @@ class TipTaxelPlot(pg.PlotWidget):
 
 
 class FingerPanel(QtWidgets.QWidget):
-    """Take name + Record, take picker + Play and a play bar above the live plot of one finger."""
+    """Take name + Record, take picker + Play, Pose switch and a play bar above the live plot
+    of one finger."""
 
     def __init__(self, finger: str, label: str) -> None:
         super().__init__()
@@ -1588,9 +1577,15 @@ class FingerPanel(QtWidgets.QWidget):
         self.play_bar.setRange(0, PLAY_BAR_STEPS)
         self.play_bar.setToolTip("Playback position: drag to choose where Play starts, or to seek")
         self.time_label = QtWidgets.QLabel()
+        self.pose_switch = ToggleSwitch()
+        self.pose_switch.setToolTip(
+            "Draw this finger's selected recording's pen box on the live camera, in yellow"
+        )
 
         header = QtWidgets.QHBoxLayout()
         header.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"), 1)
+        header.addWidget(QtWidgets.QLabel("Pose"))
+        header.addWidget(self.pose_switch)
         bar_row = QtWidgets.QHBoxLayout()
         bar_row.addWidget(self.play_bar, 1)
         bar_row.addWidget(self.time_label)
@@ -1649,7 +1644,11 @@ class FingerPanel(QtWidgets.QWidget):
         self.update_play_enabled()
 
     def update_play_enabled(self) -> None:
-        self.play_btn.setEnabled(self.take_combo.count() > 0)
+        has_take = self.take_combo.count() > 0
+        self.play_btn.setEnabled(has_take)
+        self.pose_switch.setEnabled(has_take)
+        if not has_take and self.pose_switch.isChecked():
+            self.pose_switch.setChecked(False)
 
     def bar_time(self) -> float:
         return self.play_bar.value() / PLAY_BAR_STEPS * self.duration
@@ -1694,6 +1693,7 @@ class Playback:
         default_factory=lambda: deque(maxlen=HISTORY_LEN)
     )
     tip_mags: np.ndarray | None = None  # (L, 30) recorded fingertip magnitudes (None: no Xela)
+    pen_corners: np.ndarray | None = None  # (4, 2) recorded pen box drawn on the live camera
 
 
 class CreateTab(QtWidgets.QWidget):
@@ -1704,7 +1704,8 @@ class CreateTab(QtWidgets.QWidget):
 
     While any finger is playing, the whole hand is commanded on ``cmd_topic``; the other
     ("free") fingers mimic leaphand_node's compliant mode so they can still be posed by hand.
-    Recorded pen pose draws the pen box from the newest recording on the live camera.
+    A finger's Pose switch draws the pen box from that finger's selected recording on the
+    live camera. Play does the same for the take being played.
     """
 
     takes_changed = QtCore.pyqtSignal()
@@ -1733,7 +1734,9 @@ class CreateTab(QtWidgets.QWidget):
         self._last_cmd: np.ndarray | None = None
         self._playing: dict[str, Playback] = {}
         self._stiff_sent: tuple[str, ...] = ()  # joints last given the hand's stiff gains
-        self._recorded_pen_corners: np.ndarray | None = None  # (4, 2) while the switch is on
+        self._recorded_pen_finger: str | None = None  # finger whose Pose switch is on
+        self._recorded_pen_corners: np.ndarray | None = None  # (4, 2) while a Pose switch is on
+        self._recorded_pen_label = "recorded"
 
         grid = QtWidgets.QWidget()
         grid_layout = QtWidgets.QGridLayout(grid)
@@ -1749,6 +1752,9 @@ class CreateTab(QtWidgets.QWidget):
             panel.play_btn.clicked.connect(lambda _, f=finger: self.toggle_play(f))
             panel.take_combo.currentIndexChanged.connect(lambda _, f=finger: self._on_take_selected(f))
             panel.play_bar.valueChanged.connect(lambda _, f=finger: self._on_seek(f))
+            panel.pose_switch.toggled.connect(
+                lambda on, f=finger: self._on_show_recorded_pen_pose(f, on)
+            )
             self._new_default_name(panel)
             panel.fill_takes(store)
             self._on_take_selected(finger)
@@ -1756,18 +1762,7 @@ class CreateTab(QtWidgets.QWidget):
 
         self.camera = CameraView(node.image_topic)
         self.hand = HandView(node.sim_topic, node.xela_topic, node.counts_per_unit)
-        self.show_recorded_pen_pose = ToggleSwitch()
-        self.show_recorded_pen_pose.setToolTip(
-            "Draw the pen box from the newest recording on the live camera, in yellow"
-        )
-        self.show_recorded_pen_pose.toggled.connect(self._on_show_recorded_pen_pose)
-        live_title = QtWidgets.QWidget()
-        live_row = QtWidgets.QHBoxLayout(live_title)
-        live_row.setContentsMargins(0, 0, 0, 0)
-        live_row.addWidget(QtWidgets.QLabel("<b>Live</b>"))
-        live_row.addStretch(1)
-        live_row.addWidget(QtWidgets.QLabel("Recorded pen pose"))
-        live_row.addWidget(self.show_recorded_pen_pose)
+        live_title = QtWidgets.QLabel("<b>Live</b>")
         # The recording of the take being played, next to the live view.
         self.play_title = QtWidgets.QLabel()
         self.play_camera = CameraView("")
@@ -1813,6 +1808,8 @@ class CreateTab(QtWidgets.QWidget):
             except Exception as e:
                 self.node.get_logger().warn(f"Could not load {path}: {e}")
         panel.set_position(0.0)
+        if self._recorded_pen_finger == finger:
+            self._refresh_recorded_pen_pose()
 
     def _on_seek(self, finger: str) -> None:
         """Play bar moved by the user: show the time and, if playing, ramp to it and continue."""
@@ -1949,6 +1946,7 @@ class CreateTab(QtWidgets.QWidget):
             offset=offset,
             to_q=sample_take(take, offset),
             tip_mags=take_tip_magnitudes(take, panel.tip_plot.ids, self.node.counts_per_unit),
+            pen_corners=recorded_take_pen_pose(take),
         )
         panel.take_combo.setEnabled(False)
         panel.play_btn.setText("Stop")
@@ -1957,6 +1955,7 @@ class CreateTab(QtWidgets.QWidget):
         self._update_stiff_joints()
         self._shown_play = finger
         self.play_title.setText(f"<b>Playback</b>: {panel.label} - {take.name}")
+        self._frame_seq = -1
 
     def _stop_play(self, finger: str, rewind: bool = False) -> None:
         """Stops ``finger`` where it was last commanded; it then follows the hand again."""
@@ -1981,6 +1980,7 @@ class CreateTab(QtWidgets.QWidget):
                 self.play_title.setText(
                     f"<b>Playback</b>: {FINGER_LABEL[self._shown_play]} - {shown.take.name}"
                 )
+        self._frame_seq = -1
 
     def _clear_playback_view(self) -> None:
         self._play_video.release()
@@ -2012,39 +2012,75 @@ class CreateTab(QtWidgets.QWidget):
 
     # ---- recorded pen pose --------------------------------------------------------------
 
-    def _on_show_recorded_pen_pose(self, on: bool) -> None:
-        """Show or hide the recorded frame's pen box on the live camera."""
+    def _set_pose_switch(self, finger: str, on: bool) -> None:
+        switch = self.panels[finger].pose_switch
+        switch.blockSignals(True)
+        switch.setChecked(on)
+        switch.blockSignals(False)
+
+    def _clear_recorded_pen_pose(self) -> None:
+        self._recorded_pen_finger = None
+        self._recorded_pen_corners = None
+        self._recorded_pen_label = "recorded"
+        self._frame_seq = -1
+
+    def _load_recorded_pen_pose(self, finger: str) -> np.ndarray | None:
+        path = self.panels[finger].take_combo.currentData()
+        if path is None:
+            return None
+        try:
+            take = self.store.load(path)
+        except Exception as e:
+            self.node.get_logger().warn(f"Could not load {path}: {e}")
+            return None
+        return recorded_take_pen_pose(take)
+
+    def _on_show_recorded_pen_pose(self, finger: str, on: bool) -> None:
+        """Show or hide this finger's selected recording's pen box on the live camera."""
         if not on:
-            self._recorded_pen_corners = None
-            self._frame_seq = -1
+            if self._recorded_pen_finger == finger:
+                self._clear_recorded_pen_pose()
             return
-        corners = recorded_frame_pen_pose(self.store)
+        for other in self.panels:
+            if other != finger:
+                self._set_pose_switch(other, False)
+        corners = self._load_recorded_pen_pose(finger)
         if corners is None:
-            self.show_recorded_pen_pose.blockSignals(True)
-            self.show_recorded_pen_pose.setChecked(False)
-            self.show_recorded_pen_pose.blockSignals(False)
+            self._set_pose_switch(finger, False)
+            self._clear_recorded_pen_pose()
             QtWidgets.QMessageBox.warning(
                 self,
                 "Recorded pen pose",
-                "No pen bounding box has been recorded yet.",
+                f"The selected recording for {FINGER_LABEL[finger]} has no pen bounding box.",
             )
             return
+        self._recorded_pen_finger = finger
         self._recorded_pen_corners = corners
+        self._recorded_pen_label = f"{FINGER_LABEL[finger]} recorded"
         self._frame_seq = -1
 
     def _refresh_recorded_pen_pose(self) -> None:
-        """Load the newest recording's pen box again, if the switch is on."""
-        if not self.show_recorded_pen_pose.isChecked():
+        """Load the selected finger's recording's pen box again, if its Pose switch is on."""
+        finger = self._recorded_pen_finger
+        if finger is None:
             return
-        corners = recorded_frame_pen_pose(self.store)
+        corners = self._load_recorded_pen_pose(finger)
         if corners is None:
-            self._recorded_pen_corners = None
-            self.show_recorded_pen_pose.blockSignals(True)
-            self.show_recorded_pen_pose.setChecked(False)
-            self.show_recorded_pen_pose.blockSignals(False)
-        else:
-            self._recorded_pen_corners = corners
+            self._set_pose_switch(finger, False)
+            self._clear_recorded_pen_pose()
+            return
+        self._recorded_pen_corners = corners
+        self._recorded_pen_label = f"{FINGER_LABEL[finger]} recorded"
         self._frame_seq = -1
+
+    def _live_recorded_pen_pose(self) -> tuple[np.ndarray | None, str]:
+        """Pen box to draw on the live camera: Pose switch, else the take being played."""
+        if self._recorded_pen_corners is not None:
+            return self._recorded_pen_corners, self._recorded_pen_label
+        shown = self._playing.get(self._shown_play) if self._shown_play else None
+        if shown is None or shown.pen_corners is None:
+            return None, "recorded"
+        return shown.pen_corners, f"{FINGER_LABEL[self._shown_play]} recorded"
 
     def _update_stiff_joints(self) -> None:
         """Playing fingers use the hand's stiff (playback) gains; the others stay compliant."""
@@ -2187,14 +2223,14 @@ class CreateTab(QtWidgets.QWidget):
             duration, frames = self.node.recorded_count()
             self._rec_btn.setText(f"Stop  ({duration:.1f} s, {frames} frames)")
 
-        if self._recorded_pen_corners is not None:
-            seq, frame = self.node.latest_raw_frame()
-        else:
-            seq, frame = self.node.latest_frame()
+        # Always the live camera. The SAM display frame is a still of the best detection and
+        # would freeze the feed when Pose is turned off.
+        seq, frame = self.node.latest_raw_frame()
         if frame is not None and seq != self._frame_seq:
             self._frame_seq = seq
-            if self._recorded_pen_corners is not None:
-                frame = draw_recorded_pen_pose(frame, self._recorded_pen_corners)
+            corners, label = self._live_recorded_pen_pose()
+            if corners is not None:
+                frame = draw_recorded_pen_pose(frame, corners, label)
             self.camera.set_frame(frame)
 
         sim_seq, sim_names, sim_q = self.node.latest_sim()
