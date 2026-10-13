@@ -23,7 +23,8 @@ The Index, Middle and Ring fingers have a Reverse button: with it on, Play runs 
 the play bar position back to its start (from its end when the bar is at the start), as plain
 position replay.
 While a finger is playing, the other fingers can still be moved by hand. Each finger's Pose
-switch draws that finger's selected recording's pen box on the live camera, in yellow. Under the camera, the
+switch draws that finger's selected recording's pen box on the live camera, in yellow. The
+"Live pen box" button at the top draws the latest SAM pen box on the live camera. Under the camera, the
 taxels of the hand are placed live by forward kinematics (``taxel_fk_util``) from ``sim_topic``;
 the Xela readings on ``xela_topic`` (change from a baseline, divided by ``counts_per_unit``)
 deform and color them and are drawn as force vectors. Zero takes a new baseline. Under each
@@ -186,6 +187,8 @@ XELA_MAX_CLOCK_OFFSET_S = 1.0
 SAM_STAMP_TOL_S = 1e-4
 # Incomplete SAM image/mask/box sets kept while their partners arrive.
 SAM_PART_LIMIT = 8
+# The Create tab's live pen box is hidden once the latest SAM result is older than this.
+LIVE_SAM_MAX_AGE_S = 1.0
 # Channel values draw_boxes writes into the RGB frame (bounding_box_sam.boxes).
 SAM_BEST_COLOR = (46, 204, 113)
 SAM_OTHER_COLOR = (241, 196, 15)
@@ -573,6 +576,9 @@ class LeapStateListener(Node):
         self._display_seq = 0
         self._sam_locked = False  # once a matched SAM frame exists, do not show a newer raw frame
         self._sam_best_score: float | None = None  # highest detection score shown so far
+        # Latest complete SAM result (whatever its score), for the live pen box:
+        # (sequence number, time.monotonic() received, detections).
+        self._sam_live: tuple[int, float, list] = (0, 0.0, [])
         self._sam_parts: dict[float, dict] = {}  # stamp -> image / mask / boxes still arriving
         self._rec_sam_t: list[float] = []
         self._rec_sam_mask: list[np.ndarray] = []
@@ -797,6 +803,7 @@ class LeapStateListener(Node):
             )
             return
         score, best_box = picked
+        self._sam_live = (self._sam_live[0] + 1, time.monotonic(), [best_box])
         # Keep the one frame shown, and record that same frame.
         if self._sam_best_score is not None and score <= self._sam_best_score:
             return
@@ -906,6 +913,12 @@ class LeapStateListener(Node):
         """
         with self._lock:
             return self._display_seq, self._display_frame
+
+    def latest_sam(self) -> tuple[int, float, list]:
+        """(sequence number, time.monotonic() received, best detection) of the latest SAM
+        result, however its score compares to the one recorded."""
+        with self._lock:
+            return self._sam_live
 
     def latest_raw_frame(self) -> tuple[int, np.ndarray | None]:
         """(sequence number, latest camera frame), without a SAM overlay."""
@@ -1945,8 +1958,20 @@ class CreateTab(QtWidgets.QWidget):
         splitter.setStretchFactor(0, 1)
         splitter.setStretchFactor(1, 1)
 
+        # Not auto-exclusive, so clicking it again turns it off.
+        self.live_box_btn = QtWidgets.QRadioButton("Live pen box")
+        self.live_box_btn.setAutoExclusive(False)
+        self.live_box_btn.setToolTip(
+            f"Draw the latest SAM pen box ({node.sam_prefix or 'sam_prefix is empty'}) on the "
+            "live camera"
+        )
+        self.live_box_btn.toggled.connect(lambda _: self._invalidate_camera())
+        top = QtWidgets.QHBoxLayout()
+        top.addWidget(self.live_box_btn)
+        top.addStretch(1)
+
         layout = QtWidgets.QVBoxLayout(self)
-        layout.addSpacing(40)
+        layout.addLayout(top)
         layout.addWidget(splitter, 1)
 
         # Commands are sent from their own thread: a GUI redraw (cameras, FK taxels, plots) can
@@ -1965,6 +1990,18 @@ class CreateTab(QtWidgets.QWidget):
         path = panel.take_combo.currentData()
         if path is not None and confirm_delete_take(self, panel.take_combo.currentText()):
             self.delete_requested.emit(path)
+
+    def _invalidate_camera(self) -> None:
+        self._frame_seq = -1
+
+    def _live_sam_boxes(self) -> list:
+        """Latest SAM pen box for the live camera ([] when off, none yet or stale)."""
+        if not self.live_box_btn.isChecked():
+            return []
+        _, received, boxes = self.node.latest_sam()
+        if not boxes or time.monotonic() - received > LIVE_SAM_MAX_AGE_S:
+            return []
+        return boxes
 
     def _record_buttons(self) -> list[QtWidgets.QPushButton]:
         return [p.record_btn for p in self.panels.values()]
@@ -2604,6 +2641,9 @@ class CreateTab(QtWidgets.QWidget):
         seq, frame = self.node.latest_raw_frame()
         if frame is not None and seq != self._frame_seq:
             self._frame_seq = seq
+            boxes = self._live_sam_boxes()
+            if boxes:
+                frame = overlay_sam(frame, None, boxes)  # box only: the mask lags the feed
             corners, label = self._live_recorded_pen_pose()
             if corners is not None:
                 frame = draw_recorded_pen_pose(frame, corners, label)
