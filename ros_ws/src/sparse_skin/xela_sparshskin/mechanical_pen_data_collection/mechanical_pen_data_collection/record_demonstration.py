@@ -9,13 +9,19 @@ feed of the take is written to ``<demo_dir>/camera/<name>.mp4``; every take stor
 ``video`` and the frame times as ``video_t`` (same time axis as ``t``). The SAM 3 mask and pen
 box from ``bounding_box_sam`` (``sam_prefix``) are drawn on a frame only when their stamp is
 that frame's stamp. Only the frame with the highest detection probability is shown; the rest
-are ignored. They are stored as ``sam_t`` / ``sam_mask`` / ``sam_boxes``.
+are ignored. They are stored as ``sam_t`` / ``sam_mask`` / ``sam_boxes``. Index, Middle and
+Ring takes inherit the pen box of the Thumb take selected when they are recorded: it is stored
+as ``pen_box`` (4, 2) with that take's path as ``pen_box_source`` and is used as their pen box
+(Pose switches, playback) instead of their own SAM detection.
 The sim-frame joints
 from ``sim_topic`` (``convert_hardware_to_sim``) are stored as ``sim_t`` / ``sim_hand_q`` /
 ``sim_hand_joint_names``; the raw Xela readings on ``xela_topic`` as ``xela_t`` / ``xela``
 (L, T, 3) with the live view's baseline at recording time as ``xela_baseline``. The plots only
 show ``joint_topic``. Play sends the take chosen in
 the dropdown next to it to the hand on ``cmd_topic``, starting from the play bar position.
+The Index, Middle and Ring fingers have a Reverse button: with it on, Play runs the take from
+the play bar position back to its start (from its end when the bar is at the start), as plain
+position replay.
 While a finger is playing, the other fingers can still be moved by hand. Each finger's Pose
 switch draws that finger's selected recording's pen box on the live camera, in yellow. Under the camera, the
 taxels of the hand are placed live by forward kinematics (``taxel_fk_util``) from ``sim_topic``;
@@ -35,6 +41,20 @@ position; events are bookmarked on the play bar and the plot, listed next to the
 to seek, Edit / Delete) and saved in the take as ``events`` (JSON list of t, name, type, added,
 end). Events with ``"length": "duration"`` are marked with two clicks (start, then end) and
 their span is shaded on the play bar and the plot; ``end`` is null for instant events.
+Once a take has an ``episode_start`` and a later ``terminal`` event, its Play button (left of
+Add event) sends the take from the first to the second to the hand, as the Create tab's Play
+does (it shares the Create tab's command thread). A Live column (camera and FK taxels) sits right
+of the take's recording, and each finger's Pose switch draws its take's pen box on the live
+camera, in yellow. Adding ``reverse_demonstration`` (one click; it needs ``episode_start``
+and a later ``terminal``) marks that span and swaps the times of the two events, so Play then
+runs the take backwards from ``episode_start`` to ``terminal``; deleting it swaps them back.
+A reversed take is shown mirrored (play bar, plots, events and times read ``duration - t``),
+so its Play runs left to right; the events are still stored in the take's own time.
+A ``maintain_touch`` region (two clicks) makes Play hold the finger in contact over it, with the
+Settings tab's Maintain touch values (see ``maintain_touch``); if it reaches past ``terminal``
+(before it in a reversed take), ``terminal`` is moved to its edge.
+Events with an ``applied_to`` list (finger codes such as ``"IF"``) are offered only to those
+fingers.
 
 Compose tab: pick one take per finger with a time offset and speed; fingers without a
 take hold the base pose. The result is resampled on a common timeline and saved as
@@ -50,6 +70,10 @@ set through ``stiff_joints``) so they track the take; the other fingers stay com
 Force replay (``force_replay``, Settings tab) presses past the take's joints during its contact
 phases until the live fingertip force matches the recorded one, holding the take until the
 finger touches and until it clicks. Commands are sent from their own thread at the command rate.
+Save settings writes these (the folder, the playback / force replay values and the hand's
+gains) to ``<ws>/settings/mechanical_pen_data_collection/record_demonstration.json``; they are
+loaded at the next start, and the saved hand gains are applied once the hand node is found. A
+``demo_dir`` given as a parameter overrides the saved folder.
 
 Usage:
   ros2 run mechanical_pen_data_collection record_demonstration \
@@ -71,7 +95,7 @@ import sys
 import threading
 import time
 from collections import deque
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 
 import numpy as np
@@ -108,7 +132,13 @@ from mechanical_pen_data_collection.bag_viewer import (
     load_event_definitions,
 )
 from mechanical_pen_data_collection.force_replay import ForceTracker, contact_phases
+from mechanical_pen_data_collection.maintain_touch import (
+    MaintainTouchSettings,
+    TouchHold,
+    touch_regions,
+)
 
+PACKAGE_NAME = "mechanical_pen_data_collection"
 FINGERS = (("th", "Thumb"), ("if", "Index"), ("mf", "Middle"), ("rf", "Ring"))
 FINGER_LABEL = dict(FINGERS)
 # Same order as leaphand_node (xela_description/joint_config.json hardware map).
@@ -137,6 +167,19 @@ PLAY_RAMP_S = 0.5
 # ``compliant_deadband`` so gravity sag does not drag them down.
 COMPLIANT_DEADBAND = 0.05
 PLAY_BAR_STEPS = 1000
+# Fingers whose Create tab panel has a Reverse button (play the take from its end to its start).
+REVERSE_FINGERS = ("if", "mf", "rf")
+# Fingers whose new takes inherit the pen box of the selected Thumb take.
+PEN_BOX_FROM_THUMB = ("if", "mf", "rf")
+# Events that bound the part of a take the Edit tab's Play sends to the hand.
+EPISODE_START_EVENT = "episode_start"
+EPISODE_END_EVENT = "terminal"
+# Duration event from ``episode_start`` to ``terminal``: adding it swaps their times, so Play
+# runs the take backwards from ``episode_start`` to ``terminal``.
+REVERSE_EVENT = "reverse_demonstration"
+# Duration event: the Edit tab's Play holds the finger in contact over its region
+# (``maintain_touch``); adding one past ``terminal`` moves ``terminal`` to its end.
+MAINTAIN_TOUCH_EVENT = "maintain_touch"
 # Xela header stamps further than this from the ROS clock are replaced by the receive time.
 XELA_MAX_CLOCK_OFFSET_S = 1.0
 # Same header stamp. Far below the 30 Hz camera period, so a detection cannot attach to a neighbor.
@@ -181,6 +224,32 @@ HAND_PARAMS = (
 )
 
 pg.setConfigOptions(antialias=True)
+
+
+def settings_file() -> str:
+    """``<colcon workspace>/settings/<package>/record_demonstration.json``."""
+    try:
+        ws = os.path.dirname(default_bag_dir())
+    except Exception:  # package not installed (e.g. run from source)
+        ws = os.path.expanduser("~")
+    return os.path.join(ws, "settings", PACKAGE_NAME, "record_demonstration.json")
+
+
+def load_saved_settings(path: str) -> dict:
+    """Settings saved by the Settings tab ({} if there are none)."""
+    if not os.path.exists(path):
+        return {}
+    with open(path) as f:
+        data = json.load(f)
+    return data if isinstance(data, dict) else {}
+
+
+def apply_saved_hold_settings(settings, saved: dict) -> None:
+    """Copies the saved values of a settings dataclass (``HoldSettings``,
+    ``MaintainTouchSettings``) into ``settings``."""
+    for name, default in asdict(type(settings)()).items():
+        if name in saved:
+            setattr(settings, name, type(default)(saved[name]))
 
 
 def default_demo_dir() -> str:
@@ -269,6 +338,8 @@ class TakeEvent:
     type: str = ""
     added: float = 0.0  # wall-clock time it was labelled
     end: float | None = None  # end of an event with ``"length": "duration"`` (None if instant)
+    # Event-specific values, e.g. a ``maintain_touch`` region's press_offset / max_offset (rad).
+    params: dict = field(default_factory=dict)
 
     def span_text(self) -> str:
         return f"{self.t:.2f} s" if self.end is None else f"{self.t:.2f}-{self.end:.2f} s"
@@ -296,6 +367,9 @@ class FingerTake:
     sam_t: np.ndarray = field(default_factory=lambda: np.empty(0))  # SAM frame stamps, on ``t``
     sam_mask: np.ndarray = field(default_factory=lambda: np.empty((0, 0, 0), np.uint8))
     sam_boxes: list = field(default_factory=list)  # detections JSON for each ``sam_t``
+    # (4, 2) pen box inherited from another take (the Thumb's), used instead of the SAM one.
+    pen_box: np.ndarray = field(default_factory=lambda: np.empty((0, 2), np.float32))
+    pen_box_source: str = ""  # path of the take ``pen_box`` came from
 
     @property
     def name(self) -> str:
@@ -327,6 +401,8 @@ class FingerTake:
             sam_t=self.sam_t,
             sam_mask=self.sam_mask,
             sam_boxes=json.dumps(self.sam_boxes),
+            pen_box=self.pen_box,
+            pen_box_source=self.pen_box_source,
         )
 
     def event_at(self, t: float) -> TakeEvent | None:
@@ -371,6 +447,13 @@ class FingerTake:
                 ),
                 sam_boxes=(
                     json.loads(str(data["sam_boxes"])) if "sam_boxes" in data.files else []
+                ),
+                pen_box=(
+                    data["pen_box"] if "pen_box" in data.files
+                    else np.empty((0, 2), np.float32)
+                ),
+                pen_box_source=(
+                    str(data["pen_box_source"]) if "pen_box_source" in data.files else ""
                 ),
             )
 
@@ -474,9 +557,9 @@ class LeapStateListener(Node):
         self.xela_topic = self.declare_parameter("xela_topic", "/xServTopic").value
         self.counts_per_unit = float(self.declare_parameter("counts_per_unit", 1000.0).value)
         self.events_file = self.declare_parameter("events_file", "").value or default_events_file()
-        self.demo_dir = os.path.expanduser(
-            self.declare_parameter("demo_dir", "").value or default_demo_dir()
-        )
+        demo_dir = self.declare_parameter("demo_dir", "").value
+        self.demo_dir_given = bool(demo_dir)  # overrides the folder saved in the Settings tab
+        self.demo_dir = os.path.expanduser(demo_dir or default_demo_dir())
 
         self._lock = threading.Lock()
         self._joint_names: list[str] = []
@@ -1067,8 +1150,11 @@ def _detection_corners(box: dict) -> np.ndarray | None:
 def recorded_take_pen_pose(take: FingerTake) -> np.ndarray | None:
     """Corners of the pen box saved with ``take``, or None.
 
-    This is that frame's own box. Nothing is combined across frames or takes.
+    The box inherited from the Thumb take (``pen_box``) if there is one; otherwise the take's
+    own highest-score SAM detection. Nothing is combined across frames or takes.
     """
+    if len(take.pen_box) == 4:
+        return np.asarray(take.pen_box, dtype=np.float32)
     best_pts = None
     best_score = None
     for index, sample in enumerate(take.sam_boxes):
@@ -1154,7 +1240,10 @@ def show_take_at(
             hit = sam_at_stamp(
                 take.sam_t, take.sam_mask, take.sam_boxes, float(take.video_t[index])
             )
-            if hit is not None:
+            if len(take.pen_box) == 4:
+                source = os.path.splitext(os.path.basename(take.pen_box_source))[0]
+                frame = draw_recorded_pen_pose(frame, take.pen_box, f"from {source or 'thumb'}")
+            elif hit is not None:
                 frame = overlay_sam(frame, hit[0], hit[1])
             else:
                 # Only one SAM frame is stored (the highest-score detection), so Play would
@@ -1559,6 +1648,23 @@ class TipTaxelPlot(pg.PlotWidget):
         self._show_title(f"taxel {int(self.ids[j])}: {self._mags[i, j]:.3f}")
 
 
+def confirm_delete_take(parent: QtWidgets.QWidget, name: str) -> bool:
+    """Asks whether to delete the take ``name``; True if confirmed."""
+    box = QtWidgets.QMessageBox(parent)
+    box.setIcon(QtWidgets.QMessageBox.Warning)
+    box.setWindowTitle("Delete take")
+    box.setText(f"Delete the take '{name}'?")
+    box.setInformativeText(
+        "Its file, events and (if no other finger uses it) its camera recording are removed "
+        "from disk. This cannot be undone."
+    )
+    cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
+    confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
+    box.setDefaultButton(cancel)
+    box.exec_()
+    return box.clickedButton() is confirm
+
+
 class FingerPanel(QtWidgets.QWidget):
     """Take name + Record, take picker + Play, Pose switch and a play bar above the live plot
     of one finger."""
@@ -1579,6 +1685,16 @@ class FingerPanel(QtWidgets.QWidget):
         self.play_btn = QtWidgets.QPushButton("Play")
         for btn in (self.record_btn, self.play_btn):
             btn.setMinimumWidth(90)
+        self.delete_btn = QtWidgets.QPushButton("Delete")
+        self.delete_btn.setToolTip("Delete the selected take from disk")
+        # Not auto-exclusive, so clicking it again turns it off.
+        self.reverse_btn: QtWidgets.QRadioButton | None = None
+        if finger in REVERSE_FINGERS:
+            self.reverse_btn = QtWidgets.QRadioButton("Reverse")
+            self.reverse_btn.setAutoExclusive(False)
+            self.reverse_btn.setToolTip(
+                "Play the take backwards, from the play bar position (or its end) to its start"
+            )
         self.play_bar = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.play_bar.setRange(0, PLAY_BAR_STEPS)
         self.play_bar.setToolTip("Playback position: drag to choose where Play starts, or to seek")
@@ -1599,8 +1715,15 @@ class FingerPanel(QtWidgets.QWidget):
         controls.addLayout(header, 0, 0, 1, 2)
         controls.addWidget(self.name_edit, 1, 0)
         controls.addWidget(self.record_btn, 1, 1)
-        controls.addWidget(self.take_combo, 2, 0)
-        controls.addWidget(self.play_btn, 2, 1)
+        take_row = QtWidgets.QHBoxLayout()
+        take_row.addWidget(self.take_combo, 1)
+        if self.reverse_btn is not None:
+            take_row.addWidget(self.reverse_btn)
+        controls.addLayout(take_row, 2, 0)
+        play_row = QtWidgets.QHBoxLayout()
+        play_row.addWidget(self.delete_btn)
+        play_row.addWidget(self.play_btn)
+        controls.addLayout(play_row, 2, 1)
         controls.addLayout(bar_row, 3, 0, 1, 2)
         controls.setColumnStretch(0, 1)
 
@@ -1652,9 +1775,14 @@ class FingerPanel(QtWidgets.QWidget):
     def update_play_enabled(self) -> None:
         has_take = self.take_combo.count() > 0
         self.play_btn.setEnabled(has_take)
+        self.delete_btn.setEnabled(has_take)
         self.pose_switch.setEnabled(has_take)
         if not has_take and self.pose_switch.isChecked():
             self.pose_switch.setChecked(False)
+
+    @property
+    def reverse(self) -> bool:
+        return self.reverse_btn is not None and self.reverse_btn.isChecked()
 
     def bar_time(self) -> float:
         return self.play_bar.value() / PLAY_BAR_STEPS * self.duration
@@ -1690,6 +1818,8 @@ class Playback:
     offset: float  # take time reached at the end of the ramp
     to_q: np.ndarray  # finger joints at ``offset``
     local: float = 0.0  # take time last commanded
+    reverse: bool = False  # take time runs from ``offset`` back to 0
+    stop: float | None = None  # take time where it ends (None: the take's end, or 0 in reverse)
     finished: bool = False  # reached the end; the GUI thread is asked to stop it
     held_s: float = 0.0  # time since ``start`` the take was held by force replay
     last_step: float = 0.0  # time.monotonic() of the last command step
@@ -1707,6 +1837,13 @@ class Playback:
     )
     tip_mags: np.ndarray | None = None  # (L, 30) recorded fingertip magnitudes (None: no Xela)
     pen_corners: np.ndarray | None = None  # (4, 2) recorded pen box drawn on the live camera
+    touch: TouchHold | None = None  # maintain_touch regions (Edit tab Play)
+
+    @property
+    def end(self) -> float:
+        if self.stop is not None:
+            return self.stop
+        return 0.0 if self.reverse else self.take.duration
 
 
 class CreateTab(QtWidgets.QWidget):
@@ -1722,14 +1859,23 @@ class CreateTab(QtWidgets.QWidget):
     """
 
     takes_changed = QtCore.pyqtSignal()
+    delete_requested = QtCore.pyqtSignal(str)  # path of the take, confirmed by the user
+    playing_changed = QtCore.pyqtSignal(str)  # finger that started or stopped playing
     # Emitted from the command thread when a finger's take has ended; queued to the GUI thread.
     _play_finished = QtCore.pyqtSignal(str)
 
-    def __init__(self, node: LeapStateListener, store: TakeStore, settings: HoldSettings) -> None:
+    def __init__(
+        self,
+        node: LeapStateListener,
+        store: TakeStore,
+        settings: HoldSettings,
+        touch_settings: MaintainTouchSettings,
+    ) -> None:
         super().__init__()
         self.node = node
         self.store = store
         self.settings = settings
+        self.touch_settings = touch_settings
         self._frame_seq = 0
         self._sim_seq = 0
         self._xela_seq = 0
@@ -1765,6 +1911,7 @@ class CreateTab(QtWidgets.QWidget):
                 lambda _, f=finger, b=panel.record_btn: self.toggle_recording((f,), b)
             )
             panel.play_btn.clicked.connect(lambda _, f=finger: self.toggle_play(f))
+            panel.delete_btn.clicked.connect(lambda _, f=finger: self._confirm_delete(f))
             panel.take_combo.currentIndexChanged.connect(lambda _, f=finger: self._on_take_selected(f))
             panel.play_bar.valueChanged.connect(lambda _, f=finger: self._on_seek(f))
             panel.pose_switch.toggled.connect(
@@ -1813,6 +1960,12 @@ class CreateTab(QtWidgets.QWidget):
         self._cmd_thread = threading.Thread(target=self._command_loop, daemon=True)
         self._cmd_thread.start()
 
+    def _confirm_delete(self, finger: str) -> None:
+        panel = self.panels[finger]
+        path = panel.take_combo.currentData()
+        if path is not None and confirm_delete_take(self, panel.take_combo.currentText()):
+            self.delete_requested.emit(path)
+
     def _record_buttons(self) -> list[QtWidgets.QPushButton]:
         return [p.record_btn for p in self.panels.values()]
 
@@ -1852,6 +2005,8 @@ class CreateTab(QtWidgets.QWidget):
             p.held_s = 0.0
             if p.force is not None:
                 p.force.reset(local)
+            if p.touch is not None:
+                p.touch.reset()
 
     # ---- recording ----------------------------------------------------------------------
 
@@ -1910,9 +2065,13 @@ class CreateTab(QtWidgets.QWidget):
         if baseline is None or (len(rec.xela) and len(baseline) > rec.xela.shape[1]):
             baseline = rec.xela[0] if len(rec.xela) else np.empty((0, 3))
         hand_names = self.node.joint_names
+        pen_box, pen_box_source = np.empty((0, 2), np.float32), ""
+        if any(f in PEN_BOX_FROM_THUMB for f in self._rec_fingers):
+            pen_box, pen_box_source = self._thumb_pen_box()
         for finger in self._rec_fingers:
             idx = finger_indices(hand_names, finger)
             path = self.store.take_path(finger, self._take_name)
+            inherit = finger in PEN_BOX_FROM_THUMB
             FingerTake(
                 finger=finger,
                 path=path,
@@ -1932,6 +2091,8 @@ class CreateTab(QtWidgets.QWidget):
                 sam_t=rec.sam_t,
                 sam_mask=rec.sam_mask,
                 sam_boxes=rec.sam_boxes,
+                pen_box=pen_box if inherit else np.empty((0, 2), np.float32),
+                pen_box_source=pen_box_source if inherit else "",
             ).save()
             panel = self.panels[finger]
             self._new_default_name(panel)
@@ -1940,6 +2101,36 @@ class CreateTab(QtWidgets.QWidget):
                 self._on_take_selected(finger)
         self.takes_changed.emit()
         self._refresh_recorded_pen_pose()
+
+    def _thumb_pen_box(self) -> tuple[np.ndarray, str]:
+        """Pen box of the Thumb take selected in its panel and that take's path; warns and
+        returns an empty box if there is none."""
+        none = np.empty((0, 2), np.float32)
+        path = self.panels["th"].take_combo.currentData()
+        problem = None
+        if path is None:
+            problem = "No Thumb take is selected"
+        else:
+            try:
+                corners = recorded_take_pen_pose(self.store.load(path))
+            except Exception as e:
+                corners, problem = None, f"Could not load the Thumb take {path}: {e}"
+            if corners is None and problem is None:
+                problem = (
+                    f"The selected Thumb take '{os.path.splitext(os.path.basename(path))[0]}' "
+                    "has no pen box"
+                )
+        if problem is not None:
+            QtWidgets.QMessageBox.warning(
+                self, "Record",
+                f"{problem}, so the take keeps its own SAM pen box (if any) instead of "
+                "inheriting the Thumb's.",
+            )
+            return none, ""
+        self.node.get_logger().info(
+            f"Take '{self._take_name}' inherits the pen box of Thumb take '{path}'"
+        )
+        return np.asarray(corners, dtype=np.float32), path
 
     # ---- playback -----------------------------------------------------------------------
 
@@ -1951,24 +2142,68 @@ class CreateTab(QtWidgets.QWidget):
         path = panel.take_combo.currentData()
         if path is None:
             return
-        q = self.node.latest()
-        if q is None:
-            QtWidgets.QMessageBox.warning(self, "Play", "No leap_state received yet.")
-            return
         try:
             take = self.store.load(path)
         except Exception as e:
             QtWidgets.QMessageBox.warning(self, "Play", f"Could not load {path}:\n{e}")
             return
         panel.duration = take.duration
+        reverse = panel.reverse
         offset = panel.bar_time()
-        if offset >= take.duration:
+        if reverse and offset <= 0.0:
+            offset = take.duration
+        elif not reverse and offset >= take.duration:
             offset = 0.0
+        self.play_take(finger, take, offset, reverse)
+
+    def play_take(
+        self,
+        finger: str,
+        take: FingerTake,
+        offset: float,
+        reverse: bool = False,
+        stop: float | None = None,
+        touch_spans: tuple[tuple[float, float, dict], ...] = (),
+    ) -> bool:
+        """Plays ``take`` on ``finger`` from take time ``offset`` to ``stop`` (default: its end,
+        or its start in reverse), selecting it in the finger's panel. The finger is held in
+        contact over the (start, end, params) ``touch_spans``. False if it cannot start."""
+        if finger in self._playing:
+            return False
+        q = self.node.latest()
+        if q is None:
+            QtWidgets.QMessageBox.warning(self.window(), "Play", "No leap_state received yet.")
+            return False
+        panel = self.panels[finger]
+        if panel.take_combo.currentData() != take.path:
+            panel.fill_takes(self.store, select=take.path)
+            if self._recorded_pen_finger == finger:
+                self._refresh_recorded_pen_pose()
+        panel.duration = take.duration
         cols = take_columns(self.node.joint_names, take)
         tip_ids = panel.tip_plot.ids
         tip_mags = take_tip_magnitudes(take, tip_ids, self.node.counts_per_unit)
         pen_corners = recorded_take_pen_pose(take)
-        force = self._force_tracker(finger, take, tip_mags, offset)
+        if reverse:
+            # Force replay holds and presses in the take's forward order.
+            self.node.get_logger().info(
+                f"{panel.label}: playing {take.name} in reverse; plain position replay"
+            )
+            force = None
+        else:
+            force = self._force_tracker(finger, take, tip_mags, offset)
+        touch = None
+        if touch_spans:
+            label = FINGER_LABEL[finger]
+            touch = TouchHold(
+                touch_regions(
+                    touch_spans, take.t, take.q, reverse,
+                    take.xela_t if tip_mags is not None else None,
+                    tip_mags.sum(axis=1) if tip_mags is not None else None,
+                ),
+                self.touch_settings,
+                log=lambda msg: self.node.get_logger().info(f"{label} maintain touch: {msg}"),
+            )
         now = time.monotonic()
         with self._cmd_lock:
             self._start_commanding(q)
@@ -1979,21 +2214,39 @@ class CreateTab(QtWidgets.QWidget):
                 from_q=self._current_goal(q)[cols],
                 offset=offset,
                 to_q=sample_take(take, offset),
+                local=offset,
+                reverse=reverse,
+                stop=stop,
                 last_step=now,
                 force=force,
                 tip_ids=tip_ids,
                 live_baseline=self.hand.baseline,
                 tip_mags=tip_mags,
                 pen_corners=pen_corners,
+                touch=touch,
             )
         panel.take_combo.setEnabled(False)
+        panel.delete_btn.setEnabled(False)
+        if panel.reverse_btn is not None:
+            panel.reverse_btn.setEnabled(False)
+        title = f"{take.name} (reverse)" if reverse else take.name
         panel.play_btn.setText("Stop")
         panel.play_btn.setStyleSheet(STOP_STYLE)
         panel.set_playing(True)
         self._update_stiff_joints()
         self._shown_play = finger
-        self.play_title.setText(f"<b>Playback</b>: {panel.label} - {take.name}")
+        self.play_title.setText(f"<b>Playback</b>: {panel.label} - {title}")
         self._frame_seq = -1
+        self.playing_changed.emit(finger)
+        return True
+
+    def playback(self, finger: str) -> Playback | None:
+        """What ``finger`` is playing (None if nothing)."""
+        return self._playing.get(finger)
+
+    def stop_play(self, finger: str) -> None:
+        if finger in self._playing:
+            self._stop_play(finger)
 
     def _force_tracker(
         self, finger: str, take: FingerTake, tip_mags: np.ndarray | None, offset: float
@@ -2042,10 +2295,16 @@ class CreateTab(QtWidgets.QWidget):
             self._stop_commanding_if_idle()
         panel = self.panels[finger]
         panel.take_combo.setEnabled(True)
+        panel.delete_btn.setEnabled(panel.take_combo.count() > 0)
+        if panel.reverse_btn is not None:
+            panel.reverse_btn.setEnabled(True)
         panel.play_btn.setText("Play")
         panel.play_btn.setStyleSheet("")
         panel.set_playing(False)
-        panel.set_position(0.0 if rewind else playback.local)
+        if rewind:
+            panel.set_position(playback.take.duration if playback.reverse else 0.0)
+        else:
+            panel.set_position(playback.local)
         self._update_stiff_joints()
         if finger == self._shown_play:
             self._shown_play = next(iter(self._playing), None)
@@ -2053,10 +2312,12 @@ class CreateTab(QtWidgets.QWidget):
                 self._clear_playback_view()
             else:
                 shown = self._playing[self._shown_play]
+                title = f"{shown.take.name} (reverse)" if shown.reverse else shown.take.name
                 self.play_title.setText(
-                    f"<b>Playback</b>: {FINGER_LABEL[self._shown_play]} - {shown.take.name}"
+                    f"<b>Playback</b>: {FINGER_LABEL[self._shown_play]} - {title}"
                 )
         self._frame_seq = -1
+        self.playing_changed.emit(finger)
 
     def _clear_playback_view(self) -> None:
         self._play_video.release()
@@ -2239,13 +2500,21 @@ class CreateTab(QtWidgets.QWidget):
                 q[p.cols] = (1.0 - a) * p.from_q + a * p.to_q
                 local = p.offset
             else:
-                local = min(p.offset + elapsed - ramp - p.held_s, p.take.duration)
+                if p.reverse:
+                    local = max(p.offset - (elapsed - ramp), p.end)
+                else:
+                    local = min(p.offset + elapsed - ramp - p.held_s, p.end)
                 q[p.cols] = sample_take(p.take, local)
-                if p.force is not None:
+                touching = False
+                if p.touch is not None:
+                    q[p.cols], touching = p.touch.apply(
+                        local, q[p.cols], dt, lambda p=p: self._live_tip_force(p)
+                    )
+                if p.force is not None and not touching:
                     if not p.force.step(local, dt, now, self._live_tip_force(p)):
                         p.held_s += dt  # held for contact or the click: stays at ``local``
                     q[p.cols] += p.force.offset_q
-                if local >= p.take.duration and not p.finished:
+                if local == p.end and not p.finished:
                     p.finished = True
                     finished.append(finger)
             p.local = local
@@ -2355,7 +2624,11 @@ class CreateTab(QtWidgets.QWidget):
         for finger, p in self._playing.items():
             panel = self.panels[finger]
             panel.set_position(p.local)
-            if p.force is not None and p.force.status:
+            if p.touch is not None and p.touch.status:
+                panel.time_label.setText(
+                    f"{panel.time_label.text()}  [{p.touch.status}, +{p.touch.offset:.2f} rad]"
+                )
+            elif p.force is not None and p.force.status:
                 panel.time_label.setText(
                     f"{panel.time_label.text()}  [{p.force.status}, +{p.force.offset:.2f} rad]"
                 )
@@ -2434,15 +2707,134 @@ class SpanBookmarkSlider(BookmarkSlider):
         return super().event(ev)
 
 
+def number_edit(
+    text: str, minimum: float, name: str, tooltip: str
+) -> QtWidgets.QLineEdit:
+    """Text box that accepts numbers of at least ``minimum`` (3 decimals)."""
+    edit = QtWidgets.QLineEdit(text)
+    edit.setObjectName(name)
+    validator = QtGui.QDoubleValidator(minimum, 1e6, 3, edit)
+    validator.setNotation(QtGui.QDoubleValidator.StandardNotation)
+    edit.setValidator(validator)
+    edit.setToolTip(tooltip)
+    return edit
+
+
+class EditTakeEventDialog(EditEventDialog):
+    """``EditEventDialog`` with duration, press offset and max press offset boxes, enabled
+    while ``maintain_touch`` is picked: its region can be made longer (also past ``terminal``)
+    or shorter, and given its own press (the Settings tab's values are filled in otherwise)."""
+
+    def __init__(
+        self,
+        parent,
+        event: TakeEvent,
+        event_defs: dict[str, dict],
+        color_of,
+        note: str,
+        press_defaults: tuple[float, float, float],
+    ):
+        super().__init__(parent, event, event_defs, color_of, note=note)
+        current = event.end - event.t if event.end is not None else 0.0
+        self.duration_edit = QtWidgets.QLineEdit(f"{current:.3f}")
+        self.duration_edit.setObjectName("duration")
+        validator = QtGui.QDoubleValidator(EVENT_TIME_RESOLUTION, 1e6, 3, self.duration_edit)
+        validator.setNotation(QtGui.QDoubleValidator.StandardNotation)
+        self.duration_edit.setValidator(validator)
+        self.duration_edit.setToolTip(
+            f"Length of the '{MAINTAIN_TOUCH_EVENT}' region in seconds, from its start at "
+            f"{event.t:.2f} s (its end moves). '{EPISODE_END_EVENT}' moves if the region "
+            "reaches past it"
+        )
+        press = event.params.get("press_offset", press_defaults[0])
+        max_press = event.params.get("max_offset", press_defaults[1])
+        rate = event.params.get("press_rate", press_defaults[2])
+        self.press_edit = number_edit(
+            f"{press:.3f}", 0.0, "press_offset",
+            "How far past the held pose the finger presses in this region (rad). Used when the "
+            "Settings tab does not match the recorded force",
+        )
+        self.max_press_edit = number_edit(
+            f"{max_press:.3f}", 0.0, "max_press_offset",
+            "Largest press past the held pose in this region (rad)",
+        )
+        self.rate_edit = number_edit(
+            f"{rate:.3f}", 0.0, "press_rate",
+            "How fast the press grows in this region, from the press offset up to the max press "
+            "offset (rad/s, 0: fixed press)",
+        )
+        form = QtWidgets.QFormLayout()
+        for label, edit, unit in (
+            ("Duration:", self.duration_edit, "s"),
+            ("Press offset:", self.press_edit, "rad"),
+            ("Max press offset:", self.max_press_edit, "rad"),
+            ("Press rate:", self.rate_edit, "rad/s"),
+        ):
+            row = QtWidgets.QHBoxLayout()
+            row.addWidget(edit, 1)
+            row.addWidget(QtWidgets.QLabel(unit))
+            form.addRow(label, row)
+        self.layout().insertLayout(1, form)  # between the text / dropdown and the buttons
+        self.combo.currentIndexChanged.connect(lambda _: self._update_duration())
+        self._update_duration()
+
+    def _update_duration(self) -> None:
+        on = self.name() == MAINTAIN_TOUCH_EVENT
+        for edit in (self.duration_edit, self.press_edit, self.max_press_edit, self.rate_edit):
+            edit.setEnabled(on)
+
+    def accept(self) -> None:
+        if self.duration_edit.isEnabled():
+            problem = None
+            if not self.duration_edit.hasAcceptableInput():
+                problem = (
+                    f"Duration must be a number of seconds of at least {EVENT_TIME_RESOLUTION:g}."
+                )
+            elif not (self.press_edit.hasAcceptableInput()
+                      and self.max_press_edit.hasAcceptableInput()
+                      and self.rate_edit.hasAcceptableInput()):
+                problem = (
+                    "Press offset, max press offset and press rate must be numbers of at least 0."
+                )
+            elif float(self.press_edit.text()) > float(self.max_press_edit.text()):
+                problem = "Press offset cannot be larger than max press offset."
+            if problem is not None:
+                QtWidgets.QMessageBox.warning(self, "Edit event", problem)
+                return
+        super().accept()
+
+    def params(self) -> dict | None:
+        """The region's press_offset / max_offset / press_rate; None when the boxes are
+        disabled."""
+        if not self.press_edit.isEnabled():
+            return None
+        return {
+            "press_offset": float(self.press_edit.text()),
+            "max_offset": float(self.max_press_edit.text()),
+            "press_rate": float(self.rate_edit.text()),
+        }
+
+    def duration(self) -> float | None:
+        """New region length in seconds; None when the duration box is disabled."""
+        if not self.duration_edit.isEnabled():
+            return None
+        return float(self.duration_edit.text())
+
+
 class EditFingerPanel(QtWidgets.QWidget):
-    """Take picker, play bar with event bookmarks, event picker + Add event above the plot of
-    one finger's take, with the take's events listed next to it (click to seek).
+    """Take picker, play bar with event bookmarks, event picker + Play / Add event above the
+    plot of one finger's take, with the take's events listed next to it (click to seek).
+
+    Play asks (``play_requested``) to send the take from its ``episode_start`` to its
+    ``terminal`` event to the hand; it is enabled once the take has both, in that order.
 
     Events with ``"length": "duration"`` in ``events.json`` take two clicks: the first marks
     where they start, the second where they end; the span is shaded on the play bar and plot.
     """
 
     seeked = QtCore.pyqtSignal(str)  # finger
+    take_loaded = QtCore.pyqtSignal(str)  # finger, after the selected take was (re)loaded
+    play_requested = QtCore.pyqtSignal(str)  # finger: start or stop Play
     delete_requested = QtCore.pyqtSignal(str)  # path of the take, confirmed by the user
 
     CURSOR_PEN = pg.mkPen("#ffd600", width=1.5)
@@ -2456,12 +2848,20 @@ class EditFingerPanel(QtWidgets.QWidget):
         store: TakeStore,
         event_defs: dict[str, dict],
         counts_per_unit: float,
+        touch_settings: MaintainTouchSettings,
     ) -> None:
         super().__init__()
         self.finger = finger
         self.store = store
         self.counts_per_unit = counts_per_unit
+        self.touch_settings = touch_settings  # default press values of maintain_touch events
         self.event_defs = event_defs
+        # Events this finger can be given (``applied_to`` lists finger codes such as "IF").
+        self._addable = {
+            name: info for name, info in event_defs.items()
+            if not info.get("applied_to")
+            or finger.upper() in {str(code).upper() for code in info["applied_to"]}
+        }
         self.take: FingerTake | None = None
         self.now = 0.0
         self._event_items: list[pg.GraphicsObject] = []  # event lines / regions on the plot
@@ -2469,6 +2869,8 @@ class EditFingerPanel(QtWidgets.QWidget):
         self._spans: list[tuple[int, int, QtGui.QColor, str]] = []
         self._pending: TakeEvent | None = None  # duration event whose end is not marked yet
         self._pending_items: list[pg.GraphicsObject] = []
+        self._drawn_reversed = False  # the plots show the take mirrored
+        self.playing = False  # the hand is playing this finger
 
         self.take_combo = QtWidgets.QComboBox()
         self.take_combo.setToolTip("Recorded takes of this finger, newest first")
@@ -2478,7 +2880,7 @@ class EditFingerPanel(QtWidgets.QWidget):
         self.delete_take_btn.setMinimumWidth(90)
         self.delete_take_btn.setToolTip("Delete the selected take from disk")
         self.event_combo = QtWidgets.QComboBox()
-        for name, info in event_defs.items():
+        for name, info in self._addable.items():
             text = f"{name}  (duration)" if self._is_duration(name) else name
             self.event_combo.addItem(color_swatch(self._color(name)), text, name)
             self.event_combo.setItemData(
@@ -2486,23 +2888,34 @@ class EditFingerPanel(QtWidgets.QWidget):
                 f"[{info.get('type', '')}] {info.get('description', '')}",
                 QtCore.Qt.ToolTipRole,
             )
+        self.play_btn = QtWidgets.QPushButton("Play")
+        self.play_btn.setMinimumWidth(90)
         self.add_btn = QtWidgets.QPushButton("Add event")
         self.add_btn.setMinimumWidth(90)
         self.cancel_btn = QtWidgets.QPushButton("Cancel")
         self.cancel_btn.setToolTip("Discard the duration event being marked")
         self.cancel_btn.hide()
         event_buttons = QtWidgets.QHBoxLayout()
+        event_buttons.addWidget(self.play_btn)
         event_buttons.addWidget(self.add_btn)
         event_buttons.addWidget(self.cancel_btn)
         self.slider = SpanBookmarkSlider()
         self.slider.setToolTip("Position in the take: drag to scrub")
         self.time_label = QtWidgets.QLabel()
+        self.pose_switch = ToggleSwitch()
+        self.pose_switch.setToolTip(
+            "Draw this finger's selected take's pen box on the live camera, in yellow"
+        )
 
+        header = QtWidgets.QHBoxLayout()
+        header.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"), 1)
+        header.addWidget(QtWidgets.QLabel("Pose"))
+        header.addWidget(self.pose_switch)
         bar_row = QtWidgets.QHBoxLayout()
         bar_row.addWidget(self.slider, 1)
         bar_row.addWidget(self.time_label)
         controls = QtWidgets.QGridLayout()
-        controls.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"), 0, 0, 1, 2)
+        controls.addLayout(header, 0, 0, 1, 2)
         controls.addWidget(self.take_combo, 1, 0)
         controls.addWidget(self.delete_take_btn, 1, 1)
         controls.addWidget(self.event_combo, 2, 0)
@@ -2551,9 +2964,12 @@ class EditFingerPanel(QtWidgets.QWidget):
 
         self.take_combo.currentIndexChanged.connect(lambda _: self._load_selected())
         self.delete_take_btn.clicked.connect(self._confirm_delete_take)
-        self.slider.valueChanged.connect(lambda v: self.seek(v / SLIDER_STEPS_PER_SEC))
-        self.cursor.sigPositionChanged.connect(lambda line: self.seek(line.value()))
-        self.tip_cursor.sigPositionChanged.connect(lambda line: self.seek(line.value()))
+        self.slider.valueChanged.connect(lambda v: self.seek(self._view(v / SLIDER_STEPS_PER_SEC)))
+        self.cursor.sigPositionChanged.connect(lambda line: self.seek(self._view(line.value())))
+        self.tip_cursor.sigPositionChanged.connect(
+            lambda line: self.seek(self._view(line.value()))
+        )
+        self.play_btn.clicked.connect(lambda: self.play_requested.emit(self.finger))
         self.add_btn.clicked.connect(self.add_event)
         self.cancel_btn.clicked.connect(self.cancel_pending)
         self.event_combo.currentIndexChanged.connect(lambda _: self._update_buttons())
@@ -2588,21 +3004,7 @@ class EditFingerPanel(QtWidgets.QWidget):
 
     def _confirm_delete_take(self) -> None:
         path = self.take_combo.currentData()
-        if path is None:
-            return
-        box = QtWidgets.QMessageBox(self)
-        box.setIcon(QtWidgets.QMessageBox.Warning)
-        box.setWindowTitle("Delete take")
-        box.setText(f"Delete the take '{self.take_combo.currentText()}'?")
-        box.setInformativeText(
-            "Its file, events and (if no other finger uses it) its camera recording are removed "
-            "from disk. This cannot be undone."
-        )
-        cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
-        confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
-        box.setDefaultButton(cancel)
-        box.exec_()
-        if box.clickedButton() is confirm:
+        if path is not None and confirm_delete_take(self, self.take_combo.currentText()):
             self.delete_requested.emit(path)
 
     def _load_selected(self) -> None:
@@ -2623,26 +3025,96 @@ class EditFingerPanel(QtWidgets.QWidget):
         self.slider.blockSignals(True)
         self.slider.setRange(0, int(round(duration * SLIDER_STEPS_PER_SEC)))
         self.slider.blockSignals(False)
-        self.legend.clear()
-        for j, curve in enumerate(self.curves):
-            if take is not None and j < take.q.shape[1]:
-                curve.setData(take.t, take.q[:, j])
-                self.legend.addItem(curve, take.joint_names[j])
-            else:
-                curve.setData([], [])
-        self._show_tip_taxels()
+        self._draw_take()
         self.cursor.setVisible(take is not None)
         self.tip_cursor.setVisible(take is not None)
-        self.delete_take_btn.setEnabled(path is not None)
-        for w in (self.slider, self.event_list):
-            w.setEnabled(take is not None)
+        self.event_list.setEnabled(take is not None)
+        self.pose_switch.setEnabled(take is not None)
         if take is None:
             self._pending = None
+            if self.pose_switch.isChecked():
+                self.pose_switch.setChecked(False)
+        self._update_play_lock()
         self._refresh_events()
         if take is not None:
             self.seek(self.now)
         elif path is None:
             self.time_label.setText("no takes")
+        self.take_loaded.emit(self.finger)
+
+    # ---- play ---------------------------------------------------------------------------
+
+    def is_reversed(self) -> bool:
+        """The take has a ``reverse_demonstration`` event (its episode events are swapped)."""
+        return self.take is not None and any(e.name == REVERSE_EVENT for e in self.take.events)
+
+    def _episode_events(self) -> tuple[TakeEvent | None, TakeEvent | None]:
+        """First ``episode_start`` and the ``terminal`` that goes with it: the first one after
+        it, or the last one before it once the take is reversed (None if missing)."""
+        if self.take is None:
+            return None, None
+        starts = [e for e in self.take.events if e.name == EPISODE_START_EVENT]
+        if not starts:
+            return None, None
+        start = min(starts, key=lambda e: e.t)
+        if self.is_reversed():
+            ends = [e for e in self.take.events if e.name == EPISODE_END_EVENT and e.t < start.t]
+            return start, max(ends, key=lambda e: e.t) if ends else None
+        ends = [e for e in self.take.events if e.name == EPISODE_END_EVENT and e.t > start.t]
+        return start, min(ends, key=lambda e: e.t) if ends else None
+
+    def episode_span(self) -> tuple[float, float] | None:
+        """(``episode_start``, ``terminal``) take times Play runs between (backwards when the
+        take is reversed); None if the take does not have both."""
+        start, end = self._episode_events()
+        return (start.t, end.t) if start is not None and end is not None else None
+
+    def set_playing(self, on: bool) -> None:
+        """Play button shows Stop, and the take cannot be changed or scrubbed, while playing."""
+        self.playing = on
+        self.play_btn.setText("Stop" if on else "Play")
+        self.play_btn.setStyleSheet(STOP_STYLE if on else "")
+        self._update_play_lock()
+        self._update_buttons()
+
+    def _update_play_lock(self) -> None:
+        free = not self.playing
+        has_take = self.take is not None
+        self.take_combo.setEnabled(free)
+        self.delete_take_btn.setEnabled(free and self.take_combo.currentData() is not None)
+        self.slider.setEnabled(free and has_take)
+        for cursor in (self.cursor, self.tip_cursor):
+            cursor.setMovable(free)
+
+    def _view(self, t: float) -> float:
+        """Play bar / plot position of take time ``t``: mirrored (``duration - t``) once the
+        take is reversed, so its Play runs left to right. Its own inverse."""
+        return self.take.duration - t if self.is_reversed() else t
+
+    def _view_text(self, event: TakeEvent) -> str:
+        if event.end is None:
+            return f"{self._view(event.t):.2f} s"
+        a, b = sorted((self._view(event.t), self._view(event.end)))
+        return f"{a:.2f}-{b:.2f} s"
+
+    def _draw_take(self) -> None:
+        """Joint and fingertip plots of the whole take, mirrored if it is reversed."""
+        take = self.take
+        self._drawn_reversed = self.is_reversed()
+        self.plot.getPlotItem().setLabel(
+            "bottom", "time (reversed)" if self._drawn_reversed else "time", "s"
+        )
+        self.legend.clear()
+        for j, curve in enumerate(self.curves):
+            if take is not None and j < take.q.shape[1]:
+                if self._drawn_reversed:
+                    curve.setData(take.duration - take.t[::-1], take.q[::-1, j])
+                else:
+                    curve.setData(take.t, take.q[:, j])
+                self.legend.addItem(curve, take.joint_names[j])
+            else:
+                curve.setData([], [])
+        self._show_tip_taxels()
 
     def _show_tip_taxels(self) -> None:
         """Fingertip taxel magnitudes over the whole take, from the take's baseline."""
@@ -2654,8 +3126,11 @@ class EditFingerPanel(QtWidgets.QWidget):
         if mags is None:
             self.tip_plot.clear_data(f"no Xela readings in {take.name}")
             return
-        self.tip_plot.set_data(take.xela_t, mags)
-        self.tip_plot.set_status(take.name)
+        if self._drawn_reversed:  # ascending times, for the hover lookup
+            self.tip_plot.set_data(take.duration - take.xela_t[::-1], mags[::-1])
+        else:
+            self.tip_plot.set_data(take.xela_t, mags)
+        self.tip_plot.set_status(f"{take.name} (reversed)" if self._drawn_reversed else take.name)
 
     # ---- position -----------------------------------------------------------------------
 
@@ -2663,14 +3138,16 @@ class EditFingerPanel(QtWidgets.QWidget):
         if self.take is None:
             return
         self.now = float(np.clip(t, 0.0, self.take.duration))
+        shown = self._view(self.now)
         self.slider.blockSignals(True)
-        self.slider.setValue(int(round(self.now * SLIDER_STEPS_PER_SEC)))
+        self.slider.setValue(int(round(shown * SLIDER_STEPS_PER_SEC)))
         self.slider.blockSignals(False)
         for cursor in (self.cursor, self.tip_cursor):
             cursor.blockSignals(True)
-            cursor.setValue(self.now)
+            cursor.setValue(shown)
             cursor.blockSignals(False)
-        self.time_label.setText(f"{self.now:.2f} / {self.take.duration:.2f} s")
+        reversed_ = " (reversed)" if self._drawn_reversed else ""
+        self.time_label.setText(f"{shown:.2f} / {self.take.duration:.2f} s{reversed_}")
         if self._pending is not None:
             self._show_pending()
         self._update_buttons()
@@ -2704,22 +3181,36 @@ class EditFingerPanel(QtWidgets.QWidget):
         self._event_items = []
         self.event_list.clear()
         self._marks, self._spans = [], []
+        if self.take is not None and self.is_reversed() != self._drawn_reversed:
+            # Reverse added or deleted: mirror the plots and move the cursors.
+            self._draw_take()
+            self.seek(self.now)
         events = self.take.events if self.take is not None else []
         for i, event in enumerate(events, start=1):
             color = self._color(event.name)
-            tip = f"{event.name} @ {event.span_text()}"
+            tip = f"{event.name} @ {self._view_text(event)}"
+            if "press_offset" in event.params:
+                rate = (
+                    f", +{event.params['press_rate']:.3f} rad/s"
+                    if "press_rate" in event.params else ""
+                )
+                tip += (
+                    f" (press {event.params['press_offset']:.3f}"
+                    f"/{event.params.get('max_offset', 0.0):.3f} rad{rate})"
+                )
             item = QtWidgets.QListWidgetItem(color_swatch(color), f"{i}. {tip}")
             item.setData(QtCore.Qt.UserRole, i - 1)
             self.event_list.addItem(item)
-            self._marks.append((self._slider_value(event.t), color, tip))
             if event.end is None:
-                plot_item = self._event_line(event.t, color)
+                t = self._view(event.t)
+                self._marks.append((self._slider_value(t), color, tip))
+                plot_item = self._event_line(t, color)
             else:
-                self._marks.append((self._slider_value(event.end), color, tip))
-                self._spans.append(
-                    (self._slider_value(event.t), self._slider_value(event.end), color, tip)
-                )
-                plot_item = self._event_region(event.t, event.end, event.name, self.REGION_ALPHA)
+                a, b = sorted((self._view(event.t), self._view(event.end)))
+                self._marks.append((self._slider_value(a), color, tip))
+                self._marks.append((self._slider_value(b), color, tip))
+                self._spans.append((self._slider_value(a), self._slider_value(b), color, tip))
+                plot_item = self._event_region(a, b, event.name, self.REGION_ALPHA)
             plot.addItem(plot_item, ignoreBounds=True)
             self._event_items.append(plot_item)
         self._show_pending()
@@ -2736,13 +3227,14 @@ class EditFingerPanel(QtWidgets.QWidget):
         p = self._pending
         if p is not None:
             color = self._color(p.name)
-            start, end = sorted((p.t, self.now))
-            tip = f"{p.name} from {p.t:.2f} s (end not marked yet)"
-            marks.append((self._slider_value(p.t), color, tip))
+            first = self._view(p.t)
+            start, end = sorted((first, self._view(self.now)))
+            tip = f"{p.name} from {first:.2f} s (end not marked yet)"
+            marks.append((self._slider_value(first), color, tip))
             spans.append((self._slider_value(start), self._slider_value(end), color, tip))
             self._pending_items = [
                 self._event_region(start, end, p.name, self.PENDING_ALPHA),
-                self._event_line(p.t, color),
+                self._event_line(first, color),
             ]
             for item in self._pending_items:
                 plot.addItem(item, ignoreBounds=True)
@@ -2755,7 +3247,25 @@ class EditFingerPanel(QtWidgets.QWidget):
             return None
         return self.take.events[item.data(QtCore.Qt.UserRole)]
 
+    def _update_play_button(self) -> None:
+        if self.playing:
+            self.play_btn.setEnabled(True)
+            self.play_btn.setToolTip("Stop the hand")
+            return
+        span = self.episode_span()
+        self.play_btn.setEnabled(span is not None)
+        backwards = " backwards" if self.is_reversed() else ""
+        later = "an earlier" if self.is_reversed() else "a later"
+        self.play_btn.setToolTip(
+            f"Send the take{backwards} from '{EPISODE_START_EVENT}' ({self._view(span[0]):.2f} s) "
+            f"to '{EPISODE_END_EVENT}' ({self._view(span[1]):.2f} s) to the hand"
+            if span is not None
+            else f"Add an '{EPISODE_START_EVENT}' event and {later} '{EPISODE_END_EVENT}' "
+            "event to play the take"
+        )
+
     def _update_buttons(self) -> None:
+        self._update_play_button()
         selected = self._selected_event() is not None
         self.edit_btn.setEnabled(selected and bool(self.event_defs))
         self.delete_btn.setEnabled(selected)
@@ -2771,6 +3281,14 @@ class EditFingerPanel(QtWidgets.QWidget):
             self.add_btn.setEnabled(True)
             self.add_btn.setToolTip(
                 f"Mark the end of '{p.name}' (started at {p.t:.2f} s) at the current time"
+            )
+            return
+        if self.event_combo.currentData() == REVERSE_EVENT:
+            self.add_btn.setText("Reverse")
+            self.add_btn.setEnabled(True)
+            self.add_btn.setToolTip(
+                f"Mark '{EPISODE_START_EVENT}' to '{EPISODE_END_EVENT}' as reversed and swap "
+                "their times, so Play runs the take backwards"
             )
             return
         duration = self._is_duration(self.event_combo.currentData())
@@ -2809,6 +3327,9 @@ class EditFingerPanel(QtWidgets.QWidget):
         name = self.event_combo.currentData()
         if name is None:
             return
+        if name == REVERSE_EVENT:
+            self._add_reverse()
+            return
         existing = self.take.event_at(self.now)
         if existing is not None:
             QtWidgets.QMessageBox.information(
@@ -2823,6 +3344,80 @@ class EditFingerPanel(QtWidgets.QWidget):
             self._show_pending()
             self._update_buttons()
         elif self._save_events(self.take.events + [event], "Add event"):
+            self.event_list.scrollToBottom()
+
+    @staticmethod
+    def _moved(event: TakeEvent, t: float) -> TakeEvent:
+        return replace(event, t=t)
+
+    def _fit_terminal(
+        self, events: list[TakeEvent], start: float, end: float
+    ) -> tuple[list[TakeEvent], str]:
+        """Moves ``terminal`` to the edge of the region ``start``-``end`` when the region reaches
+        past it (later in a forward take, earlier in a reversed one); returns the events and a
+        note of the move ("" if none)."""
+        _, terminal = self._episode_events()
+        if terminal is None:
+            return events, ""
+        reversed_ = self.is_reversed()
+        if reversed_ and start < terminal.t:
+            t = start
+        elif not reversed_ and end > terminal.t:
+            t = end
+        else:
+            return events, ""
+        note = (
+            f"The '{MAINTAIN_TOUCH_EVENT}' region reaches past '{EPISODE_END_EVENT}', so "
+            f"'{EPISODE_END_EVENT}' was moved from {self._view(terminal.t):.2f} s to "
+            f"{self._view(t):.2f} s."
+        )
+        return [self._moved(e, t) if e is terminal else e for e in events], note
+
+    def touch_spans(self) -> tuple[tuple[float, float, dict], ...]:
+        """(start, end, params) of the take's ``maintain_touch`` regions, if this finger can
+        have them; ``params`` holds a region's own press_offset / max_offset."""
+        if self.take is None or MAINTAIN_TOUCH_EVENT not in self._addable:
+            return ()
+        return tuple(sorted(
+            ((e.t, e.end, e.params) for e in self.take.events
+             if e.name == MAINTAIN_TOUCH_EVENT and e.end is not None),
+            key=lambda span: span[0],
+        ))
+
+    def _add_reverse(self) -> None:
+        """Marks ``episode_start`` to ``terminal`` with ``reverse_demonstration`` and swaps the
+        two events' times."""
+        title = "Reverse demonstration"
+        if self.is_reversed():
+            QtWidgets.QMessageBox.warning(
+                self, title,
+                f"{self.take.name} is already reversed. Delete its '{REVERSE_EVENT}' event to "
+                "undo it.",
+            )
+            return
+        start, end = self._episode_events()
+        if start is None or end is None:
+            has_start = start is not None or any(
+                e.name == EPISODE_START_EVENT for e in self.take.events
+            )
+            missing = (
+                f"'{EPISODE_START_EVENT}' and '{EPISODE_END_EVENT}' events"
+                if not has_start and not any(e.name == EPISODE_END_EVENT for e in self.take.events)
+                else f"an '{EPISODE_START_EVENT}' event" if not has_start
+                else f"a '{EPISODE_END_EVENT}' event after '{EPISODE_START_EVENT}'"
+            )
+            QtWidgets.QMessageBox.warning(
+                self, title,
+                f"{self.take.name} needs {missing} before it can be reversed.",
+            )
+            return
+        reverse = TakeEvent(
+            t=start.t, name=REVERSE_EVENT, type=self.event_defs[REVERSE_EVENT].get("type", ""),
+            added=time.time(), end=end.t,
+        )
+        swapped = {id(start): self._moved(start, end.t), id(end): self._moved(end, start.t)}
+        events = [swapped.get(id(e), e) for e in self.take.events] + [reverse]
+        if self._save_events(events, title):
             self.event_list.scrollToBottom()
 
     def _end_pending(self) -> None:
@@ -2840,9 +3435,15 @@ class EditFingerPanel(QtWidgets.QWidget):
             )
             return
         event = TakeEvent(t=start, name=p.name, type=p.type, added=p.added, end=end)
+        events = self.take.events + [event]
+        moved = ""
+        if p.name == MAINTAIN_TOUCH_EVENT:
+            events, moved = self._fit_terminal(events, start, end)
         self._pending = None
-        if self._save_events(self.take.events + [event], "End event"):
+        if self._save_events(events, "End event"):
             self.event_list.scrollToBottom()
+            if moved:
+                QtWidgets.QMessageBox.information(self, "Maintain touch", moved)
         else:
             self._pending = p
             self._show_pending()
@@ -2857,71 +3458,138 @@ class EditFingerPanel(QtWidgets.QWidget):
         event = self._selected_event()
         if event is None:
             return
+        if event.name == REVERSE_EVENT:
+            QtWidgets.QMessageBox.information(
+                self, "Edit event", f"Delete '{REVERSE_EVENT}' to undo the reverse instead."
+            )
+            return
         # Only events of the same length, so an instant event never gets (or loses) an end.
         same_length = {
-            name: info for name, info in self.event_defs.items()
-            if self._is_duration(name) == (event.end is not None)
+            name: info for name, info in self._addable.items()
+            if self._is_duration(name) == (event.end is not None) and name != REVERSE_EVENT
         }
-        dialog = EditEventDialog(
-            self, event, same_length, self._color, note=f"{self.take.name}.npz will be updated."
+        a, b = (self._view(event.t), None) if event.end is None else sorted(
+            (self._view(event.t), self._view(event.end))
         )
-        if dialog.exec_() != QtWidgets.QDialog.Accepted or dialog.name() == event.name:
+        shown = replace(event, t=a, end=b)
+        dialog = EditTakeEventDialog(
+            self, shown, same_length, self._color, note=f"{self.take.name}.npz will be updated.",
+            press_defaults=(
+                self.touch_settings.press_offset,
+                self.touch_settings.max_offset,
+                self.touch_settings.press_rate,
+            ),
+        )
+        if dialog.exec_() != QtWidgets.QDialog.Accepted:
+            return
+        name = dialog.name()
+        duration = dialog.duration()
+        params = dialog.params()
+        params = event.params if params is None else {**event.params, **params}
+        start, end = event.t, event.end
+        if duration is not None:
+            # The region keeps its left edge on the play bar and grows / shrinks to the right.
+            if self.is_reversed():
+                start = event.end - duration
+            else:
+                end = event.t + duration
+        if name == event.name and (start, end) == (event.t, event.end) and params == event.params:
             return
         row = self.event_list.currentRow()
-        name = dialog.name()
         renamed = TakeEvent(
-            t=event.t, name=name, type=self.event_defs[name].get("type", ""),
-            added=event.added, end=event.end,
+            t=start, name=name, type=self.event_defs[name].get("type", ""),
+            added=event.added, end=end, params=params,
         )
         events = [renamed if e is event else e for e in self.take.events]
+        moved = ""
+        if name == MAINTAIN_TOUCH_EVENT:
+            events, moved = self._fit_terminal(events, renamed.t, renamed.end)
         if self._save_events(events, "Edit event"):
             self.event_list.setCurrentRow(row)
+            if moved:
+                QtWidgets.QMessageBox.information(self, "Maintain touch", moved)
 
     def delete_selected_event(self) -> None:
         event = self._selected_event()
         if event is None:
             return
+        undo = (
+            f"\n'{EPISODE_START_EVENT}' and '{EPISODE_END_EVENT}' get their times back."
+            if event.name == REVERSE_EVENT else ""
+        )
         answer = QtWidgets.QMessageBox.warning(
             self,
             "Delete event",
-            f"Delete '{event.name}' at {event.span_text()} from {self.take.name}.npz?\n"
+            f"Delete '{event.name}' at {self._view_text(event)} from {self.take.name}.npz?{undo}\n"
             "This cannot be undone.",
             QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel,
             QtWidgets.QMessageBox.Cancel,
         )
-        if answer == QtWidgets.QMessageBox.Ok:
-            self._save_events([e for e in self.take.events if e is not event], "Delete event")
+        if answer != QtWidgets.QMessageBox.Ok:
+            return
+        events = [e for e in self.take.events if e is not event]
+        if event.name == REVERSE_EVENT and event.end is not None:
+            # Swapped by ``_add_reverse``: episode_start sits at the span's end, terminal at its start.
+            tol = EVENT_TIME_RESOLUTION
+            events = [
+                self._moved(e, event.t) if e.name == EPISODE_START_EVENT and abs(e.t - event.end) < tol
+                else self._moved(e, event.end) if e.name == EPISODE_END_EVENT and abs(e.t - event.t) < tol
+                else e
+                for e in events
+            ]
+        self._save_events(events, "Delete event")
 
 
 class EditTab(QtWidgets.QWidget):
     """Same layout as the Create tab, for labelling recorded takes with events.
 
     Each finger picks one of its takes; the plot shows the whole take and the play bar / plot
-    cursor scrub through it (nothing is sent to the hand). The camera and the FK taxels show the
-    take's recording at the position of the finger last scrubbed. Events from ``events.json``
-    are added at the play bar position and saved in the finger's take as ``events``. Delete take
-    removes the selected take from disk after a confirmation.
+    cursor scrub through it. The Recording column shows the take's camera and FK taxels at the
+    position of the finger last scrubbed; the Live column next to it shows the live camera and
+    FK taxels. Events from ``events.json`` are added at the play bar position and saved in the
+    finger's take as ``events``. Delete take removes the selected take from disk after a
+    confirmation. Play sends the take from its ``episode_start`` to its ``terminal`` event to
+    the hand through ``create_tab`` (the play bar follows it), and a finger's Pose switch draws
+    its take's pen box on the live camera.
     """
 
     delete_requested = QtCore.pyqtSignal(str)  # path of the take
 
     def __init__(
-        self, store: TakeStore, event_defs: dict[str, dict], counts_per_unit: float
+        self,
+        node: LeapStateListener,
+        store: TakeStore,
+        event_defs: dict[str, dict],
+        create_tab: CreateTab,
     ) -> None:
         super().__init__()
+        self.node = node
         self.store = store
+        self.create_tab = create_tab
+        counts_per_unit = node.counts_per_unit
         self._video = TakeVideo()
+        self._frame_seq = 0
+        self._sim_seq = 0
+        self._xela_seq = 0
+        self._pose_finger: str | None = None  # finger whose Pose switch is on
+        self._pose_corners: np.ndarray | None = None  # (4, 2) its take's pen box
 
         grid = QtWidgets.QWidget()
         grid_layout = QtWidgets.QGridLayout(grid)
         grid_layout.setContentsMargins(0, 0, 0, 0)
         self.panels: dict[str, EditFingerPanel] = {}
         for n, (finger, label) in enumerate(FINGERS):
-            panel = EditFingerPanel(finger, label, store, event_defs, counts_per_unit)
+            panel = EditFingerPanel(
+                finger, label, store, event_defs, counts_per_unit, create_tab.touch_settings
+            )
             self.panels[finger] = panel
             grid_layout.addWidget(panel, n // 2, n % 2)
             panel.seeked.connect(self._show)
             panel.delete_requested.connect(self.delete_requested)
+            panel.play_requested.connect(self._toggle_play)
+            panel.take_loaded.connect(self._on_take_loaded)
+            panel.pose_switch.toggled.connect(lambda on, f=finger: self._on_pose(f, on))
+        create_tab.playing_changed.connect(self._on_playing_changed)
 
         self.camera = CameraView("")
         self.camera.set_message("Scrub a take to see its camera recording")
@@ -2930,19 +3598,25 @@ class EditTab(QtWidgets.QWidget):
             waiting="Scrub a take to see its taxels",
             no_xela="Scrub a take to see its Xela readings",
         )
-        side = QtWidgets.QSplitter(QtCore.Qt.Vertical)
-        side.addWidget(self.camera)
-        side.addWidget(self.hand)
+        self.live_camera = CameraView(node.image_topic)
+        self.live_hand = HandView(node.sim_topic, node.xela_topic, counts_per_unit)
+        # One no-contact baseline for both live views: force replay reads the Create tab's.
+        self.live_hand.zero_btn.clicked.connect(create_tab.hand._zero)
+        create_tab.hand.zero_btn.clicked.connect(self.live_hand._zero)
+        sides = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        sides.addWidget(side_column(QtWidgets.QLabel("<b>Recording</b>"), self.camera, self.hand))
+        sides.addWidget(side_column(QtWidgets.QLabel("<b>Live</b>"), self.live_camera, self.live_hand))
         splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         splitter.addWidget(grid)
-        splitter.addWidget(side)
-        splitter.setStretchFactor(0, 3)
-        splitter.setStretchFactor(1, 2)
+        splitter.addWidget(sides)
+        splitter.setStretchFactor(0, 1)
+        splitter.setStretchFactor(1, 1)
 
         hint = QtWidgets.QLabel(
             "Pick a take per finger, scrub with the play bar or the yellow cursor, then add the "
             "selected event at that time (duration events: click once at the start, once at the "
-            "end). Click an event in a list to jump to it."
+            "end). Click an event in a list to jump to it. Play sends the take from "
+            f"'{EPISODE_START_EVENT}' to '{EPISODE_END_EVENT}' to the hand."
             if event_defs
             else "<span style='color:#d32f2f'>No event definitions loaded (events_file).</span>"
         )
@@ -2960,6 +3634,101 @@ class EditTab(QtWidgets.QWidget):
         panel = self.panels[finger]
         if panel.take is not None:
             show_take_at(panel.take, panel.now, self.camera, self.hand, self._video)
+
+    # ---- play ---------------------------------------------------------------------------
+
+    def _toggle_play(self, finger: str) -> None:
+        if self.create_tab.playback(finger) is not None:
+            self.create_tab.stop_play(finger)
+            return
+        panel = self.panels[finger]
+        span = panel.episode_span()
+        if panel.take is None or span is None:
+            return
+        start, end = span
+        self.create_tab.play_take(
+            finger, panel.take, start, reverse=end < start, stop=end,
+            touch_spans=panel.touch_spans(),
+        )
+
+    def _on_playing_changed(self, finger: str) -> None:
+        self.panels[finger].set_playing(self.create_tab.playback(finger) is not None)
+        self._frame_seq = -1
+
+    # ---- pose ---------------------------------------------------------------------------
+
+    def _on_pose(self, finger: str, on: bool) -> None:
+        """Show or hide ``finger``'s take's pen box on the live camera (one finger at a time)."""
+        self._frame_seq = -1
+        if not on:
+            if self._pose_finger == finger:
+                self._pose_finger, self._pose_corners = None, None
+            return
+        for other, panel in self.panels.items():
+            if other != finger and panel.pose_switch.isChecked():
+                panel.pose_switch.blockSignals(True)
+                panel.pose_switch.setChecked(False)
+                panel.pose_switch.blockSignals(False)
+        take = self.panels[finger].take
+        corners = recorded_take_pen_pose(take) if take is not None else None
+        if corners is None:
+            switch = self.panels[finger].pose_switch
+            switch.blockSignals(True)
+            switch.setChecked(False)
+            switch.blockSignals(False)
+            self._pose_finger, self._pose_corners = None, None
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Recorded pen pose",
+                f"The selected take for {FINGER_LABEL[finger]} has no pen bounding box.",
+            )
+            return
+        self._pose_finger, self._pose_corners = finger, corners
+
+    def _on_take_loaded(self, finger: str) -> None:
+        """A finger's take changed: reload its pen box if its Pose switch is on."""
+        if self._pose_finger == finger and self.panels[finger].pose_switch.isChecked():
+            self._on_pose(finger, True)
+
+    def _live_pen_pose(self) -> tuple[np.ndarray | None, str]:
+        """Pen box to draw on the live camera: Pose switch, else a take being played."""
+        if self._pose_corners is not None:
+            return self._pose_corners, f"{FINGER_LABEL[self._pose_finger]} recorded"
+        for finger, label in FINGERS:
+            p = self.create_tab.playback(finger)
+            if p is not None and p.pen_corners is not None:
+                return p.pen_corners, f"{label} recorded"
+        return None, "recorded"
+
+    # ---- live view ----------------------------------------------------------------------
+
+    def refresh(self) -> None:
+        """Live camera and FK taxels, and the play bars of the takes being played."""
+        if not self.isVisible():
+            return
+        for finger, panel in self.panels.items():
+            p = self.create_tab.playback(finger)
+            if p is not None and panel.take is not None and p.take.path == panel.take.path:
+                if abs(p.local - panel.now) > 1e-6:
+                    panel.seek(p.local)
+
+        seq, frame = self.node.latest_raw_frame()
+        if frame is not None and seq != self._frame_seq:
+            self._frame_seq = seq
+            corners, label = self._live_pen_pose()
+            if corners is not None:
+                frame = draw_recorded_pen_pose(frame, corners, label)
+            self.live_camera.set_frame(frame)
+
+        sim_seq, sim_names, sim_q = self.node.latest_sim()
+        if sim_q is not None and sim_seq != self._sim_seq:
+            self._sim_seq = sim_seq
+            self.live_hand.set_joints(sim_names, sim_q)
+
+        xela_seq, readings = self.node.latest_xela()
+        if readings is not None and xela_seq != self._xela_seq:
+            self._xela_seq = xela_seq
+            self.live_hand.set_readings(readings)
 
     def forget_take(self, path: str) -> None:
         """Stops showing the take at ``path`` (about to be deleted)."""
@@ -3288,12 +4057,31 @@ class SettingsTab(QtWidgets.QWidget):
 
     RETRY_MS = 2000
 
-    def __init__(self, node: LeapStateListener, store: TakeStore, settings: HoldSettings) -> None:
+    def __init__(
+        self,
+        node: LeapStateListener,
+        store: TakeStore,
+        settings: HoldSettings,
+        touch_settings: MaintainTouchSettings,
+        saved: dict,
+        saved_path: str,
+    ) -> None:
+        """``saved`` are the settings loaded from ``saved_path`` (where Save settings writes)."""
         super().__init__()
         self.node = node
         self.store = store
         self.settings = settings
+        self.touch_settings = touch_settings
         self._hand_compliant: bool | None = None  # None until read from the hand node
+        self._saved_path = saved_path
+        # Saved hand gains, applied once when the hand node is first read; kept on save until
+        # the hand has been read (the spin boxes do not hold its values before).
+        self._saved_hand: dict[str, float] = {
+            name: float(value) for name, value in saved.get("hand", {}).items()
+            if name in {n for n, *_ in HAND_PARAMS}
+        }
+        self._hand_read = False
+        self._apply_saved_hand = bool(self._saved_hand)
 
         self.dir_edit = QtWidgets.QLineEdit(store.demo_dir)
         self.dir_edit.setToolTip(
@@ -3391,11 +4179,29 @@ class SettingsTab(QtWidgets.QWidget):
         self._hand_loaded.connect(self._on_hand_loaded)
         self._hand_applied.connect(self._on_hand_applied)
 
+        touch_box = self._build_touch_box()
+
+        save_btn = QtWidgets.QPushButton("Save settings")
+        save_btn.setToolTip(
+            "Save the folder, playback, force replay and hand values; they are used at the "
+            f"next start.\n{saved_path}"
+        )
+        self.save_status = QtWidgets.QLabel(
+            f"Loaded saved settings from {saved_path}" if saved else "No saved settings yet."
+        )
+        self.save_status.setWordWrap(True)
+        save_row = QtWidgets.QHBoxLayout()
+        save_row.addWidget(save_btn)
+        save_row.addWidget(self.save_status, 1)
+        save_btn.clicked.connect(self._save)
+
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(dir_box)
         layout.addWidget(gui_box)
         layout.addWidget(force_box)
+        layout.addWidget(touch_box)
         layout.addWidget(self.hand_box)
+        layout.addLayout(save_row)
         layout.addStretch(1)
 
         self._retry = QtCore.QTimer(self)
@@ -3465,6 +4271,139 @@ class SettingsTab(QtWidgets.QWidget):
         self._show_settings()
         self.settings_changed.emit()
 
+    # ---- maintain touch -----------------------------------------------------------------
+
+    def _build_touch_box(self) -> QtWidgets.QGroupBox:
+        self.touch_check = QtWidgets.QCheckBox(f"Hold contact in '{MAINTAIN_TOUCH_EVENT}' regions")
+        self.touch_check.setToolTip(
+            "During Play in the Edit tab, hold the finger at the pose where it enters a "
+            f"'{MAINTAIN_TOUCH_EVENT}' region and press it in until the region ends"
+        )
+        self.touch_press_spin = double_spin(
+            0.0, 0.6, 0.005, 3, " rad",
+            "How far past the held pose the finger presses, along the direction it moved to "
+            "get there (used when not matching the force)",
+        )
+        self.touch_rate_spin = double_spin(
+            0.0, 2.0, 0.01, 3, " rad/s",
+            "How fast the press grows during a region, from the press offset up to the max "
+            "press offset, so the force builds (0: fixed press)",
+        )
+        self.touch_match_check = QtWidgets.QCheckBox("Match the recorded fingertip force")
+        self.touch_match_check.setToolTip(
+            "Adjust the press so the live fingertip force follows the force recorded where the "
+            "region starts (needs Xela readings in the take and a Zero baseline before Play)"
+        )
+        self.touch_gain_spin = double_spin(
+            0.0, 2.0, 0.01, 3, " rad/(unit·s)",
+            "How fast the press changes per unit of force difference",
+        )
+        self.touch_max_spin = double_spin(
+            0.0, 0.6, 0.01, 2, " rad", "Largest press past the held pose",
+        )
+        self.touch_release_spin = double_spin(
+            0.0, 5.0, 0.05, 2, " s",
+            "After a region, the finger blends from the held pose back into the take over this time",
+        )
+        touch_reset = QtWidgets.QPushButton("Reset to defaults")
+        box = QtWidgets.QGroupBox("Maintain touch (Edit tab Play, applied immediately)")
+        form = QtWidgets.QFormLayout(box)
+        form.addRow(self.touch_check)
+        form.addRow("Press offset:", self.touch_press_spin)
+        form.addRow("Press rate:", self.touch_rate_spin)
+        form.addRow(self.touch_match_check)
+        form.addRow("Force gain:", self.touch_gain_spin)
+        form.addRow("Max press offset:", self.touch_max_spin)
+        form.addRow("Release time:", self.touch_release_spin)
+        form.addRow("", touch_reset)
+        self._show_touch_settings()
+        for spin in (
+            self.touch_press_spin, self.touch_rate_spin, self.touch_gain_spin,
+            self.touch_max_spin, self.touch_release_spin,
+        ):
+            spin.valueChanged.connect(self._on_touch_changed)
+        for check in (self.touch_check, self.touch_match_check):
+            check.toggled.connect(self._on_touch_changed)
+        touch_reset.clicked.connect(self._reset_touch)
+        return box
+
+    def _show_touch_settings(self) -> None:
+        t = self.touch_settings
+        widgets = (
+            (self.touch_press_spin, t.press_offset),
+            (self.touch_rate_spin, t.press_rate),
+            (self.touch_gain_spin, t.force_gain),
+            (self.touch_max_spin, t.max_offset),
+            (self.touch_release_spin, t.release_s),
+            (self.touch_check, t.enabled),
+            (self.touch_match_check, t.match_force),
+        )
+        for widget, value in widgets:
+            widget.blockSignals(True)
+            if isinstance(widget, QtWidgets.QCheckBox):
+                widget.setChecked(value)
+            else:
+                widget.setValue(value)
+            widget.blockSignals(False)
+        self._update_touch_enabled()
+
+    def _update_touch_enabled(self) -> None:
+        on = self.touch_check.isChecked()
+        match = self.touch_match_check.isChecked()
+        self.touch_press_spin.setEnabled(on and not match)
+        self.touch_rate_spin.setEnabled(on and not match)
+        self.touch_match_check.setEnabled(on)
+        self.touch_gain_spin.setEnabled(on and match)
+        self.touch_max_spin.setEnabled(on)
+        self.touch_release_spin.setEnabled(on)
+
+    def _on_touch_changed(self, *_) -> None:
+        t = self.touch_settings
+        t.enabled = self.touch_check.isChecked()
+        t.press_offset = self.touch_press_spin.value()
+        t.press_rate = self.touch_rate_spin.value()
+        t.match_force = self.touch_match_check.isChecked()
+        t.force_gain = self.touch_gain_spin.value()
+        t.max_offset = self.touch_max_spin.value()
+        t.release_s = self.touch_release_spin.value()
+        self._update_touch_enabled()
+
+    def _reset_touch(self) -> None:
+        for name, value in asdict(MaintainTouchSettings()).items():
+            setattr(self.touch_settings, name, value)
+        self._show_touch_settings()
+
+    # ---- saving -------------------------------------------------------------------------
+
+    def _save(self) -> None:
+        if self._hand_read:
+            self._saved_hand = {name: spin.value() for name, spin in self.hand_spins.items()}
+        data = {
+            "demo_dir": self.store.demo_dir,
+            "gui": asdict(self.settings),
+            "maintain_touch": asdict(self.touch_settings),
+            "hand": self._saved_hand,
+        }
+        try:
+            os.makedirs(os.path.dirname(self._saved_path), exist_ok=True)
+            tmp = self._saved_path + ".tmp"
+            with open(tmp, "w") as f:
+                json.dump(data, f, indent=2)
+            os.replace(tmp, self._saved_path)
+        except OSError as e:
+            self.save_status.setText(
+                f"<span style='color:#d32f2f'>Could not save {self._saved_path}: {e}</span>"
+            )
+            return
+        note = ""
+        if not self._hand_read:
+            note = (
+                " (hand not read: kept the saved hand gains)" if self._saved_hand
+                else " (hand not read: no hand gains saved)"
+            )
+        self.save_status.setText(f"Saved to {self._saved_path}{note}")
+        self.node.get_logger().info(f"Saved settings to '{self._saved_path}'")
+
     # ---- hand node ----------------------------------------------------------------------
 
     def _set_hand_enabled(self, on: bool) -> None:
@@ -3501,9 +4440,17 @@ class SettingsTab(QtWidgets.QWidget):
             return
         for name, spin in self.hand_spins.items():
             spin.setValue(float(result[name]))
+        self._hand_read = True
         self._hand_compliant = bool(result.get("compliant"))
         self._set_hand_enabled(self._hand_compliant)
-        if self._hand_compliant:
+        if self._hand_compliant and self._apply_saved_hand:
+            # First time the hand is found: send it the saved gains.
+            self._apply_saved_hand = False
+            for name, value in self._saved_hand.items():
+                self.hand_spins[name].setValue(value)
+            self._status("Applying the saved gains ...")
+            self._apply_hand()
+        elif self._hand_compliant:
             self._status("Loaded from the hand.")
         else:
             self._status(
@@ -3534,22 +4481,38 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, node: LeapStateListener) -> None:
         super().__init__()
         self.node = node
+        saved_path = settings_file()
+        try:
+            saved = load_saved_settings(saved_path)
+        except Exception as e:
+            node.get_logger().warn(f"Could not load settings from {saved_path}: {e}")
+            saved = {}
+        settings = HoldSettings()
+        touch_settings = MaintainTouchSettings()
+        if saved:
+            node.get_logger().info(f"Loaded settings from '{saved_path}'")
+            apply_saved_hold_settings(settings, saved.get("gui", {}))
+            apply_saved_hold_settings(touch_settings, saved.get("maintain_touch", {}))
+            if saved.get("demo_dir") and not node.demo_dir_given:
+                node.demo_dir = os.path.expanduser(saved["demo_dir"])
         self.setWindowTitle(f"Record demonstration - {node.demo_dir}")
         self.resize(1600, 900)
         self.store = TakeStore(node.demo_dir)
-        settings = HoldSettings()
         try:
             event_defs = load_event_definitions(node.events_file)
         except Exception as e:
             node.get_logger().warn(f"Could not load events from {node.events_file}: {e}")
             event_defs = {}
-        self.create_tab = CreateTab(node, self.store, settings)
-        self.edit_tab = EditTab(self.store, event_defs, node.counts_per_unit)
+        self.create_tab = CreateTab(node, self.store, settings, touch_settings)
+        self.edit_tab = EditTab(node, self.store, event_defs, self.create_tab)
         self.compose_tab = ComposeTab(node, self.store)
-        self.settings_tab = SettingsTab(node, self.store, settings)
+        self.settings_tab = SettingsTab(
+            node, self.store, settings, touch_settings, saved, saved_path
+        )
         self.create_tab.takes_changed.connect(self.compose_tab.refresh_takes)
         self.create_tab.takes_changed.connect(self.edit_tab.refresh_takes)
         self.edit_tab.delete_requested.connect(self._delete_take)
+        self.create_tab.delete_requested.connect(self._delete_take)
         self.settings_tab.demo_dir_changed.connect(self._set_demo_dir)
         tabs = QtWidgets.QTabWidget()
         tabs.addTab(self.create_tab, "Create")
@@ -3560,6 +4523,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.create_tab.refresh)
+        self._timer.timeout.connect(self.edit_tab.refresh)
         self._timer.start(REFRESH_MS)
 
     def _delete_take(self, path: str) -> None:

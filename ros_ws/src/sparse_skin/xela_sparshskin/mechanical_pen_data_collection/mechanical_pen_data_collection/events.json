@@ -77,6 +77,23 @@
             "source": "JEV detecting the thumb clicking the pen",
             "color": "#8d6e63",
             "length":"instant"
+        },
+
+        "reverse_demonstration":{
+            "type":"demonstration_modification",
+            "description":"The demonstration for IF,MF,RF is easier to be recorder from actully touching the object and then going backware. Reverse will enable this. executing form end of recording to begining",
+            "source":"UI",
+            "color":"#8d6e63",
+            "length":"duration",
+            "applied_to":["IF","MF","RF"]
+        },
+        "maintain_touch":{
+            "type":"demonstration_modification",
+            "description":"Finger need to maintain contact with the body the pen. This event allows to define for how long the contact should be maintained. when it applied it might move the terminal timestap depending if it exceed where the terminal state is",
+            "source":"UI",
+            "length":"duration",
+            "applied_to":["IF","MF","RF"]
         }
+        
     }
 }

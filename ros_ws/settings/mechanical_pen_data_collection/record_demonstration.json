@@ -1,0 +1,22 @@
+{
+  "demo_dir": "/workspace/LeapXELA_Hardware_ws/ros_ws/demonstrations",
+  "gui": {
+    "command_rate": 30.0,
+    "ramp_s": 0.5,
+    "deadband": 0.05,
+    "force_replay": true,
+    "force_gain": 0.5,
+    "force_max_offset": 0.25,
+    "force_push_rate": 0.5,
+    "force_max_wait": 3.0
+  },
+  "hand": {
+    "compliant_kP": 60.0,
+    "compliant_kD": 40.0,
+    "compliant_curr_lim": 120.0,
+    "compliant_deadband": 0.05,
+    "stiff_kP": 1200.0,
+    "stiff_kD": 200.0,
+    "stiff_curr_lim": 550.0
+  }
+}
