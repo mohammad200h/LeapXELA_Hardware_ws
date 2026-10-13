@@ -14,6 +14,11 @@ def generate_launch_description():
             default_value='false',
             description='Low-gain mode so the fingers can be moved by hand',
         ),
+        DeclareLaunchArgument(
+            'state_rate',
+            default_value='10.0',
+            description='leap_state publish rate (Hz); raise it to resolve short contacts',
+        ),
         Node(
             package='leap_hand',
             executable='leaphand_node.py',
@@ -26,6 +31,7 @@ def generate_launch_description():
                 {'kD': 200.0},
                 {'curr_lim': 500.0},
                 {'compliant': ParameterValue(LaunchConfiguration('compliant'), value_type=bool)},
+                {'state_rate': ParameterValue(LaunchConfiguration('state_rate'), value_type=float)},
             ]
         )
     ])

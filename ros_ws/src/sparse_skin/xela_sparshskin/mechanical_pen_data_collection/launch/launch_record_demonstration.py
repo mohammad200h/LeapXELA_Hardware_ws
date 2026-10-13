@@ -51,6 +51,11 @@ def generate_launch_description() -> LaunchDescription:
                 description="Low-gain LEAP hand so the fingers can be moved by hand",
             ),
             DeclareLaunchArgument(
+                "state_rate",
+                default_value="10.0",
+                description="leap_state publish rate of leaphand_node (Hz)",
+            ),
+            DeclareLaunchArgument(
                 "xela",
                 default_value="true",
                 description="Start xela_server / xela_service (xela_server_ros2 service.launch)",
@@ -113,7 +118,10 @@ def generate_launch_description() -> LaunchDescription:
                         [FindPackageShare("leap_hand"), "launch", "launch_leap.py"]
                     )
                 ),
-                launch_arguments={"compliant": LaunchConfiguration("compliant")}.items(),
+                launch_arguments={
+                    "compliant": LaunchConfiguration("compliant"),
+                    "state_rate": LaunchConfiguration("state_rate"),
+                }.items(),
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(

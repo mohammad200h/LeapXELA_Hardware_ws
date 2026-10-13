@@ -116,19 +116,22 @@ class LeapXELANode(Node):
         self.create_subscription(JointState, 'cmd_xela', self._receive_pose, 10)
 
         self.pub = self.create_publisher(JointState, 'leap_state', 10)
-        self.timer = self.create_timer(0.1, self.publish_state)
+        # leap_state rate (Hz); fixed at startup. Raise it to resolve short contacts (pen click).
+        state_rate = float(self.declare_parameter('state_rate', 10.0).value)
+        self.timer = self.create_timer(1.0 / state_rate, self.publish_state)
 
     def publish_state(self):
         with self._hw_mutex:
-            # pos, vel, cur = self._leapXela.dxl_client.read_pos_vel_cur()
-            pos = self._leapXela.dxl_client.read_pos()
+            # One bulk read of position, velocity and present current (same scaling as
+            # the leap_state service: current is raw units * DEFAULT_CUR_SCALE).
+            pos, vel, cur = self._leapXela.dxl_client.read_pos_vel_cur()
             msg = JointState()
             msg.header.stamp = self.get_clock().now().to_msg()
 
             msg.name = self.joint_names
             msg.position = pos.tolist()
-            # msg.velocity = vel.tolist()
-            # msg.effort = cur.tolist()
+            msg.velocity = vel.tolist()
+            msg.effort = cur.tolist()
             self.pub.publish(msg)
 
             if self.compliant and not self._commanded_recently():

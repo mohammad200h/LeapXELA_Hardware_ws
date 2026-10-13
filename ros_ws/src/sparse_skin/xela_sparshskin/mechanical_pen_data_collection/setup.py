@@ -38,6 +38,7 @@ setup(
             'bag_viewer = mechanical_pen_data_collection.bag_viewer:main',
             'record_demonstration = '
             'mechanical_pen_data_collection.record_demonstration:main',
+            'analyze_playback = mechanical_pen_data_collection.analyze_playback:main',
         ],
     },
 )

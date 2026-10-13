@@ -47,6 +47,9 @@ playing (applied immediately), and the compliant gains / deadband of ``hand_node
 (leaphand_node), read and set through its ROS parameters. Fingers that are playing
 use the hand node's stiffer playback gains (``stiff_kP`` / ``stiff_kD`` / ``stiff_curr_lim``,
 set through ``stiff_joints``) so they track the take; the other fingers stay compliant.
+Force replay (``force_replay``, Settings tab) presses past the take's joints during its contact
+phases until the live fingertip force matches the recorded one, holding the take until the
+finger touches and until it clicks. Commands are sent from their own thread at the command rate.
 
 Usage:
   ros2 run mechanical_pen_data_collection record_demonstration \
@@ -104,6 +107,7 @@ from mechanical_pen_data_collection.bag_viewer import (
     index_at,
     load_event_definitions,
 )
+from mechanical_pen_data_collection.force_replay import ForceTracker, contact_phases
 
 FINGERS = (("th", "Thumb"), ("if", "Index"), ("mf", "Middle"), ("rf", "Ring"))
 FINGER_LABEL = dict(FINGERS)
@@ -240,10 +244,12 @@ class HoldSettings:
     command_rate: float = COMMAND_RATE_HZ  # Hz, rate of commands on cmd_topic
     ramp_s: float = PLAY_RAMP_S
     deadband: float = COMPLIANT_DEADBAND  # rad
-
-    @property
-    def interval_ms(self) -> int:
-        return max(1, round(1000.0 / self.command_rate))
+    # Force-aware replay (``force_replay``): push past the take to match its fingertip force.
+    force_replay: bool = True
+    force_gain: float = 0.1  # rad per (force unit * s)
+    force_max_offset: float = 0.25  # rad
+    force_push_rate: float = 0.15  # rad/s while holding the take for the click
+    force_max_wait: float = 3.0  # s the take is held for contact or the click
 
 
 def parameter_value(value: ParameterValue):
@@ -1684,6 +1690,13 @@ class Playback:
     offset: float  # take time reached at the end of the ramp
     to_q: np.ndarray  # finger joints at ``offset``
     local: float = 0.0  # take time last commanded
+    finished: bool = False  # reached the end; the GUI thread is asked to stop it
+    held_s: float = 0.0  # time since ``start`` the take was held by force replay
+    last_step: float = 0.0  # time.monotonic() of the last command step
+    # Force replay (None: plain position replay) and the live fingertip it reads.
+    force: ForceTracker | None = None
+    tip_ids: np.ndarray | None = None
+    live_baseline: np.ndarray | None = None  # (T, 3) live view's baseline at Play
     # (ROS time, commanded hand pose) of every command step, plotted against ``leap_state``.
     history: deque[tuple[float, np.ndarray]] = field(
         default_factory=lambda: deque(maxlen=HISTORY_LEN)
@@ -1709,6 +1722,8 @@ class CreateTab(QtWidgets.QWidget):
     """
 
     takes_changed = QtCore.pyqtSignal()
+    # Emitted from the command thread when a finger's take has ended; queued to the GUI thread.
+    _play_finished = QtCore.pyqtSignal(str)
 
     def __init__(self, node: LeapStateListener, store: TakeStore, settings: HoldSettings) -> None:
         super().__init__()
@@ -1787,8 +1802,16 @@ class CreateTab(QtWidgets.QWidget):
         layout.addSpacing(40)
         layout.addWidget(splitter, 1)
 
-        self._cmd_timer = QtCore.QTimer(self)
-        self._cmd_timer.timeout.connect(self._command_step)
+        # Commands are sent from their own thread: a GUI redraw (cameras, FK taxels, plots) can
+        # take several command periods, which played takes as a staircase. ``_cmd_lock`` guards
+        # what both threads touch: ``_commanding``, ``_free``, ``_last_cmd``, the ``_playing``
+        # dict (changed only by the GUI thread) and the fields of its Playbacks.
+        self._cmd_lock = threading.Lock()
+        self._commanding = False
+        self._cmd_stop = threading.Event()
+        self._play_finished.connect(self._on_play_finished)
+        self._cmd_thread = threading.Thread(target=self._command_loop, daemon=True)
+        self._cmd_thread.start()
 
     def _record_buttons(self) -> list[QtWidgets.QPushButton]:
         return [p.record_btn for p in self.panels.values()]
@@ -1819,11 +1842,16 @@ class CreateTab(QtWidgets.QWidget):
         p = self._playing.get(finger)
         if p is None:
             return
-        if self._last_cmd is not None:
-            p.from_q = self._last_cmd[p.cols].copy()
-        p.start = time.monotonic()
-        p.offset = local
-        p.to_q = sample_take(p.take, local)
+        with self._cmd_lock:
+            if self._last_cmd is not None:
+                p.from_q = self._last_cmd[p.cols].copy()
+            p.start = time.monotonic()
+            p.offset = local
+            p.to_q = sample_take(p.take, local)
+            p.finished = False
+            p.held_s = 0.0
+            if p.force is not None:
+                p.force.reset(local)
 
     # ---- recording ----------------------------------------------------------------------
 
@@ -1936,18 +1964,28 @@ class CreateTab(QtWidgets.QWidget):
         offset = panel.bar_time()
         if offset >= take.duration:
             offset = 0.0
-        self._start_commanding(q)
         cols = take_columns(self.node.joint_names, take)
-        self._playing[finger] = Playback(
-            take=take,
-            cols=cols,
-            start=time.monotonic(),
-            from_q=self._current_goal(q)[cols],
-            offset=offset,
-            to_q=sample_take(take, offset),
-            tip_mags=take_tip_magnitudes(take, panel.tip_plot.ids, self.node.counts_per_unit),
-            pen_corners=recorded_take_pen_pose(take),
-        )
+        tip_ids = panel.tip_plot.ids
+        tip_mags = take_tip_magnitudes(take, tip_ids, self.node.counts_per_unit)
+        pen_corners = recorded_take_pen_pose(take)
+        force = self._force_tracker(finger, take, tip_mags, offset)
+        now = time.monotonic()
+        with self._cmd_lock:
+            self._start_commanding(q)
+            self._playing[finger] = Playback(
+                take=take,
+                cols=cols,
+                start=now,
+                from_q=self._current_goal(q)[cols],
+                offset=offset,
+                to_q=sample_take(take, offset),
+                last_step=now,
+                force=force,
+                tip_ids=tip_ids,
+                live_baseline=self.hand.baseline,
+                tip_mags=tip_mags,
+                pen_corners=pen_corners,
+            )
         panel.take_combo.setEnabled(False)
         panel.play_btn.setText("Stop")
         panel.play_btn.setStyleSheet(STOP_STYLE)
@@ -1957,19 +1995,57 @@ class CreateTab(QtWidgets.QWidget):
         self.play_title.setText(f"<b>Playback</b>: {panel.label} - {take.name}")
         self._frame_seq = -1
 
+    def _force_tracker(
+        self, finger: str, take: FingerTake, tip_mags: np.ndarray | None, offset: float
+    ) -> ForceTracker | None:
+        """Force replay of ``take`` from take time ``offset``; None (plain position replay) when
+        the take has no contact phase or the live fingertip force cannot be measured."""
+        log = self.node.get_logger()
+        label = FINGER_LABEL[finger]
+        if tip_mags is None:
+            log.info(f"{label}: {take.name} has no Xela readings; plain position replay")
+            return None
+        force = tip_mags.sum(axis=1)
+        phases = contact_phases(take.xela_t, force, take.t, take.q)
+        if not phases:
+            log.info(f"{label}: no contact phase in {take.name}; plain position replay")
+            return None
+        if self.hand.baseline is None:
+            log.warn(f"{label}: no live Xela baseline (press Zero); plain position replay")
+            return None
+        for p in phases:
+            click = f"click at {p.click:.2f} s" if p.click is not None else "no click"
+            log.info(f"{label}: {take.name} contact {p.start:.2f}-{p.end:.2f} s, "
+                     f"peak force {p.peak:.2f}, {click}")
+        tracker = ForceTracker(
+            phases, take.xela_t, force, len(take.joint_names), self.settings,
+            log=lambda msg: log.info(f"{label} force replay: {msg}"),
+        )
+        tracker.reset(offset)
+        return tracker
+
+    def _live_tip_force(self, p: Playback) -> float | None:
+        """Live fingertip force of ``p``'s finger, measured like the take's (None if unknown)."""
+        _, readings = self.node.latest_xela()
+        if readings is None or p.live_baseline is None or len(readings) <= p.tip_ids.max():
+            return None
+        return float(taxel_magnitudes(
+            readings[None], p.live_baseline, p.tip_ids, self.node.counts_per_unit
+        ).sum())
+
     def _stop_play(self, finger: str, rewind: bool = False) -> None:
         """Stops ``finger`` where it was last commanded; it then follows the hand again."""
-        playback = self._playing.pop(finger)
-        if self._last_cmd is not None and self._free is not None:
-            self._free[playback.cols] = self._last_cmd[playback.cols]
+        with self._cmd_lock:
+            playback = self._playing.pop(finger)
+            if self._last_cmd is not None and self._free is not None:
+                self._free[playback.cols] = self._last_cmd[playback.cols]
+            self._stop_commanding_if_idle()
         panel = self.panels[finger]
         panel.take_combo.setEnabled(True)
         panel.play_btn.setText("Play")
         panel.play_btn.setStyleSheet("")
         panel.set_playing(False)
-        if rewind:
-            panel.set_position(0.0)
-        self._stop_commanding_if_idle()
+        panel.set_position(0.0 if rewind else playback.local)
         self._update_stiff_joints()
         if finger == self._shown_play:
             self._shown_play = next(iter(self._playing), None)
@@ -2099,29 +2175,54 @@ class CreateTab(QtWidgets.QWidget):
 
     # ---- commanding the hand ------------------------------------------------------------
 
+    # The methods below that touch the shared state are called with ``_cmd_lock`` held.
+
     def _current_goal(self, measured: np.ndarray) -> np.ndarray:
         """Last commanded pose while the hand is being commanded, else the measured one."""
         return self._last_cmd if self._last_cmd is not None else measured
 
     def _start_commanding(self, measured: np.ndarray) -> None:
-        if self._cmd_timer.isActive():
+        if self._commanding:
             return
         self._free = measured.copy()
         self._last_cmd = None
-        self._cmd_timer.start(self.settings.interval_ms)
-
-    def apply_settings(self) -> None:
-        """Picks up a changed command rate; the other settings are read every step."""
-        if self._cmd_timer.isActive():
-            self._cmd_timer.setInterval(self.settings.interval_ms)
+        self._commanding = True
 
     def _stop_commanding_if_idle(self) -> None:
         if not self._playing:
-            self._cmd_timer.stop()
+            self._commanding = False
             self._last_cmd = None
             self._free = None
 
-    def _command_step(self) -> None:
+    def shutdown_commanding(self) -> None:
+        """Ends the command thread (window closing)."""
+        self._cmd_stop.set()
+        self._cmd_thread.join(timeout=1.0)
+
+    def _command_loop(self) -> None:
+        """Command thread: one ``_command_step`` per period of ``settings.command_rate`` (read
+        every period, so a changed rate applies at once) while fingers are playing."""
+        next_t = time.monotonic()
+        while not self._cmd_stop.is_set():
+            period = 1.0 / self.settings.command_rate
+            next_t += period
+            delay = next_t - time.monotonic()
+            if delay > 0:
+                self._cmd_stop.wait(delay)
+            elif delay < -period:  # fell behind: carry on from now instead of bursting
+                next_t = time.monotonic()
+            with self._cmd_lock:
+                finished = self._command_step() if self._commanding else []
+            for finger in finished:
+                self._play_finished.emit(finger)
+
+    def _on_play_finished(self, finger: str) -> None:
+        p = self._playing.get(finger)
+        if p is not None and p.finished:  # not restarted by a seek in the meantime
+            self._stop_play(finger, rewind=True)
+
+    def _command_step(self) -> list[str]:
+        """Sends the hand command for now; returns the fingers whose take just ended."""
         now = time.monotonic()
         measured = self.node.latest()
         if measured is not None:
@@ -2132,25 +2233,29 @@ class CreateTab(QtWidgets.QWidget):
         ramp = self.settings.ramp_s
         for finger, p in self._playing.items():
             elapsed = now - p.start
+            dt, p.last_step = now - p.last_step, now
             if elapsed < ramp:
                 a = elapsed / ramp
                 q[p.cols] = (1.0 - a) * p.from_q + a * p.to_q
                 local = p.offset
             else:
-                local = min(p.offset + elapsed - ramp, p.take.duration)
+                local = min(p.offset + elapsed - ramp - p.held_s, p.take.duration)
                 q[p.cols] = sample_take(p.take, local)
-                if local >= p.take.duration:
+                if p.force is not None:
+                    if not p.force.step(local, dt, now, self._live_tip_force(p)):
+                        p.held_s += dt  # held for contact or the click: stays at ``local``
+                    q[p.cols] += p.force.offset_q
+                if local >= p.take.duration and not p.finished:
+                    p.finished = True
                     finished.append(finger)
             p.local = local
-            self.panels[finger].set_position(local)
         self.node.send_command(q)
         self._last_cmd = q
         stamp = self.node.get_clock().now().nanoseconds * 1e-9
         for p in self._playing.values():
             p.history.append((stamp, q.copy()))
             p.local_history.append((stamp, p.local))
-        for finger in finished:
-            self._stop_play(finger, rewind=True)
+        return finished
 
     # ---- live view ----------------------------------------------------------------------
 
@@ -2210,10 +2315,12 @@ class CreateTab(QtWidgets.QWidget):
             else self.node.get_clock().now().nanoseconds * 1e-9
         )
         for finger, p in self._playing.items():
-            if p.tip_mags is None or not p.local_history:
+            with self._cmd_lock:  # the command thread appends to it
+                local_history = list(p.local_history)
+            if p.tip_mags is None or not local_history:
                 continue
-            stamps = np.array([s for s, _ in p.local_history])
-            local = np.array([v for _, v in p.local_history])
+            stamps = np.array([s for s, _ in local_history])
+            local = np.array([v for _, v in local_history])
             shown = stamps >= now - LIVE_WINDOW_S
             k = np.clip(np.searchsorted(p.take.xela_t, local[shown], side="right") - 1, 0, None)
             self.panels[finger].tip_plot.set_demo_data(stamps[shown] - now, p.tip_mags[k])
@@ -2245,6 +2352,13 @@ class CreateTab(QtWidgets.QWidget):
         self._refresh_tip_plots()
         self._refresh_tip_demo()
 
+        for finger, p in self._playing.items():
+            panel = self.panels[finger]
+            panel.set_position(p.local)
+            if p.force is not None and p.force.status:
+                panel.time_label.setText(
+                    f"{panel.time_label.text()}  [{p.force.status}, +{p.force.offset:.2f} rad]"
+                )
         shown = self._playing.get(self._shown_play) if self._shown_play else None
         if shown is not None:
             show_take_at(shown.take, shown.local, self.play_camera, self.play_hand, self._play_video)
@@ -2260,10 +2374,12 @@ class CreateTab(QtWidgets.QWidget):
             for curve, i in zip(panel.curves, finger_indices(names, finger)):
                 curve.setData(rel, q[keep, i])
         for finger, p in self._playing.items():
-            if not p.history:
+            with self._cmd_lock:  # the command thread appends to it
+                history = list(p.history)
+            if not history:
                 continue
-            cmd_t = np.array([s for s, _ in p.history])
-            cmd_q = np.stack([c for _, c in p.history])
+            cmd_t = np.array([s for s, _ in history])
+            cmd_q = np.stack([c for _, c in history])
             shown = cmd_t >= t[-1] - LIVE_WINDOW_S
             for curve, i in zip(self.panels[finger].demo_curves, finger_indices(names, finger)):
                 curve.setData(cmd_t[shown] - t[-1], cmd_q[shown, i])
@@ -3213,10 +3329,44 @@ class SettingsTab(QtWidgets.QWidget):
         gui_form.addRow("Playback ramp:", self.ramp_spin)
         gui_form.addRow("Free-finger deadband:", self.deadband_spin)
         reset_btn = QtWidgets.QPushButton("Reset to defaults")
+
+        self.force_check = QtWidgets.QCheckBox("Match the take's fingertip force")
+        self.force_check.setToolTip(
+            "During the take's contact phases, push past the recorded joints until the live "
+            "fingertip force matches the recorded one; hold the take until the finger touches "
+            "and until the click (needs a Zero baseline before Play)"
+        )
+        self.force_gain_spin = double_spin(
+            0.0, 2.0, 0.01, 3, " rad/(unit·s)",
+            "How fast the press offset grows per unit of missing fingertip force",
+        )
+        self.force_max_spin = double_spin(
+            0.0, 0.6, 0.01, 2, " rad",
+            "Largest press offset past the recorded joints",
+        )
+        self.force_push_spin = double_spin(
+            0.0, 1.0, 0.01, 2, " rad/s",
+            "How fast the offset grows while the take is held for the click",
+        )
+        self.force_wait_spin = double_spin(
+            0.0, 20.0, 0.5, 1, " s",
+            "Longest the take is held for contact or the click before it continues",
+        )
+        force_box = QtWidgets.QGroupBox("Force replay (this GUI, applied immediately)")
+        force_form = QtWidgets.QFormLayout(force_box)
+        force_form.addRow(self.force_check)
+        force_form.addRow("Force gain:", self.force_gain_spin)
+        force_form.addRow("Max press offset:", self.force_max_spin)
+        force_form.addRow("Click push rate:", self.force_push_spin)
+        force_form.addRow("Max hold:", self.force_wait_spin)
         gui_form.addRow("", reset_btn)
         self._show_settings()
-        for spin in (self.rate_spin, self.ramp_spin, self.deadband_spin):
+        for spin in (
+            self.rate_spin, self.ramp_spin, self.deadband_spin, self.force_gain_spin,
+            self.force_max_spin, self.force_push_spin, self.force_wait_spin,
+        ):
             spin.valueChanged.connect(self._on_gui_changed)
+        self.force_check.toggled.connect(self._on_gui_changed)
         reset_btn.clicked.connect(self._reset_gui)
 
         self.hand_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
@@ -3244,6 +3394,7 @@ class SettingsTab(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(dir_box)
         layout.addWidget(gui_box)
+        layout.addWidget(force_box)
         layout.addWidget(self.hand_box)
         layout.addStretch(1)
 
@@ -3279,26 +3430,38 @@ class SettingsTab(QtWidgets.QWidget):
     # ---- this GUI -----------------------------------------------------------------------
 
     def _show_settings(self) -> None:
+        s = self.settings
         for spin, value in (
-            (self.rate_spin, self.settings.command_rate),
-            (self.ramp_spin, self.settings.ramp_s),
-            (self.deadband_spin, self.settings.deadband),
+            (self.rate_spin, s.command_rate),
+            (self.ramp_spin, s.ramp_s),
+            (self.deadband_spin, s.deadband),
+            (self.force_gain_spin, s.force_gain),
+            (self.force_max_spin, s.force_max_offset),
+            (self.force_push_spin, s.force_push_rate),
+            (self.force_wait_spin, s.force_max_wait),
         ):
             spin.blockSignals(True)
             spin.setValue(value)
             spin.blockSignals(False)
+        self.force_check.blockSignals(True)
+        self.force_check.setChecked(s.force_replay)
+        self.force_check.blockSignals(False)
 
     def _on_gui_changed(self, *_) -> None:
-        self.settings.command_rate = self.rate_spin.value()
-        self.settings.ramp_s = self.ramp_spin.value()
-        self.settings.deadband = self.deadband_spin.value()
+        s = self.settings
+        s.command_rate = self.rate_spin.value()
+        s.ramp_s = self.ramp_spin.value()
+        s.deadband = self.deadband_spin.value()
+        s.force_replay = self.force_check.isChecked()
+        s.force_gain = self.force_gain_spin.value()
+        s.force_max_offset = self.force_max_spin.value()
+        s.force_push_rate = self.force_push_spin.value()
+        s.force_max_wait = self.force_wait_spin.value()
         self.settings_changed.emit()
 
     def _reset_gui(self) -> None:
-        defaults = HoldSettings()
-        self.settings.command_rate = defaults.command_rate
-        self.settings.ramp_s = defaults.ramp_s
-        self.settings.deadband = defaults.deadband
+        for name, value in asdict(HoldSettings()).items():
+            setattr(self.settings, name, value)
         self._show_settings()
         self.settings_changed.emit()
 
@@ -3387,7 +3550,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.create_tab.takes_changed.connect(self.compose_tab.refresh_takes)
         self.create_tab.takes_changed.connect(self.edit_tab.refresh_takes)
         self.edit_tab.delete_requested.connect(self._delete_take)
-        self.settings_tab.settings_changed.connect(self.create_tab.apply_settings)
         self.settings_tab.demo_dir_changed.connect(self._set_demo_dir)
         tabs = QtWidgets.QTabWidget()
         tabs.addTab(self.create_tab, "Create")
@@ -3439,6 +3601,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 video = self.node.stop_recording().video
                 if video:
                     os.remove(video)
+        self.create_tab.shutdown_commanding()
         self.create_tab.release_stiff_joints()
         self.create_tab.close_video()
         self.edit_tab.close_video()
