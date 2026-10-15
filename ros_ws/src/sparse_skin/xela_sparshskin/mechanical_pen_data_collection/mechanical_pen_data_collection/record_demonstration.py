@@ -54,8 +54,33 @@ so its Play runs left to right; the events are still stored in the take's own ti
 A ``maintain_touch`` region (two clicks) makes Play hold the finger in contact over it, with the
 Settings tab's Maintain touch values (see ``maintain_touch``); if it reaches past ``terminal``
 (before it in a reversed take), ``terminal`` is moved to its edge.
-Events with an ``applied_to`` list (finger codes such as ``"IF"``) are offered only to those
-fingers.
+A ``click_press`` region (Thumb, two clicks) makes Play replace the take over it with a
+Cartesian press of the fingertip (``click_press``): a guarded move along the way the fingertip
+moved while loading in the take until contact, a fingertip force ramp until the pen clicks, a
+retract, then the take continues from the region's end. Force replay is off over the
+region. Its values are the Settings tab's Click press section (a region's ``params`` can
+override them).
+A ``change_click_setting`` event (Thumb) opens the joints of force replay's press direction
+for the contact phase at (or after) it, prefilled with the computed one; the values entered
+(``params["joints"]``) replace that phase's direction, normalised, in force replay on both
+tabs, e.g. to keep a joint from sliding the thumb over the pen. The same panel holds that
+phase's force replay values (``params["force"]``: on/off, force gain, max press offset, click
+push rate, max hold); phases without the event use the defaults (``ForceReplaySettings``).
+In that panel a light shows the
+click detector (``click_topic``, Int32 1 while a click is heard) live, and Search
+(``click_search``) presses the finger from just before the contact along direction after
+direction, widening around the current values, until a click is heard; those values are left in
+the sliders for OK to save.
+Events with an ``applied_to`` list or code (finger codes such as ``"IF"``) are offered only to
+those fingers.
+While a finger plays, its plot shows the hand's measured joints (``leap_state``) dashed over
+the take (solid), at the take time each was measured.
+Every Play on the Edit tab is recorded (``playback_recording``) and saved, once it stops, as
+``<demo_dir>/playbacks/<finger>/<take>_<n>.npz`` (n = 1, 2, ...): the commands sent, the measured
+joint positions, velocities and efforts, the raw Xela readings and the clicks heard. The Plays
+dropdown under the play bar lists the take's recordings, newest first; Replay sends the picked
+one's commands to the hand again (plain position replay, no force replay or click press). That
+is recorded too, as the next index, with ``replay_of`` in its ``meta``.
 
 Compose tab: pick one take per finger with a time offset and speed; fingers without a
 take hold the base pose. The result is resampled on a common timeline and saved as
@@ -68,10 +93,11 @@ playing (applied immediately), and the compliant gains / deadband of ``hand_node
 (leaphand_node), read and set through its ROS parameters. Fingers that are playing
 use the hand node's stiffer playback gains (``stiff_kP`` / ``stiff_kD`` / ``stiff_curr_lim``,
 set through ``stiff_joints``) so they track the take; the other fingers stay compliant.
-Force replay (``force_replay``, Settings tab) presses past the take's joints during its contact
-phases until the live fingertip force matches the recorded one, holding the take until the
-finger touches and until it clicks. Commands are sent from their own thread at the command rate.
-Save settings writes these (the folder, the playback / force replay values and the hand's
+Force replay (``force_replay``, set per contact in ``change_click_setting``) presses past the
+take's joints during its contact phases until the live fingertip force matches the recorded one,
+holding the take until the finger touches and until it clicks. Commands are sent from their own
+thread at the command rate.
+Save settings writes these (the folder, the playback / maintain touch values and the hand's
 gains) to ``<ws>/settings/mechanical_pen_data_collection/record_demonstration.json``; they are
 loaded at the next start, and the saved hand gains are applied once the hand node is found. A
 ``demo_dir`` given as a parameter overrides the saved folder.
@@ -81,6 +107,7 @@ Usage:
       [--ros-args -p joint_topic:=leap_state -p sim_topic:=leap_state_sim -p cmd_topic:=cmd_xela \
                   -p image_topic:=/camera/color/image_raw -p demo_dir:=PATH \
                   -p hand_node:=leaphand_node -p xela_topic:=/xServTopic \
+                  -p click_topic:=/pen_click \
                   -p sam_prefix:=/bounding_box_sam \
                   -p counts_per_unit:=1000.0 -p events_file:=PATH]
 """
@@ -98,6 +125,7 @@ import time
 from collections import deque
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
+from typing import Callable
 
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets  # imported before pyqtgraph so it binds to PyQt5
@@ -116,7 +144,7 @@ from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Image, JointState
-from std_msgs.msg import String
+from std_msgs.msg import Int32, String
 
 from mechanical_pen_data_collection.bag_data import (
     EVENT_TIME_RESOLUTION,
@@ -132,7 +160,31 @@ from mechanical_pen_data_collection.bag_viewer import (
     index_at,
     load_event_definitions,
 )
-from mechanical_pen_data_collection.force_replay import ForceTracker, contact_phases
+from mechanical_pen_data_collection.click_press import (
+    ClickPress,
+    ClickPressSettings,
+    FingerKinematics,
+    HandKinematics,
+    PressRegion,
+    press_geometry,
+)
+from mechanical_pen_data_collection.click_search import (
+    ClickProbe,
+    candidate_directions,
+    slider_values,
+)
+from mechanical_pen_data_collection.force_replay import (
+    ContactPhase,
+    ForceReplaySettings,
+    ForceTracker,
+    contact_phases,
+    sample as sample_joints,
+)
+from mechanical_pen_data_collection.playback_recording import (
+    PlaybackRecording,
+    list_playbacks,
+    next_playback_path,
+)
 from mechanical_pen_data_collection.maintain_touch import (
     MaintainTouchSettings,
     TouchHold,
@@ -172,6 +224,12 @@ PLAY_BAR_STEPS = 1000
 REVERSE_FINGERS = ("if", "mf", "rf")
 # Fingers whose new takes inherit the pen box of the selected Thumb take.
 PEN_BOX_FROM_THUMB = ("if", "mf", "rf")
+# leaphand_node runs these hardware motors (indices in leap_state's joint order) at 75 % of kP
+# and kD; click press weighs the press direction by it.
+REDUCED_KP_MOTORS = (0, 4, 8)
+REDUCED_KP_SCALE = 0.75
+# Edit tab Plays shorter than this (s) are not saved as playback recordings.
+MIN_PLAY_RECORDING_S = 0.5
 # Events that bound the part of a take the Edit tab's Play sends to the hand.
 EPISODE_START_EVENT = "episode_start"
 EPISODE_END_EVENT = "terminal"
@@ -181,6 +239,26 @@ REVERSE_EVENT = "reverse_demonstration"
 # Duration event: the Edit tab's Play holds the finger in contact over its region
 # (``maintain_touch``); adding one past ``terminal`` moves ``terminal`` to its end.
 MAINTAIN_TOUCH_EVENT = "maintain_touch"
+# Duration event (Thumb): Play replaces the take over its region with a Cartesian force-ramp press
+# until the pen clicks (``click_press``).
+CLICK_PRESS_EVENT = "click_press"
+# Instant event: its ``params["joints"]`` replace force replay's press direction (per joint) for
+# the contact phase at or after it, and its ``params["force"]`` that phase's force replay values.
+CLICK_SETTING_EVENT = "change_click_setting"
+# The click setting search presses from the take's joints this long before the contact starts.
+CLICK_SEARCH_LEAD_S = 0.2
+# Force replay values of a ``change_click_setting`` event (``params["force"]``, defaults:
+# ``ForceReplaySettings``): (name, label, min, max, step, decimals, suffix, tooltip).
+CLICK_FORCE_FIELDS = (
+    ("force_gain", "Force gain", 0.0, 2.0, 0.01, 3, " rad/(unit·s)",
+     "How fast the press offset grows per unit of missing fingertip force"),
+    ("force_max_offset", "Max press offset", 0.0, 0.6, 0.01, 2, " rad",
+     "Largest press offset past the recorded joints (also the deepest Search press)"),
+    ("force_push_rate", "Click push rate", 0.0, 1.0, 0.01, 2, " rad/s",
+     "How fast the offset grows while the take is held for the click (also Search's)"),
+    ("force_max_wait", "Max hold", 0.0, 20.0, 0.5, 1, " s",
+     "Longest the take is held for contact or the click before it continues"),
+)
 # Xela header stamps further than this from the ROS clock are replaced by the receive time.
 XELA_MAX_CLOCK_OFFSET_S = 1.0
 # Same header stamp. Far below the 30 Hz camera period, so a detection cannot attach to a neighbor.
@@ -274,6 +352,17 @@ def take_columns(joint_names: list[str], take: FingerTake) -> list[int]:
     return finger_indices(joint_names, take.finger)
 
 
+def fingertip_fk_slice(finger: str) -> slice:
+    """Taxels of ``finger``'s fingertip in ``taxel_fk_util`` FK order (same order as
+    ``fingertip_taxel_ids``)."""
+    from mechanical_pen_data_collection import taxel_fk_util as fk
+
+    links = list(fk.XELA_FLATTEN_ORDER)
+    starts = np.cumsum([0, *fk.XELA_FLATTEN_ORDER.values()])
+    k = links.index(TIP_LINKS[finger])
+    return slice(int(starts[k]), int(starts[k + 1]))
+
+
 @functools.cache
 def fingertip_taxel_ids() -> dict[str, np.ndarray] | None:
     """Hardware Xela ids of each finger's fingertip taxels (None if taxel_fk_util cannot load)."""
@@ -281,12 +370,7 @@ def fingertip_taxel_ids() -> dict[str, np.ndarray] | None:
         from mechanical_pen_data_collection import taxel_fk_util as fk
     except Exception:
         return None
-    links = list(fk.XELA_FLATTEN_ORDER)
-    starts = np.cumsum([0, *fk.XELA_FLATTEN_ORDER.values()])
-    return {
-        finger: fk.TAXEL_IDS_IN_FK_ORDER[starts[links.index(link)]: starts[links.index(link) + 1]]
-        for finger, link in TIP_LINKS.items()
-    }
+    return {finger: fk.TAXEL_IDS_IN_FK_ORDER[fingertip_fk_slice(finger)] for finger in TIP_LINKS}
 
 
 def taxel_magnitudes(
@@ -316,12 +400,6 @@ class HoldSettings:
     command_rate: float = COMMAND_RATE_HZ  # Hz, rate of commands on cmd_topic
     ramp_s: float = PLAY_RAMP_S
     deadband: float = COMPLIANT_DEADBAND  # rad
-    # Force-aware replay (``force_replay``): push past the take to match its fingertip force.
-    force_replay: bool = True
-    force_gain: float = 0.1  # rad per (force unit * s)
-    force_max_offset: float = 0.25  # rad
-    force_push_rate: float = 0.15  # rad/s while holding the take for the click
-    force_max_wait: float = 3.0  # s the take is held for contact or the click
 
 
 def parameter_value(value: ParameterValue):
@@ -495,6 +573,17 @@ class TakeStore:
             n += 1
         return name
 
+    def playback_dir(self, finger: str) -> str:
+        return os.path.join(self.demo_dir, "playbacks", finger)
+
+    def list_playbacks(self, finger: str, take_name: str | None = None) -> list[str]:
+        """Recorded Plays of ``finger`` (of ``take_name`` only if given), newest first."""
+        return list_playbacks(self.playback_dir(finger), take_name)
+
+    def new_playback_path(self, finger: str, take_name: str) -> str:
+        """``<demo_dir>/playbacks/<finger>/<take_name>_<n>.npz``, ``n`` the next free index."""
+        return next_playback_path(self.playback_dir(finger), take_name)
+
     def list(self, finger: str) -> list[str]:
         """Take paths for ``finger``, newest first."""
         directory = self.finger_dir(finger)
@@ -558,6 +647,7 @@ class LeapStateListener(Node):
             self.declare_parameter("sam_prefix", "/bounding_box_sam").value.rstrip("/")
         )
         self.xela_topic = self.declare_parameter("xela_topic", "/xServTopic").value
+        self.click_topic = self.declare_parameter("click_topic", "/pen_click").value
         self.counts_per_unit = float(self.declare_parameter("counts_per_unit", 1000.0).value)
         self.events_file = self.declare_parameter("events_file", "").value or default_events_file()
         demo_dir = self.declare_parameter("demo_dir", "").value
@@ -567,6 +657,10 @@ class LeapStateListener(Node):
         self._lock = threading.Lock()
         self._joint_names: list[str] = []
         self._history: deque[tuple[float, np.ndarray]] = deque(maxlen=HISTORY_LEN)
+        self._effort: np.ndarray | None = None  # latest leap_state effort (present current)
+        # Recordings of Plays in progress (``start_play_recording``), by key: buffers of
+        # (stamp, position, velocity, effort), (stamp, xela readings) and click edge stamps.
+        self._play_recs: dict[str, dict] = {}
         self._recording = False
         self._rec_t: list[float] = []
         self._rec_q: list[np.ndarray] = []
@@ -593,6 +687,8 @@ class LeapStateListener(Node):
         self._rec_xela_t: list[float] = []
         self._rec_xela: list[np.ndarray] = []
         self._xela_history: deque[tuple[float, np.ndarray]] = deque(maxlen=HISTORY_LEN)
+        self._click = False  # latest click_topic value is 1
+        self._click_count = 0  # rising edges of click_topic, so short pulses are not missed
 
         self.create_subscription(JointState, topic, self._on_state, 10)
         self.create_subscription(JointState, self.sim_topic, self._on_sim_state, 10)
@@ -614,6 +710,8 @@ class LeapStateListener(Node):
                 self.xela_topic = ""
             else:
                 self.create_subscription(SensStream, self.xela_topic, self._on_xela, 10)
+        if self.click_topic:
+            self.create_subscription(Int32, self.click_topic, self._on_click, 10)
         self._cmd_pub = self.create_publisher(JointState, cmd_topic, 10)
         self.hand_node = self.declare_parameter("hand_node", "leaphand_node").value
         self._get_params = self.create_client(GetParameters, f"{self.hand_node}/get_parameters")
@@ -622,11 +720,14 @@ class LeapStateListener(Node):
         )
         self.get_logger().info(
             f"Listening on '{topic}', '{self.sim_topic}', '{self.image_topic or '(no camera)'}', "
-            f"'{self.xela_topic or '(no xela)'}' and SAM '{self.sam_prefix or '(off)'}', "
-            f"playing takes on '{cmd_topic}', saving demonstrations to '{self.demo_dir}'"
+            f"'{self.xela_topic or '(no xela)'}', clicks '{self.click_topic or '(off)'}' "
+            f"and SAM '{self.sam_prefix or '(off)'}', "
+            f"playing takes on '{cmd_topic}', "
+            f"saving demonstrations to '{self.demo_dir}'"
         )
 
     def send_command(self, q: np.ndarray) -> None:
+        """Publishes ``q`` (hardware frame) to the hand."""
         msg = JointState()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.name = self.joint_names
@@ -832,6 +933,17 @@ class LeapStateListener(Node):
             if len(msg.name) == NUM_JOINTS:
                 self._joint_names = list(msg.name)
             self._history.append((stamp, q))
+            self._effort = (
+                np.asarray(msg.effort, dtype=float) if len(msg.effort) == NUM_JOINTS else None
+            )
+            if self._play_recs:
+                velocity = (
+                    np.asarray(msg.velocity, dtype=float) if len(msg.velocity) == NUM_JOINTS
+                    else np.full(NUM_JOINTS, np.nan)
+                )
+                effort = self._effort if self._effort is not None else np.full(NUM_JOINTS, np.nan)
+                for rec in self._play_recs.values():
+                    rec["state"].append((stamp, q, velocity, effort))
             if self._recording:
                 self._rec_t.append(stamp)
                 self._rec_q.append(q)
@@ -864,12 +976,41 @@ class LeapStateListener(Node):
         with self._lock:
             self._xela = (self._xela[0] + 1, readings)
             self._xela_history.append((stamp, readings))
+            for rec in self._play_recs.values():
+                if not rec["xela"] or len(readings) == len(rec["xela"][0][1]):
+                    rec["xela"].append((stamp, readings.astype(np.float32)))
             # A take holds one taxel count; readings of another size are dropped.
             if self._recording and (
                 not self._rec_xela or len(readings) == len(self._rec_xela[0])
             ):
                 self._rec_xela_t.append(stamp)
                 self._rec_xela.append(readings.astype(np.float32))
+
+    def _on_click(self, msg: Int32) -> None:
+        with self._lock:
+            on = msg.data != 0
+            if on and not self._click:
+                self._click_count += 1
+                stamp = self.get_clock().now().nanoseconds * 1e-9
+                for rec in self._play_recs.values():
+                    rec["clicks"].append(stamp)
+            self._click = on
+
+    def start_play_recording(self, key: str) -> None:
+        """Starts buffering leap_state (position, velocity, effort), Xela and clicks under
+        ``key`` (independent of the Create tab's recording)."""
+        with self._lock:
+            self._play_recs[key] = {"state": [], "xela": [], "clicks": []}
+
+    def stop_play_recording(self, key: str) -> dict | None:
+        """The buffers recorded under ``key`` since ``start_play_recording`` (None if none)."""
+        with self._lock:
+            return self._play_recs.pop(key, None)
+
+    def click_state(self) -> tuple[bool, int]:
+        """(a click is heard now, clicks heard so far) on ``click_topic``."""
+        with self._lock:
+            return self._click, self._click_count
 
     def latest_xela(self) -> tuple[int, np.ndarray | None]:
         """(sequence number, (T, 3) raw Xela readings by hardware id) of the latest message."""
@@ -904,6 +1045,11 @@ class LeapStateListener(Node):
     def latest(self) -> np.ndarray | None:
         with self._lock:
             return self._history[-1][1].copy() if self._history else None
+
+    def latest_effort(self) -> np.ndarray | None:
+        """Effort (present current) of the latest ``leap_state``, if it had one."""
+        with self._lock:
+            return None if self._effort is None else self._effort.copy()
 
     def latest_frame(self) -> tuple[int, np.ndarray | None]:
         """(sequence number, RGB frame to show).
@@ -1449,7 +1595,7 @@ class HandView(QtWidgets.QWidget):
         self._redraw()
         self.stack.setCurrentWidget(self.view)
         if first:
-            # Side view as in the MuJoCo scene: fingers along +Y, Z up.
+            # Side view: fingers along +Y, Z up.
             center = self._pos.mean(axis=0)
             self.view.setCameraPosition(
                 pos=QtGui.QVector3D(*center), distance=0.35, elevation=20, azimuth=-125
@@ -1851,6 +1997,12 @@ class Playback:
     tip_mags: np.ndarray | None = None  # (L, 30) recorded fingertip magnitudes (None: no Xela)
     pen_corners: np.ndarray | None = None  # (4, 2) recorded pen box drawn on the live camera
     touch: TouchHold | None = None  # maintain_touch regions (Edit tab Play)
+    probe: ClickProbe | None = None  # click setting search: commands the finger instead of the take
+    press: ClickPress | None = None  # click_press regions: command the finger over them
+    pad_grid: np.ndarray | None = None  # (30, 3) fingertip taxel positions on the pad (m)
+    # (ROS time, take time, commanded hand) of every command step, kept whole for the playback
+    # recording (``history`` / ``local_history`` only keep the last HISTORY_LEN).
+    cmd_log: list[tuple[float, float, np.ndarray]] = field(default_factory=list)
 
     @property
     def end(self) -> float:
@@ -1883,12 +2035,16 @@ class CreateTab(QtWidgets.QWidget):
         store: TakeStore,
         settings: HoldSettings,
         touch_settings: MaintainTouchSettings,
+        press_settings: ClickPressSettings,
     ) -> None:
         super().__init__()
         self.node = node
         self.store = store
         self.settings = settings
         self.touch_settings = touch_settings
+        self.press_settings = press_settings
+        self._hand_kin: HandKinematics | None = None  # built at the first click_press Play
+        self._hand_kin_error = ""  # why it could not be built
         self._frame_seq = 0
         self._sim_seq = 0
         self._xela_seq = 0
@@ -1907,6 +2063,7 @@ class CreateTab(QtWidgets.QWidget):
         self._free: np.ndarray | None = None  # goal of the fingers that are not playing
         self._last_cmd: np.ndarray | None = None
         self._playing: dict[str, Playback] = {}
+        self.stopped: dict[str, Playback] = {}  # last playback each finger stopped
         self._stiff_sent: tuple[str, ...] = ()  # joints last given the hand's stiff gains
         self._recorded_pen_finger: str | None = None  # finger whose Pose switch is on
         self._recorded_pen_corners: np.ndarray | None = None  # (4, 2) while a Pose switch is on
@@ -2173,7 +2330,7 @@ class CreateTab(QtWidgets.QWidget):
 
     def toggle_play(self, finger: str) -> None:
         if finger in self._playing:
-            self._stop_play(finger)
+            self.stop_play(finger)
             return
         panel = self.panels[finger]
         path = panel.take_combo.currentData()
@@ -2201,6 +2358,7 @@ class CreateTab(QtWidgets.QWidget):
         reverse: bool = False,
         stop: float | None = None,
         touch_spans: tuple[tuple[float, float, dict], ...] = (),
+        select: bool = True,
     ) -> bool:
         """Plays ``take`` on ``finger`` from take time ``offset`` to ``stop`` (default: its end,
         or its start in reverse), selecting it in the finger's panel. The finger is held in
@@ -2212,7 +2370,7 @@ class CreateTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self.window(), "Play", "No leap_state received yet.")
             return False
         panel = self.panels[finger]
-        if panel.take_combo.currentData() != take.path:
+        if select and panel.take_combo.currentData() != take.path:
             panel.fill_takes(self.store, select=take.path)
             if self._recorded_pen_finger == finger:
                 self._refresh_recorded_pen_pose()
@@ -2227,8 +2385,13 @@ class CreateTab(QtWidgets.QWidget):
                 f"{panel.label}: playing {take.name} in reverse; plain position replay"
             )
             force = None
+            press = None
         else:
-            force = self._force_tracker(finger, take, tip_mags, offset)
+            press = self._click_press(finger, take, cols, tip_ids, q, offset)
+            force = self._force_tracker(
+                finger, take, tip_mags, offset,
+                [(r.start, r.end) for r in press.regions] if press is not None else [],
+            )
         touch = None
         if touch_spans:
             label = FINGER_LABEL[finger]
@@ -2261,6 +2424,7 @@ class CreateTab(QtWidgets.QWidget):
                 tip_mags=tip_mags,
                 pen_corners=pen_corners,
                 touch=touch,
+                press=press,
             )
         panel.take_combo.setEnabled(False)
         panel.delete_btn.setEnabled(False)
@@ -2277,19 +2441,68 @@ class CreateTab(QtWidgets.QWidget):
         self.playing_changed.emit(finger)
         return True
 
+    def start_probe(
+        self, finger: str, take: FingerTake, probe: ClickProbe, local: float
+    ) -> bool:
+        """Runs ``probe`` (click setting search) on ``finger`` as a playback of ``take`` shown at
+        take time ``local``; it stops once the probe is done. False if it cannot start."""
+        if finger in self._playing:
+            return False
+        q = self.node.latest()
+        if q is None:
+            return False
+        panel = self.panels[finger]
+        cols = take_columns(self.node.joint_names, take)
+        now = time.monotonic()
+        with self._cmd_lock:
+            self._start_commanding(q)
+            from_q = self._current_goal(q)[cols]
+            self._playing[finger] = Playback(
+                take=take,
+                cols=cols,
+                start=now,
+                from_q=from_q,
+                offset=local,
+                to_q=from_q,
+                local=local,
+                last_step=now,
+                tip_ids=panel.tip_plot.ids,
+                live_baseline=self.hand.baseline,
+                probe=probe,
+            )
+        panel.take_combo.setEnabled(False)
+        panel.delete_btn.setEnabled(False)
+        panel.play_btn.setText("Stop")
+        panel.play_btn.setStyleSheet(STOP_STYLE)
+        panel.set_playing(True)
+        self._update_stiff_joints()
+        self.playing_changed.emit(finger)
+        return True
+
     def playback(self, finger: str) -> Playback | None:
         """What ``finger`` is playing (None if nothing)."""
         return self._playing.get(finger)
 
+    @property
+    def cmd_lock(self) -> threading.Lock:
+        """Held by the command thread while it changes the Playbacks (e.g. their histories)."""
+        return self._cmd_lock
+
     def stop_play(self, finger: str) -> None:
-        if finger in self._playing:
+        """Stops ``finger``'s playback; a click setting search backs off first."""
+        p = self._playing.get(finger)
+        if p is not None and p.probe is not None and not p.probe.done:
+            p.probe.cancel()
+        elif p is not None:
             self._stop_play(finger)
 
     def _force_tracker(
-        self, finger: str, take: FingerTake, tip_mags: np.ndarray | None, offset: float
+        self, finger: str, take: FingerTake, tip_mags: np.ndarray | None, offset: float,
+        press_spans: list[tuple[float, float]] = (),
     ) -> ForceTracker | None:
         """Force replay of ``take`` from take time ``offset``; None (plain position replay) when
-        the take has no contact phase or the live fingertip force cannot be measured."""
+        the take has no contact phase or the live fingertip force cannot be measured. Contact
+        phases overlapping a ``press_spans`` (click_press) region get force replay off."""
         log = self.node.get_logger()
         label = FINGER_LABEL[finger]
         if tip_mags is None:
@@ -2307,12 +2520,114 @@ class CreateTab(QtWidgets.QWidget):
             click = f"click at {p.click:.2f} s" if p.click is not None else "no click"
             log.info(f"{label}: {take.name} contact {p.start:.2f}-{p.end:.2f} s, "
                      f"peak force {p.peak:.2f}, {click}")
+        apply_click_settings(phases, take, log=lambda msg: log.info(f"{label}: {msg}"))
+        defaults = ForceReplaySettings()
+        for p in phases:
+            if any(p.start <= end and start <= p.end for start, end in press_spans):
+                p.settings = replace(p.settings or defaults, force_replay=False)
+                log.info(f"{label}: contact {p.start:.2f}-{p.end:.2f} s is in a "
+                         f"'{CLICK_PRESS_EVENT}' region; no force replay there")
         tracker = ForceTracker(
-            phases, take.xela_t, force, len(take.joint_names), self.settings,
+            phases, take.xela_t, force, len(take.joint_names), defaults,
             log=lambda msg: log.info(f"{label} force replay: {msg}"),
         )
         tracker.reset(offset)
         return tracker
+
+    def _hand_kinematics(self) -> HandKinematics | None:
+        """Fingertip kinematics from hardware joints (None if they cannot load)."""
+        if self._hand_kin is None and not self._hand_kin_error:
+            try:
+                self._hand_kin = HandKinematics(self.node.joint_names)
+            except Exception as e:
+                self._hand_kin_error = str(e) or type(e).__name__
+                self.node.get_logger().warn(
+                    f"No fingertip kinematics, '{CLICK_PRESS_EVENT}' is off: {e}"
+                )
+        return self._hand_kin
+
+    def _click_press(
+        self, finger: str, take: FingerTake, cols: list[int], tip_ids: np.ndarray | None,
+        q_hand: np.ndarray, offset: float,
+    ) -> ClickPress | None:
+        """Click press over the take's ``click_press`` regions from take time ``offset``; None
+        when it has none or they cannot run (no Xela readings, recorded sim joints, live
+        baseline or kinematics)."""
+        spans = sorted(
+            (e.t, e.end, e.params) for e in take.events
+            if e.name == CLICK_PRESS_EVENT and e.end is not None and e.end > offset
+        ) if self.press_settings.enabled else []
+        if not spans:
+            return None
+        log = self.node.get_logger()
+        label = FINGER_LABEL[finger]
+        problem = None
+        magnitudes = (
+            take_tip_magnitudes(take, tip_ids, self.node.counts_per_unit)
+            if tip_ids is not None else None
+        )
+        if magnitudes is None:
+            problem = "the take has no Xela readings"
+        elif len(take.sim_t) == 0:
+            problem = "the take has no sim joints"
+        elif self.hand.baseline is None:
+            problem = "no live Xela baseline (press Zero)"
+        elif self._hand_kinematics() is None:
+            problem = f"no fingertip kinematics ({self._hand_kin_error})"
+        if problem is not None:
+            log.warn(f"{label}: {CLICK_PRESS_EVENT} off: {problem}; using the take")
+            return None
+        kin = self._hand_kin
+        link = TIP_LINKS[finger]
+
+        def positions_at(at: float) -> np.ndarray:
+            sim_q = sample_joints(take.sim_t, take.sim_hand_q, at)
+            return kin.frames_from_sim(take.sim_hand_joint_names, sim_q, link)[0][0]
+
+        regions = []
+        for start, end, params in spans:
+            geometry = press_geometry(start, end, take.xela_t, magnitudes, positions_at)
+            if geometry is None:
+                log.warn(f"{label}: no force peak, or no fingertip motion while loading, in "
+                         f"{CLICK_PRESS_EVENT} region {start:.2f}-{end:.2f} s; using the take "
+                         "there")
+                continue
+            log.info(f"{label}: {CLICK_PRESS_EVENT} {start:.2f}-{end:.2f} s, press axis "
+                     f"{np.round(geometry.axis, 3).tolist()} (loading moved "
+                     f"{geometry.loading * 1000:.1f} mm), recorded force peak "
+                     f"{geometry.peak:.2f}, no contact {geometry.noise:.2f}")
+            regions.append(PressRegion(
+                start=start, end=end, geometry=geometry,
+                kin=FingerKinematics(kin, q_hand, cols, link, geometry.weights),
+                params=dict(params),
+                kp=np.array([REDUCED_KP_SCALE if c in REDUCED_KP_MOTORS else 1.0 for c in cols]),
+            ))
+        if not regions:
+            return None
+        press = ClickPress(
+            regions, self.press_settings,
+            log=lambda msg: log.info(f"{label} {CLICK_PRESS_EVENT}: {msg}"),
+        )
+        press.reset(offset)
+        return press
+
+    def _live_tip_spot(self, p: Playback) -> np.ndarray | None:
+        """Where on the fingertip pad the live contact is: the force-weighted taxel position in
+        the fingertip patch's frame (m); None without contact or Xela readings."""
+        if p.press is None or not p.press.regions:
+            return None
+        _, readings = self.node.latest_xela()
+        if readings is None or p.live_baseline is None or len(readings) <= p.tip_ids.max():
+            return None
+        mags = taxel_magnitudes(
+            readings[None], p.live_baseline, p.tip_ids, self.node.counts_per_unit
+        )[0]
+        total = float(mags.sum())
+        if total <= 1e-9:
+            return None
+        if p.pad_grid is None:
+            p.pad_grid = p.press.regions[0].kin.grid
+        return (mags / total) @ p.pad_grid
 
     def _live_tip_force(self, p: Playback) -> float | None:
         """Live fingertip force of ``p``'s finger, measured like the take's (None if unknown)."""
@@ -2327,6 +2642,7 @@ class CreateTab(QtWidgets.QWidget):
         """Stops ``finger`` where it was last commanded; it then follows the hand again."""
         with self._cmd_lock:
             playback = self._playing.pop(finger)
+            self.stopped[finger] = playback
             if self._last_cmd is not None and self._free is not None:
                 self._free[playback.cols] = self._last_cmd[playback.cols]
             self._stop_commanding_if_idle()
@@ -2532,6 +2848,15 @@ class CreateTab(QtWidgets.QWidget):
         for finger, p in self._playing.items():
             elapsed = now - p.start
             dt, p.last_step = now - p.last_step, now
+            if p.probe is not None:
+                on, count = self.node.click_state()
+                q[p.cols] = p.probe.step(
+                    now, dt, p.from_q, on, count, self._live_tip_force(p)
+                )
+                if p.probe.done and not p.finished:
+                    p.finished = True
+                    finished.append(finger)
+                continue
             if elapsed < ramp:
                 a = elapsed / ramp
                 q[p.cols] = (1.0 - a) * p.from_q + a * p.to_q
@@ -2542,8 +2867,26 @@ class CreateTab(QtWidgets.QWidget):
                 else:
                     local = min(p.offset + elapsed - ramp - p.held_s, p.end)
                 q[p.cols] = sample_take(p.take, local)
-                touching = False
-                if p.touch is not None:
+                pressing = False
+                if p.press is not None:
+                    measured_hand = self.node.latest()
+                    effort = self.node.latest_effort()
+                    step = p.press.step(
+                        local, dt, now, q[p.cols], measured_hand,
+                        self._live_tip_force(p), self.node.click_state()[1],
+                        effort[p.cols] if effort is not None else None,
+                        self._live_tip_spot(p),
+                    )
+                    if step is not None:
+                        q[p.cols] = step.q
+                        pressing = True
+                        if step.hold:
+                            p.held_s += dt  # pressing: the take stays at ``local``
+                        if step.skip_to is not None:  # pressed: go on from the region's end
+                            p.held_s -= step.skip_to - local
+                            local = min(step.skip_to, p.end)
+                touching = pressing
+                if p.touch is not None and not pressing:
                     q[p.cols], touching = p.touch.apply(
                         local, q[p.cols], dt, lambda p=p: self._live_tip_force(p)
                     )
@@ -2561,6 +2904,7 @@ class CreateTab(QtWidgets.QWidget):
         for p in self._playing.values():
             p.history.append((stamp, q.copy()))
             p.local_history.append((stamp, p.local))
+            p.cmd_log.append((stamp, p.local, q.copy()))
         return finished
 
     # ---- live view ----------------------------------------------------------------------
@@ -2664,7 +3008,9 @@ class CreateTab(QtWidgets.QWidget):
         for finger, p in self._playing.items():
             panel = self.panels[finger]
             panel.set_position(p.local)
-            if p.touch is not None and p.touch.status:
+            if p.press is not None and p.press.status:
+                panel.time_label.setText(f"{panel.time_label.text()}  [{p.press.status}]")
+            elif p.touch is not None and p.touch.status:
                 panel.time_label.setText(
                     f"{panel.time_label.text()}  [{p.touch.status}, +{p.touch.offset:.2f} rad]"
                 )
@@ -2745,6 +3091,342 @@ class SpanBookmarkSlider(BookmarkSlider):
                 ev.ignore()
             return True
         return super().event(ev)
+
+
+def click_setting_phase(phases: list[ContactPhase], t: float) -> ContactPhase | None:
+    """Contact phase a ``change_click_setting`` event at take time ``t`` applies to: the one
+    containing ``t``, else the next one, else the last one."""
+    containing = [p for p in phases if p.start <= t <= p.end]
+    if containing:
+        return containing[0]
+    after = [p for p in phases if p.start > t]
+    if after:
+        return min(after, key=lambda p: p.start)
+    return max(phases, key=lambda p: p.end) if phases else None
+
+
+def click_force_settings(params: dict | None) -> ForceReplaySettings:
+    """Force replay values of a ``change_click_setting`` event's ``params["force"]``; the
+    defaults for the ones it does not set."""
+    settings = ForceReplaySettings()
+    for name, default in asdict(settings).items():
+        if params and name in params:
+            setattr(settings, name, type(default)(params[name]))
+    return settings
+
+
+def apply_click_settings(
+    phases: list[ContactPhase], take: FingerTake, log=lambda _: None
+) -> None:
+    """Gives the phases with ``change_click_setting`` events the press direction (the joints the
+    user set, normalised to unit length like the computed one) and force replay values set in
+    them; the other phases keep the computed direction and the default values."""
+    for event in take.events:
+        phase = (
+            click_setting_phase(phases, event.t) if event.name == CLICK_SETTING_EVENT else None
+        )
+        if phase is None:
+            continue
+        span = f"contact {phase.start:.2f}-{phase.end:.2f} s"
+        joints = event.params.get("joints") or {}
+        w = np.array([float(joints.get(name, 0.0)) for name in take.joint_names])
+        norm = float(np.linalg.norm(w))
+        if norm > 1e-9:
+            phase.direction = w / norm
+            log(f"{span} presses with the set joints "
+                + ", ".join(f"{n} {v:+.2f}" for n, v in zip(take.joint_names, phase.direction)))
+        if "force" in event.params:
+            phase.settings = click_force_settings(event.params["force"])
+            log(f"{span} force replay "
+                + ", ".join(f"{k} {v}" for k, v in asdict(phase.settings).items()))
+
+
+@dataclass
+class ClickSearch:
+    """Click setting search (``click_search``) of one contact phase of ``finger``'s take, run on
+    the hand through ``create_tab``'s command thread."""
+
+    node: LeapStateListener
+    create_tab: CreateTab
+    finger: str
+    take: FingerTake
+    phase: ContactPhase
+
+    @property
+    def listening(self) -> bool:
+        return bool(self.node.click_topic)
+
+    def click_state(self) -> tuple[bool, int]:
+        return self.node.click_state()
+
+    def start(self, start_dir: np.ndarray, force: ForceReplaySettings) -> ClickProbe | str:
+        """Starts the search from ``start_dir``, pressing as set in ``force``; the probe, or why
+        it cannot start."""
+        if self.create_tab.playback(self.finger) is not None:
+            return f"{FINGER_LABEL[self.finger]} is playing; stop it first."
+        if self.node.latest() is None:
+            return "No leap_state received yet."
+        local = max(self.phase.start - CLICK_SEARCH_LEAD_S, float(self.take.t[0]))
+        label = FINGER_LABEL[self.finger]
+        log = self.node.get_logger()
+        probe = ClickProbe(
+            sample_joints(self.take.t, self.take.q, local),
+            candidate_directions(start_dir),
+            force,
+            ramp_s=self.create_tab.settings.ramp_s,
+            peak=self.phase.peak,
+            log=lambda msg: log.info(f"{label} click search: {msg}"),
+        )
+        log.info(f"{label} click search: {probe.total} directions from take time {local:.2f} s")
+        if not self.create_tab.start_probe(self.finger, self.take, probe, local):
+            return "Could not start commanding the hand."
+        return probe
+
+    def stop(self) -> None:
+        """Backs the finger off and ends the search."""
+        self.create_tab.stop_play(self.finger)
+
+
+class ClickSettingDialog(QtWidgets.QDialog):
+    """One slider (-1 to +1) per joint of the press direction force replay uses for one contact
+    phase, set to the current values; the computed value and the normalised result are shown.
+    Below them, the force replay values of that contact (``force``, defaults otherwise).
+
+    A light shows the click detector (``click_topic``) live. Search (``search``) presses the
+    finger along direction after direction until a click is heard and leaves those values in
+    the sliders; the sliders follow the direction being tried."""
+
+    STEPS = 100  # slider steps per unit
+    LIGHT_STYLE = "border-radius: 8px; border: 1px solid #616161; background-color: {};"
+
+    def __init__(
+        self,
+        parent,
+        joint_names: list[str],
+        computed: np.ndarray,
+        current: dict | None,
+        phase_text: str,
+        search: ClickSearch | None = None,
+        force: dict | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.search = search
+        self._probe: ClickProbe | None = None
+        self._before: dict[str, float] = {}  # slider values when the search started
+        self.setWindowTitle("Change click setting")
+        self.setMinimumWidth(460)
+        self.joint_names = joint_names
+        self.computed = computed
+        text = QtWidgets.QLabel(
+            f"Press direction of force replay for the contact {phase_text}.\n"
+            "Each slider is how much that joint moves when force replay presses; the values are "
+            "normalised, so only their ratios matter. Lower or zero a joint that slides the "
+            "thumb over the pen; move it past 0 to turn it the other way."
+        )
+        text.setWordWrap(True)
+        grid = QtWidgets.QGridLayout()
+        grid.addWidget(QtWidgets.QLabel("<b>Joint</b>"), 0, 0)
+        grid.addWidget(QtWidgets.QLabel("<b>Contribution</b>"), 0, 1, 1, 2)
+        grid.addWidget(QtWidgets.QLabel("<b>Computed</b>"), 0, 3)
+        self.sliders: dict[str, QtWidgets.QSlider] = {}
+        self._labels: dict[str, QtWidgets.QLabel] = {}
+        for row, (name, value) in enumerate(zip(joint_names, computed), start=1):
+            start = float(current.get(name, value)) if current else float(value)
+            slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+            slider.setObjectName(name)
+            slider.setRange(-self.STEPS, self.STEPS)
+            slider.setTickPosition(QtWidgets.QSlider.TicksBelow)
+            slider.setTickInterval(self.STEPS // 2)
+            slider.setValue(int(round(np.clip(start, -1.0, 1.0) * self.STEPS)))
+            slider.setToolTip(f"Contribution of {name} to the press (computed: {value:+.2f})")
+            label = QtWidgets.QLabel()
+            label.setMinimumWidth(45)
+            self.sliders[name] = slider
+            self._labels[name] = label
+            slider.valueChanged.connect(lambda _: self._update())
+            grid.addWidget(QtWidgets.QLabel(name), row, 0)
+            grid.addWidget(slider, row, 1)
+            grid.addWidget(label, row, 2)
+            grid.addWidget(QtWidgets.QLabel(f"{value:+.2f}"), row, 3)
+        grid.setColumnStretch(1, 1)
+        self.result_label = QtWidgets.QLabel()
+        self.result_label.setWordWrap(True)
+        self.force_box = self._build_force_box(click_force_settings(force))
+        self.reset_btn = QtWidgets.QPushButton("Reset to computed")
+        self.reset_btn.clicked.connect(self._reset)
+        self.search_btn = QtWidgets.QPushButton("Search")
+        self.search_btn.setObjectName("search")
+        self.search_btn.clicked.connect(self._search)
+        listening = search is not None and search.listening
+        self.search_btn.setEnabled(listening)
+        self.search_btn.setToolTip(
+            "Press the finger along direction after direction, starting from these values, "
+            "until the click detector hears the pen click"
+            if listening else "No click topic: start the click detector (click_topic)"
+        )
+        self.light = QtWidgets.QLabel()
+        self.light.setObjectName("click_light")
+        self.light.setFixedSize(16, 16)
+        self.light_label = QtWidgets.QLabel("Click" if listening else "Click (no click topic)")
+        row = QtWidgets.QHBoxLayout()
+        row.addWidget(self.reset_btn)
+        row.addWidget(self.search_btn)
+        row.addStretch(1)
+        row.addWidget(self.light)
+        row.addWidget(self.light_label)
+        self.search_label = QtWidgets.QLabel()
+        self.search_label.setWordWrap(True)
+        self.buttons = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        self.buttons.accepted.connect(self.accept)
+        self.buttons.rejected.connect(self.reject)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(text)
+        layout.addLayout(grid)
+        layout.addWidget(self.result_label)
+        layout.addWidget(self.force_box)
+        layout.addLayout(row)
+        layout.addWidget(self.search_label)
+        layout.addWidget(self.buttons)
+        self._update()
+        self._set_light(False)
+        self._timer = QtCore.QTimer(self)
+        self._timer.timeout.connect(self._tick)
+        if search is not None:
+            self._timer.start(50)
+
+    def _build_force_box(self, settings: ForceReplaySettings) -> QtWidgets.QGroupBox:
+        self.force_check = QtWidgets.QCheckBox("Match the take's fingertip force")
+        self.force_check.setToolTip(
+            "During this contact, push past the recorded joints until the live fingertip force "
+            "matches the recorded one; hold the take until the finger touches and until the "
+            "click (needs a Zero baseline before Play)"
+        )
+        self.force_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
+        box = QtWidgets.QGroupBox("Force replay of this contact")
+        form = QtWidgets.QFormLayout(box)
+        form.addRow(self.force_check)
+        for name, label, minimum, maximum, step, decimals, suffix, tooltip in CLICK_FORCE_FIELDS:
+            spin = double_spin(minimum, maximum, step, decimals, suffix, tooltip)
+            spin.setObjectName(name)
+            self.force_spins[name] = spin
+            form.addRow(f"{label}:", spin)
+        defaults = QtWidgets.QPushButton("Reset to defaults")
+        defaults.clicked.connect(lambda: self._show_force(ForceReplaySettings()))
+        form.addRow("", defaults)
+        self._show_force(settings)
+        return box
+
+    def _show_force(self, settings: ForceReplaySettings) -> None:
+        self.force_check.setChecked(settings.force_replay)
+        for name, spin in self.force_spins.items():
+            spin.setValue(getattr(settings, name))
+
+    def force_values(self) -> dict:
+        """``params["force"]`` of the event: the force replay values of this contact."""
+        return {
+            "force_replay": self.force_check.isChecked(),
+            **{name: spin.value() for name, spin in self.force_spins.items()},
+        }
+
+    def _update(self) -> None:
+        values = self.values()
+        for name, value in values.items():
+            self._labels[name].setText(f"{value:+.2f}")
+        w = np.array(list(values.values()))
+        norm = float(np.linalg.norm(w))
+        self.result_label.setText(
+            "Used by force replay (normalised): "
+            + ", ".join(f"{n.split('_')[-1]} {v:+.2f}" for n, v in zip(values, w / norm))
+            if norm > 1e-9
+            else "<span style='color:#d32f2f'>All joints are 0: nothing would press.</span>"
+        )
+
+    def _reset(self) -> None:
+        for name, value in zip(self.joint_names, self.computed):
+            self.sliders[name].setValue(int(round(np.clip(value, -1.0, 1.0) * self.STEPS)))
+
+    def _set_light(self, on: bool) -> None:
+        self.light.setStyleSheet(self.LIGHT_STYLE.format("#43a047" if on else "#9e9e9e"))
+
+    def _set_sliders(self, values) -> None:
+        for slider, value in zip(self.sliders.values(), values):
+            slider.setValue(int(round(np.clip(value, -1.0, 1.0) * self.STEPS)))
+
+    def _set_searching(self, on: bool) -> None:
+        for slider in self.sliders.values():
+            slider.setEnabled(not on)
+        self.reset_btn.setEnabled(not on)
+        self.force_box.setEnabled(not on)
+        self.buttons.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(not on)
+        self.search_btn.setText("Stop" if on else "Search")
+        self.search_btn.setStyleSheet(STOP_STYLE if on else "")
+
+    def _search(self) -> None:
+        if self._probe is not None:
+            self.search.stop()  # backs off; ``_tick`` finishes once the probe is done
+            self.search_btn.setEnabled(False)
+            return
+        self._before = self.values()
+        start = np.array(list(self._before.values()))
+        if np.linalg.norm(start) < 1e-9:
+            start = self.computed
+        result = self.search.start(start, click_force_settings(self.force_values()))
+        if isinstance(result, str):
+            QtWidgets.QMessageBox.warning(self, "Search", result)
+            return
+        self._probe = result
+        self._set_searching(True)
+
+    def _tick(self) -> None:
+        on, _ = self.search.click_state()
+        self._set_light(on and self.search.listening)
+        probe = self._probe
+        if probe is None:
+            return
+        if not probe.done:
+            if probe.found is None:
+                self._set_sliders(slider_values(probe.direction))
+            self.search_label.setText(
+                f"Trial {probe.index + 1}/{probe.total} ({probe.angle:.0f}°): "
+                f"{probe.message}, offset {probe.offset:.2f} rad"
+            )
+            return
+        self._probe = None
+        self._set_searching(False)
+        self.search_btn.setEnabled(True)
+        if probe.found is not None:
+            self._set_sliders(slider_values(probe.found))
+            self.search_label.setText(
+                f"Click heard on trial {probe.index + 1}/{probe.total} ({probe.angle:.0f}° from "
+                "the start); press OK to save these values."
+            )
+        else:
+            self._set_sliders(self._before.values())
+            self.search_label.setText(
+                (f"Search stopped at trial {probe.index + 1}/{probe.total}"
+                 if probe.cancelled else f"No click in any of the {probe.total} directions")
+                + "; the sliders are back to their values before the search."
+            )
+
+    def reject(self) -> None:
+        if self._probe is not None:
+            self.search.stop()
+        self._timer.stop()
+        super().reject()
+
+    def accept(self) -> None:
+        if all(abs(v) < 1e-9 for v in self.values().values()):
+            QtWidgets.QMessageBox.warning(
+                self, "Change click setting", "At least one joint must contribute to the press."
+            )
+            return
+        self._timer.stop()
+        super().accept()
+
+    def values(self) -> dict[str, float]:
+        return {name: slider.value() / self.STEPS for name, slider in self.sliders.items()}
 
 
 def number_edit(
@@ -2875,6 +3557,7 @@ class EditFingerPanel(QtWidgets.QWidget):
     seeked = QtCore.pyqtSignal(str)  # finger
     take_loaded = QtCore.pyqtSignal(str)  # finger, after the selected take was (re)loaded
     play_requested = QtCore.pyqtSignal(str)  # finger: start or stop Play
+    replay_requested = QtCore.pyqtSignal(str)  # finger: start or stop Replay of the picked Play
     delete_requested = QtCore.pyqtSignal(str)  # path of the take, confirmed by the user
 
     CURSOR_PEN = pg.mkPen("#ffd600", width=1.5)
@@ -2895,12 +3578,20 @@ class EditFingerPanel(QtWidgets.QWidget):
         self.store = store
         self.counts_per_unit = counts_per_unit
         self.touch_settings = touch_settings  # default press values of maintain_touch events
+        # (take, contact phase) -> ClickSearch on the hand, set by the Edit tab.
+        self.click_search: Callable[[FingerTake, ContactPhase], ClickSearch] | None = None
         self.event_defs = event_defs
         # Events this finger can be given (``applied_to`` lists finger codes such as "IF").
         self._addable = {
             name: info for name, info in event_defs.items()
             if not info.get("applied_to")
-            or finger.upper() in {str(code).upper() for code in info["applied_to"]}
+            or finger.upper() in {
+                str(code).upper()
+                for code in (
+                    [info["applied_to"]] if isinstance(info["applied_to"], str)
+                    else info["applied_to"]
+                )
+            }
         }
         self.take: FingerTake | None = None
         self.now = 0.0
@@ -2961,6 +3652,19 @@ class EditFingerPanel(QtWidgets.QWidget):
         controls.addWidget(self.event_combo, 2, 0)
         controls.addLayout(event_buttons, 2, 1)
         controls.addLayout(bar_row, 3, 0, 1, 2)
+        self.replay_combo = QtWidgets.QComboBox()
+        self.replay_combo.setToolTip(
+            "Recorded Plays of this take (joints, velocities, efforts, taxels and the commands "
+            "sent), newest first: <take>_<index>"
+        )
+        self.replay_btn = QtWidgets.QPushButton("Replay")
+        self.replay_btn.setMinimumWidth(90)
+        self.replay_btn.setToolTip("Send the commands of the picked Play to the hand again")
+        replay_row = QtWidgets.QHBoxLayout()
+        replay_row.addWidget(QtWidgets.QLabel("Plays:"))
+        replay_row.addWidget(self.replay_combo, 1)
+        controls.addLayout(replay_row, 4, 0)
+        controls.addWidget(self.replay_btn, 4, 1)
         controls.setColumnStretch(0, 1)
 
         self.plot = pg.PlotWidget()
@@ -2970,6 +3674,13 @@ class EditFingerPanel(QtWidgets.QWidget):
         item.setLabel("left", "position", "rad")
         self.legend = item.addLegend(offset=(5, 5))
         self.curves = [item.plot(pen=pg.mkPen(color, width=2)) for color in JOINT_COLORS]
+        # While playing: the hand's measured joints (dashed) at the take time they were measured.
+        self.measured_curves = [
+            item.plot(pen=pg.mkPen(color, width=2, style=QtCore.Qt.DashLine))
+            for color in JOINT_COLORS
+        ]
+        self._measured: list[tuple[float, np.ndarray]] = []  # (plot x, take joints)
+        self._measured_until = -np.inf  # stamp of the last measured sample added
         self.cursor = pg.InfiniteLine(pos=0.0, angle=90, movable=True, pen=self.CURSOR_PEN)
         self.cursor.setToolTip("Drag to scrub")
         item.addItem(self.cursor, ignoreBounds=True)
@@ -3010,6 +3721,8 @@ class EditFingerPanel(QtWidgets.QWidget):
             lambda line: self.seek(self._view(line.value()))
         )
         self.play_btn.clicked.connect(lambda: self.play_requested.emit(self.finger))
+        self.replay_btn.clicked.connect(lambda: self.replay_requested.emit(self.finger))
+        self.replaying = False
         self.add_btn.clicked.connect(self.add_event)
         self.cancel_btn.clicked.connect(self.cancel_pending)
         self.event_combo.currentIndexChanged.connect(lambda _: self._update_buttons())
@@ -3080,7 +3793,34 @@ class EditFingerPanel(QtWidgets.QWidget):
             self.seek(self.now)
         elif path is None:
             self.time_label.setText("no takes")
+        self.fill_replays()
         self.take_loaded.emit(self.finger)
+
+    def fill_replays(self, select: str | None = None) -> None:
+        """Lists the recorded Plays of the selected take, selecting ``select`` (or keeping the
+        selection)."""
+        keep = select or self.replay_combo.currentData()
+        self.replay_combo.clear()
+        if self.take is not None:
+            for path in self.store.list_playbacks(self.finger, self.take.name):
+                self.replay_combo.addItem(os.path.splitext(os.path.basename(path))[0], path)
+        index = self.replay_combo.findData(keep) if keep else 0
+        self.replay_combo.setCurrentIndex(max(index, 0))
+        self._update_replay_button()
+
+    def set_replaying(self, on: bool) -> None:
+        """Replay button shows Stop while the picked Play is being replayed."""
+        self.replaying = on
+        self.replay_btn.setText("Stop" if on else "Replay")
+        self.replay_btn.setStyleSheet(STOP_STYLE if on else "")
+        self._update_replay_button()
+        self._update_play_button()
+
+    def _update_replay_button(self) -> None:
+        playing = getattr(self, "playing", False)
+        replaying = getattr(self, "replaying", False)
+        self.replay_btn.setEnabled(replaying or (not playing and self.replay_combo.count() > 0))
+        self.replay_combo.setEnabled(not playing and not replaying)
 
     # ---- play ---------------------------------------------------------------------------
 
@@ -3112,10 +3852,43 @@ class EditFingerPanel(QtWidgets.QWidget):
     def set_playing(self, on: bool) -> None:
         """Play button shows Stop, and the take cannot be changed or scrubbed, while playing."""
         self.playing = on
+        self._update_replay_button()
         self.play_btn.setText("Stop" if on else "Play")
         self.play_btn.setStyleSheet(STOP_STYLE if on else "")
+        self._measured, self._measured_until = [], -np.inf
+        for curve in self.measured_curves:
+            curve.setData([], [])
+        self.plot.getPlotItem().setTitle(
+            "solid: demonstration, dashed: measured" if on else None, size="9pt"
+        )
         self._update_play_lock()
         self._update_buttons()
+
+    def add_measured(
+        self,
+        stamps: np.ndarray,
+        q: np.ndarray,
+        cols: list[int],
+        cmd_stamps: np.ndarray,
+        cmd_local: np.ndarray,
+    ) -> None:
+        """Adds the measured hand joints ``q[:, cols]`` (at ``stamps``) newer than those shown,
+        each at the take time Play had commanded then (``cmd_local`` at ``cmd_stamps``)."""
+        if self.take is None or len(cmd_stamps) == 0:
+            return
+        new = (stamps > self._measured_until) & (stamps >= cmd_stamps[0]) & (
+            stamps <= cmd_stamps[-1]
+        )
+        if not np.any(new):
+            return
+        self._measured_until = float(stamps[new][-1])
+        x = self._view(np.interp(stamps[new], cmd_stamps, cmd_local))
+        self._measured += zip(x.tolist(), q[new][:, cols])
+        xs = np.array([v for v, _ in self._measured])
+        qs = np.stack([c for _, c in self._measured])
+        for j, curve in enumerate(self.measured_curves):
+            if j < qs.shape[1]:
+                curve.setData(xs, qs[:, j])
 
     def _update_play_lock(self) -> None:
         free = not self.playing
@@ -3229,6 +4002,10 @@ class EditFingerPanel(QtWidgets.QWidget):
         for i, event in enumerate(events, start=1):
             color = self._color(event.name)
             tip = f"{event.name} @ {self._view_text(event)}"
+            if event.name == CLICK_SETTING_EVENT and event.params.get("joints"):
+                tip += " (" + ", ".join(
+                    f"{n.split('_')[-1]} {v:+.2f}" for n, v in event.params["joints"].items()
+                ) + ")"
             if "press_offset" in event.params:
                 rate = (
                     f", +{event.params['press_rate']:.3f} rad/s"
@@ -3288,6 +4065,10 @@ class EditFingerPanel(QtWidgets.QWidget):
         return self.take.events[item.data(QtCore.Qt.UserRole)]
 
     def _update_play_button(self) -> None:
+        if getattr(self, "replaying", False):
+            self.play_btn.setEnabled(False)
+            self.play_btn.setToolTip("Replaying a recorded Play")
+            return
         if self.playing:
             self.play_btn.setEnabled(True)
             self.play_btn.setToolTip("Stop the hand")
@@ -3321,6 +4102,14 @@ class EditFingerPanel(QtWidgets.QWidget):
             self.add_btn.setEnabled(True)
             self.add_btn.setToolTip(
                 f"Mark the end of '{p.name}' (started at {p.t:.2f} s) at the current time"
+            )
+            return
+        if self.event_combo.currentData() == CLICK_SETTING_EVENT and self.take.event_at(self.now) is None:
+            self.add_btn.setText("Add event")
+            self.add_btn.setEnabled(True)
+            self.add_btn.setToolTip(
+                "Set how much each joint contributes to force replay's press for the contact "
+                "phase at (or after) the play bar"
             )
             return
         if self.event_combo.currentData() == REVERSE_EVENT:
@@ -3371,6 +4160,9 @@ class EditFingerPanel(QtWidgets.QWidget):
             self._add_reverse()
             return
         existing = self.take.event_at(self.now)
+        if existing is None and name == CLICK_SETTING_EVENT:
+            self._add_click_setting()
+            return
         if existing is not None:
             QtWidgets.QMessageBox.information(
                 self, "Add event", f"There is already a '{existing.name}' event at {existing.t:.3f} s"
@@ -3423,6 +4215,62 @@ class EditFingerPanel(QtWidgets.QWidget):
              if e.name == MAINTAIN_TOUCH_EVENT and e.end is not None),
             key=lambda span: span[0],
         ))
+
+    def _contact_phases(self) -> list[ContactPhase]:
+        """Force replay's contact phases of the take, with their computed press directions."""
+        mags = take_tip_magnitudes(self.take, self.tip_plot.ids, self.counts_per_unit)
+        if mags is None:
+            return []
+        return contact_phases(self.take.xela_t, mags.sum(axis=1), self.take.t, self.take.q)
+
+    def _click_dialog(self, t: float, current: dict | None) -> dict | None:
+        """Asks for the press joints and force replay values of the contact phase a click
+        setting at ``t`` applies to, starting from its ``current`` params; the new params
+        (``joints``, ``force``), None if cancelled or the take has no contact phase."""
+        title = "Change click setting"
+        phases = self._contact_phases()
+        phase = click_setting_phase(phases, t)
+        if phase is None:
+            QtWidgets.QMessageBox.warning(
+                self, title,
+                f"{self.take.name} has no contact phase (or no Xela readings), so force replay "
+                "does not press in it.",
+            )
+            return None
+        a, b = sorted((self._view(phase.start), self._view(phase.end)))
+        current = current or {}
+        dialog = ClickSettingDialog(
+            self, self.take.joint_names, phase.direction, current.get("joints"),
+            f"{a:.2f}-{b:.2f} s",
+            search=self.click_search(self.take, phase) if self.click_search else None,
+            force=current.get("force"),
+        )
+        if dialog.exec_() != QtWidgets.QDialog.Accepted:
+            return None
+        return {"joints": dialog.values(), "force": dialog.force_values()}
+
+    def _add_click_setting(self) -> None:
+        phases = self._contact_phases()
+        phase = click_setting_phase(phases, self.now)
+        if phase is not None and any(
+            e.name == CLICK_SETTING_EVENT and click_setting_phase(phases, e.t) is phase
+            for e in self.take.events
+        ):
+            QtWidgets.QMessageBox.information(
+                self, "Change click setting",
+                f"This contact phase already has a '{CLICK_SETTING_EVENT}' event; edit it instead.",
+            )
+            return
+        params = self._click_dialog(self.now, None)
+        if params is None:
+            return
+        event = TakeEvent(
+            t=self.now, name=CLICK_SETTING_EVENT,
+            type=self.event_defs[CLICK_SETTING_EVENT].get("type", ""), added=time.time(),
+            params=params,
+        )
+        if self._save_events(self.take.events + [event], "Add event"):
+            self.event_list.scrollToBottom()
 
     def _add_reverse(self) -> None:
         """Marks ``episode_start`` to ``terminal`` with ``reverse_demonstration`` and swaps the
@@ -3503,10 +4351,21 @@ class EditFingerPanel(QtWidgets.QWidget):
                 self, "Edit event", f"Delete '{REVERSE_EVENT}' to undo the reverse instead."
             )
             return
+        if event.name == CLICK_SETTING_EVENT:
+            row = self.event_list.currentRow()
+            params = self._click_dialog(event.t, event.params)
+            if params is not None and self._save_events(
+                [replace(e, params={**e.params, **params}) if e is event else e
+                 for e in self.take.events],
+                "Edit event",
+            ):
+                self.event_list.setCurrentRow(row)
+            return
         # Only events of the same length, so an instant event never gets (or loses) an end.
         same_length = {
             name: info for name, info in self._addable.items()
-            if self._is_duration(name) == (event.end is not None) and name != REVERSE_EVENT
+            if self._is_duration(name) == (event.end is not None)
+            and name not in (REVERSE_EVENT, CLICK_SETTING_EVENT)
         }
         a, b = (self._view(event.t), None) if event.end is None else sorted(
             (self._view(event.t), self._view(event.end))
@@ -3613,6 +4472,8 @@ class EditTab(QtWidgets.QWidget):
         self._xela_seq = 0
         self._pose_finger: str | None = None  # finger whose Pose switch is on
         self._pose_corners: np.ndarray | None = None  # (4, 2) its take's pen box
+        # Plays being recorded, by finger: take, replay_of, start time and live baseline.
+        self._play_recs: dict[str, dict] = {}
 
         grid = QtWidgets.QWidget()
         grid_layout = QtWidgets.QGridLayout(grid)
@@ -3627,8 +4488,10 @@ class EditTab(QtWidgets.QWidget):
             panel.seeked.connect(self._show)
             panel.delete_requested.connect(self.delete_requested)
             panel.play_requested.connect(self._toggle_play)
+            panel.replay_requested.connect(self._toggle_replay)
             panel.take_loaded.connect(self._on_take_loaded)
             panel.pose_switch.toggled.connect(lambda on, f=finger: self._on_pose(f, on))
+            panel.click_search = functools.partial(ClickSearch, node, create_tab, finger)
         create_tab.playing_changed.connect(self._on_playing_changed)
 
         self.camera = CameraView("")
@@ -3660,6 +4523,7 @@ class EditTab(QtWidgets.QWidget):
             if event_defs
             else "<span style='color:#d32f2f'>No event definitions loaded (events_file).</span>"
         )
+        hint.setWordWrap(True)
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(hint)
         layout.addWidget(splitter, 1)
@@ -3686,13 +4550,130 @@ class EditTab(QtWidgets.QWidget):
         if panel.take is None or span is None:
             return
         start, end = span
-        self.create_tab.play_take(
+        self._start_play_recording(finger, panel.take)
+        if not self.create_tab.play_take(
             finger, panel.take, start, reverse=end < start, stop=end,
             touch_spans=panel.touch_spans(),
+        ):
+            self._cancel_play_recording(finger)
+
+    def _toggle_replay(self, finger: str) -> None:
+        """Replays the commands of the Play picked in ``finger``'s dropdown (or stops it)."""
+        if self.create_tab.playback(finger) is not None:
+            self.create_tab.stop_play(finger)
+            return
+        panel = self.panels[finger]
+        path = panel.replay_combo.currentData()
+        if panel.take is None or path is None:
+            return
+        try:
+            rec = PlaybackRecording.load(path)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "Replay", f"Could not load {path}:\n{e}")
+            return
+        if len(rec.cmd_t) < 2:
+            QtWidgets.QMessageBox.warning(self, "Replay", f"{rec.name} has no commands.")
+            return
+        cols = rec.cols
+        take = FingerTake(
+            finger=finger,
+            path=rec.path,
+            t=rec.cmd_t - rec.cmd_t[0],
+            q=rec.cmd_q[:, cols],
+            joint_names=[rec.joint_names[c] for c in cols],
+            hand_q=rec.cmd_q,
+            hand_joint_names=list(rec.joint_names),
         )
+        self._start_play_recording(finger, panel.take, replay_of=rec.path)
+        panel.set_replaying(True)
+        # No events and no Xela in the replayed take: plain position replay of the commands.
+        if not self.create_tab.play_take(finger, take, 0.0, select=False):
+            panel.set_replaying(False)
+            self._cancel_play_recording(finger)
+
+    def _start_play_recording(
+        self, finger: str, take: FingerTake, replay_of: str = ""
+    ) -> None:
+        self._play_recs[finger] = {
+            "take": take,
+            "replay_of": replay_of,
+            "t0": self.node.get_clock().now().nanoseconds * 1e-9,
+            "baseline": self.create_tab.hand.baseline,
+        }
+        self.node.start_play_recording(finger)
+
+    def _cancel_play_recording(self, finger: str) -> None:
+        self._play_recs.pop(finger, None)
+        self.node.stop_play_recording(finger)
+
+    def _save_play_recording(self, finger: str) -> None:
+        """Saves the Play of ``finger`` that just stopped as ``<take>_<n>``."""
+        info = self._play_recs.pop(finger, None)
+        buffers = self.node.stop_play_recording(finger)
+        playback = self.create_tab.stopped.get(finger)
+        if info is None or buffers is None or playback is None or len(playback.cmd_log) < 2:
+            return
+        log = self.node.get_logger()
+        t0 = info["t0"]
+        take: FingerTake = info["take"]
+        cmd_t = np.array([c[0] for c in playback.cmd_log]) - t0
+        if cmd_t[-1] - cmd_t[0] < MIN_PLAY_RECORDING_S:
+            log.info(f"{FINGER_LABEL[finger]}: Play shorter than {MIN_PLAY_RECORDING_S} s, "
+                     "not saved")
+            return
+        state, xela = buffers["state"], buffers["xela"]
+        empty16 = np.empty((0, NUM_JOINTS))
+        baseline = info["baseline"]
+        rec = PlaybackRecording(
+            path=self.store.new_playback_path(finger, take.name),
+            take=take.path,
+            finger=finger,
+            joint_names=self.node.joint_names,
+            cols=list(playback.cols),
+            cmd_t=cmd_t,
+            cmd_q=np.stack([c[2] for c in playback.cmd_log]),
+            cmd_local=np.array([c[1] for c in playback.cmd_log]),
+            state_t=np.array([x[0] for x in state]) - t0 if state else np.empty(0),
+            position=np.stack([x[1] for x in state]) if state else empty16,
+            velocity=np.stack([x[2] for x in state]) if state else empty16,
+            effort=np.stack([x[3] for x in state]) if state else empty16,
+            xela_t=np.array([x[0] for x in xela]) - t0 if xela else np.empty(0),
+            xela=np.stack([x[1] for x in xela]) if xela else np.empty((0, 0, 3), np.float32),
+            xela_baseline=baseline if baseline is not None else np.empty((0, 3)),
+            click_t=np.array(buffers["clicks"]) - t0,
+            meta={
+                "take": take.name,
+                "replay_of": info["replay_of"],
+                "ended": "finished" if playback.finished else "stopped",
+                "take_start": float(playback.offset),
+                "take_end": float(playback.end),
+                "reverse": bool(playback.reverse),
+                "click_press": asdict(self.create_tab.press_settings),
+                "maintain_touch": asdict(self.create_tab.touch_settings),
+                "hold": asdict(self.create_tab.settings),
+                "click_press_trace": playback.press.trace if playback.press is not None else [],
+            },
+        )
+        try:
+            rec.save()
+        except Exception as e:
+            log.warn(f"Could not save the Play recording {rec.path}: {e}")
+            return
+        log.info(f"{FINGER_LABEL[finger]}: saved the Play as {rec.path} ({len(cmd_t)} commands, "
+                 f"{len(state)} joint states, {len(xela)} Xela readings, "
+                 f"{len(buffers['clicks'])} clicks)")
+        self.panels[finger].fill_replays(select=rec.path)
 
     def _on_playing_changed(self, finger: str) -> None:
-        self.panels[finger].set_playing(self.create_tab.playback(finger) is not None)
+        panel = self.panels[finger]
+        playing = self.create_tab.playback(finger) is not None
+        if panel.replaying:
+            if not playing:
+                panel.set_replaying(False)
+        else:
+            panel.set_playing(playing)
+        if not playing and finger in self._play_recs:
+            self._save_play_recording(finger)
         self._frame_seq = -1
 
     # ---- pose ---------------------------------------------------------------------------
@@ -3746,11 +4727,20 @@ class EditTab(QtWidgets.QWidget):
         """Live camera and FK taxels, and the play bars of the takes being played."""
         if not self.isVisible():
             return
+        stamps, q = self.node.history()
         for finger, panel in self.panels.items():
             p = self.create_tab.playback(finger)
             if p is not None and panel.take is not None and p.take.path == panel.take.path:
                 if abs(p.local - panel.now) > 1e-6:
                     panel.seek(p.local)
+                with self.create_tab.cmd_lock:  # the command thread appends to it
+                    local_history = list(p.local_history)
+                if local_history and len(stamps):
+                    panel.add_measured(
+                        stamps, q, take_columns(self.node.joint_names, p.take),
+                        np.array([t for t, _ in local_history]),
+                        np.array([local for _, local in local_history]),
+                    )
 
         seq, frame = self.node.latest_raw_frame()
         if frame is not None and seq != self._frame_seq:
@@ -4103,6 +5093,7 @@ class SettingsTab(QtWidgets.QWidget):
         store: TakeStore,
         settings: HoldSettings,
         touch_settings: MaintainTouchSettings,
+        press_settings: ClickPressSettings,
         saved: dict,
         saved_path: str,
     ) -> None:
@@ -4112,6 +5103,7 @@ class SettingsTab(QtWidgets.QWidget):
         self.store = store
         self.settings = settings
         self.touch_settings = touch_settings
+        self.press_settings = press_settings
         self._hand_compliant: bool | None = None  # None until read from the hand node
         self._saved_path = saved_path
         # Saved hand gains, applied once when the hand node is first read; kept on save until
@@ -4157,44 +5149,10 @@ class SettingsTab(QtWidgets.QWidget):
         gui_form.addRow("Playback ramp:", self.ramp_spin)
         gui_form.addRow("Free-finger deadband:", self.deadband_spin)
         reset_btn = QtWidgets.QPushButton("Reset to defaults")
-
-        self.force_check = QtWidgets.QCheckBox("Match the take's fingertip force")
-        self.force_check.setToolTip(
-            "During the take's contact phases, push past the recorded joints until the live "
-            "fingertip force matches the recorded one; hold the take until the finger touches "
-            "and until the click (needs a Zero baseline before Play)"
-        )
-        self.force_gain_spin = double_spin(
-            0.0, 2.0, 0.01, 3, " rad/(unit·s)",
-            "How fast the press offset grows per unit of missing fingertip force",
-        )
-        self.force_max_spin = double_spin(
-            0.0, 0.6, 0.01, 2, " rad",
-            "Largest press offset past the recorded joints",
-        )
-        self.force_push_spin = double_spin(
-            0.0, 1.0, 0.01, 2, " rad/s",
-            "How fast the offset grows while the take is held for the click",
-        )
-        self.force_wait_spin = double_spin(
-            0.0, 20.0, 0.5, 1, " s",
-            "Longest the take is held for contact or the click before it continues",
-        )
-        force_box = QtWidgets.QGroupBox("Force replay (this GUI, applied immediately)")
-        force_form = QtWidgets.QFormLayout(force_box)
-        force_form.addRow(self.force_check)
-        force_form.addRow("Force gain:", self.force_gain_spin)
-        force_form.addRow("Max press offset:", self.force_max_spin)
-        force_form.addRow("Click push rate:", self.force_push_spin)
-        force_form.addRow("Max hold:", self.force_wait_spin)
         gui_form.addRow("", reset_btn)
         self._show_settings()
-        for spin in (
-            self.rate_spin, self.ramp_spin, self.deadband_spin, self.force_gain_spin,
-            self.force_max_spin, self.force_push_spin, self.force_wait_spin,
-        ):
+        for spin in (self.rate_spin, self.ramp_spin, self.deadband_spin):
             spin.valueChanged.connect(self._on_gui_changed)
-        self.force_check.toggled.connect(self._on_gui_changed)
         reset_btn.clicked.connect(self._reset_gui)
 
         self.hand_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
@@ -4220,10 +5178,12 @@ class SettingsTab(QtWidgets.QWidget):
         self._hand_applied.connect(self._on_hand_applied)
 
         touch_box = self._build_touch_box()
+        press_box = self._build_press_box()
 
         save_btn = QtWidgets.QPushButton("Save settings")
         save_btn.setToolTip(
-            "Save the folder, playback, force replay and hand values; they are used at the "
+            "Save the folder, playback, maintain touch, click press and hand values; they are "
+            "used at the "
             f"next start.\n{saved_path}"
         )
         self.save_status = QtWidgets.QLabel(
@@ -4235,14 +5195,22 @@ class SettingsTab(QtWidgets.QWidget):
         save_row.addWidget(self.save_status, 1)
         save_btn.clicked.connect(self._save)
 
+        # The sections scroll; Save settings stays below them, always in view.
+        sections = QtWidgets.QWidget()
+        sections_layout = QtWidgets.QVBoxLayout(sections)
+        sections_layout.addWidget(dir_box)
+        sections_layout.addWidget(gui_box)
+        sections_layout.addWidget(touch_box)
+        sections_layout.addWidget(press_box)
+        sections_layout.addWidget(self.hand_box)
+        sections_layout.addStretch(1)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        scroll.setWidget(sections)
         layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(dir_box)
-        layout.addWidget(gui_box)
-        layout.addWidget(force_box)
-        layout.addWidget(touch_box)
-        layout.addWidget(self.hand_box)
+        layout.addWidget(scroll, 1)
         layout.addLayout(save_row)
-        layout.addStretch(1)
 
         self._retry = QtCore.QTimer(self)
         self._retry.setSingleShot(True)
@@ -4281,28 +5249,16 @@ class SettingsTab(QtWidgets.QWidget):
             (self.rate_spin, s.command_rate),
             (self.ramp_spin, s.ramp_s),
             (self.deadband_spin, s.deadband),
-            (self.force_gain_spin, s.force_gain),
-            (self.force_max_spin, s.force_max_offset),
-            (self.force_push_spin, s.force_push_rate),
-            (self.force_wait_spin, s.force_max_wait),
         ):
             spin.blockSignals(True)
             spin.setValue(value)
             spin.blockSignals(False)
-        self.force_check.blockSignals(True)
-        self.force_check.setChecked(s.force_replay)
-        self.force_check.blockSignals(False)
 
     def _on_gui_changed(self, *_) -> None:
         s = self.settings
         s.command_rate = self.rate_spin.value()
         s.ramp_s = self.ramp_spin.value()
         s.deadband = self.deadband_spin.value()
-        s.force_replay = self.force_check.isChecked()
-        s.force_gain = self.force_gain_spin.value()
-        s.force_max_offset = self.force_max_spin.value()
-        s.force_push_rate = self.force_push_spin.value()
-        s.force_max_wait = self.force_wait_spin.value()
         self.settings_changed.emit()
 
     def _reset_gui(self) -> None:
@@ -4413,6 +5369,123 @@ class SettingsTab(QtWidgets.QWidget):
             setattr(self.touch_settings, name, value)
         self._show_touch_settings()
 
+    # ---- click press -------------------------------------------------------------------
+
+    # (field, label, min, max, step, decimals, suffix, scale shown / stored, tooltip)
+    PRESS_FIELDS = (
+        ("approach_speed", "Approach speed", 0.0, 50.0, 0.5, 1, " mm/s", 1000.0,
+         "Speed of the guarded move along the press axis until the fingertip touches"),
+        ("contact_ratio", "Contact level", 0.0, 1.0, 0.05, 2, " × peak", 1.0,
+         "Fingertip force that counts as contact: no-contact force + this x (recorded peak - "
+         "no-contact force)"),
+        ("max_travel", "Max approach", 0.0, 50.0, 0.5, 1, " mm", 1000.0,
+         "Largest approach from where the region starts before giving up on contact"),
+        ("force_ramp", "Force ramp", 0.0, 5.0, 0.05, 2, " × peak/s", 1.0,
+         "How fast the desired fingertip force grows while pressing, in recorded peaks per s"),
+        ("max_force_ratio", "Max force", 0.0, 5.0, 0.1, 2, " × peak", 1.0,
+         "Cap of the desired fingertip force, as a multiple of the recorded peak"),
+        ("press_gain_q", "Press gain", 0.0, 5.0, 0.01, 2, " rad/s per peak", 1.0,
+         "How fast the joint goals move past contact (along J^T d, so the force points along "
+         "the press axis) per recorded peak of missing force"),
+        ("max_press_q", "Max press offset", 0.0, 2.0, 0.05, 2, " rad", 1.0,
+         "Largest press offset of the joint goals past where contact was made"),
+        ("max_joint_offset", "Max joint offset", 0.0, 2.0, 0.05, 2, " rad", 1.0,
+         "Largest press offset of any one joint"),
+        ("max_wait", "Max wait", 0.0, 30.0, 0.5, 1, " s",
+         1.0, "Longest wait for contact, and again for the click, before retracting"),
+        ("sat_effort", "Current limit at", 0.0, 2000.0, 10.0, 0, "", 1.0,
+         "leap_state effort of a joint at its current limit (0: off). There the press stops "
+         "pushing deeper: more goal adds no force, it only turns it sideways"),
+        ("sat_hold_s", "Max time at limit", 0.0, 10.0, 0.1, 1, " s", 1.0,
+         "Longest time at the current limit without a click before giving up"),
+        ("slip_shift", "Slip: pad shift", 0.0, 20.0, 0.1, 1, " mm", 1000.0,
+         "The contact spot moving this far on the fingertip pad is a slip"),
+        ("button_travel", "Slip: along d", 0.0, 30.0, 0.5, 1, " mm", 1000.0,
+         "The fingertip moving further than this along the axis while the force falls back is "
+         "a slip (a button gives way a few mm)"),
+        ("slip_across", "Slip: across d", 0.0, 30.0, 0.5, 1, " mm", 1000.0,
+         "The fingertip moving this far across the axis is a slip"),
+        ("slip_backoff", "Slip back-off", 0.0, 1.0, 0.05, 2, " ×", 1.0,
+         "Fraction of the press offset kept after a slip"),
+        ("slip_tilt", "Slip re-aim", 0.0, 45.0, 1.0, 0, " °", 1.0,
+         "How far the press axis turns against the slip"),
+        ("max_slips", "Max slips", 0.0, 10.0, 1.0, 0, "", 1.0,
+         "Slips before giving up"),
+        ("retract", "Retract", 0.0, 30.0, 0.5, 1, " mm", 1000.0,
+         "How far the fingertip backs off along the axis after the press"),
+        ("release_s", "Release time", 0.0, 5.0, 0.05, 2, " s", 1.0,
+         "Time of the retract, and of the blend back into the take"),
+        ("click_min_ratio", "Click force drop from", 0.0, 2.0, 0.05, 2, " × peak", 1.0,
+         "A sharp force drop counts toward a click only from at least this force"),
+        ("click_advance", "Click give-way", 0.0, 10.0, 0.1, 1, " mm", 1000.0,
+         "With the force drop, the fingertip must give way this far (along the way the joint "
+         "springs unload) for a click without the click detector"),
+        ("max_current", "Abort current", 0.0, 2000.0, 10.0, 0, "", 1.0,
+         "Finger joint current (leap_state effort) that aborts the press at once (0: off)"),
+    )
+
+    def _build_press_box(self) -> QtWidgets.QGroupBox:
+        self.press_check = QtWidgets.QCheckBox(f"Press in '{CLICK_PRESS_EVENT}' regions")
+        self.press_check.setToolTip(
+            f"During Play, replace the take over a '{CLICK_PRESS_EVENT}' region with a press of "
+            "the fingertip along the recorded force until the pen clicks (needs Xela readings in "
+            "the take and a Zero baseline before Play)"
+        )
+        self.press_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
+        press_reset = QtWidgets.QPushButton("Reset to defaults")
+        box = QtWidgets.QGroupBox("Click press (Play, applied immediately)")
+        form = QtWidgets.QFormLayout(box)
+        form.addRow(self.press_check)
+        for name, label, lo, hi, step, decimals, suffix, _, tooltip in self.PRESS_FIELDS:
+            spin = double_spin(lo, hi, step, decimals, suffix, tooltip)
+            self.press_spins[name] = spin
+            form.addRow(f"{label}:", spin)
+        self.press_detector_check = QtWidgets.QCheckBox("Only the click detector ends a press")
+        self.press_detector_check.setToolTip(
+            "Count only click_topic as the click (a force drop with the fingertip giving way "
+            "does not)"
+        )
+        form.addRow(self.press_detector_check)
+        form.addRow("", press_reset)
+        self._show_press_settings()
+        for spin in self.press_spins.values():
+            spin.valueChanged.connect(self._on_press_changed)
+        self.press_check.toggled.connect(self._on_press_changed)
+        self.press_detector_check.toggled.connect(self._on_press_changed)
+        press_reset.clicked.connect(self._reset_press)
+        return box
+
+    def _show_press_settings(self) -> None:
+        s = self.press_settings
+        for check, value in (
+            (self.press_check, s.enabled), (self.press_detector_check, s.require_click_detector)
+        ):
+            check.blockSignals(True)
+            check.setChecked(value)
+            check.blockSignals(False)
+        self.press_detector_check.setEnabled(s.enabled)
+        for name, *_, scale, _ in self.PRESS_FIELDS:
+            spin = self.press_spins[name]
+            spin.blockSignals(True)
+            spin.setValue(getattr(s, name) * scale)
+            spin.blockSignals(False)
+            spin.setEnabled(s.enabled)
+
+    def _on_press_changed(self, *_) -> None:
+        s = self.press_settings
+        s.enabled = self.press_check.isChecked()
+        s.require_click_detector = self.press_detector_check.isChecked()
+        self.press_detector_check.setEnabled(s.enabled)
+        for name, *_, scale, _ in self.PRESS_FIELDS:
+            kind = type(getattr(s, name))  # max_slips is a count
+            setattr(s, name, kind(round(self.press_spins[name].value() / scale, 9)))
+            self.press_spins[name].setEnabled(s.enabled)
+
+    def _reset_press(self) -> None:
+        for name, value in asdict(ClickPressSettings()).items():
+            setattr(self.press_settings, name, value)
+        self._show_press_settings()
+
     # ---- saving -------------------------------------------------------------------------
 
     def _save(self) -> None:
@@ -4422,6 +5495,7 @@ class SettingsTab(QtWidgets.QWidget):
             "demo_dir": self.store.demo_dir,
             "gui": asdict(self.settings),
             "maintain_touch": asdict(self.touch_settings),
+            "click_press": asdict(self.press_settings),
             "hand": self._saved_hand,
         }
         try:
@@ -4529,10 +5603,12 @@ class MainWindow(QtWidgets.QMainWindow):
             saved = {}
         settings = HoldSettings()
         touch_settings = MaintainTouchSettings()
+        press_settings = ClickPressSettings()
         if saved:
             node.get_logger().info(f"Loaded settings from '{saved_path}'")
             apply_saved_hold_settings(settings, saved.get("gui", {}))
             apply_saved_hold_settings(touch_settings, saved.get("maintain_touch", {}))
+            apply_saved_hold_settings(press_settings, saved.get("click_press", {}))
             if saved.get("demo_dir") and not node.demo_dir_given:
                 node.demo_dir = os.path.expanduser(saved["demo_dir"])
         self.setWindowTitle(f"Record demonstration - {node.demo_dir}")
@@ -4543,11 +5619,11 @@ class MainWindow(QtWidgets.QMainWindow):
         except Exception as e:
             node.get_logger().warn(f"Could not load events from {node.events_file}: {e}")
             event_defs = {}
-        self.create_tab = CreateTab(node, self.store, settings, touch_settings)
+        self.create_tab = CreateTab(node, self.store, settings, touch_settings, press_settings)
         self.edit_tab = EditTab(node, self.store, event_defs, self.create_tab)
         self.compose_tab = ComposeTab(node, self.store)
         self.settings_tab = SettingsTab(
-            node, self.store, settings, touch_settings, saved, saved_path
+            node, self.store, settings, touch_settings, press_settings, saved, saved_path
         )
         self.create_tab.takes_changed.connect(self.compose_tab.refresh_takes)
         self.create_tab.takes_changed.connect(self.edit_tab.refresh_takes)

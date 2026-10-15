@@ -351,6 +351,91 @@ current state is shown next to the play bar time, e.g. `[tracking force, +0.08 r
 
 ---
 
+## 5b. Click press (`click_press` regions)
+
+Force replay pushes along a *joint-space* direction, so a small pose error can let the thumb slide
+off the button. A **`click_press`** region (Thumb, added in the Edit tab with two clicks: just
+before contact, and after the recorded release) replaces the take over that region with a press
+controlled at the **fingertip** ([click_press.py](../click_press.py)). Force replay is off for
+contact phases inside the region.
+
+```
+ take ──► region start ──► approach ──► press ──► retract ──► take continues from region end
+            (take time held from here)        click?                 (blend over release time)
+```
+
+**From the take (once, at Play):**
+- **Fingertip force F**: the sum of the fingertip taxel magnitudes, the same signal as the plots
+  and force replay. The peak in the region, and the take's no-contact level, set the scale.
+- **Press axis d**: the way the contact point moved (by FK) while the force loaded up to the
+  peak. That is what pushed the button in the demonstration.
+- **Contact point**: the force-weighted centroid of the fingertip taxels at the peak.
+
+The taxels' force *vectors* are not used. Summed, they largely cancel and barely grow while the
+press does: on `th_1`, Σ|taxel| goes 2.4 → 7.4 while the vector sum stays at about 1.0–1.3, and its
+direction is about 80° off the way the thumb actually moved.
+
+**Every command step (30 Hz):**
+
+| State | What is commanded | Ends when |
+| --- | --- | --- |
+| approach | fingertip target `+= d · approach_speed · dt` (Cartesian, by least squares) | `F ≥ contact level`, or F rising while the fingertip is blocked (or max approach / max wait: abort) |
+| press | joint goals `q_c + Δq`, `Δq += press_gain_q · (F_des − F)/F_peak · u · dt` with `u = K⁻¹Jᵀd`; `F_des = min(F_contact + force_ramp · F_peak · t, max force × F_peak)` | click; or abort: max wait, the current limit held too long, too many slips |
+| retract | back `retract` along `−d` over the release time | done |
+
+**Why `u = K⁻¹Jᵀd`.** The motors are springs: torque = kP × goal error. A goal offset Δq gives the
+torque `K Δq`, and the fingertip force is the f that satisfies `Jᵀ f = K Δq`. With `Δq ∝ K⁻¹Jᵀd`
+that force points along d. The first version pushed the goal along the IK direction `J⁺d`. That
+gives a force along `(JJᵀ)⁻¹d`, which on th_2 is 20–37° off d. That is at or past the friction
+cone of the fingertip on the cap, so the thumb slid. `K` holds the joints' relative kP (motors 0,
+4 and 8 run at 75 %). `u` is recomputed every 0.2 s.
+
+**Current limit.** While a thumb joint's `leap_state` effort is at *current limit at* (about 600
+here: the recordings plateau at 640–760), the press stops pushing deeper. More goal on that joint
+adds no force; it only lets the unsaturated joints turn the force sideways. Held there for *max
+time at limit* without a click, the press aborts with "raise the Playback current limit".
+
+**Slips.** A slip is any of:
+- the contact spot (force-weighted taxel position on the fingertip pad) moving more than *slip:
+  pad shift*;
+- the measured fingertip moving more than *slip: across d*;
+- the fingertip moving more than *slip: along d* (a button only gives way a few mm) while the
+  force falls back.
+
+On a slip the press offset is cut to *slip back-off* and d is turned *slip re-aim* degrees
+against the direction the fingertip slid. After *max slips* the press aborts.
+
+**Clicks.** A new pulse on `click_topic` is a click. Without it (unless *only the click detector
+ends a press* is on), a click needs both a 20 % force drop from at least *click force drop from* ×
+peak, and the fingertip giving way *click give-way* mm along `e = J K⁻¹ Jᵀ d`. That is the way the
+joint springs unload, not d itself. There must also be no slip in that window: sliding off the cap
+also drops the force and moves the fingertip forward, but off `e`.
+
+Every decision (contact, slip, saturated, click, abort, with the time, F, press offset and the
+reason) is saved in the Play recording's `meta["click_press_trace"]`.
+
+Values are in the Settings tab's **Click press** section (saved with Save settings). A region's
+`params` in the take can override any of them (same names as `ClickPressSettings`).
+
+---
+
+## 5c. Recording and replaying Plays
+
+Every Edit-tab Play is saved, once it stops, as `playbacks/<finger>/<take>_<n>.npz` in the demo
+folder ([playback_recording.py](../playback_recording.py)). It holds:
+- the commands sent at each step (`cmd_t`, `cmd_q`, `cmd_local` = the take time);
+- `leap_state` position / velocity / effort;
+- the raw Xela readings with the live baseline;
+- the click detector's clicks;
+- `meta`: settings, how it ended, and `replay_of`.
+
+The **Plays** dropdown under the play bar lists the take's recordings. **Replay** resends the
+picked one's commands through the same command loop, as plain position replay: open-loop, no force
+replay or click press. A run that clicked should click again if the pen has not moved. The Replay
+is itself saved as the next index, so the two can be compared.
+
+---
+
 ## 6. Tuning cheat sheet
 
 | Symptom | Try |

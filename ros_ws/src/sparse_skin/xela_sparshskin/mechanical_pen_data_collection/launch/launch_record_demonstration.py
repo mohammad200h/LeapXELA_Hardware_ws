@@ -101,6 +101,18 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="/bounding_box_sam",
                 description="Prefix of the SAM annotated image, mask, and boxes topics",
             ),
+            DeclareLaunchArgument(
+                "click_detector",
+                default_value="true",
+                description="Start the pen click detector "
+                "(push_button_pen_click_detection launch_click_detector.py)",
+            ),
+            DeclareLaunchArgument(
+                "click_topic",
+                default_value="/pen_click",
+                description="Int32 click detector topic (1 while a click is heard), used by the "
+                "click setting search and its light (empty disables it)",
+            ),
             IncludeLaunchDescription(
                 XMLLaunchDescriptionSource(
                     PathJoinSubstitution([FindPackageShare("xela_server_ros2"), "service.launch"])
@@ -147,6 +159,17 @@ def generate_launch_description() -> LaunchDescription:
                 }.items(),
                 condition=IfCondition(LaunchConfiguration("sam")),
             ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution([
+                        FindPackageShare("push_button_pen_click_detection"),
+                        "launch",
+                        "launch_click_detector.py",
+                    ])
+                ),
+                launch_arguments={"output_topic": LaunchConfiguration("click_topic")}.items(),
+                condition=IfCondition(LaunchConfiguration("click_detector")),
+            ),
             Node(
                 package="conversions",
                 executable="convert_hardware_to_sim",
@@ -182,6 +205,11 @@ def generate_launch_description() -> LaunchDescription:
                         )
                     },
                     {"xela_topic": ParameterValue(LaunchConfiguration("xela_topic"), value_type=str)},
+                    {
+                        "click_topic": ParameterValue(
+                            LaunchConfiguration("click_topic"), value_type=str
+                        )
+                    },
                     {
                         "events_file": ParameterValue(
                             LaunchConfiguration("events_file"), value_type=str

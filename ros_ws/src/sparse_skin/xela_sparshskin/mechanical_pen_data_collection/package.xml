@@ -8,6 +8,7 @@
   <license>TODO: License declaration</license>
 
   <exec_depend>bounding_box_sam</exec_depend>
+  <exec_depend>push_button_pen_click_detection</exec_depend>
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>launch_xml</exec_depend>

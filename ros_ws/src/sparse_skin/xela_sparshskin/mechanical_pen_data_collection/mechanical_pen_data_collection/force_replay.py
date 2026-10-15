@@ -18,6 +18,9 @@ baseline (what the Create tab plots). Around that:
   while the live force is already ``FORCE_LIMIT`` times the recorded peak. A live click is
   watched for all the time, so a pen clicking earlier than in the take is not pressed again;
 - release: once clicked (or given up) the offset decays and the take continues as recorded.
+
+The values above (``ForceSettings``) are the tracker's, unless a contact phase has its own
+(``ContactPhase.settings``, from the take's ``change_click_setting`` event).
 """
 
 from __future__ import annotations
@@ -63,6 +66,17 @@ class ForceSettings(Protocol):
 
 
 @dataclass
+class ForceReplaySettings:
+    """Default ``ForceSettings``: used by contact phases without settings of their own."""
+
+    force_replay: bool = True  # push past the take to match its fingertip force
+    force_gain: float = 0.1  # rad per (force unit * s)
+    force_max_offset: float = 0.25  # rad
+    force_push_rate: float = 0.15  # rad/s while holding the take for the click
+    force_max_wait: float = 3.0  # s the take is held for contact or the click
+
+
+@dataclass
 class ContactPhase:
     start: float  # take time the recorded force rises above ``level``
     end: float  # take time it falls back below it
@@ -71,6 +85,7 @@ class ContactPhase:
     click: float | None  # take time of the recorded click (force just before its sharp drop)
     direction: np.ndarray  # (J,) unit joint direction of the finger while loading up
     done: bool = False
+    settings: ForceSettings | None = None  # this phase's own (None: the tracker's)
 
 
 def sample(t: np.ndarray, values: np.ndarray, at: float) -> np.ndarray:
@@ -180,8 +195,8 @@ class ForceTracker:
     def _active(self, local: float) -> ContactPhase | None:
         return next((p for p in self.phases if not p.done and p.start <= local), None)
 
-    def _push(self, amount: float) -> None:
-        self.offset = float(np.clip(self.offset + amount, 0.0, self.settings.force_max_offset))
+    def _push(self, amount: float, max_offset: float) -> None:
+        self.offset = float(np.clip(self.offset + amount, 0.0, max_offset))
 
     def _finish(self, phase: ContactPhase, message: str) -> None:
         phase.done = True
@@ -207,10 +222,14 @@ class ForceTracker:
 
     def step(self, local: float, dt: float, now: float, f_live: float | None) -> bool:
         """Updates ``offset`` for take time ``local``; returns False to hold the take's time."""
-        s = self.settings
         if f_live is not None:
             self._watch_click(now, f_live)
-        phase = self._active(local) if s.force_replay and f_live is not None else None
+        phase = self._active(local) if f_live is not None else None
+        s = phase.settings if phase is not None and phase.settings is not None else self.settings
+        if phase is not None and not s.force_replay:
+            if local > phase.end:
+                phase.done = True  # so the next phase can become active
+            phase = None
         if phase is None:
             self.offset *= float(np.exp(-dt / RELEASE_TAU_S))
             self.status = ""
@@ -240,7 +259,7 @@ class ForceTracker:
                     self._finish(phase, f"no contact within {s.force_max_wait:.1f} s at take "
                                         f"time {local:.2f} s; continuing without force replay")
                     return True
-                self._push(s.force_gain * max(f_rec - f_live, 0.0) * dt)
+                self._push(s.force_gain * max(f_rec - f_live, 0.0) * dt, s.force_max_offset)
                 self.status = "waiting for contact"
                 return False
 
@@ -253,13 +272,14 @@ class ForceTracker:
                 return True
             if f_live < FORCE_LIMIT * phase.peak:
                 self._push(
-                    (s.force_push_rate + s.force_gain * max(phase.peak - f_live, 0.0)) * dt
+                    (s.force_push_rate + s.force_gain * max(phase.peak - f_live, 0.0)) * dt,
+                    s.force_max_offset,
                 )
             self.status = "pressing for the click"
             return False
         if local > phase.end:
             self._finish(phase, f"contact phase ended at take time {local:.2f} s")
             return True
-        self._push(s.force_gain * (f_rec - f_live) * dt)
+        self._push(s.force_gain * (f_rec - f_live) * dt, s.force_max_offset)
         self.status = "tracking force"
         return True

@@ -32,9 +32,11 @@ def demo_take():
     return t, q, t_force, force
 
 
-def simulate(force_on=True, pen_shift=0.0, pen=True):
+def simulate(force_on=True, pen_shift=0.0, pen=True, phase_settings=None):
     t, q, t_force, force = demo_take()
     phases = fr.contact_phases(t_force, force, t, q)
+    for phase in phases:
+        phase.settings = phase_settings
     tracker = fr.ForceTracker(phases, t_force, force, 4, Settings(force_replay=force_on))
     tracker.reset(0.0)
     surface = 0.15 - 6.0 / K_PEN + pen_shift  # the demo reached force 6 at its deepest point
@@ -99,3 +101,15 @@ def test_offset_respects_limit():
     for k in range(600):  # pressing on nothing for 20 s
         tracker.step(5.0, 1 / 30, k / 30, 0.3)
     assert tracker.offset == pytest.approx(Settings.force_max_offset)
+
+
+def test_phase_settings_override_the_trackers():
+    # The phase turns force replay off although the tracker has it on...
+    clicked, top, held, _ = simulate(phase_settings=Settings(force_replay=False))
+    assert clicked is None and top < 4.0 and held == 0.0
+    # ...or on although the tracker has it off.
+    clicked, _, _, _ = simulate(force_on=False, phase_settings=Settings())
+    assert clicked is not None
+    # Its own max hold applies when there is no pen.
+    _, _, held, _ = simulate(pen=False, phase_settings=Settings(force_max_wait=1.0))
+    assert held == pytest.approx(1.0, abs=0.1)

@@ -3,20 +3,50 @@
   "gui": {
     "command_rate": 30.0,
     "ramp_s": 0.5,
-    "deadband": 0.05,
-    "force_replay": true,
-    "force_gain": 0.5,
-    "force_max_offset": 0.25,
-    "force_push_rate": 0.5,
-    "force_max_wait": 3.0
+    "deadband": 0.05
+  },
+  "maintain_touch": {
+    "enabled": true,
+    "press_offset": 0.03,
+    "press_rate": 0.05,
+    "match_force": false,
+    "force_gain": 0.1,
+    "max_offset": 0.2,
+    "release_s": 0.3
+  },
+  "click_press": {
+    "enabled": true,
+    "approach_speed": 0.05,
+    "contact_ratio": 0.15,
+    "force_ramp": 0.8,
+    "max_force_ratio": 1.3,
+    "press_gain_q": 0.15,
+    "max_press_q": 0.7,
+    "max_joint_offset": 0.4,
+    "max_travel": 0.02,
+    "max_wait": 8.0,
+    "sat_effort": 740.0,
+    "sat_hold_s": 2.0,
+    "slip_shift": 0.008,
+    "button_travel": 0.004,
+    "slip_across": 0.003,
+    "slip_backoff": 0.6,
+    "slip_tilt": 10.0,
+    "max_slips": 3,
+    "retract": 0.004,
+    "release_s": 0.3,
+    "click_min_ratio": 0.7,
+    "click_advance": 0.001,
+    "require_click_detector": false,
+    "max_current": 0.0
   },
   "hand": {
     "compliant_kP": 60.0,
     "compliant_kD": 40.0,
-    "compliant_curr_lim": 120.0,
+    "compliant_curr_lim": 650.0,
     "compliant_deadband": 0.05,
-    "stiff_kP": 1200.0,
+    "stiff_kP": 1500.0,
     "stiff_kD": 200.0,
-    "stiff_curr_lim": 550.0
+    "stiff_curr_lim": 520.0
   }
 }

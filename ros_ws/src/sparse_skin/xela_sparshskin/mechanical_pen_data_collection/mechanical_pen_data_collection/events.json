@@ -93,6 +93,21 @@
             "source":"UI",
             "length":"duration",
             "applied_to":["IF","MF","RF"]
+        },
+        "click_press":{
+            "type":"demonstration_modification",
+            "description":"Thumb: over this region Play replaces the take with a guarded move along the recorded press axis, a fingertip normal-force ramp until the pen clicks, then a retract; the take continues from the region end. Force replay is off over the region",
+            "source":"UI",
+            "color":"#ff6d00",
+            "length":"duration",
+            "applied_to":"TH"
+        },
+        "change_click_setting":{
+            "type":"demonstration_modification",
+            "description":"The clicking is replicated by applying press offset to all the joints. This can lead to sliding motion. This modifier will adjust default behaviour by tuning each joint behaviour",
+            "source":"UI",
+            "length":"instant",
+            "applied_to":"TH"
         }
         
     }
