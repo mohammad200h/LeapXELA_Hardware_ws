@@ -49,9 +49,25 @@ def generate_launch_description() -> LaunchDescription:
                 description="How many times per second the output is published",
             ),
             DeclareLaunchArgument(
+                "audio_topic",
+                default_value="/audio",
+                description="Topic audio_publisher streams the mic on (it holds the mic; the "
+                "click detector and other nodes listen to the topic)",
+            ),
+            DeclareLaunchArgument(
                 "output_topic",
                 default_value="/pen_click",
                 description="Int32 topic: 1 while a click is heard, 0 otherwise",
+            ),
+            Node(
+                package="push_button_pen_click_detection",
+                executable="audio_publisher",
+                name="audio_publisher",
+                output="screen",
+                parameters=[
+                    {"device": str_arg("device")},
+                    {"topic": str_arg("audio_topic")},
+                ],
             ),
             Node(
                 package="push_button_pen_click_detection",
@@ -66,6 +82,7 @@ def generate_launch_description() -> LaunchDescription:
                     {"hold_s": float_arg("hold_s")},
                     {"rate_hz": float_arg("rate_hz")},
                     {"output_topic": str_arg("output_topic")},
+                    {"audio_topic": str_arg("audio_topic")},
                 ],
             ),
         ]

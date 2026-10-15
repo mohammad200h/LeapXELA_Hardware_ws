@@ -35,6 +35,7 @@ setup(
         'console_scripts': [
             'click_recorder = push_button_pen_click_detection.click_recorder:main',
             'click_detector = push_button_pen_click_detection.click_detector:main',
+            'audio_publisher = push_button_pen_click_detection.audio_publisher:main',
         ],
     },
 )

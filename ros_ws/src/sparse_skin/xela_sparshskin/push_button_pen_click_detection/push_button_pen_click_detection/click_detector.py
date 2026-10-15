@@ -14,7 +14,11 @@ Publishes:
     for tuning ``threshold``
 
 ROS parameters:
+  - audio_topic (str, default ""): take the audio from this std_msgs/Float32MultiArray topic
+    (``audio_publisher``) instead of opening the mic, which only one program can hold; empty
+    opens the mic directly
   - device (str, default "08bb:2902"): USB id, name substring or index of the input device
+    (only without audio_topic)
   - template_dir (str, default ~/.ros/pen_click_templates)
   - sample_rate (int, default 48000)
   - threshold (float, default 0.7): similarity at or above which a click is detected
@@ -37,11 +41,13 @@ import rclpy
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from scipy import signal
-from std_msgs.msg import Float32, Int32
+from std_msgs.msg import Float32, Float32MultiArray, Int32
 
 from push_button_pen_click_detection import audio_utils
 
 BLOCK_SIZE = 256
+# Smallest audio chunk expected from audio_topic; the window buffer holds enough of them.
+MIN_TOPIC_BLOCK = 64
 RMS_FRAME_S = 0.005
 NOISE_FLOOR_ALPHA = 0.02
 
@@ -59,6 +65,7 @@ class ClickDetector(Node):
         self._hold_s = float(self.declare_parameter("hold_s", 0.15).value)
         rate_hz = float(self.declare_parameter("rate_hz", 100.0).value)
         output_topic = self.declare_parameter("output_topic", "/pen_click").value
+        audio_topic = self.declare_parameter("audio_topic", "").value
 
         self._templates = self._load_templates(template_dir)
         longest = max(n for _, n in self._templates)
@@ -67,7 +74,7 @@ class ClickDetector(Node):
 
         self._lock = threading.Lock()
         self._blocks: collections.deque[np.ndarray] = collections.deque(
-            maxlen=self._window_n // BLOCK_SIZE + 2
+            maxlen=self._window_n // min(BLOCK_SIZE, MIN_TOPIC_BLOCK) + 2
         )
         self._noise_floor: float | None = None
         self._last_hit = -np.inf
@@ -79,17 +86,24 @@ class ClickDetector(Node):
         self._click_pub = self.create_publisher(Int32, output_topic, 10)
         self._score_pub = self.create_publisher(Float32, output_topic.rstrip("/") + "/score", 10)
 
-        import sounddevice as sd
+        self._stream = None
+        if audio_topic:
+            # sample_rate must match the audio_publisher's.
+            self.create_subscription(Float32MultiArray, audio_topic, self._on_audio_msg, 100)
+            source = f"{audio_topic} @ {self._sr} Hz"
+        else:
+            import sounddevice as sd
 
-        device = audio_utils.find_input_device(device_query)
-        self._stream = sd.InputStream(
-            device=device, channels=1, samplerate=self._sr, dtype="float32",
-            blocksize=BLOCK_SIZE, callback=self._on_audio,
-        )
-        self._stream.start()
+            device = audio_utils.find_input_device(device_query)
+            self._stream = sd.InputStream(
+                device=device, channels=1, samplerate=self._sr, dtype="float32",
+                blocksize=BLOCK_SIZE, callback=self._on_audio,
+            )
+            self._stream.start()
+            source = f"[{device}] {sd.query_devices(device)['name']} @ {self._sr} Hz"
         self.create_timer(1.0 / rate_hz, self._tick)
         self.get_logger().info(
-            f"Listening on [{device}] {sd.query_devices(device)['name']} @ {self._sr} Hz with "
+            f"Listening on {source} with "
             f"{len(self._templates)} template(s) from {template_dir}; "
             f"publishing {output_topic} (threshold {self._threshold})"
         )
@@ -117,6 +131,10 @@ class ClickDetector(Node):
     def _on_audio(self, indata, frames, time_info, status) -> None:
         with self._lock:
             self._blocks.append(indata[:, 0].copy())
+
+    def _on_audio_msg(self, msg: Float32MultiArray) -> None:
+        with self._lock:
+            self._blocks.append(np.asarray(msg.data, dtype=np.float32))
 
     def _tick(self) -> None:
         with self._lock:
@@ -152,8 +170,9 @@ class ClickDetector(Node):
         return max(audio_utils.similarity(feat, live) for feat, _ in self._templates)
 
     def destroy_node(self) -> None:
-        self._stream.stop()
-        self._stream.close()
+        if self._stream is not None:
+            self._stream.stop()
+            self._stream.close()
         super().destroy_node()
 
 

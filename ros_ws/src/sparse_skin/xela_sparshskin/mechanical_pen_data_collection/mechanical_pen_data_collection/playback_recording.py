@@ -12,6 +12,8 @@ the next free index), with every time relative to the start of the Play:
 - ``click_t``: rising edges of the click detector;
 - ``video`` / ``video_t``: the camera recording (path, "" if none) and its frame times (the
   Compose tab's Play on hand records one);
+- ``audio`` / ``audio_t0`` / ``audio_rate``: the microphone recording (16-bit mono WAV path, ""
+  if none), the time of its first sample and its sample rate (Play on hand records one);
 - ``meta``: JSON (source take, how it ended, the take time span, ``replay_of`` for a Replay...).
 """
 
@@ -49,6 +51,9 @@ class PlaybackRecording:
     click_t: np.ndarray = field(default_factory=lambda: _empty(0))
     video: str = ""  # camera recording of the Play ("" if none)
     video_t: np.ndarray = field(default_factory=lambda: _empty(0))  # its frame times
+    audio: str = ""  # microphone recording of the Play (WAV, "" if none)
+    audio_t0: float = 0.0  # time of its first sample
+    audio_rate: int = 0  # its sample rate (Hz)
     meta: dict = field(default_factory=dict)
 
     @property
@@ -80,6 +85,9 @@ class PlaybackRecording:
             click_t=self.click_t,
             video=self.video,
             video_t=self.video_t,
+            audio=self.audio,
+            audio_t0=self.audio_t0,
+            audio_rate=self.audio_rate,
             meta=json.dumps(self.meta),
         )
 
@@ -99,6 +107,9 @@ class PlaybackRecording:
                 joint_names=[str(n) for n in data["joint_names"]],
                 cols=[int(c) for c in data["cols"]],
                 video=str(data["video"]) if "video" in data.files else "",
+                audio=str(data["audio"]) if "audio" in data.files else "",
+                audio_t0=float(data["audio_t0"]) if "audio_t0" in data.files else 0.0,
+                audio_rate=int(data["audio_rate"]) if "audio_rate" in data.files else 0,
                 meta=json.loads(str(data["meta"])) if "meta" in data.files else {},
                 **arrays,
             )
