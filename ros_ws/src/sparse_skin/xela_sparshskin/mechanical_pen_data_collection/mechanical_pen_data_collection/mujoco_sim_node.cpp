@@ -94,8 +94,9 @@ public:
       model_path_.c_str(), static_cast<long>(m_->nq), static_cast<long>(m_->nu), m_->opt.timestep, cmd_topic.c_str(),
       state_topic.c_str());
     RCLCPP_INFO(
-      get_logger(), "Finger-finger contacts on '%s'",
-      contact_topic.empty() ? "(off)" : contact_topic.c_str());
+      get_logger(), "Finger-finger contacts on '%s'; viewer window %s",
+      contact_topic.empty() ? "(off)" : contact_topic.c_str(),
+      viewer_ ? "on" : "off (viewer:=false, headless)");
   }
 
   ~MujocoSimNode() override

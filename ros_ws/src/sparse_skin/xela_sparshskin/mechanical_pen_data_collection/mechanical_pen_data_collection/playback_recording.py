@@ -10,6 +10,8 @@ the next free index), with every time relative to the start of the Play:
 - ``xela_t`` / ``xela`` (L, T, 3): raw Xela readings, with ``xela_baseline`` (T, 3) the live
   no-contact baseline at Play;
 - ``click_t``: rising edges of the click detector;
+- ``video`` / ``video_t``: the camera recording (path, "" if none) and its frame times (the
+  Compose tab's Play on hand records one);
 - ``meta``: JSON (source take, how it ended, the take time span, ``replay_of`` for a Replay...).
 """
 
@@ -45,6 +47,8 @@ class PlaybackRecording:
     xela: np.ndarray = field(default_factory=lambda: _empty(0, 0, 3, dtype=np.float32))
     xela_baseline: np.ndarray = field(default_factory=lambda: _empty(0, 3))
     click_t: np.ndarray = field(default_factory=lambda: _empty(0))
+    video: str = ""  # camera recording of the Play ("" if none)
+    video_t: np.ndarray = field(default_factory=lambda: _empty(0))  # its frame times
     meta: dict = field(default_factory=dict)
 
     @property
@@ -74,6 +78,8 @@ class PlaybackRecording:
             xela=self.xela,
             xela_baseline=self.xela_baseline,
             click_t=self.click_t,
+            video=self.video,
+            video_t=self.video_t,
             meta=json.dumps(self.meta),
         )
 
@@ -83,7 +89,7 @@ class PlaybackRecording:
             arrays = {
                 name: data[name] for name in (
                     "cmd_t", "cmd_q", "cmd_local", "state_t", "position", "velocity", "effort",
-                    "xela_t", "xela", "xela_baseline", "click_t",
+                    "xela_t", "xela", "xela_baseline", "click_t", "video_t",
                 ) if name in data.files
             }
             return cls(
@@ -92,6 +98,7 @@ class PlaybackRecording:
                 finger=str(data["finger"]),
                 joint_names=[str(n) for n in data["joint_names"]],
                 cols=[int(c) for c in data["cols"]],
+                video=str(data["video"]) if "video" in data.files else "",
                 meta=json.loads(str(data["meta"])) if "meta" in data.files else {},
                 **arrays,
             )

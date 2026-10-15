@@ -108,6 +108,13 @@
             "source":"UI",
             "length":"instant",
             "applied_to":"TH"
+        },
+        "random_episode_start":{
+            "type":"demonstration_modification",
+            "description":"it is a event that marks all valid starting points for the episode. This is done in edit tab. it should be used by compose tab to sample episode start",
+            "source":"UI",
+            "length":"duration",
+            "applied_to":["IF","MF","RF","TH"]
         }
         
     }

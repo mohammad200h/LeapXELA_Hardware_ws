@@ -108,17 +108,39 @@ Every Play on hand is recorded as one whole-hand ``PlaybackRecording``,
 the commands sent, ``leap_state`` joint positions, velocities and efforts, the raw Xela readings
 (with the live baseline) and the clicks, from Play to the end; ``meta`` holds the takes, how it
 ended and the timeline of each finger (start, holding at terminal, finished / stopped). The
-Hand plays dropdown lists the box's recordings, newest first. During Play on hand, the slip
-lights (Index, Middle, Ring) show each finger's contact: grey not in contact, green in contact
-(its ``maintain_touch`` holding), red for ``SLIP_LIGHT_S`` after a slip (``slip_detection``: the
-contact spot moving on the pad, or the fingertip force falling away), with a count of the slips;
+Play on hand first moves the fingers to where their episodes start (the sampled random start,
+or ``episode_start``), one after another (``START_ORDER``), gently (``move_to_pose_take``: an
+S-curve no faster than ``START_MOVE_SPEED``), each then held stiff there; the At start lights
+show it (yellow moving, green at its start). Once all are there, the recording starts and the
+episodes play as above.
+Hand plays panel (right) lists the box's recordings, newest first; clicking one shows its
+details and the Delete recording, Play on sim and Play on hand buttons. The two Play buttons
+send the recording's commands again at their recorded times: to the sim as Test in sim does, or
+to the hand as plain position replay of the fingers it played (as the Edit tab's Replay).
+During Play on hand, the slip lights (Index, Middle, Ring) show each finger's contact: grey not
+in contact, green in contact (its ``maintain_touch`` holding), red for ``SLIP_LIGHT_S`` after a
+slip (``slip_detection``: the contact spot moving on the pad, or the fingertip force falling
+away), with a count of the slips;
 the slips are saved in the recording's ``meta["slips"]``. With Avoid slip on, Index, Middle and
 Ring press harder so the Thumb cannot push the pen out (``AvoidSlipSettings``, next to the
 switch, saved with Save settings): the fingers holding contact get ``before_thumb`` more hold
 force when the Thumb starts, and every slip of a finger adds ``per_slip``, up to ``max_extra``
 (``TouchPress.extra_force``; needs Zero, as the force is held from the live Xela).
+A take's ``random_episode_start`` regions (added on the Edit tab) mark where its episode may
+start: every Test in sim and Play on hand starts it at a time drawn uniformly from them (the
+part between ``episode_start`` and ``terminal``) instead of at ``episode_start``; the Edit tab's
+own Play still starts at ``episode_start``.
 Under the selected take's first frame, a Live view shows the camera with the selected bounding
 box drawn on it, in yellow, to line the pen up with it before playing.
+
+Demonstration tab: plays back the Compose tab's Play on hand recordings without sending
+anything to the hand. Pick a recording and press Play (or drag the play bar): plots
+of each finger's joint positions, velocities and efforts (``leap_state``) with the run's
+timeline and slips marked, its camera recording with the bounding box drawn on it, and the FK
+taxels with the recorded Xela readings follow the play bar. With Stream to sim (on by default)
+the recorded joint positions are also sent to the MuJoCo sim on ``sim_cmd_topic``, converted to
+sim joints as ``convert_hardware_to_sim`` does. Play on hand saves the camera next to its
+recording, as ``<box>_<n>.mp4``.
 
 Settings tab: the folder takes are saved into (``demo_dir``, can be changed while running), the
 command rate, playback ramp and free-finger deadband used while fingers are
@@ -267,6 +289,13 @@ PEN_BOX_FROM_THUMB = ("if", "mf", "rf")
 # and kD; click press weighs the press direction by it.
 REDUCED_KP_MOTORS = (0, 4, 8)
 REDUCED_KP_SCALE = 0.75
+# Play on hand moves the fingers to their episode start one after another, in this order, with
+# joints no faster than START_MOVE_SPEED (rad/s, the S-curve's peak) and over START_MOVE_MIN_S
+# at least.
+START_ORDER = ("if", "mf", "rf", "th")
+START_MOVE_SPEED = 0.3
+START_MOVE_MIN_S = 1.5
+START_COLORS = {"off": "#616161", "moving": "#fdd835", "at_start": "#43a047"}
 # Fingers whose slips the Compose tab's lights show during Play on hand.
 SLIP_FINGERS = ("if", "mf", "rf")
 # A slip light stays red this long (s) after a slip.
@@ -289,6 +318,9 @@ REVERSE_EVENT = "reverse_demonstration"
 # Duration event: the Edit tab's Play holds the finger in contact over its region
 # (``maintain_touch``); adding one past ``terminal`` moves ``terminal`` to its end.
 MAINTAIN_TOUCH_EVENT = "maintain_touch"
+# Duration event: the span the Compose tab draws the episode's start from (instead of
+# ``episode_start``) for each Test in sim / Play on hand.
+RANDOM_START_EVENT = "random_episode_start"
 # Duration event (Thumb): Play replaces the take over its region with a Cartesian force-ramp press
 # until the pen clicks (``click_press``).
 CLICK_PRESS_EVENT = "click_press"
@@ -323,6 +355,8 @@ SAM_OTHER_COLOR = (241, 196, 15)
 SAM_LABEL_COLOR = (255, 255, 255)
 # Title of mujoco_sim_node's viewer window, brought to the front by Test in sim.
 SIM_WINDOW_TITLE = "MuJoCo: LEAP Xela"
+# How long (s) after start the GUI looks for that window to bring it to the front.
+SIM_WINDOW_WAIT_S = 30
 # Median recorded pen box drawn on the live camera.
 RECORDED_POSE_COLOR = (255, 255, 0)
 # Fingertip patch of each finger in ``taxel_fk_util.XELA_FLATTEN_ORDER``.
@@ -617,6 +651,30 @@ def take_episode_span(take: FingerTake) -> tuple[float, float] | None:
     return (start.t, end.t) if start is not None and end is not None else None
 
 
+def random_start_regions(take: FingerTake) -> list[tuple[float, float]]:
+    """The parts of the take's ``random_episode_start`` regions inside its episode (between
+    ``episode_start`` and ``terminal``), as (low, high) take times."""
+    span = take_episode_span(take)
+    if span is None:
+        return []
+    lo, hi = min(span), max(span)
+    parts = [
+        (max(min(e.t, e.end), lo), min(max(e.t, e.end), hi))
+        for e in take.events if e.name == RANDOM_START_EVENT and e.end is not None
+    ]
+    return [(a, b) for a, b in parts if b > a]
+
+
+def sample_episode_start(take: FingerTake, rng: np.random.Generator) -> float | None:
+    """A take time drawn uniformly from ``random_start_regions`` (None without any)."""
+    parts = random_start_regions(take)
+    if not parts:
+        return None
+    lengths = np.array([b - a for a, b in parts])
+    a, b = parts[int(rng.choice(len(parts), p=lengths / lengths.sum()))]
+    return float(rng.uniform(a, b))
+
+
 class TakeStore:
     """Takes on disk under ``<demo_dir>/fingers/<finger>/``, cached by mtime."""
 
@@ -787,6 +845,10 @@ class LeapStateListener(Node):
         self._rec_sam_boxes: list[list] = []
         self._video_path = ""
         self._video: cv2.VideoWriter | None = None
+        # Camera recording of a Play (Compose tab's Play on hand), independent of the takes'.
+        self._play_video: cv2.VideoWriter | None = None
+        self._play_video_path = ""
+        self._play_video_t: list[float] = []
         self._rec_frame_t: list[float] = []
         self._sim: tuple[int, list[str], np.ndarray | None] = (0, [], None)  # (seq, names, q)
         self._rec_sim_t: list[float] = []
@@ -957,6 +1019,15 @@ class LeapStateListener(Node):
             if not self._sam_locked:
                 self._display_frame = frame
                 self._display_seq += 1
+            if self._play_video_path:
+                if self._play_video is None:
+                    h, w = frame.shape[:2]
+                    os.makedirs(os.path.dirname(self._play_video_path), exist_ok=True)
+                    self._play_video = cv2.VideoWriter(
+                        self._play_video_path, cv2.VideoWriter_fourcc(*"mp4v"), VIDEO_FPS, (w, h)
+                    )
+                self._play_video.write(cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+                self._play_video_t.append(stamp)
             if not (self._recording and self._video_path):
                 return
             if self._video is None:
@@ -1163,6 +1234,23 @@ class LeapStateListener(Node):
             n = min(latest - seq, len(self._finger_contacts))
             items = list(self._finger_contacts)
             return latest, items[len(items) - n:] if n > 0 else []
+
+    def start_play_video(self, path: str) -> None:
+        """Starts writing the camera frames to ``path`` (a Play's recording)."""
+        with self._lock:
+            if self._play_video is not None:
+                self._play_video.release()
+            self._play_video, self._play_video_path, self._play_video_t = None, path, []
+
+    def stop_play_video(self) -> tuple[str, np.ndarray]:
+        """Ends ``start_play_video``: the file ("" if no frame came) and the frame stamps."""
+        with self._lock:
+            if self._play_video is not None:
+                self._play_video.release()
+            stamps = np.array(self._play_video_t)
+            path = self._play_video_path if len(stamps) else ""
+            self._play_video, self._play_video_path, self._play_video_t = None, "", []
+            return path, stamps
 
     def start_play_recording(self, key: str) -> None:
         """Starts buffering leap_state (position, velocity, effort), Xela and clicks under
@@ -4787,15 +4875,18 @@ class EditTab(QtWidgets.QWidget):
             return
         self._start_play(finger)
 
-    def _start_play(self, finger: str, hold_at_end: bool = False) -> bool:
-        """Plays the episode of ``finger``'s take on the hand; False if it cannot start. With
-        ``hold_at_end`` the finger stays held in contact at ``terminal`` (its last
-        ``maintain_touch`` region stretched to it) until ``release_end_hold``."""
+    def _start_play(
+        self, finger: str, hold_at_end: bool = False, start: float | None = None
+    ) -> bool:
+        """Plays the episode of ``finger``'s take on the hand, from ``start`` (default:
+        ``episode_start``) to ``terminal``; False if it cannot start. With ``hold_at_end`` the
+        finger stays held in contact at ``terminal`` (its last ``maintain_touch`` region
+        stretched to it) until ``release_end_hold``."""
         panel = self.panels[finger]
         span = panel.episode_span()
         if panel.take is None or span is None:
             return False
-        start, end = span
+        start, end = (span[0] if start is None else start), span[1]
         spans = panel.touch_spans()
         if hold_at_end:
             spans = touch_spans_to_end(spans, start, end)
@@ -4808,10 +4899,12 @@ class EditTab(QtWidgets.QWidget):
             return False
         return True
 
-    def play_episode(self, finger: str, path: str, hold_at_end: bool = False) -> bool:
+    def play_episode(
+        self, finger: str, path: str, hold_at_end: bool = False, start: float | None = None
+    ) -> bool:
         """Selects take ``path`` in ``finger``'s panel and plays its episode as the panel's Play
-        does (``hold_at_end``: see ``_start_play``); False if the finger is busy or the take
-        cannot be played."""
+        does (``hold_at_end``, ``start``: see ``_start_play``); False if the finger is busy or
+        the take cannot be played."""
         if self.create_tab.playback(finger) is not None:
             return False
         panel = self.panels[finger]
@@ -4824,7 +4917,7 @@ class EditTab(QtWidgets.QWidget):
         panel.take_combo.setCurrentIndex(index)  # loads it
         return (
             panel.take is not None and panel.take.path == path
-            and self._start_play(finger, hold_at_end)
+            and self._start_play(finger, hold_at_end, start)
         )
 
     def _toggle_replay(self, finger: str) -> None:
@@ -5081,6 +5174,25 @@ def raise_x11_window(title: str) -> bool:
         d.close()
 
 
+def move_to_pose_take(
+    take: FingerTake, q_from: np.ndarray, q_to: np.ndarray
+) -> FingerTake:
+    """A take moving ``take``'s finger from joints ``q_from`` to ``q_to`` (``take.joint_names``
+    order) along an S-curve (cosine) no faster than START_MOVE_SPEED, over START_MOVE_MIN_S at
+    least."""
+    q_from, q_to = np.asarray(q_from, dtype=float), np.asarray(q_to, dtype=float)
+    distance = float(np.max(np.abs(q_to - q_from))) if len(q_to) else 0.0
+    duration = max(np.pi / 2 * distance / START_MOVE_SPEED, START_MOVE_MIN_S)
+    t = np.linspace(0.0, duration, max(int(duration * 50), 2))
+    s = 0.5 - 0.5 * np.cos(np.pi * t / duration)
+    q = q_from + s[:, None] * (q_to - q_from)
+    return FingerTake(
+        finger=take.finger, path=f"move to the start of {take.name}", t=t, q=q,
+        joint_names=list(take.joint_names), hand_q=np.zeros((len(t), NUM_JOINTS)),
+        hand_joint_names=list(take.hand_joint_names),
+    )
+
+
 def touch_spans_to_end(
     spans: tuple[tuple[float, float, dict], ...], start: float, end: float
 ) -> tuple[tuple[float, float, dict], ...]:
@@ -5101,6 +5213,72 @@ def touch_spans_to_end(
         a, b, params = spans[k]
         out[k] = (a, max(b, end), params)
     return tuple(out)
+
+
+def play_list_text(path: str) -> str:
+    """Hand plays list entry: name, length and how it ended; when, and the slips."""
+    name = os.path.splitext(os.path.basename(path))[0]
+    when = datetime.fromtimestamp(os.path.getmtime(path)).strftime("%m-%d %H:%M")
+    try:
+        with np.load(path, allow_pickle=False) as data:  # only the small entries are read
+            meta = json.loads(str(data["meta"])) if "meta" in data.files else {}
+            cmd_t = data["cmd_t"] if "cmd_t" in data.files else np.empty(0)
+    except Exception:
+        return f"{name}  {when}  (unreadable)"
+    duration = float(cmd_t[-1] - cmd_t[0]) if len(cmd_t) > 1 else 0.0
+    slips = len(meta.get("slips", []))
+    slip_text = f", {slips} slip{'s' if slips != 1 else ''}" if slips else ""
+    return f"{name}  {duration:.1f} s, {meta.get('ended', '?')}\n{when}{slip_text}"
+
+
+def play_details_html(rec: PlaybackRecording) -> str:
+    """Details of a Play on hand recording for the Hand plays panel."""
+    meta = rec.meta
+    when = datetime.fromtimestamp(os.path.getmtime(rec.path)).strftime("%Y-%m-%d %H:%M:%S")
+    rows = [
+        ("Recorded", when),
+        ("Length", f"{rec.duration:.1f} s"),
+        ("Ended", meta.get("ended", "?")),
+    ]
+    spans = meta.get("episodes", {})
+    for finger, take in meta.get("takes", {}).items():
+        span = spans.get(finger)
+        played = f" ({span[0]:.2f} -> {span[1]:.2f} s)" if span else ""
+        rows.append((FINGER_LABEL.get(finger, finger),
+                     os.path.splitext(os.path.basename(take))[0] + played))
+    rows += [
+        ("Joint states", f"{len(rec.state_t)} (position, velocity, effort)"),
+        ("Xela readings", f"{len(rec.xela_t)}" + (" (no Zero baseline)"
+                                                  if len(rec.xela_baseline) == 0 else "")),
+        ("Commands", str(len(rec.cmd_t))),
+        ("Clicks", str(len(rec.click_t))),
+    ]
+    slips = meta.get("slips", [])
+    by_finger = {}
+    for e in slips:
+        by_finger[e["finger"]] = by_finger.get(e["finger"], 0) + 1
+    rows.append(("Slips", ", ".join(f"{f.upper()} {n}" for f, n in by_finger.items()) or "none"))
+    avoid = meta.get("avoid_slip", {})
+    extra = meta.get("avoid_slip_extra", {})
+    if avoid:
+        rows.append(("Avoid slip", "on" if avoid.get("enabled") else "off"))
+        if extra:
+            rows.append(
+                ("Extra force", ", ".join(f"{f.upper()} +{v:.1f}" for f, v in extra.items()))
+            )
+    html = "<table cellspacing='2'>" + "".join(
+        f"<tr><td><b>{k}</b></td><td>{v}</td></tr>" for k, v in rows
+    ) + "</table>"
+    events = [(e["t"], f"{FINGER_LABEL.get(e['finger'], e['finger'])} {e['event']}")
+              for e in meta.get("timeline", [])]
+    events += [(e["t"], f"{FINGER_LABEL.get(e['finger'], e['finger'])} slip ({e['cue']})")
+               for e in slips]
+    if events:
+        html += "<p><b>Timeline</b><br>" + "<br>".join(
+            f"{t:7.2f} s &nbsp; {text}" for t, text in sorted(events)
+        ) + "</p>"
+    html += f"<p style='color:#757575'>{rec.path}</p>"
+    return html
 
 
 def pair_text(pairs) -> str:
@@ -5154,9 +5332,12 @@ class BoxFingerColumn(QtWidgets.QGroupBox):
         for take in takes:
             start, end = take_episode_span(take)
             direction = ", reversed" if end < start else ""
+            random = "".join(
+                f", random start {a:.2f}-{b:.2f} s" for a, b in random_start_regions(take)
+            )
             self.list.addItem(
-                f"{take.name}  (episode {min(start, end):.2f}-{max(start, end):.2f} s{direction}, "
-                f"{len(take.events)} events)"
+                f"{take.name}  (episode {min(start, end):.2f}-{max(start, end):.2f} s{direction}"
+                f"{random}, {len(take.events)} events)"
             )
         paths = [take.path for take in takes]
         row = paths.index(keep_path) if keep_path in paths else 0 if takes else -1
@@ -5237,11 +5418,22 @@ class ComposeTab(QtWidgets.QWidget):
         self.edit_tab = edit_tab
         self.avoid_slip = avoid_slip
         self._extra: dict[str, float] = {}  # Avoid slip: extra hold force of each finger
+        self._rng = np.random.default_rng()
+        # Play on hand: the (start, terminal) take times each finger plays between.
+        self._hand_spans: dict[str, tuple[float, float]] = {}
         # Play on hand: takes of each stage (Index / Middle / Ring, then Thumb) still to play,
         # and the fingers of the stage that is playing.
         self._hand_stages: list[list[FingerTake]] = []
         self._hand_playing: list[str] = []
         self._hand_holding: list[str] = []  # fingers held in contact at their terminal
+        # Moving to the episode starts: takes still to move (in START_ORDER), the finger moving,
+        # the fingers held at their start and those released whose episode starts once their
+        # move has finished (finger -> (take, hold at its end)).
+        self._hand_takes: list[FingerTake] = []
+        self._move_queue: list[FingerTake] = []
+        self._moving: str | None = None
+        self._at_start: set[str] = set()
+        self._await_release: dict[str, tuple[FingerTake, bool]] = {}
         self._hand_releasing = False  # the last stage is done: the held fingers are let go
         self._hand_active = False
         # Recording of the Play on hand in progress: start (ROS time), box name, takes and the
@@ -5303,26 +5495,72 @@ class ComposeTab(QtWidgets.QWidget):
         top.addWidget(self.box_combo)
         top.addWidget(self.summary, 1)
         top.addWidget(self.sim_status)
+        show_sim_btn = QtWidgets.QPushButton("Show sim")
+        show_sim_btn.setToolTip(f"Bring the MuJoCo window ('{SIM_WINDOW_TITLE}') to the front")
+        show_sim_btn.clicked.connect(self._show_sim_window)
+        top.addWidget(show_sim_btn)
         top.addWidget(self.sim_btn)
         top.addWidget(self.hand_status)
         top.addWidget(self.hand_btn)
         top.addWidget(refresh_btn)
-        self.plays_combo = QtWidgets.QComboBox()
-        self.plays_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
-        self.plays_combo.setToolTip(
+        # Hand plays panel (right): the box's Play on hand recordings and the picked one's details.
+        self.plays_list = QtWidgets.QListWidget()
+        self.plays_list.setToolTip(
             "Recordings of Play on hand for this box, newest first (joint positions, velocities, "
             "efforts, Xela taxels, commands and clicks), in <demo_dir>/compose_playbacks"
         )
-        self.plays_info = QtWidgets.QLabel()
-        self.plays_info.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        # Long paths must not widen the window: the label is cut, the tooltip has it all.
-        self.plays_info.setSizePolicy(
-            QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Preferred
+        self.plays_details = QtWidgets.QTextBrowser()
+        self.plays_details.setOpenLinks(False)
+        plays_panel = QtWidgets.QGroupBox("Hand plays")
+        # Shown only while a recording is picked (highlighted) in the list.
+        self.plays_delete_btn = QtWidgets.QPushButton("Delete recording")
+        self.plays_delete_btn.setStyleSheet(STOP_STYLE)
+        self.plays_delete_btn.setToolTip("Delete the picked recording from disk")
+        plays_top = QtWidgets.QWidget()
+        plays_top_layout = QtWidgets.QVBoxLayout(plays_top)
+        plays_top_layout.setContentsMargins(0, 0, 0, 0)
+        self.plays_sim_btn = QtWidgets.QPushButton("Play on sim")
+        self.plays_sim_btn.setToolTip(
+            "Send the picked recording's commands to the MuJoCo sim at their recorded times"
         )
+        self.plays_hand_btn = QtWidgets.QPushButton("Play on hand")
+        self.plays_hand_btn.setToolTip(
+            "Send the picked recording's commands to the hand at their recorded times: plain "
+            "position replay of the fingers it played (no force replay, maintain touch or "
+            "click press)"
+        )
+        self._replay_fingers: list[str] = []  # fingers of the recording playing on the hand
+        plays_buttons = QtWidgets.QWidget()
+        plays_buttons_layout = QtWidgets.QHBoxLayout(plays_buttons)
+        plays_buttons_layout.setContentsMargins(0, 0, 0, 0)
+        plays_buttons_layout.addWidget(self.plays_sim_btn)
+        plays_buttons_layout.addWidget(self.plays_hand_btn)
+        plays_buttons_layout.addStretch(1)
+        plays_buttons_layout.addWidget(self.plays_delete_btn)
+        plays_buttons.setVisible(False)
+        self.plays_buttons = plays_buttons
+        plays_top_layout.addWidget(self.plays_list, 1)
+        plays_top_layout.addWidget(plays_buttons)
+        plays_split = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        plays_split.addWidget(plays_top)
+        plays_split.addWidget(self.plays_details)
+        plays_split.setSizes([300, 500])
+        plays_layout = QtWidgets.QVBoxLayout(plays_panel)
+        plays_layout.addWidget(plays_split)
         plays_row = QtWidgets.QHBoxLayout()
-        plays_row.addWidget(QtWidgets.QLabel("Hand plays:"))
-        plays_row.addWidget(self.plays_combo)
-        plays_row.addWidget(self.plays_info, 1)
+        plays_row.addWidget(QtWidgets.QLabel("At start:"))
+        self.start_lights: dict[str, QtWidgets.QLabel] = {}
+        for finger, _ in FINGERS:
+            light = QtWidgets.QLabel()
+            light.setToolTip(
+                f"{FINGER_LABEL[finger]} during Play on hand: yellow moving to where its episode "
+                "starts, green held there (until its episode plays)"
+            )
+            self.start_lights[finger] = light
+            plays_row.addWidget(light)
+            plays_row.addWidget(QtWidgets.QLabel(finger.upper()))
+            plays_row.addSpacing(4)
+            self._set_start_light(finger, "off")
         plays_row.addSpacing(12)
         plays_row.addWidget(QtWidgets.QLabel("Slip:"))
         self.slip_lights: dict[str, QtWidgets.QLabel] = {}
@@ -5361,6 +5599,7 @@ class ComposeTab(QtWidgets.QWidget):
             spin.valueChanged.connect(lambda v, n=name: setattr(avoid_slip, n, float(v)))
             plays_row.addWidget(QtWidgets.QLabel(f"+{label}" if name != "max_extra" else label))
             plays_row.addWidget(spin)
+        plays_row.addStretch(1)
 
         self.camera_title = QtWidgets.QLabel()
         self.camera = CameraView("")
@@ -5395,9 +5634,11 @@ class ComposeTab(QtWidgets.QWidget):
         split = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         split.addWidget(camera_column)
         split.addWidget(fingers)
+        split.addWidget(plays_panel)
         split.setStretchFactor(0, 1)
         split.setStretchFactor(1, 2)
-        split.setSizes([500, 1000])  # cameras get a third of the width
+        split.setStretchFactor(2, 1)
+        split.setSizes([450, 900, 350])
 
         layout = QtWidgets.QVBoxLayout(self)
         layout.addLayout(top)
@@ -5408,7 +5649,11 @@ class ComposeTab(QtWidgets.QWidget):
         refresh_btn.clicked.connect(self.refresh_takes)
         self.sim_btn.clicked.connect(self._toggle_sim)
         self.hand_btn.clicked.connect(self._toggle_hand)
-        self.plays_combo.currentIndexChanged.connect(self._show_play_info)
+        self.plays_list.currentRowChanged.connect(self._show_play_info)
+        self.plays_delete_btn.clicked.connect(self._delete_play)
+        self.plays_sim_btn.clicked.connect(self._toggle_play_sim)
+        self.plays_hand_btn.clicked.connect(self._toggle_play_hand)
+        create_tab.playing_changed.connect(self._on_replay_playing_changed)
         create_tab.playing_changed.connect(self._on_hand_playing_changed)
         create_tab.play_reached_end.connect(self._on_hand_reached_end)
         self.refresh_takes()
@@ -5509,6 +5754,11 @@ class ComposeTab(QtWidgets.QWidget):
         if self._hand_active:
             self.stop_hand()
             return
+        if self._replay_fingers:
+            QtWidgets.QMessageBox.warning(
+                self, "Play on hand", "A recording is playing on the hand. Stop it first."
+            )
+            return
         takes = self._selected_takes()
         if not takes:
             QtWidgets.QMessageBox.warning(self, "Play on hand", "No take is selected.")
@@ -5521,18 +5771,58 @@ class ComposeTab(QtWidgets.QWidget):
             return
         stages = [[t for t in takes if t.finger != "th"], [t for t in takes if t.finger == "th"]]
         self._hand_stages = [stage for stage in stages if stage]
+        self._hand_spans = {t.finger: self._play_span(t) for t in takes}
         self._hand_holding, self._hand_releasing = [], False
         self._hand_active = True
         self.node.get_logger().info(
             "Playing on hand: " + " then ".join(
-                ", ".join(f"{FINGER_LABEL[t.finger]} '{t.name}'" for t in stage)
+                ", ".join(
+                    f"{FINGER_LABEL[t.finger]} '{t.name}' {self._span_text(t, self._hand_spans)}"
+                    for t in stage
+                )
                 for stage in self._hand_stages
             )
         )
         self.hand_btn.setText("Stop hand")
         self.hand_btn.setStyleSheet(STOP_STYLE)
-        self._start_hand_recording(takes)
-        self._next_hand_stage()
+        self._hand_takes = takes
+        self._move_queue = sorted(takes, key=lambda t: START_ORDER.index(t.finger))
+        self._moving, self._at_start, self._await_release = None, set(), {}
+        for finger, _ in FINGERS:
+            self._set_start_light(finger, "off")
+        self._move_next_to_start()
+
+    def _set_start_light(self, finger: str, state: str) -> None:
+        self.start_lights[finger].setStyleSheet(SLIP_LIGHT_STYLE.format(START_COLORS[state]))
+
+    def _move_next_to_start(self) -> None:
+        """Moves the next finger to where its episode starts; once all are there, starts the
+        recording and the episodes."""
+        if not self._move_queue:
+            self._moving = None
+            self.node.get_logger().info("Play on hand: all fingers at their start")
+            self._start_hand_recording(self._hand_takes)
+            self._next_hand_stage()
+            return
+        take = self._move_queue.pop(0)
+        label = FINGER_LABEL[take.finger]
+        q = self.node.latest()
+        cols = take_columns(self.node.joint_names, take)
+        if q is None:
+            self.stop_hand("no leap_state received yet")
+            return
+        move = move_to_pose_take(
+            take, q[cols], sample_take(take, self._hand_spans[take.finger][0])
+        )
+        self._moving = take.finger
+        self._set_start_light(take.finger, "moving")
+        self.hand_status.setText(f"hand: {label} moving to its start ({move.duration:.1f} s)")
+        self.node.get_logger().info(
+            f"Play on hand: {label} moving to the start of '{take.name}' "
+            f"(take time {self._hand_spans[take.finger][0]:.2f} s) over {move.duration:.1f} s"
+        )
+        if not self.create_tab.play_take(take.finger, move, 0.0, select=False, hold_at_end=True):
+            self.stop_hand(f"could not move {label} to its start")
 
     def _next_hand_stage(self) -> None:
         """Starts the next stage of Play on hand; once none is left, lets the held fingers go
@@ -5554,21 +5844,43 @@ class ComposeTab(QtWidgets.QWidget):
                 self._add_extra_force(finger, self.avoid_slip.before_thumb, "Thumb starts")
         self._hand_playing = []
         for take in stage:
-            if not self.edit_tab.play_episode(take.finger, take.path, hold_at_end=hold):
-                self.stop_hand(f"could not play {FINGER_LABEL[take.finger]} '{take.name}'")
+            if take.finger in self._at_start:
+                # Held at its start: its episode plays once that hold has ended.
+                self._at_start.discard(take.finger)
+                self._await_release[take.finger] = (take, hold)
+                self.create_tab.release_end_hold(take.finger)
+            elif not self._start_episode(take, hold):
                 return
-            self._hand_playing.append(take.finger)
-            self._hand_event(take.finger, "start")
         self._show_hand_status()
 
+    def _start_episode(self, take: FingerTake, hold: bool) -> bool:
+        """Plays ``take``'s episode from its (sampled) start; stops Play on hand if it can't."""
+        if not self.edit_tab.play_episode(
+            take.finger, take.path, hold_at_end=hold, start=self._hand_spans[take.finger][0],
+        ):
+            self.stop_hand(f"could not play {FINGER_LABEL[take.finger]} '{take.name}'")
+            return False
+        self._hand_playing.append(take.finger)
+        self._set_start_light(take.finger, "off")
+        self._hand_event(take.finger, "start")
+        return True
+
     def _show_hand_status(self) -> None:
-        text = "hand: " + ", ".join(FINGER_LABEL[f] for f in self._hand_playing) + " playing"
+        playing = self._hand_playing + list(self._await_release)  # released: starting now
+        text = "hand: " + ", ".join(FINGER_LABEL[f] for f in playing) + " playing"
         if self._hand_holding:
             text += "; holding " + ", ".join(FINGER_LABEL[f] for f in self._hand_holding)
         self.hand_status.setText(text)
 
     def _on_hand_reached_end(self, finger: str) -> None:
-        """A finger of the stage got to its ``terminal`` and is held there in contact."""
+        """A finger got to its start (moving there), or a finger of the stage got to its
+        ``terminal`` and is held there in contact."""
+        if finger == self._moving:
+            self._moving = None
+            self._at_start.add(finger)
+            self._set_start_light(finger, "at_start")
+            self._move_next_to_start()
+            return
         if finger not in self._hand_playing:
             return
         self._hand_playing.remove(finger)
@@ -5581,6 +5893,16 @@ class ComposeTab(QtWidgets.QWidget):
             return
         stopped = self.create_tab.stopped.get(finger)
         finished = stopped is not None and stopped.finished
+        if finger in self._await_release:
+            take, hold = self._await_release.pop(finger)
+            if not finished:
+                self.stop_hand(f"{FINGER_LABEL[finger]} stopped at its start")
+            elif self._start_episode(take, hold):
+                self._show_hand_status()
+            return
+        if finger == self._moving or finger in self._at_start:
+            self.stop_hand(f"{FINGER_LABEL[finger]} stopped while moving to / at its start")
+            return
         if finger in self._hand_holding or finger in self._hand_playing:
             self._hand_event(finger, "finished" if finished else "stopped")
         if finger in self._hand_holding:
@@ -5613,8 +5935,12 @@ class ComposeTab(QtWidgets.QWidget):
         if not self._hand_active:
             return
         self._hand_stages = []
-        fingers = self._hand_playing + self._hand_holding
+        fingers = (
+            self._hand_playing + self._hand_holding + sorted(self._at_start)
+            + list(self._await_release) + ([self._moving] if self._moving else [])
+        )
         self._hand_playing, self._hand_holding = [], []
+        self._move_queue, self._moving, self._at_start, self._await_release = [], None, set(), {}
         for finger in fingers:
             if self.create_tab.playback(finger) is not None:
                 self.create_tab.stop_play(finger)
@@ -5624,6 +5950,8 @@ class ComposeTab(QtWidgets.QWidget):
     def _finish_hand(self, reason: str) -> None:
         self._save_hand_recording(reason)
         self._hand_active = False
+        for finger, _ in FINGERS:
+            self._set_start_light(finger, "off")
         self.hand_btn.setText("Play on hand")
         self.hand_btn.setStyleSheet("")
         self.hand_status.setText(f"hand: {reason}")
@@ -5638,12 +5966,17 @@ class ComposeTab(QtWidgets.QWidget):
         self._start_slip_detection(takes)
         self.node.start_play_recording(COMPOSE_PLAY_KEY)
         key = self.box_combo.currentData()
+        box = self._box_names.get(key, "compose")
+        path = next_playback_path(self.store.compose_playback_dir, box)
+        if self.node.image_topic:
+            self.node.start_play_video(os.path.splitext(path)[0] + ".mp4")
         self._hand_rec = {
             "t0": self._ros_now(),
-            "box": self._box_names.get(key, "compose"),
+            "path": path,
+            "box": box,
             "box_corners": self._corners[key].tolist() if key in self._corners else None,
             "takes": {t.finger: t.path for t in takes},
-            "spans": {t.finger: list(take_episode_span(t)) for t in takes},
+            "spans": {t.finger: list(self._hand_spans[t.finger]) for t in takes},
             "timeline": [],
             "baseline": self.create_tab.hand.baseline,
         }
@@ -5658,6 +5991,7 @@ class ComposeTab(QtWidgets.QWidget):
         slips = self._stop_slip_detection()
         info, self._hand_rec = self._hand_rec, None
         buffers = self.node.stop_play_recording(COMPOSE_PLAY_KEY)
+        video, video_t = self.node.stop_play_video()
         if info is None or buffers is None:
             return
         log = self.node.get_logger()
@@ -5666,11 +6000,20 @@ class ComposeTab(QtWidgets.QWidget):
         cmd_t = np.array([c[0] for c in cmd]) - t0 if cmd else np.empty(0)
         if len(cmd_t) < 2 or cmd_t[-1] - cmd_t[0] < MIN_PLAY_RECORDING_S:
             log.info(f"Play on hand shorter than {MIN_PLAY_RECORDING_S} s, not recorded")
+            if video and os.path.exists(video):
+                os.remove(video)
             return
+        path = info["path"]
+        if os.path.exists(path):  # taken meanwhile: the next free name (and its video)
+            path = next_playback_path(self.store.compose_playback_dir, info["box"])
+            if video:
+                moved = os.path.splitext(path)[0] + ".mp4"
+                os.replace(video, moved)
+                video = moved
         empty16 = np.empty((0, NUM_JOINTS))
         baseline = info["baseline"]
         rec = PlaybackRecording(
-            path=next_playback_path(self.store.compose_playback_dir, info["box"]),
+            path=path,
             take=info["takes"].get("th", next(iter(info["takes"].values()))),
             finger="hand",
             joint_names=self.node.joint_names,
@@ -5686,6 +6029,8 @@ class ComposeTab(QtWidgets.QWidget):
             xela=np.stack([x[1] for x in xela]) if xela else np.empty((0, 0, 3), np.float32),
             xela_baseline=baseline if baseline is not None else np.empty((0, 3)),
             click_t=np.array(buffers["clicks"]) - t0,
+            video=video,
+            video_t=video_t - t0 if len(video_t) else np.empty(0),
             meta={
                 "source": "compose_play_on_hand",
                 "box": info["box"],
@@ -5713,7 +6058,8 @@ class ComposeTab(QtWidgets.QWidget):
             log.warn(f"Could not save the Play on hand recording {rec.path}: {e}")
             return
         log.info(f"Saved the Play on hand as {rec.path} ({len(cmd_t)} commands, {len(state)} "
-                 f"joint states, {len(xela)} Xela readings, {len(buffers['clicks'])} clicks)")
+                 f"joint states, {len(xela)} Xela readings, {len(buffers['clicks'])} clicks, "
+                 f"{len(video_t)} camera frames)")
         self.fill_plays(select=rec.path)
 
     # ---- slip detection ----------------------------------------------------------------
@@ -5813,41 +6159,194 @@ class ComposeTab(QtWidgets.QWidget):
 
     def fill_plays(self, select: str | None = None) -> None:
         """Lists the Play on hand recordings of the selected box, newest first."""
-        keep = select or self.plays_combo.currentData()
+        current = self.plays_list.currentItem()
+        keep = select or (current.data(QtCore.Qt.UserRole) if current is not None else None)
         box = self._box_names.get(self.box_combo.currentData())
         paths = list_playbacks(self.store.compose_playback_dir, box) if box else []
-        self.plays_combo.blockSignals(True)
-        self.plays_combo.clear()
+        self.plays_list.blockSignals(True)
+        self.plays_list.clear()
         for path in paths:
-            self.plays_combo.addItem(os.path.splitext(os.path.basename(path))[0], path)
-        index = self.plays_combo.findData(keep) if keep else 0
-        self.plays_combo.setCurrentIndex(max(index, 0) if paths else -1)
-        self.plays_combo.blockSignals(False)
-        self.plays_combo.setEnabled(bool(paths))
+            item = QtWidgets.QListWidgetItem(play_list_text(path))
+            item.setData(QtCore.Qt.UserRole, path)
+            item.setToolTip(path)
+            self.plays_list.addItem(item)
+        # Nothing is picked until a recording is clicked (or one was just saved).
+        self.plays_list.setCurrentRow(paths.index(keep) if keep in paths else -1)
+        self.plays_list.blockSignals(False)
         self._show_play_info()
 
     def _show_play_info(self, *_) -> None:
-        path = self.plays_combo.currentData()
-        if path is None:
-            self.plays_info.setText("none yet")
+        """Details of the recording picked in the Hand plays panel."""
+        item = self.plays_list.currentItem()
+        self.plays_buttons.setVisible(item is not None)
+        if item is None:
+            self.plays_details.setHtml(
+                "<i>Click a recording to see its details.</i>" if self.plays_list.count()
+                else "<i>No Play on hand recorded for this box yet.</i>"
+            )
             return
+        path = item.data(QtCore.Qt.UserRole)
         try:
             rec = PlaybackRecording.load(path)
         except Exception as e:
-            self.plays_info.setText(f"<span style='color:#d32f2f'>load failed: {e}</span>")
+            self.plays_details.setHtml(f"<span style='color:#d32f2f'>Load failed: {e}</span>")
             return
-        when = datetime.fromtimestamp(os.path.getmtime(path)).strftime("%Y-%m-%d %H:%M:%S")
-        takes = ", ".join(
-            f"{f.upper()} {os.path.splitext(os.path.basename(p))[0]}"
-            for f, p in rec.meta.get("takes", {}).items()
+        self.plays_details.setHtml(play_details_html(rec))
+
+    def _delete_play(self) -> None:
+        """Deletes the recording picked in the Hand plays panel, once confirmed."""
+        item = self.plays_list.currentItem()
+        if item is None:
+            return
+        path = item.data(QtCore.Qt.UserRole)
+        name = os.path.splitext(os.path.basename(path))[0]
+        box = QtWidgets.QMessageBox(self)
+        box.setIcon(QtWidgets.QMessageBox.Warning)
+        box.setWindowTitle("Delete recording")
+        box.setText(f"Delete the Play on hand recording '{name}'?")
+        box.setInformativeText(
+            f"{path} (and its camera recording, if any) is removed from disk. This cannot be "
+            "undone."
         )
-        text = (
-            f"{when}, {rec.duration:.1f} s, {rec.meta.get('ended', '?')} ({takes}): "
-            f"{len(rec.state_t)} joint states (position / velocity / effort), "
-            f"{len(rec.xela_t)} Xela readings, {len(rec.click_t)} clicks - {path}"
-        )
-        self.plays_info.setText(text)
-        self.plays_info.setToolTip(text)
+        cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
+        confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
+        box.setDefaultButton(cancel)
+        box.exec_()
+        if box.clickedButton() is not confirm:
+            return
+        video = os.path.splitext(path)[0] + ".mp4"
+        try:
+            os.remove(path)
+            if os.path.exists(video):
+                os.remove(video)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(
+                self, "Delete recording", f"Could not delete {path}:\n{e}"
+            )
+            return
+        self.node.get_logger().info(f"Deleted the Play on hand recording '{path}'")
+        self.plays_list.setCurrentRow(-1)
+        self.fill_plays()
+
+    def _picked_recording(self, title: str) -> PlaybackRecording | None:
+        """The recording picked in the Hand plays panel (warns and None if it cannot load)."""
+        item = self.plays_list.currentItem()
+        if item is None:
+            return None
+        path = item.data(QtCore.Qt.UserRole)
+        try:
+            rec = PlaybackRecording.load(path)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, title, f"Could not load {path}:\n{e}")
+            return None
+        if len(rec.cmd_t) < 2:
+            QtWidgets.QMessageBox.warning(self, title, f"{rec.name} has no commands.")
+            return None
+        return rec
+
+    def _recording_takes(self, rec: PlaybackRecording) -> list[FingerTake]:
+        """The commands of each finger the recording played, as takes from its start."""
+        t = rec.cmd_t - rec.cmd_t[0]
+        takes = []
+        for finger, _ in FINGERS:
+            if finger not in rec.meta.get("takes", {}):
+                continue
+            cols = finger_indices(rec.joint_names, finger)
+            takes.append(FingerTake(
+                finger=finger, path=rec.path, t=t, q=rec.cmd_q[:, cols],
+                joint_names=[rec.joint_names[c] for c in cols],
+                hand_q=rec.cmd_q, hand_joint_names=list(rec.joint_names),
+            ))
+        return takes
+
+    def _toggle_play_sim(self) -> None:
+        """Plays the picked recording's commands to the sim (or stops the sim)."""
+        if self._sim_timer.isActive():
+            self.stop_sim()
+            return
+        rec = self._picked_recording("Play on sim")
+        if rec is None:
+            return
+        takes = self._recording_takes(rec)
+        if not takes:
+            QtWidgets.QMessageBox.warning(self, "Play on sim", f"{rec.name} played no finger.")
+            return
+        names = list(rec.joint_names)
+        parts = [
+            (take_columns(names, take), take, (0.0, take.duration), 0.0) for take in takes
+        ]
+        self._run_sim(names, np.asarray(rec.cmd_q[0], dtype=float), parts, self.plays_sim_btn,
+                      f"Playing recording {rec.name} on sim ({rec.duration:.1f} s)")
+
+    def _toggle_play_hand(self) -> None:
+        """Plays the picked recording's commands on the hand (or stops them)."""
+        if self._replay_fingers:
+            self.stop_replay()
+            return
+        if self._hand_active:
+            QtWidgets.QMessageBox.warning(self, "Play on hand", "Play on hand is running.")
+            return
+        rec = self._picked_recording("Play on hand")
+        if rec is None:
+            return
+        takes = self._recording_takes(rec)
+        busy = [FINGER_LABEL[t.finger] for t in takes if self.create_tab.playback(t.finger)]
+        if busy:
+            QtWidgets.QMessageBox.warning(
+                self, "Play on hand", f"Already playing: {', '.join(busy)}. Stop it first."
+            )
+            return
+        for take in takes:
+            # Plain position replay of the commands, as the Edit tab's Replay.
+            if not self.create_tab.play_take(take.finger, take, 0.0, select=False):
+                self.stop_replay()
+                return
+            self._replay_fingers.append(take.finger)
+        if self._replay_fingers:
+            self.plays_hand_btn.setText("Stop hand")
+            self.plays_hand_btn.setStyleSheet(STOP_STYLE)
+            self.node.get_logger().info(
+                f"Playing recording {rec.name} on hand ({rec.duration:.1f} s): "
+                + ", ".join(FINGER_LABEL[f] for f in self._replay_fingers)
+            )
+
+    def _on_replay_playing_changed(self, finger: str) -> None:
+        if finger in self._replay_fingers and self.create_tab.playback(finger) is None:
+            self._replay_fingers.remove(finger)
+            if not self._replay_fingers:
+                self._finish_replay()
+
+    def stop_replay(self) -> None:
+        """Stops the recording playing on the hand."""
+        fingers, self._replay_fingers = self._replay_fingers, []
+        for finger in fingers:
+            if self.create_tab.playback(finger) is not None:
+                self.create_tab.stop_play(finger)
+        self._finish_replay()
+
+    def _finish_replay(self) -> None:
+        self.plays_hand_btn.setText("Play on hand")
+        self.plays_hand_btn.setStyleSheet("")
+
+    def _play_span(self, take: FingerTake) -> tuple[float, float]:
+        """(start, terminal) for a Test in sim / Play on hand of ``take``: the start drawn from
+        its ``random_episode_start`` regions, or ``episode_start`` without any."""
+        start, end = take_episode_span(take)
+        sampled = sample_episode_start(take, self._rng)
+        return (start if sampled is None else sampled), end
+
+    def _span_text(self, take: FingerTake, spans: dict[str, tuple[float, float]]) -> str:
+        start, end = spans[take.finger]
+        random = " (random start)" if random_start_regions(take) else ""
+        return f"{start:.2f} -> {end:.2f} s{random}"
+
+    def _show_sim_window(self) -> None:
+        if not raise_x11_window(SIM_WINDOW_TITLE):
+            QtWidgets.QMessageBox.warning(
+                self, "Show sim",
+                f"No '{SIM_WINDOW_TITLE}' window found. The sim may still be starting, or "
+                "mujoco_sim_node is not running or runs without its viewer (viewer:=false).",
+            )
 
     def _toggle_sim(self) -> None:
         if self._sim_timer.isActive():
@@ -5858,51 +6357,55 @@ class ComposeTab(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self, "Test in sim", "No take is selected.")
             return
         names = list(takes[0].hand_joint_names)
-        spans = [take_episode_span(take) for take in takes]
-        # Whole hand of the first take at its episode_start.
+        spans = [self._play_span(take) for take in takes]
+        # Whole hand of the first take where it starts.
         base = np.array([
             np.interp(spans[0][0], takes[0].t, takes[0].hand_q[:, j])
             for j in range(takes[0].hand_q.shape[1])
         ])
-        try:
-            self.node.send_sim_command(names, base)
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(
-                self, "Test in sim", f"Could not convert the command to sim joints:\n{e}"
-            )
-            return
         # The Thumb starts once the other fingers are done (holding its episode_start until then).
         others_end = max(
             (abs(end - start) for take, (start, end) in zip(takes, spans) if take.finger != "th"),
             default=0.0,
         )
         delays = [others_end if take.finger == "th" else 0.0 for take in takes]
-        self._sim_plan = (
-            names, base,
-            [
-                (take_columns(names, take), take, span, delay)
-                for take, span, delay in zip(takes, spans, delays)
-            ],
-        )
-        self._sim_end = max(
-            delay + abs(end - start) for (start, end), delay in zip(spans, delays)
-        )
+        parts = [
+            (take_columns(names, take), take, span, delay)
+            for take, span, delay in zip(takes, spans, delays)
+        ]
+        self._run_sim(names, base, parts, self.sim_btn, "Testing in sim: " + ", ".join(
+            f"{FINGER_LABEL[t.finger]} '{t.name}' "
+            f"{self._span_text(t, {t.finger: s})}"
+            + (f" (after {d:.2f} s)" if d else "")
+            for t, s, d in zip(takes, spans, delays)
+        ))
+
+    def _run_sim(
+        self, names: list[str], base: np.ndarray,
+        parts: list[tuple[list[int], FingerTake, tuple[float, float], float]],
+        button: QtWidgets.QPushButton, message: str,
+    ) -> None:
+        """Plays ``parts`` (columns, take, (start, end) take times, delay) over the hand pose
+        ``base`` to the sim; ``button`` shows Stop sim meanwhile."""
+        try:
+            self.node.send_sim_command(names, base)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                self, "Sim", f"Could not convert the command to sim joints:\n{e}"
+            )
+            return
+        self._sim_plan = (names, base, parts)
+        self._sim_end = max(delay + abs(end - start) for _, _, (start, end), delay in parts)
         self._sim_start = time.monotonic()
         self._contact_seq, _ = self.node.finger_contacts_since(0)
         self._touched, self._touching = {}, set()
-        self.sim_btn.setText("Stop sim")
-        self.node.get_logger().info(
-            "Testing in sim: " + ", ".join(
-                f"{FINGER_LABEL[t.finger]} '{t.name}' {s[0]:.2f} -> {s[1]:.2f} s"
-                + (f" (after {d:.2f} s)" if d else "")
-                for t, s, d in zip(takes, spans, delays)
-            )
-        )
+        button.setText("Stop sim")
+        self.node.get_logger().info(message)
         self._sim_timer.start()
         if not self.node.sim_listening():
             self.sim_status.setText(
                 f"<span style='color:#d32f2f'>nothing subscribes to "
-                f"'{self.node.sim_cmd_topic}' - is mujoco_sim_node running (sim:=true)?</span>"
+                f"'{self.node.sim_cmd_topic}' - is mujoco_sim_node running?</span>"
             )
         elif not raise_x11_window(SIM_WINDOW_TITLE):
             self.node.get_logger().warn(
@@ -5948,6 +6451,7 @@ class ComposeTab(QtWidgets.QWidget):
         self._sim_timer.stop()
         self._sim_plan = None
         self.sim_btn.setText("Test in sim")
+        self.plays_sim_btn.setText("Play on sim")
         if not was_running:
             return
         self._read_contacts()
@@ -5957,10 +6461,10 @@ class ComposeTab(QtWidgets.QWidget):
                 for pair, t in sorted(self._touched.items(), key=lambda item: item[1])
             )
             self.sim_status.setText(f"<span style='color:#d32f2f'><b>{summary}</b></span>")
-            self.node.get_logger().warn(f"Test in sim: {summary}")
+            self.node.get_logger().warn(f"Sim: {summary}")
         elif self.node.sim_listening():
             self.sim_status.setText("<span style='color:#2e7d32'>no finger contacts</span>")
-            self.node.get_logger().info("Test in sim: no finger contacts")
+            self.node.get_logger().info("Sim: no finger contacts")
 
     def close_video(self) -> None:
         self._video.release()
@@ -5984,6 +6488,345 @@ class ComposeTab(QtWidgets.QWidget):
                 frame, corners, f"recorded {self._box_names.get(key, '')}".strip()
             )
         self.live_camera.set_frame(frame)
+
+
+# Rows of the Demonstration tab's plots: (PlaybackRecording field, title, unit).
+DEMO_ROWS = (
+    ("position", "position", "rad"),
+    ("velocity", "velocity", "rad/s"),
+    ("effort", "effort", ""),
+)
+
+
+class DemonstrationTab(QtWidgets.QWidget):
+    """Plays back the Compose tab's Play on hand recordings without commanding the hand: the
+    joint positions, velocities and efforts of each finger (``leap_state``), the camera
+    recording with the run's bounding box, and the FK taxels with the recorded Xela readings,
+    at the play bar's time; with Stream to sim, the recorded joint positions go to the sim."""
+
+    def __init__(self, node: LeapStateListener, store: TakeStore) -> None:
+        super().__init__()
+        self.node = node
+        self.store = store
+        self.rec: PlaybackRecording | None = None
+        self.duration = 0.0
+        self.now = 0.0
+        self._last_tick = 0.0
+        self._video = TakeVideo()
+        self._sim_names: list[str] = []
+        self._sim_q: np.ndarray | None = None  # (N, 16) recorded joints in the sim frame
+        self._xela_index = -1
+        self._sim_index = -1  # last joint state streamed to the sim
+
+        # Left: the recordings.
+        self.list = QtWidgets.QListWidget()
+        self.list.setToolTip("Play on hand recordings of the Compose tab, newest first")
+        refresh_btn = QtWidgets.QPushButton("Refresh")
+        left = QtWidgets.QGroupBox("Recordings")
+        left_layout = QtWidgets.QVBoxLayout(left)
+        left_layout.addWidget(self.list, 1)
+        left_layout.addWidget(refresh_btn)
+
+        # Middle: controls and plots (rows: position / velocity / effort, columns: fingers).
+        self.title = QtWidgets.QLabel("Pick a recording")
+        self.play_btn = QtWidgets.QPushButton("Play")
+        self.play_btn.setToolTip("Play the recording back (nothing is sent to the hand)")
+        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider.setRange(0, 0)
+        self.time_label = QtWidgets.QLabel("0.00 / 0.00 s")
+        self.stream_check = QtWidgets.QCheckBox("Stream to sim")
+        self.stream_check.setChecked(True)
+        self.stream_check.setToolTip(
+            f"Send the recorded joint positions to the MuJoCo sim on '{node.sim_cmd_topic}' "
+            "(converted to sim joints) as the play bar moves"
+        )
+        controls = QtWidgets.QHBoxLayout()
+        controls.addWidget(self.play_btn)
+        controls.addWidget(self.slider, 1)
+        controls.addWidget(self.time_label)
+        controls.addWidget(self.stream_check)
+        self.plots = pg.GraphicsLayoutWidget()
+        self._plots: dict[tuple[str, str], pg.PlotItem] = {}
+        self._curves: dict[tuple[str, str], list[pg.PlotDataItem]] = {}
+        self._cursors: list[pg.InfiniteLine] = []
+        self._marks: list[tuple[pg.PlotItem, pg.InfiniteLine]] = []  # timeline / slip lines
+        first = None
+        for r, (field_name, title, unit) in enumerate(DEMO_ROWS):
+            for c, (finger, label) in enumerate(FINGERS):
+                plot = self.plots.addPlot(row=r, col=c, title=f"{label} {title}")
+                plot.showGrid(x=True, y=True, alpha=0.3)
+                plot.setLabel("left", title, unit)
+                if r == len(DEMO_ROWS) - 1:
+                    plot.setLabel("bottom", "time", "s")
+                if r == 0:
+                    plot.addLegend(offset=(5, 5))
+                curves = [
+                    plot.plot(pen=pg.mkPen(color, width=1.5), connect="finite")
+                    for color in JOINT_COLORS
+                ]
+                cursor = pg.InfiniteLine(0.0, angle=90, pen=pg.mkPen("w", width=1))
+                plot.addItem(cursor)
+                self._cursors.append(cursor)
+                if first is None:
+                    first = plot
+                else:
+                    plot.setXLink(first)
+                self._plots[(field_name, finger)] = plot
+                self._curves[(field_name, finger)] = curves
+        middle = QtWidgets.QWidget()
+        middle_layout = QtWidgets.QVBoxLayout(middle)
+        middle_layout.setContentsMargins(0, 0, 0, 0)
+        middle_layout.addWidget(self.title)
+        middle_layout.addLayout(controls)
+        middle_layout.addWidget(self.plots, 1)
+
+        # Right: the camera recording with the bounding box, and the FK taxels.
+        self.camera = CameraView("")
+        self.camera.setWordWrap(True)
+        self.camera.set_message("Pick a recording")
+        self.hand = HandView(
+            node.sim_topic, node.xela_topic, node.counts_per_unit, waiting="Pick a recording"
+        )
+        right = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        right.addWidget(self.camera)
+        right.addWidget(self.hand)
+
+        split = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        split.addWidget(left)
+        split.addWidget(middle)
+        split.addWidget(right)
+        split.setSizes([250, 900, 500])
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(split)
+
+        self._timer = QtCore.QTimer(self)
+        self._timer.setInterval(REFRESH_MS)
+        self._timer.timeout.connect(self._tick)
+        refresh_btn.clicked.connect(self.refresh_recordings)
+        self.list.currentRowChanged.connect(self._load_picked)
+        self.play_btn.clicked.connect(self._toggle_play)
+        self.slider.valueChanged.connect(
+            lambda v: self.seek(v / SLIDER_STEPS_PER_SEC, from_slider=True)
+        )
+
+    def showEvent(self, ev) -> None:
+        super().showEvent(ev)
+        self.refresh_recordings()
+
+    # ---- recordings ---------------------------------------------------------------------
+
+    def refresh_recordings(self) -> None:
+        """Lists every Play on hand recording, newest first, keeping the picked one."""
+        current = self.list.currentItem()
+        keep = current.data(QtCore.Qt.UserRole) if current is not None else None
+        paths = list_playbacks(self.store.compose_playback_dir)
+        self.list.blockSignals(True)
+        self.list.clear()
+        for path in paths:
+            item = QtWidgets.QListWidgetItem(play_list_text(path))
+            item.setData(QtCore.Qt.UserRole, path)
+            item.setToolTip(path)
+            self.list.addItem(item)
+        self.list.setCurrentRow(paths.index(keep) if keep in paths else -1)
+        self.list.blockSignals(False)
+        if keep is not None and keep not in paths:
+            self._load(None)
+
+    def _load_picked(self, *_) -> None:
+        item = self.list.currentItem()
+        self._load(item.data(QtCore.Qt.UserRole) if item is not None else None)
+
+    def _load(self, path: str | None) -> None:
+        """Shows the recording at ``path`` (None: nothing) from its start."""
+        self._stop()
+        self._video.release()
+        self.rec, self._sim_q, self._xela_index, self._sim_index = None, None, -1, -1
+        for plot, line in self._marks:
+            plot.removeItem(line)
+        self._marks = []
+        for curves in self._curves.values():
+            for curve in curves:
+                curve.setData([], [])
+        if path is None:
+            self.title.setText("Pick a recording")
+            self.camera.set_message("Pick a recording")
+            self.hand.clear_readings("Pick a recording")
+            self.duration = 0.0
+            self.slider.setRange(0, 0)
+            self._show_time()
+            return
+        try:
+            rec = PlaybackRecording.load(path)
+        except Exception as e:
+            self.title.setText(f"<span style='color:#d32f2f'>Could not load {path}: {e}</span>")
+            return
+        self.rec = rec
+        ends = [arr[-1] for arr in (rec.state_t, rec.cmd_t, rec.xela_t, rec.video_t) if len(arr)]
+        self.duration = float(max(ends)) if ends else 0.0
+        takes = ", ".join(
+            f"{f.upper()} {os.path.splitext(os.path.basename(p))[0]}"
+            for f, p in rec.meta.get("takes", {}).items()
+        )
+        self.title.setText(
+            f"<b>{rec.name}</b>: {self.duration:.1f} s, {rec.meta.get('ended', '?')} ({takes})"
+        )
+        self._plot(rec)
+        # The whole run on the (linked) time axes; each plot fits its own values.
+        for plot in self._plots.values():
+            plot.enableAutoRange(axis="y")
+        next(iter(self._plots.values())).setXRange(0.0, max(self.duration, 0.1), padding=0.02)
+        self._convert_joints(rec)
+        self.hand.set_baseline(rec.xela_baseline if len(rec.xela_baseline) else None)
+        if not len(rec.xela_t):
+            self.hand.clear_readings(f"No Xela readings in {rec.name}")
+        if not (rec.video and len(rec.video_t) and os.path.exists(rec.video)):
+            self.camera.set_message(
+                f"No camera recording in {rec.name}" + (
+                    "\n(recorded before Play on hand saved the camera)" if not rec.video else ""
+                )
+            )
+        self.slider.blockSignals(True)
+        self.slider.setRange(0, int(round(self.duration * SLIDER_STEPS_PER_SEC)))
+        self.slider.blockSignals(False)
+        self.seek(0.0)
+
+    def _plot(self, rec: PlaybackRecording) -> None:
+        """Joint position / velocity / effort of each finger, with the run's timeline."""
+        names = rec.joint_names
+        for field_name, _, _ in DEMO_ROWS:
+            data = getattr(rec, field_name)
+            for finger, _ in FINGERS:
+                cols = finger_indices(names, finger)
+                curves = self._curves[(field_name, finger)]
+                plot = self._plots[(field_name, finger)]
+                if plot.legend is not None:
+                    plot.legend.clear()
+                for curve, col in zip(curves, cols):
+                    if len(rec.state_t) and data.shape[0] == len(rec.state_t):
+                        curve.setData(rec.state_t, data[:, col])
+                    if plot.legend is not None:
+                        plot.legend.addItem(curve, names[col])
+        # Milestones (start, holding, finished / stopped) are labelled on the position row;
+        # Avoid slip raises (faint) and slips (red) are only lines, as they can be many.
+        marks = []
+        for e in rec.meta.get("timeline", []):
+            avoid = e["event"].startswith("avoid_slip")
+            marks.append((e["t"], e["finger"], None if avoid else e["event"],
+                          "#616161" if avoid else "#bdbdbd"))
+        marks += [(e["t"], e["finger"], None, "#ff1744") for e in rec.meta.get("slips", [])]
+        labelled: dict[str, int] = {}
+        for t, finger, text, color in marks:
+            k = labelled.get(finger, 0)
+            if text is not None:
+                labelled[finger] = k + 1
+            for r, (field_name, _, _) in enumerate(DEMO_ROWS):
+                plot = self._plots.get((field_name, finger))
+                if plot is None:
+                    continue
+                line = pg.InfiniteLine(
+                    t, angle=90, pen=pg.mkPen(color, width=1, style=QtCore.Qt.DashLine),
+                    label=text if r == 0 else None,
+                    labelOpts={"position": 0.92 - 0.12 * (k % 4), "color": color},
+                )
+                plot.addItem(line)
+                self._marks.append((plot, line))
+
+    def _convert_joints(self, rec: PlaybackRecording) -> None:
+        """The recorded joints in the sim frame, for the FK taxels."""
+        if not len(rec.state_t):
+            return
+        try:
+            to_sim = HardwareToSim()
+            self._sim_q = np.array([to_sim(rec.joint_names, q) for q in rec.position])
+            self._sim_names = list(to_sim.sim_names)
+        except Exception as e:
+            self.node.get_logger().warn(f"Demonstration: no FK taxels for {rec.name}: {e}")
+            self._sim_q = None
+
+    # ---- playback -----------------------------------------------------------------------
+
+    def seek(self, t: float, from_slider: bool = False) -> None:
+        """Shows the recording at ``t`` s from its start."""
+        self.now = float(np.clip(t, 0.0, self.duration))
+        if not from_slider:
+            self.slider.blockSignals(True)
+            self.slider.setValue(int(round(self.now * SLIDER_STEPS_PER_SEC)))
+            self.slider.blockSignals(False)
+        for cursor in self._cursors:
+            cursor.setValue(self.now)
+        self._show_time()
+        rec = self.rec
+        if rec is None:
+            return
+        if rec.video and len(rec.video_t) and os.path.exists(rec.video):
+            frame = self._video.read(rec.video, max(index_at(rec.video_t, self.now), 0))
+            if frame is not None:
+                corners = rec.meta.get("box_corners")
+                if corners is not None:
+                    frame = draw_recorded_pen_pose(
+                        frame, np.asarray(corners), f"box {rec.meta.get('box', '')}".strip()
+                    )
+                self.camera.set_frame(frame)
+        if len(rec.state_t):
+            j = max(index_at(rec.state_t, self.now), 0)
+            if self._sim_q is not None:
+                self.hand.set_joints(self._sim_names, self._sim_q[j])
+            if self.stream_check.isChecked() and j != self._sim_index:
+                self._sim_index = j
+                self._stream(rec, j)
+        if len(rec.xela_t):
+            k = max(index_at(rec.xela_t, self.now), 0)
+            if k != self._xela_index:
+                self._xela_index = k
+                self.hand.set_readings(rec.xela[k], source=f"Recorded Xela of {rec.name}")
+
+    def _stream(self, rec: PlaybackRecording, j: int) -> None:
+        """Sends joint state ``j`` of the recording to the sim (hardware -> sim joints)."""
+        try:
+            self.node.send_sim_command(rec.joint_names, rec.position[j])
+        except Exception as e:
+            self.stream_check.setChecked(False)
+            self.node.get_logger().warn(f"Demonstration: Stream to sim off: {e}")
+
+    def _show_time(self) -> None:
+        self.time_label.setText(f"{self.now:.2f} / {self.duration:.2f} s")
+
+    def _toggle_play(self) -> None:
+        if self._timer.isActive():
+            self._stop()
+            return
+        if self.rec is None:
+            return
+        if self.now >= self.duration:
+            self.seek(0.0)
+        self._last_tick = time.monotonic()
+        self._timer.start()
+        self.play_btn.setText("Pause")
+        if self.stream_check.isChecked():
+            self._sim_index = -1  # resend the current state
+            self.seek(self.now)
+            if not self.node.sim_listening():
+                self.node.get_logger().warn(
+                    f"Demonstration: nothing subscribes to '{self.node.sim_cmd_topic}' "
+                    "(is mujoco_sim_node running?)"
+                )
+            else:
+                raise_x11_window(SIM_WINDOW_TITLE)
+
+    def _stop(self) -> None:
+        self._timer.stop()
+        self.play_btn.setText("Play")
+
+    def _tick(self) -> None:
+        now = time.monotonic()
+        dt, self._last_tick = now - self._last_tick, now
+        self.seek(self.now + dt)
+        if self.now >= self.duration:
+            self._stop()
+
+    def close_video(self) -> None:
+        self._stop()
+        self._video.release()
 
 
 def double_spin(
@@ -6554,6 +7397,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.compose_tab = ComposeTab(
             node, self.store, event_defs, self.create_tab, self.edit_tab, avoid_slip
         )
+        self.demo_tab = DemonstrationTab(node, self.store)
         self.settings_tab = SettingsTab(
             node, self.store, settings, touch_settings, press_settings, saved, saved_path,
             avoid_slip,
@@ -6567,6 +7411,7 @@ class MainWindow(QtWidgets.QMainWindow):
         tabs.addTab(self.create_tab, "Create")
         tabs.addTab(self.edit_tab, "Edit")
         tabs.addTab(self.compose_tab, "Compose")
+        tabs.addTab(self.demo_tab, "Demonstration")
         tabs.addTab(self.settings_tab, "Settings")
         self.setCentralWidget(tabs)
 
@@ -6575,6 +7420,25 @@ class MainWindow(QtWidgets.QMainWindow):
         self._timer.timeout.connect(self.edit_tab.refresh)
         self._timer.timeout.connect(self.compose_tab.refresh)
         self._timer.start(REFRESH_MS)
+        # The MuJoCo window opens before this one and ends up behind it: bring it to the front
+        # once it appears (checked every second for SIM_WINDOW_WAIT_S).
+        self._sim_window_tries = 0
+        self._sim_window_timer = QtCore.QTimer(self)
+        self._sim_window_timer.setInterval(1000)
+        self._sim_window_timer.timeout.connect(self._raise_sim_window)
+        self._sim_window_timer.start()
+
+    def _raise_sim_window(self) -> None:
+        self._sim_window_tries += 1
+        if raise_x11_window(SIM_WINDOW_TITLE):
+            self._sim_window_timer.stop()
+            self.node.get_logger().info(f"Brought the '{SIM_WINDOW_TITLE}' window to the front")
+        elif self._sim_window_tries >= SIM_WINDOW_WAIT_S:
+            self._sim_window_timer.stop()
+            self.node.get_logger().warn(
+                f"No '{SIM_WINDOW_TITLE}' window after {SIM_WINDOW_WAIT_S} s: is mujoco_sim_node "
+                "running with its viewer?"
+            )
 
     def _delete_take(self, path: str) -> None:
         self.create_tab.forget_take(path)
@@ -6601,6 +7465,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, ev) -> None:
         self.compose_tab.stop_hand()
+        self.compose_tab.stop_replay()
         self.create_tab.stop_all_playback()
         if self.node.recording:
             answer = QtWidgets.QMessageBox.question(
@@ -6622,6 +7487,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.edit_tab.close_video()
         self.compose_tab.stop_sim()
         self.compose_tab.close_video()
+        self.demo_tab.close_video()
         super().closeEvent(ev)
 
 

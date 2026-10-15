@@ -30,12 +30,6 @@ def generate_launch_description() -> LaunchDescription:
                 description="JointState command topic of leaphand_node, used by Play",
             ),
             DeclareLaunchArgument(
-                "sim",
-                default_value="true",
-                description="Start the MuJoCo sim (mujoco_sim_node) for the Compose tab's "
-                "Test in sim",
-            ),
-            DeclareLaunchArgument(
                 "sim_cmd_topic",
                 default_value="sim_command",
                 description="Sim-frame JointState topic Test in sim sends to mujoco_sim_node",
@@ -160,20 +154,27 @@ def generate_launch_description() -> LaunchDescription:
                 ),
                 condition=IfCondition(LaunchConfiguration("camera")),
             ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    PathJoinSubstitution([
-                        FindPackageShare("bounding_box_sam"),
-                        "launch",
-                        "launch_bounding_box_sam.py",
-                    ])
-                ),
-                launch_arguments={
-                    "camera": "false",
-                    "viewer": "false",
-                    "image_topic": LaunchConfiguration("image_topic"),
-                    "topic_prefix": LaunchConfiguration("sam_prefix"),
-                }.items(),
+            # Scoped: its camera:=false / viewer:=false would otherwise leak into the includes
+            # below (included launch arguments are not scoped) and start the sim headless.
+            GroupAction(
+                [
+                    IncludeLaunchDescription(
+                        PythonLaunchDescriptionSource(
+                            PathJoinSubstitution([
+                                FindPackageShare("bounding_box_sam"),
+                                "launch",
+                                "launch_bounding_box_sam.py",
+                            ])
+                        ),
+                        launch_arguments={
+                            "camera": "false",
+                            "viewer": "false",
+                            "image_topic": LaunchConfiguration("image_topic"),
+                            "topic_prefix": LaunchConfiguration("sam_prefix"),
+                        }.items(),
+                    ),
+                ],
+                scoped=True,
                 condition=IfCondition(LaunchConfiguration("sam")),
             ),
             IncludeLaunchDescription(
@@ -187,6 +188,7 @@ def generate_launch_description() -> LaunchDescription:
                 launch_arguments={"output_topic": LaunchConfiguration("click_topic")}.items(),
                 condition=IfCondition(LaunchConfiguration("click_detector")),
             ),
+            # The MuJoCo sim is always started (Compose tab: Test in sim, Play on sim).
             # Scoped: the include's cmd_topic would otherwise replace the hand's for the nodes
             # below (included launch arguments are not scoped).
             GroupAction(
@@ -202,11 +204,11 @@ def generate_launch_description() -> LaunchDescription:
                         launch_arguments={
                             "cmd_topic": LaunchConfiguration("sim_cmd_topic"),
                             "contact_topic": LaunchConfiguration("finger_contact_topic"),
+                            "viewer": "true",  # always with its window
                         }.items(),
                     ),
                 ],
                 scoped=True,
-                condition=IfCondition(LaunchConfiguration("sim")),
             ),
             Node(
                 package="conversions",
