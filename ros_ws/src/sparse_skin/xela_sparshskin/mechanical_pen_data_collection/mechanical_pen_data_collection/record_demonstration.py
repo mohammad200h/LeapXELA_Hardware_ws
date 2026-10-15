@@ -51,8 +51,10 @@ and a later ``terminal``) marks that span and swaps the times of the two events,
 runs the take backwards from ``episode_start`` to ``terminal``; deleting it swaps them back.
 A reversed take is shown mirrored (play bar, plots, events and times read ``duration - t``),
 so its Play runs left to right; the events are still stored in the take's own time.
-A ``maintain_touch`` region (two clicks) makes Play hold the finger in contact over it, with the
-Settings tab's Maintain touch values (see ``maintain_touch``); if it reaches past ``terminal``
+A ``maintain_touch`` region (two clicks) makes Play hold the finger in contact over it: the take
+waits while the fingertip moves along a press axis until it touches, then plays on while the
+fingertip force is held at the Settings tab's Maintain touch hold force (a region can set its
+own; see ``maintain_touch``); if it reaches past ``terminal``
 (before it in a reversed take), ``terminal`` is moved to its edge.
 A ``click_press`` region (Thumb, two clicks) makes Play replace the take over it with a
 Cartesian press of the fingertip (``click_press``): a guarded move along the way the fingertip
@@ -188,6 +190,9 @@ from mechanical_pen_data_collection.playback_recording import (
 from mechanical_pen_data_collection.maintain_touch import (
     MaintainTouchSettings,
     TouchHold,
+    TouchPress,
+    TouchPressRegion,
+    touch_axis,
     touch_regions,
 )
 
@@ -419,7 +424,7 @@ class TakeEvent:
     type: str = ""
     added: float = 0.0  # wall-clock time it was labelled
     end: float | None = None  # end of an event with ``"length": "duration"`` (None if instant)
-    # Event-specific values, e.g. a ``maintain_touch`` region's press_offset / max_offset (rad).
+    # Event-specific values, e.g. a ``maintain_touch`` region's hold_force / contact_force.
     params: dict = field(default_factory=dict)
 
     def span_text(self) -> str:
@@ -1980,7 +1985,7 @@ class Playback:
     reverse: bool = False  # take time runs from ``offset`` back to 0
     stop: float | None = None  # take time where it ends (None: the take's end, or 0 in reverse)
     finished: bool = False  # reached the end; the GUI thread is asked to stop it
-    held_s: float = 0.0  # time since ``start`` the take was held by force replay
+    held_s: float = 0.0  # time since ``start`` the take was held (force replay, presses, touch)
     last_step: float = 0.0  # time.monotonic() of the last command step
     # Force replay (None: plain position replay) and the live fingertip it reads.
     force: ForceTracker | None = None
@@ -1996,7 +2001,7 @@ class Playback:
     )
     tip_mags: np.ndarray | None = None  # (L, 30) recorded fingertip magnitudes (None: no Xela)
     pen_corners: np.ndarray | None = None  # (4, 2) recorded pen box drawn on the live camera
-    touch: TouchHold | None = None  # maintain_touch regions (Edit tab Play)
+    touch: TouchPress | TouchHold | None = None  # maintain_touch regions (Edit tab Play)
     probe: ClickProbe | None = None  # click setting search: commands the finger instead of the take
     press: ClickPress | None = None  # click_press regions: command the finger over them
     pad_grid: np.ndarray | None = None  # (30, 3) fingertip taxel positions on the pad (m)
@@ -2392,18 +2397,10 @@ class CreateTab(QtWidgets.QWidget):
                 finger, take, tip_mags, offset,
                 [(r.start, r.end) for r in press.regions] if press is not None else [],
             )
-        touch = None
-        if touch_spans:
-            label = FINGER_LABEL[finger]
-            touch = TouchHold(
-                touch_regions(
-                    touch_spans, take.t, take.q, reverse,
-                    take.xela_t if tip_mags is not None else None,
-                    tip_mags.sum(axis=1) if tip_mags is not None else None,
-                ),
-                self.touch_settings,
-                log=lambda msg: self.node.get_logger().info(f"{label} maintain touch: {msg}"),
-            )
+        touch = (
+            self._maintain_touch(finger, take, cols, tip_mags, q, offset, reverse, touch_spans)
+            if touch_spans else None
+        )
         now = time.monotonic()
         with self._cmd_lock:
             self._start_commanding(q)
@@ -2610,6 +2607,62 @@ class CreateTab(QtWidgets.QWidget):
         )
         press.reset(offset)
         return press
+
+    def _maintain_touch(
+        self, finger: str, take: FingerTake, cols: list[int], tip_mags: np.ndarray | None,
+        q_hand: np.ndarray, offset: float, reverse: bool,
+        spans: tuple[tuple[float, float, dict], ...],
+    ) -> TouchPress | TouchHold:
+        """Maintain touch over the (start, end, params) ``spans`` of ``take``: a guarded
+        approach and force hold (``TouchPress``), or the open loop ``TouchHold`` when the live
+        fingertip force or the kinematics are not available."""
+        log = self.node.get_logger()
+        label = FINGER_LABEL[finger]
+
+        def info(msg: str) -> None:
+            log.info(f"{label} {MAINTAIN_TOUCH_EVENT}: {msg}")
+
+        problem = None
+        if self.hand.baseline is None:
+            problem = "no live Xela baseline (press Zero)"
+        elif len(self.panels[finger].tip_plot.ids) == 0:
+            problem = "no fingertip taxels"
+        elif self._hand_kinematics() is None:
+            problem = f"no fingertip kinematics ({self._hand_kin_error})"
+        if problem is not None:
+            log.warn(f"{label}: {MAINTAIN_TOUCH_EVENT} without force feedback: {problem}; "
+                     "holding the recorded pose")
+            return TouchHold(
+                touch_regions(spans, take.t, take.q, reverse), self.touch_settings, log=info
+            )
+        kin = self._hand_kin
+        link = TIP_LINKS[finger]
+        kp = np.array([REDUCED_KP_SCALE if c in REDUCED_KP_MOTORS else 1.0 for c in cols])
+        n_taxels = len(kin.grid(link))
+        regions = []
+        for start, end, params in spans:
+            entry, exit_ = (end, start) if reverse else (start, end)
+            # Contact point: where the recorded force was on the pad over the region (its
+            # middle if the take has no force there).
+            weights = np.full(n_taxels, 1.0 / n_taxels)
+            if tip_mags is not None and tip_mags.shape[1] == n_taxels:
+                inside = (take.xela_t >= start) & (take.xela_t <= end)
+                total = tip_mags[inside].sum(axis=0)
+                if total.sum() > 1e-9:
+                    weights = total / total.sum()
+            finger_kin = FingerKinematics(kin, q_hand, cols, link, weights)
+            axis, source = touch_axis(
+                finger_kin, lambda t: sample_take(take, t), entry, reverse,
+                (float(take.t[0]), float(take.t[-1])),
+            )
+            info(f"region {start:.2f}-{end:.2f} s, press axis {np.round(axis, 3).tolist()} "
+                 f"from the {source}")
+            regions.append(TouchPressRegion(
+                entry=entry, exit=exit_, axis=axis, kin=finger_kin, params=dict(params), kp=kp,
+            ))
+        touch = TouchPress(regions, self.touch_settings, log=info)
+        touch.reset(offset)
+        return touch
 
     def _live_tip_spot(self, p: Playback) -> np.ndarray | None:
         """Where on the fingertip pad the live contact is: the force-weighted taxel position in
@@ -2863,7 +2916,7 @@ class CreateTab(QtWidgets.QWidget):
                 local = p.offset
             else:
                 if p.reverse:
-                    local = max(p.offset - (elapsed - ramp), p.end)
+                    local = max(p.offset - (elapsed - ramp - p.held_s), p.end)
                 else:
                     local = min(p.offset + elapsed - ramp - p.held_s, p.end)
                 q[p.cols] = sample_take(p.take, local)
@@ -2887,9 +2940,16 @@ class CreateTab(QtWidgets.QWidget):
                             local = min(step.skip_to, p.end)
                 touching = pressing
                 if p.touch is not None and not pressing:
-                    q[p.cols], touching = p.touch.apply(
-                        local, q[p.cols], dt, lambda p=p: self._live_tip_force(p)
+                    effort = self.node.latest_effort()
+                    step = p.touch.step(
+                        local, dt, now, q[p.cols], self.node.latest(), self._live_tip_force(p),
+                        effort[p.cols] if effort is not None else None,
                     )
+                    if step is not None:
+                        q[p.cols] = step.q
+                        touching = True
+                        if step.hold:
+                            p.held_s += dt  # approaching the pen: the take stays at ``local``
                 if p.force is not None and not touching:
                     if not p.force.step(local, dt, now, self._live_tip_force(p)):
                         p.held_s += dt  # held for contact or the click: stays at ``local``
@@ -3443,9 +3503,9 @@ def number_edit(
 
 
 class EditTakeEventDialog(EditEventDialog):
-    """``EditEventDialog`` with duration, press offset and max press offset boxes, enabled
-    while ``maintain_touch`` is picked: its region can be made longer (also past ``terminal``)
-    or shorter, and given its own press (the Settings tab's values are filled in otherwise)."""
+    """``EditEventDialog`` with duration, hold force and contact force boxes, enabled while
+    ``maintain_touch`` is picked: its region can be made longer (also past ``terminal``) or
+    shorter, and given its own forces (the Settings tab's values are filled in otherwise)."""
 
     def __init__(
         self,
@@ -3454,7 +3514,7 @@ class EditTakeEventDialog(EditEventDialog):
         event_defs: dict[str, dict],
         color_of,
         note: str,
-        press_defaults: tuple[float, float, float],
+        force_defaults: tuple[float, float],
     ):
         super().__init__(parent, event, event_defs, color_of, note=note)
         current = event.end - event.t if event.end is not None else 0.0
@@ -3468,29 +3528,21 @@ class EditTakeEventDialog(EditEventDialog):
             f"{event.t:.2f} s (its end moves). '{EPISODE_END_EVENT}' moves if the region "
             "reaches past it"
         )
-        press = event.params.get("press_offset", press_defaults[0])
-        max_press = event.params.get("max_offset", press_defaults[1])
-        rate = event.params.get("press_rate", press_defaults[2])
-        self.press_edit = number_edit(
-            f"{press:.3f}", 0.0, "press_offset",
-            "How far past the held pose the finger presses in this region (rad). Used when the "
-            "Settings tab does not match the recorded force",
+        hold = event.params.get("hold_force", force_defaults[0])
+        contact = event.params.get("contact_force", force_defaults[1])
+        self.hold_edit = number_edit(
+            f"{hold:.3f}", 0.0, "hold_force",
+            "Fingertip force held in contact over this region (the tip plots' units)",
         )
-        self.max_press_edit = number_edit(
-            f"{max_press:.3f}", 0.0, "max_press_offset",
-            "Largest press past the held pose in this region (rad)",
-        )
-        self.rate_edit = number_edit(
-            f"{rate:.3f}", 0.0, "press_rate",
-            "How fast the press grows in this region, from the press offset up to the max press "
-            "offset (rad/s, 0: fixed press)",
+        self.contact_edit = number_edit(
+            f"{contact:.3f}", 0.0, "contact_force",
+            "Fingertip force that ends the approach in this region",
         )
         form = QtWidgets.QFormLayout()
         for label, edit, unit in (
             ("Duration:", self.duration_edit, "s"),
-            ("Press offset:", self.press_edit, "rad"),
-            ("Max press offset:", self.max_press_edit, "rad"),
-            ("Press rate:", self.rate_edit, "rad/s"),
+            ("Hold force:", self.hold_edit, "units"),
+            ("Contact force:", self.contact_edit, "units"),
         ):
             row = QtWidgets.QHBoxLayout()
             row.addWidget(edit, 1)
@@ -3502,7 +3554,7 @@ class EditTakeEventDialog(EditEventDialog):
 
     def _update_duration(self) -> None:
         on = self.name() == MAINTAIN_TOUCH_EVENT
-        for edit in (self.duration_edit, self.press_edit, self.max_press_edit, self.rate_edit):
+        for edit in (self.duration_edit, self.hold_edit, self.contact_edit):
             edit.setEnabled(on)
 
     def accept(self) -> None:
@@ -3512,28 +3564,21 @@ class EditTakeEventDialog(EditEventDialog):
                 problem = (
                     f"Duration must be a number of seconds of at least {EVENT_TIME_RESOLUTION:g}."
                 )
-            elif not (self.press_edit.hasAcceptableInput()
-                      and self.max_press_edit.hasAcceptableInput()
-                      and self.rate_edit.hasAcceptableInput()):
-                problem = (
-                    "Press offset, max press offset and press rate must be numbers of at least 0."
-                )
-            elif float(self.press_edit.text()) > float(self.max_press_edit.text()):
-                problem = "Press offset cannot be larger than max press offset."
+            elif not (self.hold_edit.hasAcceptableInput()
+                      and self.contact_edit.hasAcceptableInput()):
+                problem = "Hold force and contact force must be numbers of at least 0."
             if problem is not None:
                 QtWidgets.QMessageBox.warning(self, "Edit event", problem)
                 return
         super().accept()
 
     def params(self) -> dict | None:
-        """The region's press_offset / max_offset / press_rate; None when the boxes are
-        disabled."""
-        if not self.press_edit.isEnabled():
+        """The region's hold_force / contact_force; None when the boxes are disabled."""
+        if not self.hold_edit.isEnabled():
             return None
         return {
-            "press_offset": float(self.press_edit.text()),
-            "max_offset": float(self.max_press_edit.text()),
-            "press_rate": float(self.rate_edit.text()),
+            "hold_force": float(self.hold_edit.text()),
+            "contact_force": float(self.contact_edit.text()),
         }
 
     def duration(self) -> float | None:
@@ -4006,7 +4051,12 @@ class EditFingerPanel(QtWidgets.QWidget):
                 tip += " (" + ", ".join(
                     f"{n.split('_')[-1]} {v:+.2f}" for n, v in event.params["joints"].items()
                 ) + ")"
-            if "press_offset" in event.params:
+            if "hold_force" in event.params:
+                tip += (
+                    f" (hold {event.params['hold_force']:.2f}"
+                    f", contact {event.params.get('contact_force', 0.0):.2f})"
+                )
+            elif "press_offset" in event.params:
                 rate = (
                     f", +{event.params['press_rate']:.3f} rad/s"
                     if "press_rate" in event.params else ""
@@ -4207,7 +4257,7 @@ class EditFingerPanel(QtWidgets.QWidget):
 
     def touch_spans(self) -> tuple[tuple[float, float, dict], ...]:
         """(start, end, params) of the take's ``maintain_touch`` regions, if this finger can
-        have them; ``params`` holds a region's own press_offset / max_offset."""
+        have them; ``params`` holds a region's own hold_force / contact_force."""
         if self.take is None or MAINTAIN_TOUCH_EVENT not in self._addable:
             return ()
         return tuple(sorted(
@@ -4373,11 +4423,7 @@ class EditFingerPanel(QtWidgets.QWidget):
         shown = replace(event, t=a, end=b)
         dialog = EditTakeEventDialog(
             self, shown, same_length, self._color, note=f"{self.take.name}.npz will be updated.",
-            press_defaults=(
-                self.touch_settings.press_offset,
-                self.touch_settings.max_offset,
-                self.touch_settings.press_rate,
-            ),
+            force_defaults=(self.touch_settings.hold_force, self.touch_settings.contact_force),
         )
         if dialog.exec_() != QtWidgets.QDialog.Accepted:
             return
@@ -4652,6 +4698,7 @@ class EditTab(QtWidgets.QWidget):
                 "maintain_touch": asdict(self.create_tab.touch_settings),
                 "hold": asdict(self.create_tab.settings),
                 "click_press_trace": playback.press.trace if playback.press is not None else [],
+                "maintain_touch_trace": playback.touch.trace if playback.touch is not None else [],
             },
         )
         try:
@@ -5269,100 +5316,101 @@ class SettingsTab(QtWidgets.QWidget):
 
     # ---- maintain touch -----------------------------------------------------------------
 
+    # (field, label, min, max, step, decimals, suffix, scale shown / stored, tooltip)
+    TOUCH_FIELDS = (
+        ("hold_force", "Hold force", 0.0, 50.0, 0.1, 2, " units", 1.0,
+         "Fingertip force held in contact over a region (the tip plots' units: sum of the "
+         "fingertip taxel magnitudes), above the force at the region's entry if relative"),
+        ("contact_force", "Contact force", 0.0, 20.0, 0.05, 2, " units", 1.0,
+         "Fingertip force (rise above the force at the entry if relative) that ends the "
+         "approach; below half of it for the loss time the contact is lost and the finger "
+         "approaches again"),
+        ("ramp_s", "Force ramp", 0.0, 5.0, 0.05, 2, " s", 1.0,
+         "Time the force ramps from contact up to the hold force"),
+        ("force_gain", "Force gain", 0.0, 2.0, 0.005, 3, " rad/(unit·s)", 1.0,
+         "How fast the joint goals move past contact (along J^T d, so the force points along "
+         "the press axis) per unit of missing force"),
+        ("approach_speed", "Approach speed", 0.0, 50.0, 0.5, 1, " mm/s", 1000.0,
+         "Speed of the guarded move along the press axis until the fingertip touches (the "
+         "take waits meanwhile)"),
+        ("max_travel", "Max approach", 0.0, 50.0, 0.5, 1, " mm", 1000.0,
+         "Largest approach before giving up on the region (the take then plays over it)"),
+        ("max_wait", "Max wait", 0.0, 30.0, 0.5, 1, " s", 1.0,
+         "Longest wait for contact before giving up on the region"),
+        ("max_press_q", "Max press offset", 0.0, 2.0, 0.05, 2, " rad", 1.0,
+         "Largest press offset of the joint goals past where contact was made"),
+        ("max_joint_offset", "Max joint offset", 0.0, 2.0, 0.05, 2, " rad", 1.0,
+         "Largest press offset of any one joint"),
+        ("sat_effort", "Current limit at", 0.0, 2000.0, 10.0, 0, "", 1.0,
+         "leap_state effort of a joint at its current limit (0: off). There the press stops "
+         "pushing deeper"),
+        ("loss_s", "Contact loss time", 0.0, 5.0, 0.05, 2, " s", 1.0,
+         "Time below half the contact force before the finger approaches again"),
+        ("release_s", "Release time", 0.0, 5.0, 0.05, 2, " s", 1.0,
+         "After a region, the finger blends back into the take over this time"),
+        ("press_offset", "No feedback: press", 0.0, 0.6, 0.005, 3, " rad", 1.0,
+         "Without a Zero baseline or kinematics the recorded pose at the region's entry is "
+         "held, pressed this far past it along the joint motion that led there"),
+        ("press_rate", "No feedback: rate", 0.0, 2.0, 0.01, 3, " rad/s", 1.0,
+         "Without force feedback, how fast the press grows during a region"),
+        ("max_offset", "No feedback: max", 0.0, 0.6, 0.01, 2, " rad", 1.0,
+         "Without force feedback, the largest press past the held pose"),
+    )
+
     def _build_touch_box(self) -> QtWidgets.QGroupBox:
         self.touch_check = QtWidgets.QCheckBox(f"Hold contact in '{MAINTAIN_TOUCH_EVENT}' regions")
         self.touch_check.setToolTip(
-            "During Play in the Edit tab, hold the finger at the pose where it enters a "
-            f"'{MAINTAIN_TOUCH_EVENT}' region and press it in until the region ends"
+            f"During Play in the Edit tab, at a '{MAINTAIN_TOUCH_EVENT}' region the take waits "
+            "while the fingertip moves along the press axis until it touches, then the take "
+            "plays on while the fingertip force is held (needs a Zero baseline before Play)"
         )
-        self.touch_press_spin = double_spin(
-            0.0, 0.6, 0.005, 3, " rad",
-            "How far past the held pose the finger presses, along the direction it moved to "
-            "get there (used when not matching the force)",
+        self.touch_relative_check = QtWidgets.QCheckBox("Forces relative to the force at entry")
+        self.touch_relative_check.setToolTip(
+            "Measure the contact and hold forces from the fingertip force where Play enters the "
+            "region, not from the Zero baseline: a curled finger's taxels read a few units "
+            "without any contact"
         )
-        self.touch_rate_spin = double_spin(
-            0.0, 2.0, 0.01, 3, " rad/s",
-            "How fast the press grows during a region, from the press offset up to the max "
-            "press offset, so the force builds (0: fixed press)",
-        )
-        self.touch_match_check = QtWidgets.QCheckBox("Match the recorded fingertip force")
-        self.touch_match_check.setToolTip(
-            "Adjust the press so the live fingertip force follows the force recorded where the "
-            "region starts (needs Xela readings in the take and a Zero baseline before Play)"
-        )
-        self.touch_gain_spin = double_spin(
-            0.0, 2.0, 0.01, 3, " rad/(unit·s)",
-            "How fast the press changes per unit of force difference",
-        )
-        self.touch_max_spin = double_spin(
-            0.0, 0.6, 0.01, 2, " rad", "Largest press past the held pose",
-        )
-        self.touch_release_spin = double_spin(
-            0.0, 5.0, 0.05, 2, " s",
-            "After a region, the finger blends from the held pose back into the take over this time",
-        )
+        self.touch_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
         touch_reset = QtWidgets.QPushButton("Reset to defaults")
         box = QtWidgets.QGroupBox("Maintain touch (Edit tab Play, applied immediately)")
         form = QtWidgets.QFormLayout(box)
         form.addRow(self.touch_check)
-        form.addRow("Press offset:", self.touch_press_spin)
-        form.addRow("Press rate:", self.touch_rate_spin)
-        form.addRow(self.touch_match_check)
-        form.addRow("Force gain:", self.touch_gain_spin)
-        form.addRow("Max press offset:", self.touch_max_spin)
-        form.addRow("Release time:", self.touch_release_spin)
+        form.addRow(self.touch_relative_check)
+        for name, label, lo, hi, step, decimals, suffix, _, tooltip in self.TOUCH_FIELDS:
+            spin = double_spin(lo, hi, step, decimals, suffix, tooltip)
+            self.touch_spins[name] = spin
+            form.addRow(f"{label}:", spin)
         form.addRow("", touch_reset)
         self._show_touch_settings()
-        for spin in (
-            self.touch_press_spin, self.touch_rate_spin, self.touch_gain_spin,
-            self.touch_max_spin, self.touch_release_spin,
-        ):
+        for spin in self.touch_spins.values():
             spin.valueChanged.connect(self._on_touch_changed)
-        for check in (self.touch_check, self.touch_match_check):
-            check.toggled.connect(self._on_touch_changed)
+        self.touch_check.toggled.connect(self._on_touch_changed)
+        self.touch_relative_check.toggled.connect(self._on_touch_changed)
         touch_reset.clicked.connect(self._reset_touch)
         return box
 
     def _show_touch_settings(self) -> None:
         t = self.touch_settings
-        widgets = (
-            (self.touch_press_spin, t.press_offset),
-            (self.touch_rate_spin, t.press_rate),
-            (self.touch_gain_spin, t.force_gain),
-            (self.touch_max_spin, t.max_offset),
-            (self.touch_release_spin, t.release_s),
-            (self.touch_check, t.enabled),
-            (self.touch_match_check, t.match_force),
-        )
-        for widget, value in widgets:
-            widget.blockSignals(True)
-            if isinstance(widget, QtWidgets.QCheckBox):
-                widget.setChecked(value)
-            else:
-                widget.setValue(value)
-            widget.blockSignals(False)
-        self._update_touch_enabled()
-
-    def _update_touch_enabled(self) -> None:
-        on = self.touch_check.isChecked()
-        match = self.touch_match_check.isChecked()
-        self.touch_press_spin.setEnabled(on and not match)
-        self.touch_rate_spin.setEnabled(on and not match)
-        self.touch_match_check.setEnabled(on)
-        self.touch_gain_spin.setEnabled(on and match)
-        self.touch_max_spin.setEnabled(on)
-        self.touch_release_spin.setEnabled(on)
+        for check, value in ((self.touch_check, t.enabled), (self.touch_relative_check, t.relative)):
+            check.blockSignals(True)
+            check.setChecked(value)
+            check.blockSignals(False)
+        self.touch_relative_check.setEnabled(t.enabled)
+        for name, *_, scale, _ in self.TOUCH_FIELDS:
+            spin = self.touch_spins[name]
+            spin.blockSignals(True)
+            spin.setValue(getattr(t, name) * scale)
+            spin.blockSignals(False)
+            spin.setEnabled(t.enabled)
 
     def _on_touch_changed(self, *_) -> None:
         t = self.touch_settings
         t.enabled = self.touch_check.isChecked()
-        t.press_offset = self.touch_press_spin.value()
-        t.press_rate = self.touch_rate_spin.value()
-        t.match_force = self.touch_match_check.isChecked()
-        t.force_gain = self.touch_gain_spin.value()
-        t.max_offset = self.touch_max_spin.value()
-        t.release_s = self.touch_release_spin.value()
-        self._update_touch_enabled()
+        t.relative = self.touch_relative_check.isChecked()
+        self.touch_relative_check.setEnabled(t.enabled)
+        for name, *_, scale, _ in self.TOUCH_FIELDS:
+            setattr(t, name, round(self.touch_spins[name].value() / scale, 9))
+            self.touch_spins[name].setEnabled(t.enabled)
 
     def _reset_touch(self) -> None:
         for name, value in asdict(MaintainTouchSettings()).items():

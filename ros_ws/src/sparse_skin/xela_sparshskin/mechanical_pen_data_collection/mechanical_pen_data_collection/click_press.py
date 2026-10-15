@@ -682,6 +682,15 @@ class FingerKinematics:
         positions, _ = self.hand.frames(self.hand.to_fk(q_hand), self.link)
         return self.weights @ positions[0]
 
+    def normal(self, q: np.ndarray) -> np.ndarray:
+        """(3,) outward normal of the fingertip pad at finger joints ``q``: the patch frame's z
+        axis, toward the side its taxels sit on (``maintain_touch`` press axis)."""
+        batch = self.q_hand[None].copy()
+        batch[0, self.cols] = q
+        _, rotations = self.hand.frames(self.hand.to_fk(batch), self.link)
+        side = float(np.sign(self.grid[:, 2].mean())) or 1.0
+        return side * rotations[0, 0, :, 2]
+
     @property
     def grid(self) -> np.ndarray:
         """(n, 3) fingertip taxel positions in the fingertip patch's frame (m): where on the
