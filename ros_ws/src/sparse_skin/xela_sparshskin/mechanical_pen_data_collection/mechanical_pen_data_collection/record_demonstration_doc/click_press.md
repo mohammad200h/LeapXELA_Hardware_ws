@@ -14,7 +14,7 @@ Files involved:
 | File | What it does |
 | --- | --- |
 | [click_press.py](../click_press.py) | The controller: `ClickPress`, its settings `ClickPressSettings`, the take analysis `press_geometry`, and the fingertip kinematics. |
-| [record_demonstration.py](../record_demonstration.py) | Builds a `ClickPress` when Play starts ([_click_press](../record_demonstration.py#L2549)) and calls it every command step ([_command_step](../record_demonstration.py#L2838)). |
+| [record_demonstration.py](../record_demonstration.py) | Builds a `ClickPress` when Play starts ([_click_press](../record_demonstration.py#L2546)) and calls it every command step ([_command_step](../record_demonstration.py#L2891)). |
 | [force_replay.py](../force_replay.py) | Force replay, which is switched off inside `click_press` regions. Also supplies the constants `LOADING_LEVEL`, `CLICK_DROP` and `CLICK_WINDOW_S`. |
 | [events.json](../events.json) | Defines the `click_press` event (duration, Thumb only). |
 
@@ -63,7 +63,7 @@ What the start and end are used for:
 
 ## 3. What happens when you press Play
 
-[_click_press](../record_demonstration.py#L2549) runs once per Play, before the first command.
+[_click_press](../record_demonstration.py#L2546) runs once per Play, before the first command.
 It returns `None` (so the take plays normally over the region) and logs a warning if any of the
 following is true:
 
@@ -88,7 +88,7 @@ Thumb: click_press 3.10-5.40 s, press axis [0.12, -0.31, -0.94] (loading moved 4
 It then builds one `PressRegion` per region and one `ClickPress` for the Play.
 
 **Force replay is turned off** for every recorded contact phase that overlaps a `click_press`
-region ([_force_tracker](../record_demonstration.py#L2499)). The two controllers would otherwise
+region ([_force_tracker](../record_demonstration.py#L2496)). The two controllers would otherwise
 both move the same joints.
 
 ---
@@ -139,7 +139,7 @@ axis and the region is skipped.
 
 ## 5. The state machine
 
-Every command step (30 Hz by default), [_command_step](../record_demonstration.py#L2838) first
+Every command step (30 Hz by default), [_command_step](../record_demonstration.py#L2891) first
 computes the take's goal joints `q_rec` at take time `local`. It then calls
 [ClickPress.step](../click_press.py#L502). If `step` returns `None`, the take, maintain touch
 and force replay drive the finger as usual. If not, its joints replace the thumb's goal.
@@ -241,7 +241,7 @@ along d"), gives a force along `(J Jᵀ)⁻¹ d`. On the thumb that is 20–37°
 the friction cone of the fingertip on the cap, so the thumb slid. Moving the fingertip along `d`
 and pushing along `d` are different directions.
 
-`K` uses the joints' **relative** kP: [REDUCED_KP_MOTORS](../record_demonstration.py#L229)
+`K` uses the joints' **relative** kP: [REDUCED_KP_MOTORS](../record_demonstration.py#L234)
 (hardware motors 0, 4 and 8) run at 75 % of kP in `leaphand_node`, so they get `0.75` and the
 rest `1.0`. `u` is recomputed every 0.2 s (`U_UPDATE_S`) at the current commanded joints
 `q_c + Δq`, because `J` changes as the thumb moves.
@@ -270,7 +270,7 @@ slip is any of:
 | The measured fingertip moved more than this **along** `d` while the force did not grow (fell below the highest force since the reference) | `button_travel` (4 mm) |
 
 The **contact spot** is the force-weighted average of the live fingertip taxels' positions in
-the fingertip's own frame ([_live_tip_spot](../record_demonstration.py#L2614)). It shows the
+the fingertip's own frame ([_live_tip_spot](../record_demonstration.py#L2667)). It shows the
 contact moving across the pad even when the joints barely move. The last test exists because a
 pen button only travels a few mm: moving further along `d` while the force drops means the thumb
 is sliding over the cap or pushing the pen away.
@@ -291,7 +291,7 @@ A click ends the PRESS (to RETRACT). There are two ways to detect it:
 
 1. **Click detector.** A new rising edge on `click_topic` (`/pen_click`, Int32 1 while a click is
    heard) since the region started. The node counts rising edges
-   ([_on_click](../record_demonstration.py#L989)), so short pulses are not missed.
+   ([_on_click](../record_demonstration.py#L994)), so short pulses are not missed.
 2. **Force and motion** (only if **Only the click detector ends a press** is off). All of these
    must be true within the last `CLICK_WINDOW_S` (0.25 s):
    - the highest F in the window was at least `click_min_ratio` (0.7) × the recorded peak;
@@ -338,7 +338,7 @@ when you press Play are skipped ([reset](../click_press.py#L250)).
 
 ## 6. Where it plugs into the command loop
 
-The relevant part of [_command_step](../record_demonstration.py#L2838):
+The relevant part of [_command_step](../record_demonstration.py#L2891):
 
 ```python
 q[p.cols] = sample_take(p.take, local)          # recorded joints
@@ -358,10 +358,10 @@ Inputs to `step` each tick:
 | --- | --- |
 | `q_rec` | the take's joints at `local` |
 | `q_hand` | latest measured joints (`leap_state`), for the measured fingertip position |
-| `force` | live F ([_live_tip_force](../record_demonstration.py#L2632)), from the Zero baseline |
+| `force` | live F ([_live_tip_force](../record_demonstration.py#L2685)), from the Zero baseline |
 | `click_count` | rising edges seen on `click_topic` |
 | `effort` | the thumb joints' `leap_state` effort (current), for saturation and abort |
-| `spot` | live contact spot on the pad ([_live_tip_spot](../record_demonstration.py#L2614)) |
+| `spot` | live contact spot on the pad ([_live_tip_spot](../record_demonstration.py#L2667)) |
 
 Settings are read on every step, so changes in the Settings tab apply during a press.
 
@@ -391,7 +391,7 @@ this trace is the first thing to look at.
 ## 8. Settings
 
 These are in the Settings tab under **Click press (Play, applied immediately)**, built from
-[PRESS_FIELDS](../record_demonstration.py#L5375). They are saved with **Save settings**. A
+[PRESS_FIELDS](../record_demonstration.py#L5423). They are saved with **Save settings**. A
 region's `params` in the take can override any of them for that region only, using the field
 name ([region_settings](../click_press.py#L117)), e.g.
 `"params": {"force_ramp": 0.3, "max_force_ratio": 1.6}`.

@@ -7,6 +7,16 @@
   <maintainer email="mohammad200h@hotmail.com">root</maintainer>
   <license>TODO: License declaration</license>
 
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+
+  <depend>ament_index_cpp</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+  <build_depend>libglfw3-dev</build_depend>
+  <exec_depend>libglfw3</exec_depend>
+
   <exec_depend>bounding_box_sam</exec_depend>
   <exec_depend>push_button_pen_click_detection</exec_depend>
   <exec_depend>launch</exec_depend>
@@ -21,8 +31,6 @@
   <exec_depend>rclpy</exec_depend>
   <exec_depend>rosbag2_py</exec_depend>
   <exec_depend>rosidl_runtime_py</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
   <exec_depend>xela_data_collection</exec_depend>
   <exec_depend>xela_description</exec_depend>
   <exec_depend>xela_sparshskin_sim</exec_depend>
@@ -30,14 +38,16 @@
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>python3-pyqt5</exec_depend>
   <exec_depend>python3-pyqtgraph</exec_depend>
+  <exec_depend>python3-xlib</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
 
+  <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
 
   <export>
-    <build_type>ament_python</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

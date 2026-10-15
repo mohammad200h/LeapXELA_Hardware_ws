@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
@@ -28,6 +28,23 @@ def generate_launch_description() -> LaunchDescription:
                 "cmd_topic",
                 default_value="cmd_xela",
                 description="JointState command topic of leaphand_node, used by Play",
+            ),
+            DeclareLaunchArgument(
+                "sim",
+                default_value="true",
+                description="Start the MuJoCo sim (mujoco_sim_node) for the Compose tab's "
+                "Test in sim",
+            ),
+            DeclareLaunchArgument(
+                "sim_cmd_topic",
+                default_value="sim_command",
+                description="Sim-frame JointState topic Test in sim sends to mujoco_sim_node",
+            ),
+            DeclareLaunchArgument(
+                "finger_contact_topic",
+                default_value="finger_contacts",
+                description="Finger-finger contacts published by mujoco_sim_node, shown by "
+                "Test in sim",
             ),
             DeclareLaunchArgument(
                 "image_topic",
@@ -170,6 +187,27 @@ def generate_launch_description() -> LaunchDescription:
                 launch_arguments={"output_topic": LaunchConfiguration("click_topic")}.items(),
                 condition=IfCondition(LaunchConfiguration("click_detector")),
             ),
+            # Scoped: the include's cmd_topic would otherwise replace the hand's for the nodes
+            # below (included launch arguments are not scoped).
+            GroupAction(
+                [
+                    IncludeLaunchDescription(
+                        PythonLaunchDescriptionSource(
+                            PathJoinSubstitution([
+                                FindPackageShare("mechanical_pen_data_collection"),
+                                "launch",
+                                "launch_mujoco_sim.py",
+                            ])
+                        ),
+                        launch_arguments={
+                            "cmd_topic": LaunchConfiguration("sim_cmd_topic"),
+                            "contact_topic": LaunchConfiguration("finger_contact_topic"),
+                        }.items(),
+                    ),
+                ],
+                scoped=True,
+                condition=IfCondition(LaunchConfiguration("sim")),
+            ),
             Node(
                 package="conversions",
                 executable="convert_hardware_to_sim",
@@ -193,6 +231,16 @@ def generate_launch_description() -> LaunchDescription:
                     },
                     {"sim_topic": ParameterValue(LaunchConfiguration("sim_topic"), value_type=str)},
                     {"cmd_topic": ParameterValue(LaunchConfiguration("cmd_topic"), value_type=str)},
+                    {
+                        "sim_cmd_topic": ParameterValue(
+                            LaunchConfiguration("sim_cmd_topic"), value_type=str
+                        )
+                    },
+                    {
+                        "finger_contact_topic": ParameterValue(
+                            LaunchConfiguration("finger_contact_topic"), value_type=str
+                        )
+                    },
                     {
                         "image_topic": ParameterValue(
                             LaunchConfiguration("image_topic"), value_type=str

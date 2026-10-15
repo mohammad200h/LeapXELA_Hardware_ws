@@ -25,7 +25,7 @@ class Kin:
 
 
 def run(finger, axis=Z, entry=1.0, exit_=6.0, seconds=12.0, reverse=False, during=None,
-        **settings):
+        extra_force_at=None, **settings):
     """Plays a take over a region ``entry``-``exit_`` (backwards if ``reverse``) holding the
     recorded joints still; returns (touch, finger, take time held, forces over the region's
     hold, local at the end). ``during(now, finger)`` can change the finger as it goes."""
@@ -44,6 +44,8 @@ def run(finger, axis=Z, entry=1.0, exit_=6.0, seconds=12.0, reverse=False, durin
         local = start - (now - held) if reverse else start + now - held
         if during is not None:
             during(now, finger)
+        if extra_force_at is not None and now >= extra_force_at[0]:
+            touch.extra_force = extra_force_at[1]
         finger.settle(goal)
         step = touch.step(local, dt, now, q_rec, finger.q.copy(), finger.force,
                           finger.effort)
@@ -74,6 +76,16 @@ def test_approaches_until_contact_then_holds_the_force():
     # Back on the take after the region.
     assert touch.state == ""
     assert np.allclose(finger.q, 0.0, atol=1e-3)
+
+
+def test_extra_force_raises_the_held_force():
+    # Avoid slip: 2 units more from 4 s on, still in the region (until 9 s).
+    touch, finger, _, forces, _ = run(
+        Thumb(np.zeros(4), clicks=False), exit_=9.0, extra_force_at=(4.0, 2.0)
+    )
+    early, late = forces[:30], forces[-15:]  # before 4 s, and the last 0.5 s of the region
+    assert np.all(np.abs(early - TARGET) < 0.2)
+    assert np.all(np.abs(late - (TARGET + 2.0)) < 0.2)
 
 
 def test_force_along_a_tilted_axis():

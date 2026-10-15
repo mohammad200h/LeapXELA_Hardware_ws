@@ -18,14 +18,16 @@ thumb (``TouchPress``):
   goals are pushed past where contact was made (``q_c``) along ``u = K^-1 J^T d`` (normalised;
   ``K`` the joints' relative kP), which makes the fingertip force point along ``d``:
 
-      F_des  = F_contact + (hold_force - F_contact) * min(tau / ramp_s, 1)
+      F_des  = F_contact + (hold_force + extra_force - F_contact) * min(tau / ramp_s, 1)
       dq    += force_gain * (F_des - F) * u * dt
       q_cmd  = q_c + dq
 
   The motors are springs (force ~ goal error), so integrating the force error into the goal
-  holds the force without a steady error. While a joint's effort is at ``sat_effort`` ``dq``
-  does not grow. When the force stays below half ``contact_force`` for ``loss_s`` the contact
-  is lost: the take's time is held again and the finger approaches again from where it is;
+  holds the force without a steady error. ``extra_force`` (0 unless set while playing, e.g. by
+  the Compose tab's Avoid slip) raises the held force. While a joint's effort is at
+  ``sat_effort`` ``dq`` does not grow. When the force stays below half ``contact_force`` for
+  ``loss_s`` the contact is lost: the take's time is held again and the finger approaches again
+  from where it is;
 - release: after the region the joints blend back into the take over ``release_s``.
 
 No contact within ``max_travel`` / ``max_wait`` gives up on the region: the finger blends back
@@ -157,6 +159,7 @@ class TouchPress:
         self.status = ""
         self.force = 0.0
         self.f_des = 0.0
+        self.extra_force = 0.0  # force units added to hold_force (set while playing)
         self.saturated = ""  # joint (column index) at its current limit, "" if none
         self._region: TouchPressRegion | None = None
         self._failed: TouchPressRegion | None = None  # gave up on it: the take plays over it
@@ -312,7 +315,7 @@ class TouchPress:
                 self.saturated = ",".join(str(int(j)) for j in hot)
 
         a = 1.0 if s.ramp_s <= 0.0 else min(self._t / s.ramp_s, 1.0)
-        self.f_des = self._f0 + a * (base + s.hold_force - self._f0)
+        self.f_des = self._f0 + a * (base + s.hold_force + self.extra_force - self._f0)
         rate = s.force_gain * (self.f_des - self.force)
         if self.saturated:
             rate = min(rate, 0.0)  # more goal adds no force at the limit, only turns it
@@ -329,7 +332,8 @@ class TouchPress:
         self._dq = dq
         self._q = self._q_c + self._dq
         sat = f", limit on joint {self.saturated}" if self.saturated else ""
-        self.status = f"maintain touch: F {self.force:.2f} / {self.f_des:.2f}{sat}"
+        extra = f" (+{self.extra_force:.1f} avoid slip)" if self.extra_force else ""
+        self.status = f"maintain touch: F {self.force:.2f} / {self.f_des:.2f}{extra}{sat}"
 
     # ---- step ---------------------------------------------------------------------------
 
