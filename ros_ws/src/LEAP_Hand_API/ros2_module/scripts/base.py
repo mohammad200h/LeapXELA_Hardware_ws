@@ -2,6 +2,7 @@
 import numpy as np
 from leap_hand_utils.dynamixel_client import *
 import leap_hand_utils.leap_hand_utils as lhu
+from usb_util import find_leap_hand_port
 from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 import json
@@ -21,26 +22,10 @@ class LeapXelaBase:
         self.curr_lim = curr_lim
         self.prev_pos = self.pos = self.curr_pos = lhu.allegro_to_LEAPhand(np.zeros(16))
         self.motors = motors = [i for i in range(16)]
-        try:
-            self.dxl_client = DynamixelClient(motors, '/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U1HJ-if00-port0', 4000000)
-            self.dxl_client.connect()
-            print("Connected via /dev/serial/by-id (ttyUSB4)")
-        except Exception as e:
-            try:
-                # self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB0', 57600)
-                self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB0', 4000000)
-
-                self.dxl_client.connect()
-                print("Connected via /dev/ttyUSB0")
-            except Exception as e2:
-                try:
-                    self.dxl_client = DynamixelClient(motors, '/dev/ttyUSB1', 4000000)
-                    self.dxl_client.connect()
-                    print("Connected via /dev/ttyUSB1")
-                except Exception as e3:
-                    self.dxl_client = DynamixelClient(motors, 'COM13', 4000000)
-                    self.dxl_client.connect()
-                    print("Connected via COM13")
+        port = find_leap_hand_port()
+        self.dxl_client = DynamixelClient(motors, port, 4000000)
+        self.dxl_client.connect()
+        print(f"Connected via {port}")
         self.dxl_client.sync_write(motors, np.ones(len(motors))*5, 11, 1)
         self.dxl_client.set_torque_enabled(motors, True)
         self.set_gains(self.kP, self.kI, self.kD, self.curr_lim)

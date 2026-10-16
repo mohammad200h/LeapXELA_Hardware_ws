@@ -40,6 +40,7 @@ install(PROGRAMS
 # Install Python modules used by scripts in-place
 install(FILES
   scripts/base.py
+  scripts/usb_util.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
