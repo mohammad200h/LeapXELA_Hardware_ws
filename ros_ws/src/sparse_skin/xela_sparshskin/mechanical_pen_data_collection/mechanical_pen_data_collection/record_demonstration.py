@@ -12,7 +12,8 @@ that frame's stamp. Only the frame with the highest detection probability is sho
 are ignored. They are stored as ``sam_t`` / ``sam_mask`` / ``sam_boxes``. Index, Middle and
 Ring takes inherit the pen box of the Thumb take selected when they are recorded: it is stored
 as ``pen_box`` (4, 2) with that take's path as ``pen_box_source`` and is used as their pen box
-(Pose switches, playback) instead of their own SAM detection.
+(Pose switches, playback) instead of their own SAM detection. If a Pose switch is on when
+Record is pressed, the new take (any finger) inherits the box that switch shows instead.
 The sim-frame joints
 from ``sim_topic`` (``convert_hardware_to_sim``) are stored as ``sim_t`` / ``sim_hand_q`` /
 ``sim_hand_joint_names``; the raw Xela readings on ``xela_topic`` as ``xela_t`` / ``xela``
@@ -137,7 +138,8 @@ box drawn on it, in yellow, to line the pen up with it before playing.
 Demonstration tab: plays back the Compose tab's Play on hand recordings without sending
 anything to the hand. Pick a recording and press Play (or drag the play bar): plots
 of each finger's joint positions, velocities and efforts (``leap_state``) with the run's
-timeline and slips marked, its camera recording with the bounding box drawn on it, and the FK
+timeline and slips marked, each finger's fingertip taxel magnitudes (recorded Xela, from the
+run's baseline), its camera recording with the bounding box drawn on it, and the FK
 taxels with the recorded Xela readings follow the play bar. The microphone recording is plotted
 under the joints and, while playing, heard on the Audio output picked (remembered between runs;
 Test plays a beep). With Stream to sim (on by default)
@@ -699,6 +701,14 @@ class TakeStore:
     def new_take_name(self, prefix: str = "take") -> str:
         """A timestamped name not yet used by any finger take or camera recording."""
         return self.unique_take_name(datetime.now().strftime(f"{prefix}_%Y%m%d_%H%M%S"))
+
+    def numbered_take_name(self, prefix: str) -> str:
+        """``prefix_n`` with the lowest ``n`` >= 1 not yet used by any finger take or camera
+        recording."""
+        n = 1
+        while self.unique_take_name(f"{prefix}_{n}") != f"{prefix}_{n}":
+            n += 1
+        return f"{prefix}_{n}"
 
     def unique_take_name(self, base: str) -> str:
         """``base``, suffixed if needed so no finger take or camera recording uses it yet."""
@@ -2160,7 +2170,8 @@ class FingerPanel(QtWidgets.QWidget):
         self.time_label = QtWidgets.QLabel()
         self.pose_switch = ToggleSwitch()
         self.pose_switch.setToolTip(
-            "Draw this finger's selected recording's pen box on the live camera, in yellow"
+            "Draw this finger's selected recording's pen box on the live camera, in yellow. "
+            "While on, new recordings inherit this pen box."
         )
 
         header = QtWidgets.QHBoxLayout()
@@ -2364,6 +2375,8 @@ class CreateTab(QtWidgets.QWidget):
         self._tip_waiting = False  # plots show the waiting text
         self._take_name = ""
         self._rec_fingers: tuple[str, ...] = ()
+        # (corners, source take path) of the Pose switch that was on when Record was pressed
+        self._rec_pen_ref: tuple[np.ndarray, str] | None = None
         self._rec_btn: QtWidgets.QPushButton | None = None
         self._free: np.ndarray | None = None  # goal of the fingers that are not playing
         self._last_cmd: np.ndarray | None = None
@@ -2469,7 +2482,7 @@ class CreateTab(QtWidgets.QWidget):
         return [p.record_btn for p in self.panels.values()]
 
     def _new_default_name(self, panel: FingerPanel) -> str:
-        panel.default_name = self.store.new_take_name(panel.label.lower())
+        panel.default_name = self.store.numbered_take_name(panel.finger)
         panel.name_edit.setText(panel.default_name)
         return panel.default_name
 
@@ -2524,6 +2537,10 @@ class CreateTab(QtWidgets.QWidget):
             self._take_name = self.store.new_take_name()
         self._rec_fingers = fingers
         self._rec_btn = button
+        self._rec_pen_ref = None
+        if self._recorded_pen_finger is not None and self._recorded_pen_corners is not None:
+            source = self.panels[self._recorded_pen_finger].take_combo.currentData() or ""
+            self._rec_pen_ref = (np.asarray(self._recorded_pen_corners, np.float32), source)
         self.node.start_recording(self.store.video_path(self._take_name) if self.node.image_topic else "")
         for btn in self._record_buttons():
             btn.setEnabled(btn is button)
@@ -2565,12 +2582,17 @@ class CreateTab(QtWidgets.QWidget):
             baseline = rec.xela[0] if len(rec.xela) else np.empty((0, 3))
         hand_names = self.node.joint_names
         pen_box, pen_box_source = np.empty((0, 2), np.float32), ""
-        if any(f in PEN_BOX_FROM_THUMB for f in self._rec_fingers):
+        if self._rec_pen_ref is not None:
+            pen_box, pen_box_source = self._rec_pen_ref
+            self.node.get_logger().info(
+                f"Take '{self._take_name}' inherits the Pose pen box of '{pen_box_source}'"
+            )
+        elif any(f in PEN_BOX_FROM_THUMB for f in self._rec_fingers):
             pen_box, pen_box_source = self._thumb_pen_box()
         for finger in self._rec_fingers:
             idx = finger_indices(hand_names, finger)
             path = self.store.take_path(finger, self._take_name)
-            inherit = finger in PEN_BOX_FROM_THUMB
+            inherit = self._rec_pen_ref is not None or finger in PEN_BOX_FROM_THUMB
             FingerTake(
                 finger=finger,
                 path=path,
@@ -6657,11 +6679,14 @@ DEMO_ROWS = (
     ("velocity", "velocity", "rad/s"),
     ("effort", "effort", ""),
 )
+# Key of the Demonstration tab's fingertip taxel row (under DEMO_ROWS) in its plot dicts.
+DEMO_TIP_ROW = "fingertip_taxels"
 
 
 class DemonstrationTab(QtWidgets.QWidget):
     """Plays back the Compose tab's Play on hand recordings without commanding the hand: the
-    joint positions, velocities and efforts of each finger (``leap_state``), the camera
+    joint positions, velocities and efforts of each finger (``leap_state``), its fingertip
+    taxel magnitudes, the camera
     recording with the run's bounding box, and the FK taxels with the recorded Xela readings,
     at the play bar's time; with Stream to sim, the recorded joint positions go to the sim."""
 
@@ -6738,8 +6763,6 @@ class DemonstrationTab(QtWidgets.QWidget):
                 plot = self.plots.addPlot(row=r, col=c, title=f"{label} {title}")
                 plot.showGrid(x=True, y=True, alpha=0.3)
                 plot.setLabel("left", title, unit)
-                if r == len(DEMO_ROWS) - 1:
-                    plot.setLabel("bottom", "time", "s")
                 if r == 0:
                     plot.addLegend(offset=(5, 5))
                 curves = [
@@ -6755,9 +6778,35 @@ class DemonstrationTab(QtWidgets.QWidget):
                     plot.setXLink(first)
                 self._plots[(field_name, finger)] = plot
                 self._curves[(field_name, finger)] = curves
+        # Fingertip taxel magnitudes of each finger (recorded Xela, from the run's baseline).
+        tip_ids = fingertip_taxel_ids()
+        self._tip_ids = {
+            finger: tip_ids[finger] if tip_ids is not None else np.empty(0, dtype=int)
+            for finger, _ in FINGERS
+        }
+        for c, (finger, label) in enumerate(FINGERS):
+            plot = self.plots.addPlot(
+                row=len(DEMO_ROWS), col=c, title=f"{label} {TipTaxelPlot.TITLE.lower()}"
+            )
+            plot.showGrid(x=True, y=True, alpha=0.3)
+            plot.setLabel("left", "|force|")
+            plot.setLabel("bottom", "time", "s")
+            plot.setClipToView(True)
+            plot.setDownsampling(auto=True, mode="peak")
+            n = len(self._tip_ids[finger])
+            curves = [
+                plot.plot(pen=pg.mkPen(pg.intColor(i, hues=max(n, 1)), width=1), antialias=False)
+                for i in range(n)
+            ]
+            cursor = pg.InfiniteLine(0.0, angle=90, pen=pg.mkPen("w", width=1))
+            plot.addItem(cursor)
+            self._cursors.append(cursor)
+            plot.setXLink(first)
+            self._plots[(DEMO_TIP_ROW, finger)] = plot
+            self._curves[(DEMO_TIP_ROW, finger)] = curves
         # The microphone recording, under the joints, on the same time axis.
         self.audio_plot = self.plots.addPlot(
-            row=len(DEMO_ROWS), col=0, colspan=len(FINGERS), title="Audio"
+            row=len(DEMO_ROWS) + 1, col=0, colspan=len(FINGERS), title="Audio"
         )
         self.audio_plot.showGrid(x=True, y=True, alpha=0.3)
         self.audio_plot.setLabel("left", "amplitude")
@@ -6774,7 +6823,7 @@ class DemonstrationTab(QtWidgets.QWidget):
         audio_cursor = pg.InfiniteLine(0.0, angle=90, pen=pg.mkPen("w", width=1))
         self.audio_plot.addItem(audio_cursor)
         self._cursors.append(audio_cursor)
-        self.plots.ci.layout.setRowStretchFactor(len(DEMO_ROWS), 1)
+        self.plots.ci.layout.setRowStretchFactor(len(DEMO_ROWS) + 1, 1)
         middle = QtWidgets.QWidget()
         middle_layout = QtWidgets.QVBoxLayout(middle)
         middle_layout.setContentsMargins(0, 0, 0, 0)
@@ -6916,6 +6965,7 @@ class DemonstrationTab(QtWidgets.QWidget):
                         curve.setData(rec.state_t, data[:, col])
                     if plot.legend is not None:
                         plot.legend.addItem(curve, names[col])
+        self._plot_tips(rec)
         # Milestones (start, holding, finished / stopped) are labelled on the position row;
         # Avoid slip raises (faint) and slips (red) are only lines, as they can be many.
         marks = []
@@ -6929,7 +6979,7 @@ class DemonstrationTab(QtWidgets.QWidget):
             k = labelled.get(finger, 0)
             if text is not None:
                 labelled[finger] = k + 1
-            for r, (field_name, _, _) in enumerate(DEMO_ROWS):
+            for r, field_name in enumerate([f for f, _, _ in DEMO_ROWS] + [DEMO_TIP_ROW]):
                 plot = self._plots.get((field_name, finger))
                 if plot is None:
                     continue
@@ -6940,6 +6990,25 @@ class DemonstrationTab(QtWidgets.QWidget):
                 )
                 plot.addItem(line)
                 self._marks.append((plot, line))
+
+    def _plot_tips(self, rec: PlaybackRecording) -> None:
+        """Fingertip taxel magnitudes of each finger over the run, from its Xela baseline (its
+        first reading for runs without one)."""
+        for finger, label in FINGERS:
+            ids = self._tip_ids[finger]
+            plot = self._plots[(DEMO_TIP_ROW, finger)]
+            title = f"{label} {TipTaxelPlot.TITLE.lower()}"
+            if len(ids) == 0:
+                plot.setTitle(f"{title} - taxel map unavailable")
+                continue
+            if len(rec.xela_t) == 0 or rec.xela.shape[1] <= ids.max():
+                plot.setTitle(f"{title} - no Xela readings")
+                continue
+            baseline = rec.xela_baseline if len(rec.xela_baseline) > ids.max() else rec.xela[0]
+            mags = taxel_magnitudes(rec.xela, baseline, ids, self.node.counts_per_unit)
+            for j, curve in enumerate(self._curves[(DEMO_TIP_ROW, finger)]):
+                curve.setData(rec.xela_t, mags[:, j])
+            plot.setTitle(title)
 
     def _convert_joints(self, rec: PlaybackRecording) -> None:
         """The recorded joints in the sim frame, for the FK taxels."""

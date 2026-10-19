@@ -102,13 +102,6 @@
             "length":"duration",
             "applied_to":"TH"
         },
-        "change_click_setting":{
-            "type":"demonstration_modification",
-            "description":"The clicking is replicated by applying press offset to all the joints. This can lead to sliding motion. This modifier will adjust default behaviour by tuning each joint behaviour",
-            "source":"UI",
-            "length":"instant",
-            "applied_to":"TH"
-        },
         "random_episode_start":{
             "type":"demonstration_modification",
             "description":"it is a event that marks all valid starting points for the episode. This is done in edit tab. it should be used by compose tab to sample episode start",
