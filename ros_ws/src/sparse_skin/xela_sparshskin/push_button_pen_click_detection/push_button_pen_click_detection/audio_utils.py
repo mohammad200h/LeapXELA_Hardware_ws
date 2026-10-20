@@ -173,16 +173,23 @@ def _normalize(m: np.ndarray) -> np.ndarray:
     return m / np.maximum(norm, 1e-9)
 
 
-def similarity(template_feat: np.ndarray, live_feat: np.ndarray) -> float:
+def best_match(template_feat: np.ndarray, live_feat: np.ndarray) -> tuple[float, int]:
     """
-    Best Pearson correlation of the template slid across ``live_feat``, in [-1, 1].
+    Best Pearson correlation of the template slid across ``live_feat``, and where.
 
-    ``live_feat`` must have at least as many frames as the template.
+    Returns the score in [-1, 1] and the frame offset where it occurs (multiply by
+    ``STFT_HOP`` for samples). ``live_feat`` must have at least as many frames as the template.
     """
     n = template_feat.shape[1]
     if live_feat.shape[1] < n:
-        return 0.0
+        return 0.0, 0
     windows = np.lib.stride_tricks.sliding_window_view(live_feat, n, axis=1)
     windows = np.moveaxis(windows, 1, 0)  # (offsets, freq, n)
     scores = (_normalize(windows) * _normalize(template_feat)).sum(axis=(-2, -1))
-    return float(scores.max())
+    offset = int(np.argmax(scores))
+    return float(scores[offset]), offset
+
+
+def similarity(template_feat: np.ndarray, live_feat: np.ndarray) -> float:
+    """Best Pearson correlation of the template slid across ``live_feat``, in [-1, 1]."""
+    return best_match(template_feat, live_feat)[0]

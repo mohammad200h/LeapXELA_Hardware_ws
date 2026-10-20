@@ -138,7 +138,9 @@ Under the selected take's first frame, a Live view shows the camera with the sel
 box drawn on it, in yellow, to line the pen up with it before playing.
 
 Demonstration tab: plays back the Compose tab's Play on hand recordings without sending
-anything to the hand. Pick a recording and press Play (or drag the play bar): plots
+anything to the hand. Under the list, Success and Fail mark the picked recording (pressing the
+lit one again clears it), saved next to it as ``<box>_<n>.label.json`` as ``label_playbacks``
+does; Delete removes it with its camera, audio and label files. Pick a recording and press Play (or drag the play bar): plots
 of each finger's joint positions, velocities and efforts (``leap_state``) with the run's
 timeline and slips marked, each finger's fingertip taxel magnitudes (recorded Xela, from the
 run's baseline), its camera recording with the bounding box drawn on it, and the FK
@@ -247,9 +249,14 @@ from mechanical_pen_data_collection.force_replay import (
     sample as sample_joints,
 )
 from mechanical_pen_data_collection.playback_recording import (
+    FAILURE,
+    SUCCESS,
     PlaybackRecording,
+    delete_playback,
     list_playbacks,
+    load_label,
     next_playback_path,
+    set_manual_label,
 )
 from mechanical_pen_data_collection.slip_detection import SPOT_SHIFT, SlipDetector, SlipSettings
 from mechanical_pen_data_collection.maintain_touch import (
@@ -6333,8 +6340,8 @@ class ComposeTab(QtWidgets.QWidget):
         box.setWindowTitle("Delete recording")
         box.setText(f"Delete the Play on hand recording '{name}'?")
         box.setInformativeText(
-            f"{path} (and its camera and audio recordings, if any) is removed from disk. This "
-            "cannot be undone."
+            f"{path} (and its camera, audio and label files, if any) is removed from disk. "
+            "This cannot be undone."
         )
         cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
         confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
@@ -6342,13 +6349,8 @@ class ComposeTab(QtWidgets.QWidget):
         box.exec_()
         if box.clickedButton() is not confirm:
             return
-        video = os.path.splitext(path)[0] + ".mp4"
-        audio = os.path.splitext(path)[0] + ".wav"
         try:
-            os.remove(path)
-            for extra in (video, audio):
-                if os.path.exists(extra):
-                    os.remove(extra)
+            delete_playback(path)
         except OSError as e:
             QtWidgets.QMessageBox.warning(
                 self, "Delete recording", f"Could not delete {path}:\n{e}"
@@ -6718,6 +6720,9 @@ DEMO_ROWS = (
 )
 # Key of the Demonstration tab's fingertip taxel row (under DEMO_ROWS) in its plot dicts.
 DEMO_TIP_ROW = "fingertip_taxels"
+# How the Demonstration tab's list shows a recording's success / failure label.
+LABEL_TEXT = {SUCCESS: "SUCCESS", FAILURE: "FAIL"}
+LABEL_COLORS = {SUCCESS: "#2e7d32", FAILURE: "#c62828"}
 
 
 class DemonstrationTab(QtWidgets.QWidget):
@@ -6749,9 +6754,30 @@ class DemonstrationTab(QtWidgets.QWidget):
         self.list = QtWidgets.QListWidget()
         self.list.setToolTip("Play on hand recordings of the Compose tab, newest first")
         refresh_btn = QtWidgets.QPushButton("Refresh")
+        self.success_btn = QtWidgets.QPushButton("Success")
+        self.success_btn.setToolTip(
+            "Mark the picked recording as a success (press again to clear the mark)"
+        )
+        self.fail_btn = QtWidgets.QPushButton("Fail")
+        self.fail_btn.setToolTip(
+            "Mark the picked recording as a failure (press again to clear the mark)"
+        )
+        for btn, color in ((self.success_btn, LABEL_COLORS[SUCCESS]),
+                           (self.fail_btn, LABEL_COLORS[FAILURE])):
+            btn.setCheckable(True)
+            btn.setStyleSheet(f"QPushButton:checked {{ background-color: {color}; color: white; }}")
+        self.delete_btn = QtWidgets.QPushButton("Delete")
+        self.delete_btn.setToolTip(
+            "Delete the picked recording with its camera, audio and label files"
+        )
+        mark_row = QtWidgets.QHBoxLayout()
+        mark_row.addWidget(self.success_btn)
+        mark_row.addWidget(self.fail_btn)
+        mark_row.addWidget(self.delete_btn)
         left = QtWidgets.QGroupBox("Recordings")
         left_layout = QtWidgets.QVBoxLayout(left)
         left_layout.addWidget(self.list, 1)
+        left_layout.addLayout(mark_row)
         left_layout.addWidget(refresh_btn)
 
         # Middle: controls and plots (rows: position / velocity / effort, columns: fingers).
@@ -6892,7 +6918,11 @@ class DemonstrationTab(QtWidgets.QWidget):
         self._timer.setInterval(REFRESH_MS)
         self._timer.timeout.connect(self._tick)
         refresh_btn.clicked.connect(self.refresh_recordings)
+        self.success_btn.clicked.connect(lambda: self._mark(SUCCESS))
+        self.fail_btn.clicked.connect(lambda: self._mark(FAILURE))
+        self.delete_btn.clicked.connect(self._delete_picked)
         self.list.currentRowChanged.connect(self._load_picked)
+        self._update_mark_buttons()
         self.play_btn.clicked.connect(self._toggle_play)
         self.output_combo.currentIndexChanged.connect(self._output_changed)
         self.slider.valueChanged.connect(
@@ -6913,17 +6943,89 @@ class DemonstrationTab(QtWidgets.QWidget):
         self.list.blockSignals(True)
         self.list.clear()
         for path in paths:
-            item = QtWidgets.QListWidgetItem(play_list_text(path))
+            item = QtWidgets.QListWidgetItem()
             item.setData(QtCore.Qt.UserRole, path)
             item.setToolTip(path)
+            self._show_label(item)
             self.list.addItem(item)
         self.list.setCurrentRow(paths.index(keep) if keep in paths else -1)
         self.list.blockSignals(False)
         if keep is not None and keep not in paths:
             self._load(None)
+        self._update_mark_buttons()
+
+    def _show_label(self, item: QtWidgets.QListWidgetItem) -> None:
+        """The list entry of a recording, with its success / failure label and colour."""
+        path = item.data(QtCore.Qt.UserRole)
+        label = (load_label(path) or {}).get("label")
+        text = play_list_text(path)
+        if label in LABEL_COLORS:
+            text = f"[{LABEL_TEXT[label]}] {text}"
+            item.setForeground(QtGui.QColor(LABEL_COLORS[label]))
+        else:
+            item.setData(QtCore.Qt.ForegroundRole, None)
+        item.setText(text)
+
+    def _update_mark_buttons(self) -> None:
+        """Enables the Success / Fail / Delete buttons for a picked recording and checks the
+        one of its label."""
+        item = self.list.currentItem()
+        label = (load_label(item.data(QtCore.Qt.UserRole)) or {}).get("label") if item else None
+        for btn in (self.success_btn, self.fail_btn, self.delete_btn):
+            btn.setEnabled(item is not None)
+        self.success_btn.setChecked(label == SUCCESS)
+        self.fail_btn.setChecked(label == FAILURE)
+
+    def _mark(self, label: str) -> None:
+        """Marks the picked recording as ``label``; marking it with its own label clears it."""
+        item = self.list.currentItem()
+        if item is None:
+            return
+        path = item.data(QtCore.Qt.UserRole)
+        current = (load_label(path) or {}).get("label")
+        try:
+            set_manual_label(path, None if current == label else label)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(self, "Mark recording", f"Could not label {path}:\n{e}")
+        self._show_label(item)
+        self._update_mark_buttons()
+
+    def _delete_picked(self) -> None:
+        """Deletes the picked recording, once confirmed."""
+        item = self.list.currentItem()
+        if item is None:
+            return
+        path = item.data(QtCore.Qt.UserRole)
+        name = os.path.splitext(os.path.basename(path))[0]
+        box = QtWidgets.QMessageBox(self)
+        box.setIcon(QtWidgets.QMessageBox.Warning)
+        box.setWindowTitle("Delete recording")
+        box.setText(f"Delete the recording '{name}'?")
+        box.setInformativeText(
+            f"{path} (and its camera, audio and label files, if any) is removed from disk. "
+            "This cannot be undone."
+        )
+        cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
+        confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
+        box.setDefaultButton(cancel)
+        box.exec_()
+        if box.clickedButton() is not confirm:
+            return
+        self._load(None)  # closes its camera recording before it goes
+        try:
+            delete_playback(path)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(
+                self, "Delete recording", f"Could not delete {path}:\n{e}"
+            )
+        else:
+            self.node.get_logger().info(f"Deleted the Play on hand recording '{path}'")
+        self.list.setCurrentRow(-1)
+        self.refresh_recordings()
 
     def _load_picked(self, *_) -> None:
         item = self.list.currentItem()
+        self._update_mark_buttons()
         self._load(item.data(QtCore.Qt.UserRole) if item is not None else None)
 
     def _load(self, path: str | None) -> None:

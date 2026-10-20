@@ -16,6 +16,9 @@ def generate_launch_description() -> LaunchDescription:
     def str_arg(name: str) -> ParameterValue:
         return ParameterValue(LaunchConfiguration(name), value_type=str)
 
+    def bool_arg(name: str) -> ParameterValue:
+        return ParameterValue(LaunchConfiguration(name), value_type=bool)
+
     return LaunchDescription(
         [
             DeclareLaunchArgument(
@@ -42,6 +45,27 @@ def generate_launch_description() -> LaunchDescription:
                 "hold_s",
                 default_value="0.15",
                 description="Seconds the output stays 1 after the last match",
+            ),
+            DeclareLaunchArgument(
+                "pair",
+                default_value="true",
+                description="Report a click only for an isolated press/release pair of sounds",
+            ),
+            DeclareLaunchArgument(
+                "min_gap_s",
+                default_value="0.05",
+                description="Shortest press-to-release gap of a pen click",
+            ),
+            DeclareLaunchArgument(
+                "max_gap_s",
+                default_value="0.5",
+                description="Longest press-to-release gap of a pen click",
+            ),
+            DeclareLaunchArgument(
+                "quiet_s",
+                default_value="0.15",
+                description="No other click may be heard this long before the press or "
+                "after the release (rejects typing)",
             ),
             DeclareLaunchArgument(
                 "rate_hz",
@@ -80,6 +104,10 @@ def generate_launch_description() -> LaunchDescription:
                     {"threshold": float_arg("threshold")},
                     {"energy_gate": float_arg("energy_gate")},
                     {"hold_s": float_arg("hold_s")},
+                    {"pair": bool_arg("pair")},
+                    {"min_gap_s": float_arg("min_gap_s")},
+                    {"max_gap_s": float_arg("max_gap_s")},
+                    {"quiet_s": float_arg("quiet_s")},
                     {"rate_hz": float_arg("rate_hz")},
                     {"output_topic": str_arg("output_topic")},
                     {"audio_topic": str_arg("audio_topic")},

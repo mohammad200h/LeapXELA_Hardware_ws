@@ -30,6 +30,7 @@ set(PYTHON_ENTRY_POINTS
   "bag_viewer:bag_viewer"
   "record_demonstration:record_demonstration"
   "analyze_playback:analyze_playback"
+  "label_playbacks:label_playbacks"
 )
 foreach(entry ${PYTHON_ENTRY_POINTS})
   string(REPLACE ":" ";" entry ${entry})

@@ -23,6 +23,7 @@ import json
 import os
 import re
 from dataclasses import dataclass, field
+from datetime import datetime
 
 import numpy as np
 
@@ -133,3 +134,45 @@ def next_playback_path(directory: str, take_name: str) -> str:
     while os.path.exists(os.path.join(directory, f"{take_name}_{n}.npz")):
         n += 1
     return os.path.join(directory, f"{take_name}_{n}.npz")
+
+
+# Labels of Play on hand recordings: ``<box>_<n>.label.json`` next to the recording, written
+# by ``label_playbacks`` (from the audio) or by the Demonstration tab's Success / Fail buttons
+# (``"manual": true``).
+SUCCESS, FAILURE = "success", "failure"
+
+
+def label_path(recording_path: str) -> str:
+    return os.path.splitext(recording_path)[0] + ".label.json"
+
+
+def load_label(recording_path: str) -> dict | None:
+    """The saved label of a recording, or None."""
+    try:
+        with open(label_path(recording_path)) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def set_manual_label(recording_path: str, label: str | None) -> None:
+    """Marks a recording as ``label`` (SUCCESS / FAILURE) by hand, keeping what the label file
+    already holds (e.g. ``label_playbacks``' clicks); None removes the label file."""
+    path = label_path(recording_path)
+    if label is None:
+        if os.path.exists(path):
+            os.remove(path)
+        return
+    data = load_label(recording_path) or {}
+    data.update(label=label, manual=True, labelled=datetime.now().isoformat(timespec="seconds"))
+    with open(path, "w") as f:
+        json.dump(data, f, indent=1)
+
+
+def delete_playback(recording_path: str) -> None:
+    """Removes a recording and its camera, audio and label files."""
+    os.remove(recording_path)
+    stem = os.path.splitext(recording_path)[0]
+    for extra in (stem + ".mp4", stem + ".wav", label_path(recording_path)):
+        if os.path.exists(extra):
+            os.remove(extra)
