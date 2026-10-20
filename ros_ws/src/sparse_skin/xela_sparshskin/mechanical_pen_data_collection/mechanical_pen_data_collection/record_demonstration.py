@@ -112,7 +112,9 @@ ended and the timeline of each finger (start, holding at terminal, finished / st
 Play on hand first moves the fingers to where their episodes start (the sampled random start,
 or ``episode_start``), one after another (``START_ORDER``), gently (``move_to_pose_take``: an
 S-curve no faster than ``START_MOVE_SPEED``), each then held stiff there; the At start lights
-show it (yellow moving, green at its start). Once all are there, the recording starts (data,
+show it (yellow moving, green at its start). The Contact lights next to them turn green while
+a finger is in contact with the pen (Index / Middle / Ring: its ``maintain_touch`` holding;
+Thumb: its ``click_press`` pressing). Once all are there, the recording starts (data,
 camera as ``<box>_<n>.mp4`` and the microphone on ``audio_topic`` as ``<box>_<n>.wav``) and the
 episodes play as above.
 Hand plays panel (right) lists the box's recordings, newest first; clicking one shows its
@@ -224,6 +226,7 @@ from mechanical_pen_data_collection.bag_viewer import (
     load_event_definitions,
 )
 from mechanical_pen_data_collection.click_press import (
+    PRESS as CLICK_PRESSING,
     ClickPress,
     ClickPressSettings,
     FingerKinematics,
@@ -303,6 +306,7 @@ START_ORDER = ("if", "mf", "rf", "th")
 START_MOVE_SPEED = 0.3
 START_MOVE_MIN_S = 1.5
 START_COLORS = {"off": "#616161", "moving": "#fdd835", "at_start": "#43a047"}
+CONTACT_COLORS = {"off": "#616161", "contact": "#43a047"}
 # Fingers whose slips the Compose tab's lights show during Play on hand.
 SLIP_FINGERS = ("if", "mf", "rf")
 # A slip light stays red this long (s) after a slip.
@@ -3216,6 +3220,16 @@ class CreateTab(QtWidgets.QWidget):
         if p is not None and p.finished:  # not restarted by a seek in the meantime
             self._stop_play(finger, rewind=True)
 
+    def in_contact(self, finger: str) -> bool:
+        """``finger`` is playing and in contact with the pen: its ``maintain_touch`` holds it
+        there, or its ``click_press`` is pressing."""
+        p = self._playing.get(finger)
+        if p is None:
+            return False
+        return self.in_touch_contact(finger) or (
+            p.press is not None and p.press.state == CLICK_PRESSING
+        )
+
     def in_touch_contact(self, finger: str) -> bool:
         """``finger`` is playing and its ``maintain_touch`` holds it in contact with the pen."""
         p = self._playing.get(finger)
@@ -5640,6 +5654,20 @@ class ComposeTab(QtWidgets.QWidget):
             plays_row.addSpacing(4)
             self._set_start_light(finger, "off")
         plays_row.addSpacing(12)
+        plays_row.addWidget(QtWidgets.QLabel("Contact:"))
+        self.contact_lights: dict[str, QtWidgets.QLabel] = {}
+        for finger, _ in FINGERS:
+            light = QtWidgets.QLabel()
+            light.setToolTip(
+                f"{FINGER_LABEL[finger]} during Play on hand: green in contact with the pen "
+                "(maintain touch holding, or the Thumb's click press pressing)"
+            )
+            self.contact_lights[finger] = light
+            plays_row.addWidget(light)
+            plays_row.addWidget(QtWidgets.QLabel(finger.upper()))
+            plays_row.addSpacing(4)
+        self._set_contact_lights()
+        plays_row.addSpacing(12)
         plays_row.addWidget(QtWidgets.QLabel("Slip:"))
         self.slip_lights: dict[str, QtWidgets.QLabel] = {}
         self.slip_counts: dict[str, QtWidgets.QLabel] = {}
@@ -5872,6 +5900,14 @@ class ComposeTab(QtWidgets.QWidget):
 
     def _set_start_light(self, finger: str, state: str) -> None:
         self.start_lights[finger].setStyleSheet(SLIP_LIGHT_STYLE.format(START_COLORS[state]))
+
+    def _set_contact_lights(self) -> None:
+        for finger, light in self.contact_lights.items():
+            on = self._hand_active and self.create_tab.in_contact(finger)
+            state = "contact" if on else "off"
+            if light.property("state") != state:
+                light.setProperty("state", state)
+                light.setStyleSheet(SLIP_LIGHT_STYLE.format(CONTACT_COLORS[state]))
 
     def _move_next_to_start(self) -> None:
         """Moves the next finger to where its episode starts; once all are there, starts the
@@ -6569,6 +6605,7 @@ class ComposeTab(QtWidgets.QWidget):
         if self._slip:
             self._update_slips()
             self._set_slip_lights()
+        self._set_contact_lights()
         if not self.isVisible():
             return
         seq, frame = self.node.latest_raw_frame()
