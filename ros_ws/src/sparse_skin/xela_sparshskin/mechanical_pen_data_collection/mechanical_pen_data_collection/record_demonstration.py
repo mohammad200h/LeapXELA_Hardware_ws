@@ -38,7 +38,9 @@ live view, a Playback column shows the camera recording and FK taxels (with the 
 forces) of the take being played, at the position Play has reached (empty while nothing plays).
 
 Edit tab: same layout as the Create tab without Record / Play. Each finger picks one of
-its takes; its plots (joints, and fingertip taxel magnitudes when the take has Xela readings)
+its takes; Index, Middle and Ring list only the takes with the pen box of the Thumb take picked
+(all of them when it has no pen box; a take played from the Compose tab is listed for its play
+whatever its box), the box named next to the finger; its plots (joints, and fingertip taxel magnitudes when the take has Xela readings)
 show the whole take and the play bar (or the plot cursor) scrubs through
 it, with the camera recording and the FK taxels / Xela forces of the take following. As in the bag viewer,
 an event from ``events_file`` (default: installed ``events.json``) is added at the play bar
@@ -4106,6 +4108,11 @@ class EditFingerPanel(QtWidgets.QWidget):
 
         self.take_combo = QtWidgets.QComboBox()
         self.take_combo.setToolTip("Recorded takes of this finger, newest first")
+        # Index / Middle / Ring: only the takes with this pen box (the selected Thumb take's,
+        # set by the Edit tab; None: all takes), and what the label says about it.
+        self.box_filter: bytes | None = None
+        self.box_filter_name = ""
+        self.box_label = QtWidgets.QLabel()
         self.take_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon)
         self.take_combo.setMinimumContentsLength(10)
         self.delete_take_btn = QtWidgets.QPushButton("Delete take")
@@ -4140,7 +4147,8 @@ class EditFingerPanel(QtWidgets.QWidget):
         )
 
         header = QtWidgets.QHBoxLayout()
-        header.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"), 1)
+        header.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"))
+        header.addWidget(self.box_label, 1)
         header.addWidget(QtWidgets.QLabel("Pose"))
         header.addWidget(self.pose_switch)
         bar_row = QtWidgets.QHBoxLayout()
@@ -4244,17 +4252,44 @@ class EditFingerPanel(QtWidgets.QWidget):
 
     # ---- takes --------------------------------------------------------------------------
 
-    def fill_takes(self) -> None:
-        """Lists the takes of this finger, keeping the selection if it still exists."""
+    def fill_takes(self, include: str | None = None) -> None:
+        """Lists the takes of this finger (only those with the ``box_filter`` pen box, and
+        ``include`` whatever its box), keeping the selection if it is still listed."""
         keep = self.take_combo.currentData()
         self.take_combo.blockSignals(True)
         self.take_combo.clear()
-        for path in self.store.list(self.finger):
+        paths = self.store.list(self.finger)
+        shown = [p for p in paths if self.box_filter is None or p == include
+                 or self._box_key(p) == self.box_filter]
+        for path in shown:
             self.take_combo.addItem(os.path.splitext(os.path.basename(path))[0], path)
+        if self.box_filter is not None:
+            self.box_label.setText(
+                f"<span style='color:#9e9e9e'>box {self.box_filter_name}: "
+                f"{len(shown)} of {len(paths)} takes</span>"
+            )
+            self.take_combo.setToolTip(
+                f"Takes of this finger with the pen box of the selected Thumb take "
+                f"({self.box_filter_name}), newest first"
+            )
+        else:
+            self.box_label.setText(
+                f"<span style='color:#9e9e9e'>{self.box_filter_name}</span>"
+                if self.box_filter_name else ""
+            )
+            self.take_combo.setToolTip("Recorded takes of this finger, newest first")
         index = self.take_combo.findData(keep) if keep else 0
         self.take_combo.setCurrentIndex(max(index, 0))
         self.take_combo.blockSignals(False)
         self._load_selected()
+
+    def _box_key(self, path: str) -> bytes | None:
+        """pen_box_key of the take at ``path`` (None if it has no pen box)."""
+        try:
+            corners = recorded_take_pen_pose(self.store.load(path))
+        except Exception:  # noqa: BLE001 - an unreadable take is left out
+            return None
+        return pen_box_key(corners) if corners is not None else None
 
     def _confirm_delete_take(self) -> None:
         path = self.take_combo.currentData()
@@ -5019,8 +5054,29 @@ class EditTab(QtWidgets.QWidget):
         self.refresh_takes()
 
     def refresh_takes(self) -> None:
-        for panel in self.panels.values():
-            panel.fill_takes()
+        # The Thumb first: its take's pen box picks the takes the others list.
+        self.panels["th"].fill_takes()
+        self._apply_thumb_box(force=True)
+
+    def _apply_thumb_box(self, force: bool = False) -> None:
+        """Index, Middle and Ring list only the takes with the selected Thumb take's pen box
+        (all of them if it has none); a finger playing keeps its take listed."""
+        take = self.panels["th"].take
+        corners = recorded_take_pen_pose(take) if take is not None else None
+        key = pen_box_key(corners) if corners is not None else None
+        if key is not None:
+            owner = pen_box_owner(self.store, take)
+            name = owner if owner == take.name else f"{owner} (via {take.name})"
+        else:
+            name = ("no Thumb take: all takes" if take is None
+                    else f"{take.name} has no pen box: all takes")
+        for finger in PEN_BOX_FROM_THUMB:
+            panel = self.panels[finger]
+            if not force and panel.box_filter == key and panel.box_filter_name == name:
+                continue
+            playing = self.create_tab.playback(finger) is not None and panel.take is not None
+            panel.box_filter, panel.box_filter_name = key, name
+            panel.fill_takes(include=panel.take.path if playing else None)
 
     def _show(self, finger: str) -> None:
         """Camera frame and FK taxels of ``finger``'s take at its play bar position."""
@@ -5071,7 +5127,8 @@ class EditTab(QtWidgets.QWidget):
         panel = self.panels[finger]
         index = panel.take_combo.findData(path)
         if index < 0:
-            panel.fill_takes()
+            # Not listed (e.g. another box than the Thumb take's): listed for this play.
+            panel.fill_takes(include=path)
             index = panel.take_combo.findData(path)
         if index < 0:
             return False
@@ -5232,9 +5289,12 @@ class EditTab(QtWidgets.QWidget):
         self._pose_finger, self._pose_corners = finger, corners
 
     def _on_take_loaded(self, finger: str) -> None:
-        """A finger's take changed: reload its pen box if its Pose switch is on."""
+        """A finger's take changed: reload its pen box if its Pose switch is on; a new Thumb
+        take changes the takes Index, Middle and Ring list."""
         if self._pose_finger == finger and self.panels[finger].pose_switch.isChecked():
             self._on_pose(finger, True)
+        if finger == "th":
+            self._apply_thumb_box()
 
     def _live_pen_pose(self) -> tuple[np.ndarray | None, str]:
         """Pen box to draw on the live camera: Pose switch, else a take being played."""
@@ -5695,6 +5755,21 @@ def group_takes_by_box(store: TakeStore) -> BoxGroups:
                 labels[key] = take.name
             labels.setdefault(key, take.name)
     return BoxGroups(groups, corners_by, labels, not_edited, no_box)
+
+
+def pen_box_owner(store: TakeStore, take: FingerTake, max_steps: int = 50) -> str:
+    """Name of the take whose own SAM detection ``take``'s pen box is: its ``pen_box_source``
+    followed back through the takes that inherited it (as far as they still exist)."""
+    name, current = take.name, take
+    for _ in range(max_steps):
+        if len(current.pen_box) != 4 or not current.pen_box_source:
+            return current.name
+        name = os.path.splitext(os.path.basename(current.pen_box_source))[0]
+        try:
+            current = store.load(current.pen_box_source)
+        except Exception:  # noqa: BLE001 - the source is gone: the last name known
+            return name
+    return name
 
 
 def take_first_frame(take: FingerTake, video: TakeVideo) -> np.ndarray | None:
