@@ -8,8 +8,11 @@ is stored alongside for reference) go to ``<demo_dir>/fingers/<finger>/<name>.np
 feed of the take is written to ``<demo_dir>/camera/<name>.mp4``; every take stores its path as
 ``video`` and the frame times as ``video_t`` (same time axis as ``t``). The SAM 3 mask and pen
 box from ``bounding_box_sam`` (``sam_prefix``) are drawn on a frame only when their stamp is
-that frame's stamp. Only the frame with the highest detection probability is shown; the rest
-are ignored. They are stored as ``sam_t`` / ``sam_mask`` / ``sam_boxes``. Index, Middle and
+that frame's stamp. Every SAM frame's best detection is collected while recording; one frame is
+kept for the take (``pen_box_selection``): of the frames matching a camera frame, boxes much
+smaller than usual (a hand in front of the pen) are left out, and the box with the highest mean
+overlap (IoU) with the others is chosen. It is stored as ``sam_t`` / ``sam_mask`` /
+``sam_boxes``. Index, Middle and
 Ring takes inherit the pen box of the Thumb take selected when they are recorded: it is stored
 as ``pen_box`` (4, 2) with that take's path as ``pen_box_source`` and is used as their pen box
 (Pose switches, playback) instead of their own SAM detection. If a Pose switch is on when
@@ -117,10 +120,27 @@ a finger is in contact with the pen (Index / Middle / Ring: its ``maintain_touch
 Thumb: its ``click_press`` pressing). Once all are there, the recording starts (data,
 camera as ``<box>_<n>.mp4`` and the microphone on ``audio_topic`` as ``<box>_<n>.wav``) and the
 episodes play as above.
-Hand plays panel (right) lists the box's recordings, newest first; clicking one shows its
-details and the Delete recording, Play on sim and Play on hand buttons. The two Play buttons
-send the recording's commands again at their recorded times: to the sim as Test in sim does, or
-to the hand as plain position replay of the fingers it played (as the Edit tab's Replay).
+The recordings are played back on the Demonstration tab.
+Combinations panel (right): every combination of one edited take per finger with the bounding
+box picked (the fingers with takes), listed again when another box is picked. Check in sim plays each in a headless MuJoCo of the
+sim's model (``sim_collision``: same model, actuators and finger contact rule as
+``mujoco_sim_node``, faster than real time, in a background thread), as Test in sim plays them
+but from each take's ``episode_start`` (no random start), with Ring held as in Test in sim. A
+combination is valid when no two fingers touch while it plays; Valid only lists just those. The
+results are saved in ``<demo_dir>/combinations.json`` and reused while the takes are unchanged.
+A combination whose Middle and Ring fingers collide while Ring has no take (it holds the first
+take's pose) is modified: ``rf_rot`` is moved the least it takes (``SimCollisionChecker.clear_pair``,
+both ways in 0.02 rad steps within its range) for the collision to go without a new one, and
+Ring is held there for the whole demonstration. It is listed as [modified], with the joint's old
+and new value (``modified`` in the JSON, with the touches before). With a modified combination
+picked (and its takes selected), Test in sim and Play in sim hold Ring there, and Play on hand
+moves Ring to that pose with the other fingers' starts and holds it until the end; the recording
+gets ``meta["modified"]`` and is tagged [modified] on the Demonstration tab.
+Each combination lists its Play on hand recordings (those whose ``meta["takes"]`` are its takes,
+by finger and take name) and how many are labelled success / fail (Demonstration tab, or
+``label_playbacks``), counted again whenever the tab is shown.
+Picking a combination shows where the fingers touched and selects its takes in the finger
+columns; Play in sim plays it to the live sim. The box cannot be changed while Check in sim runs.
 During Play on hand, the slip lights (Index, Middle, Ring) show each finger's contact: grey not
 in contact, green in contact (its ``maintain_touch`` holding), red for ``SLIP_LIGHT_S`` after a
 slip (``slip_detection``: the contact spot moving on the pad, or the fingertip force falling
@@ -145,11 +165,23 @@ of each finger's joint positions, velocities and efforts (``leap_state``) with t
 timeline and slips marked, each finger's fingertip taxel magnitudes (recorded Xela, from the
 run's baseline), its camera recording with the bounding box drawn on it, and the FK
 taxels with the recorded Xela readings follow the play bar. The microphone recording is plotted
-under the joints and, while playing, heard on the Audio output picked (remembered between runs;
+under the joints and, while playing, heard on the Audio output picked (named as Ubuntu's sound settings name it, e.g. "Front
+Headphones - USB Audio (hw:1,1)", ``audio_output_label``; remembered between runs;
 Test plays a beep). With Stream to sim (on by default)
 the recorded joint positions are also sent to the MuJoCo sim on ``sim_cmd_topic``, converted to
 sim joints as ``convert_hardware_to_sim`` does. Play on hand saves the camera next to its
 recording, as ``<box>_<n>.mp4``.
+
+Analysis tab: the coverage and results of the pen boxes. Every pen box (of the edited takes, and
+of Play on hand recordings whose takes are gone) is drawn on the live camera (the first frame of
+the picked box's take when there is no live one), coloured by the success rate of its labelled
+recordings (red 0 % to green 100 %, grey none labelled); the box picked is thicker, outlined in
+yellow. A box's Hide button (after its success rate) leaves it off the camera view (it stays
+in the table and the counts); the hidden boxes are remembered between runs. A table lists the
+boxes with the takes that have them (the box their Pose switch shows), their Play on hand
+recordings (counted for the box the recording's takes have now, the Thumb's first; the box
+saved with it only when its takes are gone), success, fail and not labelled counts (``<box>_<n>.label.json``) and success rate; picking one
+shows its totals and a breakdown by the combination of takes each recording played.
 
 Settings tab: the folder takes are saved into (``demo_dir``, can be changed while running), the
 command rate, playback ramp and free-finger deadband used while fingers are
@@ -181,8 +213,10 @@ Usage:
 from __future__ import annotations
 
 import functools
+import itertools
 import json
 import os
+import queue
 import re
 import signal
 import sys
@@ -257,6 +291,16 @@ from mechanical_pen_data_collection.playback_recording import (
     load_label,
     next_playback_path,
     set_manual_label,
+)
+from mechanical_pen_data_collection.pen_box_selection import (
+    REF_QUANTILE,
+    SHRINK_RATIO,
+    choose_consistent_box,
+)
+from mechanical_pen_data_collection.sim_collision import (
+    CollisionResult,
+    SimCollisionChecker,
+    Touch,
 )
 from mechanical_pen_data_collection.slip_detection import SPOT_SHIFT, SlipDetector, SlipSettings
 from mechanical_pen_data_collection.maintain_touch import (
@@ -845,6 +889,8 @@ class LeapStateListener(Node):
         self.audio_rate = 48000  # updated from <audio_topic>/info
         self._play_audio: list[tuple[float, np.ndarray]] | None = None  # (received, samples)
         self.counts_per_unit = float(self.declare_parameter("counts_per_unit", 1000.0).value)
+        # Finger-finger contacts shallower than this (m) are not collisions (Combinations).
+        self.min_contact_depth = float(self.declare_parameter("min_contact_depth", 0.0005).value)
         self.events_file = self.declare_parameter("events_file", "").value or default_events_file()
         demo_dir = self.declare_parameter("demo_dir", "").value
         self.demo_dir_given = bool(demo_dir)  # overrides the folder saved in the Settings tab
@@ -871,8 +917,9 @@ class LeapStateListener(Node):
         self._sam_live: tuple[int, float, list] = (0, 0.0, [])
         self._sam_parts: dict[float, dict] = {}  # stamp -> image / mask / boxes still arriving
         self._rec_sam_t: list[float] = []
-        self._rec_sam_mask: list[np.ndarray] = []
+        self._rec_sam_mask: list[np.ndarray] = []  # PNG-encoded (one per SAM frame)
         self._rec_sam_boxes: list[list] = []
+        self._rec_sam_score: list[float] = []
         self._video_path = ""
         self._video: cv2.VideoWriter | None = None
         # Camera recording of a Play (Compose tab's Play on hand), independent of the takes'.
@@ -1156,14 +1203,17 @@ class LeapStateListener(Node):
             return
         score, best_box = picked
         self._sam_live = (self._sam_live[0] + 1, time.monotonic(), [best_box])
-        # Keep the one frame shown, and record that same frame.
+        # Every frame's detection is recorded; one is chosen for the take when it stops.
+        if self._recording:
+            self._rec_sam_t.append(header_stamp)
+            ok, png = cv2.imencode(".png", np.ascontiguousarray(mask, dtype=np.uint8))
+            self._rec_sam_mask.append(png if ok else None)
+            self._rec_sam_boxes.append([best_box])
+            self._rec_sam_score.append(score)
+        # Only the frame with the highest probability is shown.
         if self._sam_best_score is not None and score <= self._sam_best_score:
             return
         self._sam_best_score = score
-        if self._recording:
-            self._rec_sam_t = [header_stamp]
-            self._rec_sam_mask = [mask]
-            self._rec_sam_boxes = [[best_box]]
         self._display_frame = image
         self._display_seq += 1
         if not self._sam_locked:
@@ -1408,9 +1458,32 @@ class LeapStateListener(Node):
             self._rec_sim_t, self._rec_sim_q = [], []
             self._rec_xela_t, self._rec_xela = [], []
             self._rec_sam_t, self._rec_sam_mask, self._rec_sam_boxes = [], [], []
+            self._rec_sam_score = []
             self._sam_best_score = None
             self._video_path = video_path
             self._recording = True
+
+    def _choose_sam_frame(self, sam_boxes: list, scores: list[float]) -> int:
+        """Index of the recorded SAM frame whose pen box is most like the others
+        (``choose_consistent_box``), leaving out boxes that shrank (a hand in front of the
+        pen); the highest score if no box has corners."""
+        frames, corners = [], []
+        for i, boxes in enumerate(sam_boxes):
+            pts = _detection_corners(boxes[0]) if boxes else None
+            if pts is not None:
+                frames.append(i)
+                corners.append(pts)
+        choice = choose_consistent_box(corners, [scores[i] for i in frames])
+        if choice is None:
+            return int(np.argmax(scores))
+        k = frames[choice.index]
+        self.get_logger().info(
+            f"Pen box of the take: frame {k + 1} of {len(sam_boxes)} with a SAM box "
+            f"(score {scores[k]:.2f}), mean IoU {choice.mean_iou:.2f} with the {choice.kept - 1} "
+            f"other(s); {choice.shrunken} shrunken box(es) left out (area under "
+            f"{SHRINK_RATIO:.0%} of the {REF_QUANTILE:.0%} quantile, {choice.ref_area:.0f} px^2)"
+        )
+        return k
 
     def stop_recording(self) -> Recording:
         with self._lock:
@@ -1430,23 +1503,24 @@ class LeapStateListener(Node):
             xela = np.stack(self._rec_xela) if self._rec_xela else np.empty((0, 0, 3), np.float32)
             self._rec_xela_t, self._rec_xela = [], []
             sam_t = np.array(self._rec_sam_t, dtype=np.float64)
-            sam_mask = (
-                np.stack(self._rec_sam_mask)
-                if self._rec_sam_mask
-                else np.empty((0, 0, 0), np.uint8)
-            )
+            sam_png = list(self._rec_sam_mask)
             sam_boxes = list(self._rec_sam_boxes)
+            sam_score = list(self._rec_sam_score)
             self._rec_sam_t, self._rec_sam_mask, self._rec_sam_boxes = [], [], []
+            self._rec_sam_score = []
         if len(video_t) and len(sam_t):
             keep = [i for i, s in enumerate(sam_t) if stamp_matches(video_t, float(s))]
             sam_t = sam_t[keep]
-            sam_mask = sam_mask[keep] if len(sam_mask) else sam_mask
+            sam_png = [sam_png[i] for i in keep]
             sam_boxes = [sam_boxes[i] for i in keep]
+            sam_score = [sam_score[i] for i in keep]
+        sam_mask = np.empty((0, 0, 0), np.uint8)
         if len(sam_t):
-            order = np.argsort(sam_t)
-            sam_t = sam_t[order]
-            sam_mask = sam_mask[order]
-            sam_boxes = [sam_boxes[int(i)] for i in order]
+            # One frame is kept: the box most like the others, shrunken ones left out.
+            k = self._choose_sam_frame(sam_boxes, sam_score)
+            sam_t, sam_boxes = sam_t[k:k + 1], sam_boxes[k:k + 1]
+            if sam_png[k] is not None:
+                sam_mask = cv2.imdecode(sam_png[k], cv2.IMREAD_UNCHANGED)[None]
         t0 = t[0] if len(t) else (video_t[0] if len(video_t) else 0.0)
         return Recording(
             t=t - t0,
@@ -1621,7 +1695,7 @@ def _detection_corners(box: dict) -> np.ndarray | None:
             center - half_w * along - half_h * across,
             center + half_w * along - half_h * across,
             center + half_w * along + half_h * across,
-            center - half_w * along - half_h * across,
+            center - half_w * along + half_h * across,
         ],
         dtype=np.float64,
     )
@@ -5325,59 +5399,8 @@ def play_list_text(path: str) -> str:
     duration = float(cmd_t[-1] - cmd_t[0]) if len(cmd_t) > 1 else 0.0
     slips = len(meta.get("slips", []))
     slip_text = f", {slips} slip{'s' if slips != 1 else ''}" if slips else ""
-    return f"{name}  {duration:.1f} s, {meta.get('ended', '?')}\n{when}{slip_text}"
-
-
-def play_details_html(rec: PlaybackRecording) -> str:
-    """Details of a Play on hand recording for the Hand plays panel."""
-    meta = rec.meta
-    when = datetime.fromtimestamp(os.path.getmtime(rec.path)).strftime("%Y-%m-%d %H:%M:%S")
-    rows = [
-        ("Recorded", when),
-        ("Length", f"{rec.duration:.1f} s"),
-        ("Ended", meta.get("ended", "?")),
-    ]
-    spans = meta.get("episodes", {})
-    for finger, take in meta.get("takes", {}).items():
-        span = spans.get(finger)
-        played = f" ({span[0]:.2f} -> {span[1]:.2f} s)" if span else ""
-        rows.append((FINGER_LABEL.get(finger, finger),
-                     os.path.splitext(os.path.basename(take))[0] + played))
-    rows += [
-        ("Joint states", f"{len(rec.state_t)} (position, velocity, effort)"),
-        ("Xela readings", f"{len(rec.xela_t)}" + (" (no Zero baseline)"
-                                                  if len(rec.xela_baseline) == 0 else "")),
-        ("Commands", str(len(rec.cmd_t))),
-        ("Clicks", str(len(rec.click_t))),
-        ("Camera", f"{len(rec.video_t)} frames" if rec.video else "none"),
-        ("Audio", os.path.basename(rec.audio) if rec.audio else "none"),
-    ]
-    slips = meta.get("slips", [])
-    by_finger = {}
-    for e in slips:
-        by_finger[e["finger"]] = by_finger.get(e["finger"], 0) + 1
-    rows.append(("Slips", ", ".join(f"{f.upper()} {n}" for f, n in by_finger.items()) or "none"))
-    avoid = meta.get("avoid_slip", {})
-    extra = meta.get("avoid_slip_extra", {})
-    if avoid:
-        rows.append(("Avoid slip", "on" if avoid.get("enabled") else "off"))
-        if extra:
-            rows.append(
-                ("Extra force", ", ".join(f"{f.upper()} +{v:.1f}" for f, v in extra.items()))
-            )
-    html = "<table cellspacing='2'>" + "".join(
-        f"<tr><td><b>{k}</b></td><td>{v}</td></tr>" for k, v in rows
-    ) + "</table>"
-    events = [(e["t"], f"{FINGER_LABEL.get(e['finger'], e['finger'])} {e['event']}")
-              for e in meta.get("timeline", [])]
-    events += [(e["t"], f"{FINGER_LABEL.get(e['finger'], e['finger'])} slip ({e['cue']})")
-               for e in slips]
-    if events:
-        html += "<p><b>Timeline</b><br>" + "<br>".join(
-            f"{t:7.2f} s &nbsp; {text}" for t, text in sorted(events)
-        ) + "</p>"
-    html += f"<p style='color:#757575'>{rec.path}</p>"
-    return html
+    modified = "  [modified]" if meta.get("modified") else ""
+    return f"{name}  {duration:.1f} s, {meta.get('ended', '?')}{modified}\n{when}{slip_text}"
 
 
 def pair_text(pairs) -> str:
@@ -5385,9 +5408,293 @@ def pair_text(pairs) -> str:
     return ", ".join(f"{a.upper()}-{b.upper()}" for a, b in sorted(pairs))
 
 
+def build_sim_plan(
+    takes: list[FingerTake], spans: list[tuple[float, float]],
+) -> tuple[list[str], np.ndarray, list[tuple[list[int], FingerTake, tuple[float, float], float]]]:
+    """What Test in sim plays for ``takes`` (in ``FINGERS`` order) over their (start, terminal)
+    ``spans``: hardware joint names, the whole hand of the first take where it starts (fingers
+    without a take hold it), and per take (columns, take, span, delay): Index, Middle and Ring
+    start at once, the Thumb once they are all done."""
+    names = list(takes[0].hand_joint_names)
+    base = np.array([
+        np.interp(spans[0][0], takes[0].t, takes[0].hand_q[:, j])
+        for j in range(takes[0].hand_q.shape[1])
+    ])
+    others_end = max(
+        (abs(end - start) for take, (start, end) in zip(takes, spans) if take.finger != "th"),
+        default=0.0,
+    )
+    parts = [
+        (take_columns(names, take), take, span, others_end if take.finger == "th" else 0.0)
+        for take, span in zip(takes, spans)
+    ]
+    return names, base, parts
+
+
+# Compose tab Combinations: saved results, next to the fingers' takes.
+COMBINATIONS_FILE = "combinations.json"
+COMBO_VALID_COLOR = "#2e7d32"
+COMBO_COLLIDE_COLOR = "#c62828"
+COMBO_UNCHECKED_COLOR = "#9e9e9e"
+
+
+@dataclass
+class Combination:
+    """One take of each finger, played together as Test in sim plays them (from each take's
+    ``episode_start``), and whether the fingers collided in the sim (None: not checked)."""
+
+    takes: list[FingerTake]  # FINGERS order
+    result: CollisionResult | None = None
+    error: str = ""
+    # Modified: a held joint moved to clear a collision, kept for the whole demonstration:
+    # {"joint", "from", "to" (hardware rad), "pair": the finger pair it clears}. ``before`` is
+    # the result without it.
+    fix: dict | None = None
+    before: CollisionResult | None = None
+
+    @property
+    def key(self) -> tuple[str, ...]:
+        return tuple(take.path for take in self.takes)
+
+    @property
+    def name(self) -> str:
+        return " + ".join(take.name for take in self.takes)
+
+    @property
+    def recording_key(self) -> frozenset:
+        """Its takes as Play on hand recordings name them (``recording_takes``)."""
+        return frozenset((take.finger, take.name) for take in self.takes)
+
+    def mtimes(self) -> dict[str, float]:
+        out = {}
+        for take in self.takes:
+            try:
+                out[take.path] = os.path.getmtime(take.path)
+            except OSError:
+                out[take.path] = 0.0
+        return out
+
+    def plan(self, spans: list[tuple[float, float]] | None = None):
+        """Test in sim plan of the takes (from each ``episode_start``, or ``spans``), with the
+        modified joint held at its new value."""
+        spans = spans or [take_episode_span(take) for take in self.takes]
+        names, base, parts = build_sim_plan(self.takes, spans)
+        if self.fix is not None:
+            base[names.index(self.fix["joint"])] = self.fix["to"]
+        return names, base, parts
+
+    def fix_text(self) -> str:
+        fix = self.fix
+        return (f"{fix['joint']} {fix['from']:.3f} -> {fix['to']:.3f} rad "
+                f"({fix['to'] - fix['from']:+.3f}), held for the whole demonstration, against "
+                f"the {pair_text([tuple(fix['pair'])])} collision")
+
+    def valid(self, min_depth: float) -> bool | None:
+        """No finger pair got ``min_depth`` (m) deep; None if not checked (or it failed)."""
+        if self.result is None or self.error:
+            return None
+        return not self.result.collides(min_depth)
+
+    def status_text(self, min_depth: float) -> str:
+        if self.error:
+            return f"error: {self.error}"
+        if self.result is None:
+            return "not checked"
+        counted = self.result.counted(min_depth)
+        if not counted:
+            shallow = len(self.result.touches)
+            return "valid" + (f" ({shallow} touch(es) under {min_depth * 1000:.2f} mm)"
+                              if shallow else "")
+        return "collides: " + ", ".join(
+            f"{pair_text([pair])} from {touch.first_t:.2f} s (max {touch.depth * 1000:.2f} mm)"
+            for pair, touch in sorted(counted.items(), key=lambda kv: kv[1].first_t)
+        )
+
+
+def load_combination_results(path: str) -> dict[tuple[str, ...], dict]:
+    """Saved results by combination key (take paths), each with the takes' mtimes then."""
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return {tuple(entry["takes"]): entry for entry in data.get("combinations", [])}
+
+
+def combination_entry(combo: Combination, min_depth: float) -> dict:
+    result = combo.result
+    return {
+        "takes": list(combo.key),
+        "names": [take.name for take in combo.takes],
+        "mtimes": combo.mtimes(),
+        "valid": not result.collides(min_depth),
+        "min_depth_m": min_depth,
+        "modified": combo.fix,
+        "touches_before": None if combo.before is None else [
+            {"fingers": list(pair), "t": touch.first_t, "depth_m": round(touch.depth, 6),
+             "bodies": list(touch.bodies)}
+            for pair, touch in combo.before.touches.items()
+        ],
+        "duration": round(result.duration, 3),
+        "touches": [
+            {"fingers": list(pair), "t": touch.first_t, "depth_m": round(touch.depth, 6),
+             "bodies": list(touch.bodies)}
+            for pair, touch in result.touches.items()
+        ],
+    }
+
+
+def result_from_entry(entry: dict, key: str = "touches") -> CollisionResult:
+    return CollisionResult(
+        duration=float(entry.get("duration", 0.0)),
+        touches={
+            tuple(t["fingers"]): Touch(float(t["t"]), float(t["depth_m"]), tuple(t["bodies"]))
+            for t in entry.get(key) or []
+        },
+    )
+
+
+# Play on hand recordings: path -> (mtime, ``recording_info``), so the npz files are read once.
+_RECORDING_INFO: dict[str, tuple[float, dict]] = {}
+
+
+def recording_info(path: str) -> dict | None:
+    """What a Play on hand recording played, from its meta: ``takes`` as {(finger, take
+    name)}, ``modified``, its pen ``box`` name and ``corners`` ((4, 2) or None); None if it
+    cannot be read."""
+    try:
+        mtime = os.path.getmtime(path)
+        cached = _RECORDING_INFO.get(path)
+        if cached is not None and cached[0] == mtime:
+            return cached[1]
+        with np.load(path, allow_pickle=False) as data:  # only its meta is read
+            meta = json.loads(str(data["meta"])) if "meta" in data.files else {}
+    except Exception:  # noqa: BLE001 - an unreadable recording is not counted
+        return None
+    corners = meta.get("box_corners")
+    info = {
+        "takes": frozenset(
+            (finger, os.path.splitext(os.path.basename(take))[0])
+            for finger, take in meta.get("takes", {}).items()
+        ),
+        "modified": bool(meta.get("modified")),
+        "box": str(meta.get("box", "")),
+        "corners": np.asarray(corners, dtype=np.float32) if corners is not None else None,
+    }
+    _RECORDING_INFO[path] = (mtime, info)
+    return info
+
+
+def recording_takes(path: str) -> tuple[frozenset, bool] | None:
+    """(takes the recording played as {(finger, take name)}, modified) of a Play on hand
+    recording, or None if it cannot be read."""
+    info = recording_info(path)
+    return None if info is None else (info["takes"], info["modified"])
+
+
+def takes_name(key: frozenset) -> str:
+    """Takes of a recording ({(finger, take name)}) as "th_4 + if_2 + mf_3"."""
+    order = {finger: i for i, (finger, _) in enumerate(FINGERS)}
+    return " + ".join(name for _, name in sorted(key, key=lambda fn: order.get(fn[0], 9)))
+
+
+@dataclass
+class RecordingCounts:
+    """Play on hand recordings of a combination and their labels (Demonstration tab Success /
+    Fail, or ``label_playbacks``)."""
+
+    paths: list[str] = field(default_factory=list)  # newest first
+    success: int = 0
+    failure: int = 0
+    modified: int = 0
+
+    @property
+    def total(self) -> int:
+        return len(self.paths)
+
+    @property
+    def unlabelled(self) -> int:
+        return self.total - self.success - self.failure
+
+    @property
+    def success_rate(self) -> float | None:
+        """Success / (success + fail) of the labelled ones; None if none is labelled."""
+        labelled = self.success + self.failure
+        return self.success / labelled if labelled else None
+
+    def add(self, path: str, modified: bool) -> None:
+        self.paths.append(path)
+        self.modified += modified
+        label = (load_label(path) or {}).get("label")
+        self.success += label == SUCCESS
+        self.failure += label == FAILURE
+
+
+def count_recordings(directory: str) -> dict[frozenset, RecordingCounts]:
+    """Play on hand recordings in ``directory`` by the takes they played."""
+    counts: dict[frozenset, RecordingCounts] = {}
+    for path in list_playbacks(directory):
+        found = recording_takes(path)
+        if found is None:
+            continue
+        key, modified = found
+        counts.setdefault(key, RecordingCounts()).add(path, modified)
+    return counts
+
+
+# Held joint the combination check may move to clear a collision: (joint, finger pair). Only when
+# the joint's finger has no take in the combination (it holds the first take's pose).
+COMBO_FIXES = (("rf_rot", ("mf", "rf")),)
+
+
 def pen_box_key(corners: np.ndarray) -> bytes:
     """Identity of a pen box: equal only for exactly the same corners."""
     return np.ascontiguousarray(corners, dtype=np.float32).tobytes()
+
+
+@dataclass
+class BoxGroups:
+    """Edited takes (with ``episode_start`` / ``terminal``) grouped by their exact pen box."""
+
+    groups: dict[bytes, dict[str, list[FingerTake]]]  # pen_box_key -> finger -> takes
+    corners: dict[bytes, np.ndarray]  # pen_box_key -> (4, 2)
+    names: dict[bytes, str]  # pen_box_key -> the take the box belongs to (the Thumb's)
+    not_edited: int  # takes left out: no episode_start / terminal
+    no_box: int  # edited takes left out: no pen box
+
+
+def group_takes_by_box(store: TakeStore) -> BoxGroups:
+    """Every finger's edited takes grouped by their exact pen box, each box named after the
+    take it belongs to (the Thumb take the others inherited it from)."""
+    groups: dict[bytes, dict[str, list[FingerTake]]] = {}
+    corners_by: dict[bytes, np.ndarray] = {}
+    labels: dict[bytes, str] = {}
+    no_box = not_edited = 0
+    for finger, _ in FINGERS:
+        for path in store.list(finger):
+            try:
+                take = store.load(path)
+                corners = recorded_take_pen_pose(take)
+            except Exception:
+                continue
+            if take_episode_span(take) is None:
+                not_edited += 1
+                continue
+            if corners is None:
+                no_box += 1
+                continue
+            key = pen_box_key(corners)
+            corners_by[key] = corners
+            groups.setdefault(key, {f: [] for f, _ in FINGERS})[finger].append(take)
+            if len(take.pen_box) == 4:
+                if take.pen_box_source:
+                    labels.setdefault(
+                        key, os.path.splitext(os.path.basename(take.pen_box_source))[0]
+                    )
+            else:
+                labels[key] = take.name
+            labels.setdefault(key, take.name)
+    return BoxGroups(groups, corners_by, labels, not_edited, no_box)
 
 
 def take_first_frame(take: FingerTake, video: TakeVideo) -> np.ndarray | None:
@@ -5447,6 +5754,14 @@ class BoxFingerColumn(QtWidgets.QGroupBox):
     def selected_take(self) -> FingerTake | None:
         row = self.list.currentRow()
         return self._takes[row] if 0 <= row < len(self._takes) else None
+
+    def select_path(self, path: str) -> bool:
+        """Selects the listed take at ``path``; False if it is not listed."""
+        paths = [take.path for take in self._takes]
+        if path not in paths:
+            return False
+        self.list.setCurrentRow(paths.index(path))
+        return True
 
     def _on_row(self, row: int) -> None:
         self._draw()
@@ -5525,6 +5840,7 @@ class ComposeTab(QtWidgets.QWidget):
         self._hand_stages: list[list[FingerTake]] = []
         self._hand_playing: list[str] = []
         self._hand_holding: list[str] = []  # fingers held in contact at their terminal
+        self._hand_fix: dict | None = None  # modified combination playing: its fix and finger
         # Moving to the episode starts: takes still to move (in START_ORDER), the finger moving,
         # the fingers held at their start and those released whose episode starts once their
         # move has finished (finger -> (take, hold at its end)).
@@ -5546,6 +5862,19 @@ class ComposeTab(QtWidgets.QWidget):
         self._slip_at: dict[str, float] = {}
         # pen_box_key -> finger -> takes (newest first), and the box's corners / label
         self._groups: dict[bytes, dict[str, list[FingerTake]]] = {}
+        # Combinations panel: the combinations listed, and the background sim check
+        # (its thread, stop flag and the results it sends back).
+        self._combos: list[Combination] = []
+        self._combo_counts = ""
+        self._rec_counts: dict[frozenset, RecordingCounts] = {}  # Play on hand recordings
+        self._check_thread: threading.Thread | None = None
+        self._check_stop = threading.Event()
+        self._check_queue: queue.Queue = queue.Queue()
+        self._check_total = 0
+        self._check_done = 0
+        self._check_timer = QtCore.QTimer(self)
+        self._check_timer.setInterval(100)
+        self._check_timer.timeout.connect(self._poll_check)
         self._corners: dict[bytes, np.ndarray] = {}
         self._video = TakeVideo()
         # Test in sim: hardware joint names, starting hand pose, and per finger the columns,
@@ -5602,50 +5931,7 @@ class ComposeTab(QtWidgets.QWidget):
         top.addWidget(self.hand_status)
         top.addWidget(self.hand_btn)
         top.addWidget(refresh_btn)
-        # Hand plays panel (right): the box's Play on hand recordings and the picked one's details.
-        self.plays_list = QtWidgets.QListWidget()
-        self.plays_list.setToolTip(
-            "Recordings of Play on hand for this box, newest first (joint positions, velocities, "
-            "efforts, Xela taxels, commands and clicks), in <demo_dir>/compose_playbacks"
-        )
-        self.plays_details = QtWidgets.QTextBrowser()
-        self.plays_details.setOpenLinks(False)
-        plays_panel = QtWidgets.QGroupBox("Hand plays")
-        # Shown only while a recording is picked (highlighted) in the list.
-        self.plays_delete_btn = QtWidgets.QPushButton("Delete recording")
-        self.plays_delete_btn.setStyleSheet(STOP_STYLE)
-        self.plays_delete_btn.setToolTip("Delete the picked recording from disk")
-        plays_top = QtWidgets.QWidget()
-        plays_top_layout = QtWidgets.QVBoxLayout(plays_top)
-        plays_top_layout.setContentsMargins(0, 0, 0, 0)
-        self.plays_sim_btn = QtWidgets.QPushButton("Play on sim")
-        self.plays_sim_btn.setToolTip(
-            "Send the picked recording's commands to the MuJoCo sim at their recorded times"
-        )
-        self.plays_hand_btn = QtWidgets.QPushButton("Play on hand")
-        self.plays_hand_btn.setToolTip(
-            "Send the picked recording's commands to the hand at their recorded times: plain "
-            "position replay of the fingers it played (no force replay, maintain touch or "
-            "click press)"
-        )
-        self._replay_fingers: list[str] = []  # fingers of the recording playing on the hand
-        plays_buttons = QtWidgets.QWidget()
-        plays_buttons_layout = QtWidgets.QHBoxLayout(plays_buttons)
-        plays_buttons_layout.setContentsMargins(0, 0, 0, 0)
-        plays_buttons_layout.addWidget(self.plays_sim_btn)
-        plays_buttons_layout.addWidget(self.plays_hand_btn)
-        plays_buttons_layout.addStretch(1)
-        plays_buttons_layout.addWidget(self.plays_delete_btn)
-        plays_buttons.setVisible(False)
-        self.plays_buttons = plays_buttons
-        plays_top_layout.addWidget(self.plays_list, 1)
-        plays_top_layout.addWidget(plays_buttons)
-        plays_split = QtWidgets.QSplitter(QtCore.Qt.Vertical)
-        plays_split.addWidget(plays_top)
-        plays_split.addWidget(self.plays_details)
-        plays_split.setSizes([300, 500])
-        plays_layout = QtWidgets.QVBoxLayout(plays_panel)
-        plays_layout.addWidget(plays_split)
+        combos_panel = self._build_combinations_panel()
         plays_row = QtWidgets.QHBoxLayout()
         plays_row.addWidget(QtWidgets.QLabel("At start:"))
         self.start_lights: dict[str, QtWidgets.QLabel] = {}
@@ -5747,7 +6033,7 @@ class ComposeTab(QtWidgets.QWidget):
         split = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         split.addWidget(camera_column)
         split.addWidget(fingers)
-        split.addWidget(plays_panel)
+        split.addWidget(combos_panel)
         split.setStretchFactor(0, 1)
         split.setStretchFactor(1, 2)
         split.setStretchFactor(2, 1)
@@ -5762,11 +6048,6 @@ class ComposeTab(QtWidgets.QWidget):
         refresh_btn.clicked.connect(self.refresh_takes)
         self.sim_btn.clicked.connect(self._toggle_sim)
         self.hand_btn.clicked.connect(self._toggle_hand)
-        self.plays_list.currentRowChanged.connect(self._show_play_info)
-        self.plays_delete_btn.clicked.connect(self._delete_play)
-        self.plays_sim_btn.clicked.connect(self._toggle_play_sim)
-        self.plays_hand_btn.clicked.connect(self._toggle_play_hand)
-        create_tab.playing_changed.connect(self._on_replay_playing_changed)
         create_tab.playing_changed.connect(self._on_hand_playing_changed)
         create_tab.play_reached_end.connect(self._on_hand_reached_end)
         self.refresh_takes()
@@ -5779,35 +6060,9 @@ class ComposeTab(QtWidgets.QWidget):
     def refresh_takes(self) -> None:
         """Re-reads every finger's takes and groups them by their exact pen box."""
         keep = self.box_combo.currentData()
-        self._groups, self._corners = {}, {}
-        labels: dict[bytes, str] = {}
-        no_box = not_edited = 0
-        for finger, _ in FINGERS:
-            for path in self.store.list(finger):
-                try:
-                    take = self.store.load(path)
-                    corners = recorded_take_pen_pose(take)
-                except Exception:
-                    continue
-                if take_episode_span(take) is None:
-                    not_edited += 1
-                    continue
-                if corners is None:
-                    no_box += 1
-                    continue
-                key = pen_box_key(corners)
-                self._corners[key] = corners
-                self._groups.setdefault(key, {f: [] for f, _ in FINGERS})[finger].append(take)
-                # Named after the take the box belongs to (the Thumb take it was inherited from).
-                if len(take.pen_box) == 4:
-                    if take.pen_box_source:
-                        labels.setdefault(
-                            key, os.path.splitext(os.path.basename(take.pen_box_source))[0]
-                        )
-                else:
-                    labels[key] = take.name
-                labels.setdefault(key, take.name)
-
+        boxes = group_takes_by_box(self.store)
+        self._groups, self._corners, labels = boxes.groups, boxes.corners, boxes.names
+        not_edited, no_box = boxes.not_edited, boxes.no_box
         self._box_names = labels
         self.box_combo.blockSignals(True)
         self.box_combo.clear()
@@ -5815,7 +6070,7 @@ class ComposeTab(QtWidgets.QWidget):
             cx, cy = self._corners[key].mean(axis=0)
             counts = ", ".join(f"{f.upper()} {len(by_finger[f])}" for f, _ in FINGERS)
             self.box_combo.addItem(f"{labels[key]}  @ ({cx:.0f}, {cy:.0f})  [{counts}]", key)
-        index = self.box_combo.findData(keep) if keep is not None else -1
+        index = self._box_index(keep) if keep is not None else -1
         self.box_combo.setCurrentIndex(max(index, 0) if self._groups else -1)
         self.box_combo.blockSignals(False)
         skipped = []
@@ -5830,12 +6085,12 @@ class ComposeTab(QtWidgets.QWidget):
         self._on_box()
 
     def _on_box(self, *_) -> None:
-        self.fill_plays()
         self._live_seq = -1  # redraw the live view with the new box
         key = self.box_combo.currentData()
         by_finger = self._groups.get(key, {})
         for finger, column in self.columns.items():
             column.set_takes(by_finger.get(finger, []))
+        self.fill_combinations()
         first = next((takes[0] for takes in by_finger.values() if takes), None)
         if first is None:
             self._video.release()
@@ -5867,11 +6122,6 @@ class ComposeTab(QtWidgets.QWidget):
         if self._hand_active:
             self.stop_hand()
             return
-        if self._replay_fingers:
-            QtWidgets.QMessageBox.warning(
-                self, "Play on hand", "A recording is playing on the hand. Stop it first."
-            )
-            return
         takes = self._selected_takes()
         if not takes:
             QtWidgets.QMessageBox.warning(self, "Play on hand", "No take is selected.")
@@ -5899,11 +6149,35 @@ class ComposeTab(QtWidgets.QWidget):
         self.hand_btn.setText("Stop hand")
         self.hand_btn.setStyleSheet(STOP_STYLE)
         self._hand_takes = takes
-        self._move_queue = sorted(takes, key=lambda t: START_ORDER.index(t.finger))
+        moves = list(takes)
+        self._hand_fix = None
+        modified = self._active_fix(takes)
+        if modified is not None:
+            # The modified finger has no take: it moves to its pose with the others and is held
+            # there for the whole demonstration.
+            held = self._held_pose_take(modified)
+            self._hand_fix = dict(modified.fix, finger=held.finger)
+            self._hand_spans[held.finger] = (0.0, 0.0)
+            moves.append(held)
+            self.node.get_logger().info(f"Play on hand: modified, {modified.fix_text()}")
+        self._move_queue = sorted(moves, key=lambda t: START_ORDER.index(t.finger))
         self._moving, self._at_start, self._await_release = None, set(), {}
         for finger, _ in FINGERS:
             self._set_start_light(finger, "off")
         self._move_next_to_start()
+
+    def _held_pose_take(self, combo: Combination) -> FingerTake:
+        """A still take of the modified finger at its pose in the combination (the first
+        take's pose with the modified joint at its new value), held for the demonstration."""
+        names, base, _ = combo.plan()
+        finger = combo.fix["joint"].split("_")[0]
+        cols = finger_indices(names, finger)
+        q = np.tile(base[cols], (2, 1))
+        return FingerTake(
+            finger=finger, path=f"modified {finger} pose", t=np.array([0.0, 1.0]), q=q,
+            joint_names=[names[c] for c in cols], hand_q=np.tile(base, (2, 1)),
+            hand_joint_names=list(names),
+        )
 
     def _set_start_light(self, finger: str, state: str) -> None:
         self.start_lights[finger].setStyleSheet(SLIP_LIGHT_STYLE.format(START_COLORS[state]))
@@ -6069,6 +6343,12 @@ class ComposeTab(QtWidgets.QWidget):
         self._finish_hand(reason)
 
     def _finish_hand(self, reason: str) -> None:
+        # The modified finger held at its pose (never in a stage) is let go now.
+        held, self._at_start = sorted(self._at_start), set()
+        for finger in held:
+            self._hand_event(finger, "released")
+            if self.create_tab.playback(finger) is not None:
+                self.create_tab.stop_play(finger)
         self._save_hand_recording(reason)
         self._hand_active = False
         for finger, _ in FINGERS:
@@ -6102,7 +6382,10 @@ class ComposeTab(QtWidgets.QWidget):
             "spans": {t.finger: list(self._hand_spans[t.finger]) for t in takes},
             "timeline": [],
             "baseline": self.create_tab.hand.baseline,
+            "modified": self._hand_fix,
         }
+        if self._hand_fix is not None:
+            self._hand_event(self._hand_fix["finger"], "held (modified pose)")
 
     def _hand_event(self, finger: str, event: str) -> None:
         if self._hand_rec is not None:
@@ -6174,6 +6457,7 @@ class ComposeTab(QtWidgets.QWidget):
                 "episodes": info["spans"],
                 "ended": ended,
                 "timeline": info["timeline"],
+                "modified": info["modified"],
                 "slips": [
                     {"t": round(e.t - t0, 3), "finger": f, "cue": e.cue,
                      "value": round(e.value, 5), "force": round(e.force, 3)}
@@ -6195,7 +6479,7 @@ class ComposeTab(QtWidgets.QWidget):
         log.info(f"Saved the Play on hand as {rec.path} ({len(cmd_t)} commands, {len(state)} "
                  f"joint states, {len(xela)} Xela readings, {len(buffers['clicks'])} clicks, "
                  f"{len(video_t)} camera frames, {len(audio) / audio_rate:.1f} s of audio)")
-        self.fill_plays(select=rec.path)
+        self.refresh_recording_counts()
 
     # ---- slip detection ----------------------------------------------------------------
 
@@ -6292,174 +6576,6 @@ class ComposeTab(QtWidgets.QWidget):
                     + (f" (+{extra:.1f})" if extra else "")
                 )
 
-    def fill_plays(self, select: str | None = None) -> None:
-        """Lists the Play on hand recordings of the selected box, newest first."""
-        current = self.plays_list.currentItem()
-        keep = select or (current.data(QtCore.Qt.UserRole) if current is not None else None)
-        box = self._box_names.get(self.box_combo.currentData())
-        paths = list_playbacks(self.store.compose_playback_dir, box) if box else []
-        self.plays_list.blockSignals(True)
-        self.plays_list.clear()
-        for path in paths:
-            item = QtWidgets.QListWidgetItem(play_list_text(path))
-            item.setData(QtCore.Qt.UserRole, path)
-            item.setToolTip(path)
-            self.plays_list.addItem(item)
-        # Nothing is picked until a recording is clicked (or one was just saved).
-        self.plays_list.setCurrentRow(paths.index(keep) if keep in paths else -1)
-        self.plays_list.blockSignals(False)
-        self._show_play_info()
-
-    def _show_play_info(self, *_) -> None:
-        """Details of the recording picked in the Hand plays panel."""
-        item = self.plays_list.currentItem()
-        self.plays_buttons.setVisible(item is not None)
-        if item is None:
-            self.plays_details.setHtml(
-                "<i>Click a recording to see its details.</i>" if self.plays_list.count()
-                else "<i>No Play on hand recorded for this box yet.</i>"
-            )
-            return
-        path = item.data(QtCore.Qt.UserRole)
-        try:
-            rec = PlaybackRecording.load(path)
-        except Exception as e:
-            self.plays_details.setHtml(f"<span style='color:#d32f2f'>Load failed: {e}</span>")
-            return
-        self.plays_details.setHtml(play_details_html(rec))
-
-    def _delete_play(self) -> None:
-        """Deletes the recording picked in the Hand plays panel, once confirmed."""
-        item = self.plays_list.currentItem()
-        if item is None:
-            return
-        path = item.data(QtCore.Qt.UserRole)
-        name = os.path.splitext(os.path.basename(path))[0]
-        box = QtWidgets.QMessageBox(self)
-        box.setIcon(QtWidgets.QMessageBox.Warning)
-        box.setWindowTitle("Delete recording")
-        box.setText(f"Delete the Play on hand recording '{name}'?")
-        box.setInformativeText(
-            f"{path} (and its camera, audio and label files, if any) is removed from disk. "
-            "This cannot be undone."
-        )
-        cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
-        confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
-        box.setDefaultButton(cancel)
-        box.exec_()
-        if box.clickedButton() is not confirm:
-            return
-        try:
-            delete_playback(path)
-        except OSError as e:
-            QtWidgets.QMessageBox.warning(
-                self, "Delete recording", f"Could not delete {path}:\n{e}"
-            )
-            return
-        self.node.get_logger().info(f"Deleted the Play on hand recording '{path}'")
-        self.plays_list.setCurrentRow(-1)
-        self.fill_plays()
-
-    def _picked_recording(self, title: str) -> PlaybackRecording | None:
-        """The recording picked in the Hand plays panel (warns and None if it cannot load)."""
-        item = self.plays_list.currentItem()
-        if item is None:
-            return None
-        path = item.data(QtCore.Qt.UserRole)
-        try:
-            rec = PlaybackRecording.load(path)
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, title, f"Could not load {path}:\n{e}")
-            return None
-        if len(rec.cmd_t) < 2:
-            QtWidgets.QMessageBox.warning(self, title, f"{rec.name} has no commands.")
-            return None
-        return rec
-
-    def _recording_takes(self, rec: PlaybackRecording) -> list[FingerTake]:
-        """The commands of each finger the recording played, as takes from its start."""
-        t = rec.cmd_t - rec.cmd_t[0]
-        takes = []
-        for finger, _ in FINGERS:
-            if finger not in rec.meta.get("takes", {}):
-                continue
-            cols = finger_indices(rec.joint_names, finger)
-            takes.append(FingerTake(
-                finger=finger, path=rec.path, t=t, q=rec.cmd_q[:, cols],
-                joint_names=[rec.joint_names[c] for c in cols],
-                hand_q=rec.cmd_q, hand_joint_names=list(rec.joint_names),
-            ))
-        return takes
-
-    def _toggle_play_sim(self) -> None:
-        """Plays the picked recording's commands to the sim (or stops the sim)."""
-        if self._sim_timer.isActive():
-            self.stop_sim()
-            return
-        rec = self._picked_recording("Play on sim")
-        if rec is None:
-            return
-        takes = self._recording_takes(rec)
-        if not takes:
-            QtWidgets.QMessageBox.warning(self, "Play on sim", f"{rec.name} played no finger.")
-            return
-        names = list(rec.joint_names)
-        parts = [
-            (take_columns(names, take), take, (0.0, take.duration), 0.0) for take in takes
-        ]
-        self._run_sim(names, np.asarray(rec.cmd_q[0], dtype=float), parts, self.plays_sim_btn,
-                      f"Playing recording {rec.name} on sim ({rec.duration:.1f} s)")
-
-    def _toggle_play_hand(self) -> None:
-        """Plays the picked recording's commands on the hand (or stops them)."""
-        if self._replay_fingers:
-            self.stop_replay()
-            return
-        if self._hand_active:
-            QtWidgets.QMessageBox.warning(self, "Play on hand", "Play on hand is running.")
-            return
-        rec = self._picked_recording("Play on hand")
-        if rec is None:
-            return
-        takes = self._recording_takes(rec)
-        busy = [FINGER_LABEL[t.finger] for t in takes if self.create_tab.playback(t.finger)]
-        if busy:
-            QtWidgets.QMessageBox.warning(
-                self, "Play on hand", f"Already playing: {', '.join(busy)}. Stop it first."
-            )
-            return
-        for take in takes:
-            # Plain position replay of the commands, as the Edit tab's Replay.
-            if not self.create_tab.play_take(take.finger, take, 0.0, select=False):
-                self.stop_replay()
-                return
-            self._replay_fingers.append(take.finger)
-        if self._replay_fingers:
-            self.plays_hand_btn.setText("Stop hand")
-            self.plays_hand_btn.setStyleSheet(STOP_STYLE)
-            self.node.get_logger().info(
-                f"Playing recording {rec.name} on hand ({rec.duration:.1f} s): "
-                + ", ".join(FINGER_LABEL[f] for f in self._replay_fingers)
-            )
-
-    def _on_replay_playing_changed(self, finger: str) -> None:
-        if finger in self._replay_fingers and self.create_tab.playback(finger) is None:
-            self._replay_fingers.remove(finger)
-            if not self._replay_fingers:
-                self._finish_replay()
-
-    def stop_replay(self) -> None:
-        """Stops the recording playing on the hand."""
-        fingers, self._replay_fingers = self._replay_fingers, []
-        for finger in fingers:
-            if self.create_tab.playback(finger) is not None:
-                self.create_tab.stop_play(finger)
-        self._finish_replay()
-
-    def _finish_replay(self) -> None:
-        self.plays_hand_btn.setText("Play on hand")
-        self.plays_hand_btn.setStyleSheet("")
-
     def _play_span(self, take: FingerTake) -> tuple[float, float]:
         """(start, terminal) for a Test in sim / Play on hand of ``take``: the start drawn from
         its ``random_episode_start`` regions, or ``episode_start`` without any."""
@@ -6488,29 +6604,18 @@ class ComposeTab(QtWidgets.QWidget):
         if not takes:
             QtWidgets.QMessageBox.warning(self, "Test in sim", "No take is selected.")
             return
-        names = list(takes[0].hand_joint_names)
         spans = [self._play_span(take) for take in takes]
-        # Whole hand of the first take where it starts.
-        base = np.array([
-            np.interp(spans[0][0], takes[0].t, takes[0].hand_q[:, j])
-            for j in range(takes[0].hand_q.shape[1])
-        ])
-        # The Thumb starts once the other fingers are done (holding its episode_start until then).
-        others_end = max(
-            (abs(end - start) for take, (start, end) in zip(takes, spans) if take.finger != "th"),
-            default=0.0,
-        )
-        delays = [others_end if take.finger == "th" else 0.0 for take in takes]
-        parts = [
-            (take_columns(names, take), take, span, delay)
-            for take, span, delay in zip(takes, spans, delays)
-        ]
+        names, base, parts = build_sim_plan(takes, spans)
+        modified = self._active_fix(takes)
+        if modified is not None:
+            names, base, parts = modified.plan(spans)
+        delays = [delay for _, _, _, delay in parts]
         self._run_sim(names, base, parts, self.sim_btn, "Testing in sim: " + ", ".join(
             f"{FINGER_LABEL[t.finger]} '{t.name}' "
             f"{self._span_text(t, {t.finger: s})}"
             + (f" (after {d:.2f} s)" if d else "")
             for t, s, d in zip(takes, spans, delays)
-        ))
+        ) + (f"; modified: {modified.fix_text()}" if modified is not None else ""))
 
     def _run_sim(
         self, names: list[str], base: np.ndarray,
@@ -6583,7 +6688,7 @@ class ComposeTab(QtWidgets.QWidget):
         self._sim_timer.stop()
         self._sim_plan = None
         self.sim_btn.setText("Test in sim")
-        self.plays_sim_btn.setText("Play on sim")
+        self.combo_play_btn.setText("Play in sim")
         if not was_running:
             return
         self._read_contacts()
@@ -6597,6 +6702,442 @@ class ComposeTab(QtWidgets.QWidget):
         elif self.node.sim_listening():
             self.sim_status.setText("<span style='color:#2e7d32'>no finger contacts</span>")
             self.node.get_logger().info("Sim: no finger contacts")
+
+    # ---- Combinations ---------------------------------------------------------------------
+
+    def _build_combinations_panel(self) -> QtWidgets.QGroupBox:
+        """Combinations panel (right): every combination of one take per finger, and whether
+        it plays in the sim without two fingers touching."""
+        self.combo_min_depth = double_spin(
+            0.0, 20.0, 0.1, 2, " mm",
+            "Finger-finger contacts shallower than this are not collisions (the collision geoms "
+            "reach a little past the visual meshes). Changing it re-grades the checked "
+            "combinations without running them again; the live sim uses its own "
+            "min_contact_depth parameter"
+        )
+        self.combo_min_depth.setValue(self.node.min_contact_depth * 1000.0)
+        self.combo_valid_only = QtWidgets.QCheckBox("Valid only")
+        self.combo_valid_only.setToolTip(
+            "List only the combinations that did not collide in the sim"
+        )
+        self.combo_check_btn = QtWidgets.QPushButton("Check in sim")
+        self.combo_check_btn.setToolTip(
+            "Play every combination not checked yet (all of them if all are) in a headless MuJoCo "
+            "of the sim's model, as Test in sim plays it from each take's episode_start, faster "
+            "than real time; a combination is valid if no two fingers touch while it plays"
+        )
+        self.combo_progress = QtWidgets.QLabel()
+        self.combo_summary = QtWidgets.QLabel()
+        self.combo_summary.setWordWrap(True)
+        self.combo_list = QtWidgets.QListWidget()
+        self.combo_list.setToolTip(
+            "One take of each finger; picking one selects its takes in the finger columns "
+            f"(results saved in <demo_dir>/{COMBINATIONS_FILE})"
+        )
+        self.combo_details = QtWidgets.QTextBrowser()
+        self.combo_play_btn = QtWidgets.QPushButton("Play in sim")
+        self.combo_play_btn.setToolTip(
+            f"Play the picked combination to the MuJoCo sim on '{self.node.sim_cmd_topic}' (from "
+            "each take's episode_start), to watch it in the viewer"
+        )
+        self.combo_play_btn.setEnabled(False)
+        options = QtWidgets.QHBoxLayout()
+        options.addWidget(QtWidgets.QLabel("Min depth:"))
+        options.addWidget(self.combo_min_depth)
+        options.addWidget(self.combo_valid_only)
+        options.addStretch(1)
+        check_row = QtWidgets.QHBoxLayout()
+        check_row.addWidget(self.combo_check_btn)
+        check_row.addWidget(self.combo_progress, 1)
+        check_row.addWidget(self.combo_play_btn)
+        top = QtWidgets.QWidget()
+        top_layout = QtWidgets.QVBoxLayout(top)
+        top_layout.setContentsMargins(0, 0, 0, 0)
+        top_layout.addLayout(options)
+        top_layout.addLayout(check_row)
+        top_layout.addWidget(self.combo_summary)
+        top_layout.addWidget(self.combo_list, 1)
+        split = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        split.addWidget(top)
+        split.addWidget(self.combo_details)
+        split.setSizes([500, 200])
+        panel = QtWidgets.QGroupBox("Combinations")
+        QtWidgets.QVBoxLayout(panel).addWidget(split)
+        self.combo_valid_only.toggled.connect(lambda *_: self._list_combinations())
+        self.combo_min_depth.valueChanged.connect(self._min_depth_changed)
+        self.combo_check_btn.clicked.connect(self._toggle_check)
+        self.combo_list.currentRowChanged.connect(self._on_combination)
+        self.combo_play_btn.clicked.connect(self._toggle_combo_sim)
+        return panel
+
+    def _combination_takes(self) -> dict[str, list[FingerTake]]:
+        """The edited takes of each finger with the bounding box picked above."""
+        group = self._groups.get(self.box_combo.currentData(), {})
+        return {
+            finger: sorted(group.get(finger, []), key=lambda take: take.name)
+            for finger, _ in FINGERS
+        }
+
+    def fill_combinations(self) -> None:
+        """Every combination of one take per finger (of the fingers with takes), with the saved
+        sim results of those whose takes have not changed since."""
+        if self._check_thread is not None:
+            return  # listed again once the check has finished
+        picked = self._picked_combination()
+        by_finger = self._combination_takes()
+        lists = [takes for takes in by_finger.values() if takes]
+        saved = load_combination_results(self._combinations_path())
+        self._combos = []
+        for takes in (itertools.product(*lists) if lists else []):
+            combo = Combination(list(takes))
+            entry = saved.get(combo.key)
+            if entry is not None and entry.get("mtimes") == combo.mtimes():
+                combo.result = result_from_entry(entry)
+                combo.fix = entry.get("modified")
+                if entry.get("touches_before") is not None:
+                    combo.before = result_from_entry(entry, "touches_before")
+            self._combos.append(combo)
+        self._combo_counts = ", ".join(
+            f"{f.upper()} {len(t)}" for f, t in by_finger.items() if t
+        )
+        self._rec_counts = count_recordings(self.store.compose_playback_dir)
+        self._fill_summary()
+        self._list_combinations(picked.key if picked is not None else None)
+
+    def refresh_recording_counts(self) -> None:
+        """Counts the Play on hand recordings of each combination again (a new recording, or
+        labels changed on the Demonstration tab)."""
+        self._rec_counts = count_recordings(self.store.compose_playback_dir)
+        self._fill_summary()
+        self._list_combinations()
+
+    def _recordings_of(self, combo: Combination) -> RecordingCounts:
+        return self._rec_counts.get(combo.recording_key, RecordingCounts())
+
+    def _fill_summary(self) -> None:
+        checked = [c for c in self._combos if c.valid(self._min_depth) is not None]
+        valid = sum(c.valid(self._min_depth) for c in checked)
+        self.combo_summary.setText(
+            f"{len(self._combos)} combination(s) of {self._combo_counts or 'no takes'}; "
+            f"<span style='color:{COMBO_VALID_COLOR}'><b>{valid} valid</b></span>, "
+            f"<span style='color:{COMBO_COLLIDE_COLOR}'>{len(checked) - valid} collide</span>, "
+            f"{len(self._combos) - len(checked)} not checked"
+            + self._summary_recordings()
+        )
+
+    def _summary_recordings(self) -> str:
+        """Recordings of the listed combinations, for the summary line."""
+        counts = [self._recordings_of(c) for c in self._combos]
+        total = sum(c.total for c in counts)
+        if not total:
+            return "; no recordings yet"
+        return (f"; {total} recording(s): {sum(c.success for c in counts)} success, "
+                f"{sum(c.failure for c in counts)} fail, "
+                f"{sum(c.unlabelled for c in counts)} not labelled")
+
+    def _list_combinations(self, keep: tuple[str, ...] | None = None) -> None:
+        """Lists the combinations (only the valid ones with Valid only), keeping the picked one
+        (or the one with the take paths ``keep``)."""
+        if keep is None:
+            picked = self._picked_combination()
+            keep = picked.key if picked is not None else None
+        valid_only = self.combo_valid_only.isChecked()
+        self.combo_list.blockSignals(True)
+        self.combo_list.clear()
+        row = -1
+        for i, combo in enumerate(self._combos):
+            if valid_only and not combo.valid(self._min_depth):
+                continue
+            item = QtWidgets.QListWidgetItem()
+            item.setData(QtCore.Qt.UserRole, i)
+            self._show_combination(item, combo)
+            self.combo_list.addItem(item)
+            if combo.key == keep:
+                row = self.combo_list.count() - 1
+        self.combo_list.setCurrentRow(row)
+        self.combo_list.blockSignals(False)
+        self._on_combination()
+
+    def _show_combination(self, item: QtWidgets.QListWidgetItem, combo: Combination) -> None:
+        valid = combo.valid(self._min_depth)
+        if combo.error or valid is False:
+            mark, color = "\u2717", COMBO_COLLIDE_COLOR
+        elif valid:
+            mark, color = "\u2713", COMBO_VALID_COLOR
+        else:
+            mark, color = "\u00b7", COMBO_UNCHECKED_COLOR
+        recs = self._recordings_of(combo)
+        recorded = (f"   {recs.total} rec: \u2713{recs.success} \u2717{recs.failure}"
+                    + (f" ?{recs.unlabelled}" if recs.unlabelled else "")) if recs.total else ""
+        item.setText(f"{mark} {combo.name}" + ("  [modified]" if combo.fix else "") + recorded)
+        item.setForeground(QtGui.QColor(color))
+        item.setToolTip(combo.status_text(self._min_depth)
+                        + (f"\nModified: {combo.fix_text()}" if combo.fix else ""))
+
+    def _picked_combination(self) -> Combination | None:
+        item = self.combo_list.currentItem()
+        return self._combos[item.data(QtCore.Qt.UserRole)] if item is not None else None
+
+    def _on_combination(self, *_) -> None:
+        """Details of the picked combination; its takes are selected in the finger columns."""
+        combo = self._picked_combination()
+        self.combo_play_btn.setEnabled(combo is not None)
+        if combo is None:
+            self.combo_details.setHtml(
+                "<i>Pick a combination to see it.</i>" if self.combo_list.count()
+                else "<i>No combinations: edit takes (episode_start and terminal) with a pen "
+                     "bounding box first.</i>"
+            )
+            return
+        rows = []
+        for take in combo.takes:
+            start, end = take_episode_span(take)
+            rows.append((FINGER_LABEL[take.finger], f"{take.name} ({start:.2f} -> {end:.2f} s)"))
+        if combo.result is not None:
+            rows.append(("Length", f"{combo.result.duration:.1f} s"))
+        valid = combo.valid(self._min_depth)
+        if combo.error or valid is False:
+            color = COMBO_COLLIDE_COLOR
+        elif valid:
+            color = COMBO_VALID_COLOR
+        else:
+            color = COMBO_UNCHECKED_COLOR
+        status = combo.status_text(self._min_depth)
+        rows.append(("Sim", f"<span style='color:{color}'><b>{status}</b></span>"))
+        recs = self._recordings_of(combo)
+        rows.append(("Recordings", (
+            f"<b>{recs.total}</b>: <span style='color:{COMBO_VALID_COLOR}'><b>{recs.success} "
+            f"success</b></span>, <span style='color:{COMBO_COLLIDE_COLOR}'><b>{recs.failure} "
+            f"fail</b></span>, {recs.unlabelled} not labelled"
+            + (f" ({recs.modified} modified)" if recs.modified else "")
+        ) if recs.total else "none yet (Play on hand records one)"))
+        for path in recs.paths:
+            label = (load_label(path) or {}).get("label")
+            mark = {SUCCESS: f"<span style='color:{COMBO_VALID_COLOR}'>success</span>",
+                    FAILURE: f"<span style='color:{COMBO_COLLIDE_COLOR}'>fail</span>"}.get(
+                label, "not labelled")
+            rows.append(("", f"{os.path.splitext(os.path.basename(path))[0]}: {mark}"))
+        if combo.fix is not None:
+            rows.append(("<span style='color:#ef6c00'>Modified</span>", combo.fix_text()))
+            if combo.before is not None:
+                rows.append(("Before", Combination(combo.takes, combo.before).status_text(
+                    self._min_depth)))
+        elif combo.result is not None and not combo.error:
+            held = {take.finger for take in combo.takes}
+            for joint, pair in COMBO_FIXES:
+                if joint.split("_")[0] not in held and pair in combo.result.counted(
+                        self._min_depth):
+                    rows.append(("Modified", f"no {joint} value in its range clears the "
+                                             f"{pair_text([pair])} collision"))
+        if combo.result is not None:
+            # Every pair that touched, counted or not, with its deepest contact.
+            for pair, touch in sorted(combo.result.touches.items(), key=lambda kv: kv[1].first_t):
+                text = (f"max {touch.depth * 1000:.2f} mm, from {touch.first_t:.2f} s, "
+                        f"{touch.bodies[0]} / {touch.bodies[1]}")
+                if touch.depth < self._min_depth:
+                    text = f"<span style='color:#9e9e9e'>{text} (under the min depth)</span>"
+                rows.append((pair_text([pair]), text))
+        self.combo_details.setHtml("<table cellspacing='2'>" + "".join(
+            f"<tr><td><b>{k}</b></td><td>{v}</td></tr>" for k, v in rows
+        ) + "</table>")
+        for take in combo.takes:
+            self.columns[take.finger].select_path(take.path)
+
+    def _box_index(self, key: bytes | None) -> int:
+        """Row of the box ``key`` in the dropdown (findData does not match bytes), or -1."""
+        return next(
+            (i for i in range(self.box_combo.count()) if self.box_combo.itemData(i) == key), -1
+        )
+
+    @property
+    def _min_depth(self) -> float:
+        """Min depth (m) of a finger-finger contact counted as a collision."""
+        return self.combo_min_depth.value() / 1000.0
+
+    def _min_depth_changed(self, *_) -> None:
+        """Re-grades the checked combinations (their max depths are kept) and saves them."""
+        self._fill_summary()
+        self._list_combinations()
+        if self._check_thread is None and any(c.result is not None for c in self._combos):
+            self._save_combinations()
+
+    def _combinations_path(self) -> str:
+        return os.path.join(self.store.demo_dir, COMBINATIONS_FILE)
+
+    def _toggle_check(self) -> None:
+        if self._check_thread is not None:
+            self._check_stop.set()
+            self.combo_check_btn.setEnabled(False)
+            self.combo_progress.setText("stopping...")
+            return
+        jobs = [c for c in self._combos if c.result is None] or list(self._combos)
+        if not jobs:
+            QtWidgets.QMessageBox.warning(self, "Check in sim", "No combinations to check.")
+            return
+        for combo in jobs:
+            combo.result, combo.error, combo.fix, combo.before = None, "", None, None
+        self._check_stop.clear()
+        self._check_queue = queue.Queue()
+        self._check_total, self._check_done = len(jobs), 0
+        self._check_thread = threading.Thread(
+            target=self._check_worker,
+            args=(jobs, self._min_depth, self._check_stop, self._check_queue),
+            name="combination_check", daemon=True,
+        )
+        self.combo_check_btn.setText("Stop check")
+        self.combo_check_btn.setStyleSheet(STOP_STYLE)
+        self.box_combo.setEnabled(False)  # the list belongs to this box until the check ends
+        self.combo_progress.setText(f"0 / {len(jobs)}")
+        self.node.get_logger().info(f"Checking {len(jobs)} combination(s) in a headless sim")
+        self._fill_summary()
+        self._list_combinations()
+        self._check_thread.start()
+        self._check_timer.start()
+
+    @staticmethod
+    def _check_worker(
+        jobs: list[Combination], min_depth: float, stop: threading.Event, out: queue.Queue,
+    ) -> None:
+        """Runs in its own thread: plays each combination in a headless sim, sending
+        (combination, result, error, fix, result before the fix) back, then None (or
+        ("failed", why) if it cannot). A ``COMBO_FIXES`` collision of a held finger is cleared
+        by moving its joint the least it takes, if it can be."""
+        try:
+            checker = SimCollisionChecker()
+            to_sim = HardwareToSim()
+        except Exception as e:  # noqa: BLE001 - shown in the panel
+            out.put(("failed", f"Could not load the sim: {e}"))
+            return
+        sim_names = list(to_sim.sim_names)
+
+        def convert(n, q):
+            return sim_names, to_sim(n, q)
+
+        for combo in jobs:
+            if stop.is_set():
+                break
+            fix = before = None
+            try:
+                names, base, parts = combo.plan()
+                result = checker.check(
+                    names, base, parts, convert, COMMAND_RATE_HZ, should_stop=stop.is_set,
+                )
+                held = {take.finger for take in combo.takes}
+                for joint, pair in COMBO_FIXES:
+                    if (result is None or joint.split("_")[0] in held
+                            or pair not in result.counted(min_depth)):
+                        continue
+                    found = checker.clear_pair(
+                        names, base, parts, convert, COMMAND_RATE_HZ, joint, pair, min_depth,
+                        result, should_stop=stop.is_set,
+                    )
+                    if found is not None:
+                        value, fixed = found
+                        col = names.index(joint)
+                        fix = {"joint": joint, "from": round(float(base[col]), 5),
+                               "to": round(float(value), 5), "pair": list(pair),
+                               "min_depth_m": min_depth}
+                        before, result = result, fixed
+                        base[col] = value
+            except Exception as e:  # noqa: BLE001 - one bad take should not stop the rest
+                out.put((combo, None, str(e), None, None))
+                continue
+            if result is None:
+                break
+            out.put((combo, result, "", fix, before))
+        out.put(None)
+
+    def _poll_check(self) -> None:
+        """Takes in the background check's results."""
+        changed = False
+        while True:
+            try:
+                msg = self._check_queue.get_nowait()
+            except queue.Empty:
+                break
+            if msg is None or msg[0] == "failed":
+                if msg is not None:
+                    self.node.get_logger().error(f"Combination check: {msg[1]}")
+                    QtWidgets.QMessageBox.warning(self, "Check in sim", msg[1])
+                self._finish_check()
+                return
+            combo, result, error, fix, before = msg
+            combo.result, combo.error, combo.fix, combo.before = result, error, fix, before
+            self._check_done += 1
+            changed = True
+        if changed:
+            self.combo_progress.setText(f"{self._check_done} / {self._check_total}")
+            self._fill_summary()
+            for row in range(self.combo_list.count()):
+                item = self.combo_list.item(row)
+                self._show_combination(item, self._combos[item.data(QtCore.Qt.UserRole)])
+            if self.combo_list.currentItem() is not None:
+                self._on_combination()
+
+    def _finish_check(self) -> None:
+        self._check_timer.stop()
+        self._check_thread = None
+        stopped = self._check_stop.is_set()
+        self.combo_check_btn.setText("Check in sim")
+        self.combo_check_btn.setStyleSheet("")
+        self.combo_check_btn.setEnabled(True)
+        self.box_combo.setEnabled(True)
+        self._save_combinations()
+        checked = [c for c in self._combos if c.valid(self._min_depth) is not None]
+        valid = sum(c.valid(self._min_depth) for c in checked)
+        word = "stopped" if stopped else "done"
+        self.combo_progress.setText(f"{word}: {valid} / {len(checked)} valid")
+        self.node.get_logger().info(
+            f"Combination check {word}: {valid} of {len(checked)} checked are valid (no finger "
+            f"contacts); saved in {self._combinations_path()}"
+        )
+        self._fill_summary()
+        self._list_combinations()
+
+    def stop_combination_check(self) -> None:
+        """Stops the background check (on close), without waiting for it."""
+        self._check_stop.set()
+
+    def _save_combinations(self) -> None:
+        """Adds the checked combinations to ``<demo_dir>/combinations.json`` (the results of
+        combinations not listed now are kept)."""
+        path = self._combinations_path()
+        entries = load_combination_results(path)
+        for combo in self._combos:
+            if combo.result is not None:
+                entries[combo.key] = combination_entry(combo, self._min_depth)
+        data = {
+            "updated": datetime.now().isoformat(timespec="seconds"),
+            "rule": "valid: no contact at least min_depth_m deep between bodies of two different "
+                    "fingers while the combination plays in the sim (Test in sim order, from "
+                    "episode_start); touches lists every pair that touched, with its max depth",
+            "combinations": list(entries.values()),
+        }
+        try:
+            with open(path, "w") as f:
+                json.dump(data, f, indent=1)
+        except OSError as e:
+            self.node.get_logger().warn(f"Could not save the combinations to {path}: {e}")
+
+    def _active_fix(self, takes: list[FingerTake]) -> Combination | None:
+        """The picked combination if it is modified and ``takes`` are exactly its takes."""
+        combo = self._picked_combination()
+        if combo is None or combo.fix is None:
+            return None
+        return combo if combo.key == tuple(take.path for take in takes) else None
+
+    def _toggle_combo_sim(self) -> None:
+        """Plays the picked combination to the live sim (or stops the sim)."""
+        if self._sim_timer.isActive():
+            self.stop_sim()
+            return
+        combo = self._picked_combination()
+        if combo is None:
+            return
+        names, base, parts = combo.plan()
+        self._run_sim(names, base, parts, self.combo_play_btn,
+                      f"Playing combination {combo.name} in sim "
+                      f"({combo.status_text(self._min_depth)})")
 
     def close_video(self) -> None:
         self._video.release()
@@ -6632,6 +7173,31 @@ def load_wav(path: str) -> tuple[np.ndarray, int]:
         raise ValueError(f"{path}: {8 * width}-bit samples, expected 16-bit")
     x = np.frombuffer(raw, "<i2").astype(np.float32) / 32767.0
     return x.reshape(-1, channels).mean(axis=1), rate
+
+
+# Outputs of Realtek USB audio chips (ALC4080 family, "Generic USB Audio") by PCM device, as
+# Ubuntu's sound settings name them (alsa-ucm-conf's Realtek ALC4080 profile).
+REALTEK_USB_OUTPUTS = {0: "Speakers", 1: "Front Headphones", 2: "S/PDIF Output"}
+
+
+def audio_output_label(name: str) -> str:
+    """How Ubuntu's sound settings name the PortAudio output ``name`` ("<card>: <pcm>
+    (hw:C,D)"), with its ALSA device: e.g. "Front Headphones - USB Audio (hw:1,1)"; ``name``
+    itself if it is not an ALSA hardware device."""
+    m = re.match(r"^(?P<card>.+?): (?P<pcm>.*?) ?\(hw:(?P<c>\d+),(?P<d>\d+)\)$", name)
+    if m is None:
+        return name
+    card, pcm, c, d = m["card"], m["pcm"].strip(" -"), int(m["c"]), int(m["d"])
+    try:
+        with open(f"/proc/asound/card{c}/stream0") as f:
+            usb_name = f.readline()
+    except OSError:
+        usb_name = ""
+    port = REALTEK_USB_OUTPUTS.get(d) if usb_name.startswith("Generic USB Audio") else None
+    if port is None:
+        port = pcm.lstrip("#").strip() and (f"Output {pcm.lstrip('#').strip()}"
+                                            if pcm.startswith("#") else pcm)
+    return f"{port or 'Output'} - {card} (hw:{c},{d})"
 
 
 def audio_output_devices() -> list[str]:
@@ -6802,7 +7368,7 @@ class DemonstrationTab(QtWidgets.QWidget):
         self.output_combo.setToolTip("Where the recorded audio is played (e.g. your headphones)")
         self.output_combo.addItem("Muted", None)
         for name in audio_output_devices():
-            self.output_combo.addItem(name, name)
+            self.output_combo.addItem(audio_output_label(name), name)
         saved = self._settings.value("audio_output", "")
         index = self.output_combo.findData(saved) if saved else -1
         self.output_combo.setCurrentIndex(max(index, 0))
@@ -7323,6 +7889,354 @@ def double_spin(
     spin.setToolTip(tooltip)
     spin.setKeyboardTracking(False)  # typed values apply on Enter, not per keystroke
     return spin
+
+
+# Analysis tab: box colours by success rate (RGB), from fail to success; grey with no labels.
+ANALYSIS_FAIL_RGB = np.array([229, 57, 53], dtype=float)
+ANALYSIS_SUCCESS_RGB = np.array([67, 160, 71], dtype=float)
+ANALYSIS_NONE_RGB = (176, 176, 176)
+ANALYSIS_SELECTED_RGB = (255, 235, 59)
+
+
+def rate_color(rate: float | None) -> tuple[int, int, int]:
+    if rate is None:
+        return ANALYSIS_NONE_RGB
+    rgb = ANALYSIS_FAIL_RGB + rate * (ANALYSIS_SUCCESS_RGB - ANALYSIS_FAIL_RGB)
+    return tuple(int(v) for v in rgb)
+
+
+def rate_text(counts: RecordingCounts) -> str:
+    rate = counts.success_rate
+    return "-" if rate is None else f"{100.0 * rate:.0f} %"
+
+
+@dataclass
+class BoxStats:
+    """A pen box on the Analysis tab: its corners, takes and Play on hand recordings."""
+
+    name: str
+    corners: np.ndarray | None
+    takes: dict[str, list[str]] = field(default_factory=dict)  # finger -> its takes' names
+    first_take: FingerTake | None = None  # for a camera frame when there is no live one
+    recordings: RecordingCounts = field(default_factory=RecordingCounts)
+    by_combination: dict[frozenset, RecordingCounts] = field(default_factory=dict)
+
+
+class AnalysisTab(QtWidgets.QWidget):
+    """Coverage and results of the pen boxes: every box drawn on the live camera (coloured by
+    success rate), a table of the boxes with their Play on hand recordings and labels, and for
+    the box picked, its totals and a breakdown by the combination of takes recorded."""
+
+    def __init__(self, node: LeapStateListener, store: TakeStore) -> None:
+        super().__init__()
+        self.node = node
+        self.store = store
+        self._boxes: list[BoxStats] = []
+        self._selected: str | None = None
+        self._frame_seq = -1
+        self._frame_key = None  # what the camera view shows (frame, selection), to redraw
+        self._video = TakeVideo()
+        self._fallback: dict[str, np.ndarray | None] = {}  # box -> first frame of its take
+        # Boxes not drawn on the camera (their Hide button), remembered between runs.
+        self._settings = QtCore.QSettings(PACKAGE_NAME, "record_demonstration")
+        try:
+            self._hidden = set(json.loads(self._settings.value("analysis_hidden_boxes", "[]")))
+        except (TypeError, ValueError):
+            self._hidden = set()
+
+        self.camera = CameraView(node.image_topic)
+        self.camera_note = QtWidgets.QLabel()
+        self.camera_note.setWordWrap(True)
+        legend = QtWidgets.QLabel(
+            "Box colour: success rate of its labelled recordings, "
+            f"<span style='color:rgb{tuple(int(v) for v in ANALYSIS_FAIL_RGB)}'><b>0 %</b></span>"
+            f" to <span style='color:rgb{tuple(int(v) for v in ANALYSIS_SUCCESS_RGB)}'>"
+            f"<b>100 %</b></span>, <span style='color:rgb{ANALYSIS_NONE_RGB}'><b>grey</b></span>"
+            " none labelled; the box picked is thicker, outlined in yellow"
+        )
+        legend.setWordWrap(True)
+        left = QtWidgets.QWidget()
+        left_layout = QtWidgets.QVBoxLayout(left)
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.addWidget(self.camera, 1)
+        left_layout.addWidget(self.camera_note)
+        left_layout.addWidget(legend)
+
+        self.overall = QtWidgets.QLabel()
+        self.overall.setWordWrap(True)
+        refresh_btn = QtWidgets.QPushButton("Refresh")
+        refresh_btn.setToolTip("Read the takes, recordings and labels again")
+        top = QtWidgets.QHBoxLayout()
+        top.addWidget(self.overall, 1)
+        top.addWidget(refresh_btn)
+        self.box_table = self._table(
+            ["Box", "Centre (px)", "Takes", "Demonstrations", "Success", "Fail",
+             "Not labelled", "Success rate", "Hide"]
+        )
+        self.box_table.setToolTip(
+            "Pen boxes of the edited takes (each named after the take it belongs to, with the "
+            "takes that have it: the box their Pose switch shows); a Play on hand recording "
+            "counts for the box its takes have now. Pick one to see its combinations"
+        )
+        self.box_title = QtWidgets.QLabel("<i>Pick a box</i>")
+        self.box_title.setWordWrap(True)
+        self.combo_table = self._table(
+            ["Combination", "Demonstrations", "Success", "Fail", "Not labelled",
+             "Success rate", "Modified"]
+        )
+        self.combo_table.setToolTip(
+            "Play on hand recordings of the box by the takes they played (labels from the "
+            "Demonstration tab's Success / Fail, or label_playbacks)"
+        )
+        right = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        boxes_panel = QtWidgets.QWidget()
+        boxes_layout = QtWidgets.QVBoxLayout(boxes_panel)
+        boxes_layout.setContentsMargins(0, 0, 0, 0)
+        boxes_layout.addLayout(top)
+        boxes_layout.addWidget(self.box_table, 1)
+        detail_panel = QtWidgets.QWidget()
+        detail_layout = QtWidgets.QVBoxLayout(detail_panel)
+        detail_layout.setContentsMargins(0, 0, 0, 0)
+        detail_layout.addWidget(self.box_title)
+        detail_layout.addWidget(self.combo_table, 1)
+        right.addWidget(boxes_panel)
+        right.addWidget(detail_panel)
+
+        split = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        split.addWidget(left)
+        split.addWidget(right)
+        split.setSizes([800, 700])
+        QtWidgets.QVBoxLayout(self).addWidget(split)
+
+        refresh_btn.clicked.connect(self.refresh_data)
+        self.box_table.itemSelectionChanged.connect(self._on_box)
+
+    @staticmethod
+    def _table(headers: list[str]) -> QtWidgets.QTableWidget:
+        table = QtWidgets.QTableWidget(0, len(headers))
+        table.setHorizontalHeaderLabels(headers)
+        table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        table.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        table.verticalHeader().setVisible(False)
+        table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
+        table.horizontalHeader().setStretchLastSection(True)
+        return table
+
+    def showEvent(self, ev) -> None:
+        super().showEvent(ev)
+        self.refresh_data()
+
+    # ---- data ---------------------------------------------------------------------------
+
+    def refresh_data(self) -> None:
+        """Reads the boxes of the edited takes and the Play on hand recordings (by the box
+        they were recorded with) and their labels again."""
+        grouped = group_takes_by_box(self.store)
+        boxes: dict[str, BoxStats] = {}
+        box_of_take: dict[tuple[str, str], str] = {}  # (finger, take name) -> its box now
+        for key, by_finger in grouped.groups.items():
+            name = grouped.names[key]
+            first = next((takes[0] for takes in by_finger.values() if takes), None)
+            boxes[name] = BoxStats(
+                name, grouped.corners[key],
+                {finger: sorted(t.name for t in takes)
+                 for finger, takes in by_finger.items() if takes}, first,
+            )
+            for finger, takes in by_finger.items():
+                for take in takes:
+                    box_of_take[(finger, take.name)] = name
+        order = {finger: i for i, (finger, _) in enumerate(FINGERS)}
+        for path in list_playbacks(self.store.compose_playback_dir):
+            info = recording_info(path)
+            if info is None:
+                continue
+            # The box its takes have now (the Thumb's first), as the Pose switches show it;
+            # the box saved with the recording only when none of its takes is left.
+            played = sorted(info["takes"], key=lambda fn: order.get(fn[0], 9))
+            name = next((box_of_take[ft] for ft in played if ft in box_of_take), None)
+            if name is None:
+                name = (info["box"] or os.path.splitext(os.path.basename(path))[0]
+                        .rsplit("_", 1)[0]) + " (takes gone)"
+            box = boxes.get(name)
+            if box is None:  # its takes are gone: the box from the recording
+                box = boxes[name] = BoxStats(name, info["corners"])
+            box.recordings.add(path, info["modified"])
+            box.by_combination.setdefault(info["takes"], RecordingCounts()).add(
+                path, info["modified"]
+            )
+        self._boxes = sorted(boxes.values(), key=lambda b: b.name)
+        self._fill_boxes()
+        self._frame_key = None
+
+    def _fill_boxes(self) -> None:
+        keep = self._selected
+        total = RecordingCounts()
+        for box in self._boxes:
+            total.success += box.recordings.success
+            total.failure += box.recordings.failure
+            total.paths += box.recordings.paths
+        self.overall.setText(
+            f"<b>{len(self._boxes)}</b> bounding box(es); <b>{total.total}</b> demonstrations: "
+            f"<span style='color:{COMBO_VALID_COLOR}'><b>{total.success} success</b></span>, "
+            f"<span style='color:{COMBO_COLLIDE_COLOR}'><b>{total.failure} fail</b></span>, "
+            f"{total.unlabelled} not labelled (success rate {rate_text(total)})"
+        )
+        table = self.box_table
+        table.blockSignals(True)
+        table.setRowCount(len(self._boxes))
+        row_keep = -1
+        for row, box in enumerate(self._boxes):
+            rec = box.recordings
+            centre = ("-" if box.corners is None
+                      else "({:.0f}, {:.0f})".format(*np.asarray(box.corners).mean(axis=0)))
+            takes = "; ".join(
+                f"{f.upper()} {', '.join(names)}" for f, names in box.takes.items()
+            ) or "none (deleted or changed box)"
+            values = [box.name, centre, takes, rec.total, rec.success, rec.failure,
+                      rec.unlabelled, rate_text(rec)]
+            for col, value in enumerate(values):
+                item = QtWidgets.QTableWidgetItem()
+                item.setData(QtCore.Qt.DisplayRole, value)
+                if col == 0:
+                    item.setForeground(QtGui.QColor(*rate_color(rec.success_rate)))
+                    item.setData(QtCore.Qt.UserRole, box.name)
+                table.setItem(row, col, item)
+            table.setCellWidget(row, len(values), self._hide_button(box.name))
+            if box.name == keep:
+                row_keep = row
+        table.blockSignals(False)
+        if row_keep < 0 and self._boxes:
+            row_keep = 0
+        if row_keep >= 0:
+            table.selectRow(row_keep)
+        self._on_box()
+
+    def _hide_button(self, name: str) -> QtWidgets.QWidget:
+        """Hide radio button of box ``name`` (centred in its cell); on, the box is not drawn."""
+        button = QtWidgets.QRadioButton()
+        button.setAutoExclusive(False)  # each box on its own; clicking again shows it
+        button.setChecked(name in self._hidden)
+        button.setToolTip(f"Hide box {name} on the camera view (it stays in the counts)")
+        button.toggled.connect(lambda on, n=name: self._set_hidden(n, on))
+        cell = QtWidgets.QWidget()
+        layout = QtWidgets.QHBoxLayout(cell)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(button)
+        return cell
+
+    def _set_hidden(self, name: str, hidden: bool) -> None:
+        if hidden:
+            self._hidden.add(name)
+        else:
+            self._hidden.discard(name)
+        self._settings.setValue("analysis_hidden_boxes", json.dumps(sorted(self._hidden)))
+        self._frame_key = None  # redraw
+
+    def _picked(self) -> BoxStats | None:
+        return next((b for b in self._boxes if b.name == self._selected), None)
+
+    def _on_box(self) -> None:
+        rows = self.box_table.selectionModel().selectedRows()
+        self._selected = (
+            self.box_table.item(rows[0].row(), 0).data(QtCore.Qt.UserRole) if rows else None
+        )
+        self._frame_key = None
+        box = self._picked()
+        table = self.combo_table
+        if box is None:
+            self.box_title.setText("<i>Pick a box</i>")
+            table.setRowCount(0)
+            return
+        rec = box.recordings
+        self.box_title.setText(
+            f"<b>{box.name}</b>: <b>{rec.total}</b> demonstrations, "
+            f"<span style='color:{COMBO_VALID_COLOR}'><b>{rec.success} success</b></span>, "
+            f"<span style='color:{COMBO_COLLIDE_COLOR}'><b>{rec.failure} fail</b></span>, "
+            f"{rec.unlabelled} not labelled (success rate {rate_text(rec)})"
+            + (f"; {rec.modified} modified" if rec.modified else "")
+            + ("" if rec.total else " - nothing recorded with this box yet")
+        )
+        combos = sorted(box.by_combination.items(), key=lambda kv: (-kv[1].total, takes_name(kv[0])))
+        table.setRowCount(len(combos))
+        for row, (key, counts) in enumerate(combos):
+            missing = [n for f, n in key if not os.path.exists(self.store.take_path(f, n))]
+            name = takes_name(key) + (f"  (deleted: {', '.join(missing)})" if missing else "")
+            values = [name, counts.total, counts.success, counts.failure, counts.unlabelled,
+                      rate_text(counts), counts.modified or ""]
+            for col, value in enumerate(values):
+                item = QtWidgets.QTableWidgetItem()
+                item.setData(QtCore.Qt.DisplayRole, value)
+                if col == 5:
+                    item.setForeground(QtGui.QColor(*rate_color(counts.success_rate)))
+                table.setItem(row, col, item)
+
+    # ---- camera ---------------------------------------------------------------------------
+
+    def refresh(self) -> None:
+        """The camera with every box drawn on it (while the tab is shown): the live feed, or
+        the first frame of the picked box's take when there is no live one."""
+        if not self.isVisible():
+            return
+        seq, frame = self.node.latest_raw_frame()
+        if frame is not None:
+            key = ("live", seq, self._selected)
+            note = "Live camera with every pen bounding box"
+        else:
+            frame = self._fallback_frame()
+            key = ("take", self._selected)
+            note = ("No live camera: the first camera frame of the picked box's take, with every "
+                    "pen bounding box")
+        if key == self._frame_key:
+            return
+        self._frame_key = key
+        if frame is None:
+            self.camera.set_message("No live camera and no recorded frame for this box")
+            return
+        self.camera.set_frame(self._draw_boxes(frame))
+        hidden = sum(b.name in self._hidden for b in self._boxes)
+        self.camera_note.setText(
+            f"{note} ({len(self._boxes) - hidden} shown" + (f", {hidden} hidden)" if hidden else ")")
+        )
+
+    def _fallback_frame(self) -> np.ndarray | None:
+        box = self._picked()
+        if box is None or box.first_take is None:  # e.g. its takes are deleted: any box's
+            box = next((b for b in self._boxes if b.first_take), None)
+        if box is None:
+            return None
+        if box.name not in self._fallback:
+            self._fallback[box.name] = take_first_frame(box.first_take, self._video)
+        return self._fallback[box.name]
+
+    def _draw_boxes(self, frame: np.ndarray) -> np.ndarray:
+        """Every box on a copy of ``frame`` (RGB), coloured by success rate, the picked one
+        last, thicker and outlined, with a light fill."""
+        vis = np.ascontiguousarray(frame.copy())
+        boxes = [b for b in self._boxes if b.corners is not None and b.name not in self._hidden]
+        boxes.sort(key=lambda b: b.name == self._selected)  # the picked one on top
+        for box in boxes:
+            pts = np.round(np.asarray(box.corners, dtype=np.float32)).astype(np.int32)
+            color = rate_color(box.recordings.success_rate)
+            picked = box.name == self._selected
+            if picked:
+                fill = vis.copy()
+                cv2.fillPoly(fill, [pts], color)
+                vis = cv2.addWeighted(fill, 0.25, vis, 0.75, 0)
+                cv2.polylines(vis, [pts], True, ANALYSIS_SELECTED_RGB, 5)
+            cv2.polylines(vis, [pts], True, color, 3 if picked else 2)
+            rec = box.recordings
+            label = f"{box.name} {rec.success}/{rec.success + rec.failure}" if rec.total else box.name
+            x, y = int(pts[:, 0].min()), max(int(pts[:, 1].min()) - 8, 16)
+            cv2.putText(vis, label, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 0), 4,
+                        cv2.LINE_AA)
+            cv2.putText(vis, label, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6,
+                        ANALYSIS_SELECTED_RGB if picked else color, 2, cv2.LINE_AA)
+        return vis
+
+    def close_video(self) -> None:
+        self._video.release()
 
 
 class SettingsTab(QtWidgets.QWidget):
@@ -7881,6 +8795,7 @@ class MainWindow(QtWidgets.QMainWindow):
             node, self.store, event_defs, self.create_tab, self.edit_tab, avoid_slip
         )
         self.demo_tab = DemonstrationTab(node, self.store)
+        self.analysis_tab = AnalysisTab(node, self.store)
         self.settings_tab = SettingsTab(
             node, self.store, settings, touch_settings, press_settings, saved, saved_path,
             avoid_slip,
@@ -7895,6 +8810,7 @@ class MainWindow(QtWidgets.QMainWindow):
         tabs.addTab(self.edit_tab, "Edit")
         tabs.addTab(self.compose_tab, "Compose")
         tabs.addTab(self.demo_tab, "Demonstration")
+        tabs.addTab(self.analysis_tab, "Analysis")
         tabs.addTab(self.settings_tab, "Settings")
         self.setCentralWidget(tabs)
 
@@ -7902,6 +8818,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._timer.timeout.connect(self.create_tab.refresh)
         self._timer.timeout.connect(self.edit_tab.refresh)
         self._timer.timeout.connect(self.compose_tab.refresh)
+        self._timer.timeout.connect(self.analysis_tab.refresh)
         self._timer.start(REFRESH_MS)
         # The MuJoCo window opens before this one and ends up behind it: bring it to the front
         # once it appears (checked every second for SIM_WINDOW_WAIT_S).
@@ -7948,7 +8865,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, ev) -> None:
         self.compose_tab.stop_hand()
-        self.compose_tab.stop_replay()
+        self.compose_tab.stop_combination_check()
+        self.analysis_tab.close_video()
         self.create_tab.stop_all_playback()
         if self.node.recording:
             answer = QtWidgets.QMessageBox.question(

@@ -50,6 +50,29 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="1.0",
                 description="Sim time per wall time",
             ),
+            DeclareLaunchArgument(
+                "min_contact_depth",
+                default_value="0.0005",
+                description="Finger-finger contacts shallower than this (m) are not counted",
+            ),
+            DeclareLaunchArgument(
+                "contact_width",
+                default_value="0.05",
+                description="Radius of the drawn contact points (fraction of the mean body "
+                "size)",
+            ),
+            DeclareLaunchArgument(
+                "contact_height",
+                default_value="0.02",
+                description="Thickness of the drawn contact points (fraction of the mean body "
+                "size)",
+            ),
+            DeclareLaunchArgument(
+                "force_width",
+                default_value="0.03",
+                description="Width of the drawn contact force arrows (fraction of the mean "
+                "body size)",
+            ),
             Node(
                 package="mechanical_pen_data_collection",
                 executable="mujoco_sim_node",
@@ -79,6 +102,12 @@ def generate_launch_description() -> LaunchDescription:
                             LaunchConfiguration("real_time_factor"), value_type=float
                         )
                     },
+                    *[
+                        {name: ParameterValue(LaunchConfiguration(name), value_type=float)}
+                        for name in (
+                            "min_contact_depth", "contact_width", "contact_height", "force_width"
+                        )
+                    ],
                 ],
             ),
         ]

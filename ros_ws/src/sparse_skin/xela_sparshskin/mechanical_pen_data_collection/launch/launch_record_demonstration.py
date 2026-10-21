@@ -119,6 +119,12 @@ def generate_launch_description() -> LaunchDescription:
                 "(push_button_pen_click_detection launch_click_detector.py)",
             ),
             DeclareLaunchArgument(
+                "min_contact_depth",
+                default_value="0.0005",
+                description="Finger-finger contacts shallower than this (m) are not counted, by "
+                "the sim and by the Compose tab's combination check",
+            ),
+            DeclareLaunchArgument(
                 "click_topic",
                 default_value="/pen_click",
                 description="Int32 click detector topic (1 while a click is heard), used by the "
@@ -204,6 +210,7 @@ def generate_launch_description() -> LaunchDescription:
                         launch_arguments={
                             "cmd_topic": LaunchConfiguration("sim_cmd_topic"),
                             "contact_topic": LaunchConfiguration("finger_contact_topic"),
+                            "min_contact_depth": LaunchConfiguration("min_contact_depth"),
                             "viewer": "true",  # always with its window
                         }.items(),
                     ),
@@ -268,6 +275,11 @@ def generate_launch_description() -> LaunchDescription:
                     {
                         "counts_per_unit": ParameterValue(
                             LaunchConfiguration("counts_per_unit"), value_type=float
+                        )
+                    },
+                    {
+                        "min_contact_depth": ParameterValue(
+                            LaunchConfiguration("min_contact_depth"), value_type=float
                         )
                     },
                 ],
