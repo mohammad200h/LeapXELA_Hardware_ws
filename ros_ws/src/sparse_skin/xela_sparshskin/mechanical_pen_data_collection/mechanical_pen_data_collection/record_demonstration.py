@@ -109,6 +109,10 @@ through its Edit tab Play (the take is selected in the Edit tab's panel), so ``m
 them, Index, Middle and Ring keep contact until the Thumb is done: the last ``maintain_touch``
 region of each (in playback order) is stretched to its ``terminal``, where the finger stays held
 in contact instead of stopping; they are let go (and their Plays end) once the Thumb finishes.
+Play on hand only starts once the touch baseline has been set on purpose: with Set touch
+baseline (next to it) or Zero on the Create / Edit tab, with the fingertips touching nothing
+(``HandView.zeroed_at``); otherwise a warning says so. The automatic baseline (the first Xela
+reading the GUI got) does not count.
 Every Play on hand is recorded as one whole-hand ``PlaybackRecording``,
 ``<demo_dir>/compose_playbacks/<box>_<n>.npz`` (``<box>``: the Thumb take the box belongs to):
 the commands sent, ``leap_state`` joint positions, velocities and efforts, the raw Xela readings
@@ -160,8 +164,12 @@ Under the selected take's first frame, a Live view shows the camera with the sel
 box drawn on it, in yellow, to line the pen up with it before playing.
 
 Demonstration tab: plays back the Compose tab's Play on hand recordings without sending
-anything to the hand. Under the list, Success and Fail mark the picked recording (pressing the
-lit one again clears it), saved next to it as ``<box>_<n>.label.json`` as ``label_playbacks``
+anything to the hand. Keys: Space plays / pauses, Right jumps to the Thumb's first contact with
+the pen, and pressed again to the start of the last ``LAST_PART`` (5 %) of the recording
+(alternating from then on) (``thumb_contact_time``: its largest fingertip taxel rising ``THUMB_CONTACT_RISE`` above
+its level when the Thumb starts; marked "TH contact" on its plots), Up / Down pick the previous
+/ next recording. Under the list, Success and Fail (keys S and F) mark the picked
+recording (pressing the lit one again clears it), saved next to it as ``<box>_<n>.label.json`` as ``label_playbacks``
 does; Delete removes it with its camera, audio and label files. Pick a recording and press Play (or drag the play bar): plots
 of each finger's joint positions, velocities and efforts (``leap_state``) with the run's
 timeline and slips marked, each finger's fingertip taxel magnitudes (recorded Xela, from the
@@ -1871,6 +1879,9 @@ class HandView(QtWidgets.QWidget):
         self._rot: np.ndarray | None = None  # (368, 3, 3) taxel local -> world
         self._readings: np.ndarray | None = None  # (T, 3) latest raw Xela readings by id
         self._baseline: np.ndarray | None = None  # (368, 3)
+        # time.time() the baseline was last set with Zero (None: only the automatic one, taken
+        # from the first reading, whatever the hand was touching then)
+        self.zeroed_at: float | None = None
         self.take_path: str | None = None  # take whose recorded readings are shown
         self.take_xela_index = -1  # index into that take's ``xela`` shown
         self._fk = None
@@ -1944,11 +1955,15 @@ class HandView(QtWidgets.QWidget):
         r = self._readings
         return r[: self._fk.NUM_TAXELS] if r is not None and len(r) >= self._fk.NUM_TAXELS else None
 
-    def _zero(self) -> None:
+    def _zero(self) -> bool:
+        """Uses the current reading as the no-contact baseline; False if there is none."""
         readings = self._valid_readings() if self._fk is not None else None
-        if readings is not None:
-            self._baseline = readings.copy()
-            self._redraw()
+        if readings is None:
+            return False
+        self._baseline = readings.copy()
+        self.zeroed_at = time.time()
+        self._redraw()
+        return True
 
     def clear(self) -> None:
         """Back to the waiting text until the next ``set_joints``."""
@@ -6003,6 +6018,18 @@ class ComposeTab(QtWidgets.QWidget):
         show_sim_btn.clicked.connect(self._show_sim_window)
         top.addWidget(show_sim_btn)
         top.addWidget(self.sim_btn)
+        self.baseline_btn = QtWidgets.QPushButton("Set touch baseline")
+        self.baseline_btn.setToolTip(
+            "Use the current Xela reading as the no-contact baseline (as Zero on the Create / "
+            "Edit tab): the fingertips should touch nothing. Maintain touch, click press, force "
+            "replay, slip detection and Avoid slip measure the fingertip force from it. Play on "
+            "hand needs it to be set"
+        )
+        self.baseline_btn.clicked.connect(self._set_touch_baseline)
+        self.baseline_status = QtWidgets.QLabel()
+        self._baseline_shown: float | None | bool = False  # zeroed_at the label shows
+        top.addWidget(self.baseline_btn)
+        top.addWidget(self.baseline_status)
         top.addWidget(self.hand_status)
         top.addWidget(self.hand_btn)
         top.addWidget(refresh_btn)
@@ -6193,9 +6220,47 @@ class ComposeTab(QtWidgets.QWidget):
             take for take in (c.selected_take() for c in self.columns.values()) if take is not None
         ]
 
+    def _set_touch_baseline(self) -> None:
+        """Set touch baseline: Zero of the Create tab's (and the Edit tab's live) taxel view."""
+        if not self.create_tab.hand._zero():
+            QtWidgets.QMessageBox.warning(
+                self, "Set touch baseline",
+                f"No Xela reading to use: nothing has arrived on '{self.node.xela_topic}' yet "
+                "(is xela_service running?), or the taxel map is unavailable.",
+            )
+            return
+        self.edit_tab.live_hand._zero()
+        self.node.get_logger().info("Touch baseline set from the current Xela reading")
+        self._show_baseline_status()
+
+    def _show_baseline_status(self) -> None:
+        zeroed = self.create_tab.hand.zeroed_at
+        if zeroed == self._baseline_shown:
+            return
+        self._baseline_shown = zeroed
+        if zeroed is None:
+            self.baseline_status.setText(
+                "<span style='color:#d32f2f'><b>touch baseline: not set</b></span>"
+            )
+        else:
+            when = datetime.fromtimestamp(zeroed).strftime("%H:%M:%S")
+            self.baseline_status.setText(
+                f"<span style='color:#2e7d32'>touch baseline: set {when}</span>"
+            )
+
     def _toggle_hand(self) -> None:
         if self._hand_active:
             self.stop_hand()
+            return
+        if self.create_tab.hand.zeroed_at is None:
+            QtWidgets.QMessageBox.warning(
+                self, "Play on hand",
+                "The touch baseline is not set.\n\nWith the fingertips touching nothing, press "
+                "Set touch baseline (or Zero on the Create or Edit tab), then Play on hand "
+                "again.\n\nMaintain touch, click press, force replay, slip detection and Avoid "
+                "slip all measure the fingertip force from this baseline. Without it they use "
+                "the first Xela reading the GUI got, whatever the hand was touching then.",
+            )
             return
         takes = self._selected_takes()
         if not takes:
@@ -7224,6 +7289,7 @@ class ComposeTab(QtWidgets.QWidget):
             self._update_slips()
             self._set_slip_lights()
         self._set_contact_lights()
+        self._show_baseline_status()
         if not self.isVisible():
             return
         seq, frame = self.node.latest_raw_frame()
@@ -7361,6 +7427,35 @@ DEMO_ROWS = (
 )
 # Key of the Demonstration tab's fingertip taxel row (under DEMO_ROWS) in its plot dicts.
 DEMO_TIP_ROW = "fingertip_taxels"
+# Demonstration tab, Right arrow: the Thumb touches the pen when its largest fingertip taxel
+# magnitude rises this much (force units) above its level when the Thumb starts. The largest
+# taxel, not the sum: curling alone raises the sum by a few units with no contact, and the
+# largest taxel jitters by under 0.005 before contact.
+THUMB_CONTACT_RISE = 0.05
+THUMB_ENTRY_S = 0.5  # s before the Thumb starts its level is taken over (median)
+# Demonstration tab, second Right arrow: the start of the recording's last part (this fraction).
+LAST_PART = 0.05
+
+
+def thumb_contact_time(
+    rec: PlaybackRecording, tip_ids: np.ndarray, counts_per_unit: float,
+    rise: float = THUMB_CONTACT_RISE,
+) -> float | None:
+    """Time (s, on the recording's axis) the Thumb first touched the pen in a Play on hand
+    recording: after the Thumb's ``start`` (the start of the recording without one), the first
+    Xela reading whose largest Thumb fingertip taxel is ``rise`` above its level then; None if
+    there are no readings or it never rises that far."""
+    if len(rec.xela_t) == 0 or len(tip_ids) == 0 or rec.xela.shape[1] <= tip_ids.max():
+        return None
+    baseline = rec.xela_baseline if len(rec.xela_baseline) > tip_ids.max() else rec.xela[0]
+    top = taxel_magnitudes(rec.xela, baseline, tip_ids, counts_per_unit).max(axis=1)
+    start = next((e["t"] for e in rec.meta.get("timeline", [])
+                  if e.get("finger") == "th" and e.get("event") == "start"), rec.xela_t[0])
+    before = (rec.xela_t >= start - THUMB_ENTRY_S) & (rec.xela_t <= start)
+    k = max(int(np.searchsorted(rec.xela_t, start)) - 1, 0)
+    entry = float(np.median(top[before])) if before.any() else float(top[k])
+    hit = np.flatnonzero((rec.xela_t > start) & (top - entry >= rise))
+    return float(rec.xela_t[hit[0]]) if len(hit) else None
 # How the Demonstration tab's list shows a recording's success / failure label.
 LABEL_TEXT = {SUCCESS: "SUCCESS", FAILURE: "FAIL"}
 LABEL_COLORS = {SUCCESS: "#2e7d32", FAILURE: "#c62828"}
@@ -7390,18 +7485,20 @@ class DemonstrationTab(QtWidgets.QWidget):
         self._audio_rate = 0
         self._audio_out = AudioOut()
         self._settings = QtCore.QSettings(PACKAGE_NAME, "record_demonstration")
+        self._thumb_contact: float | None = None  # first Thumb contact of the recording (s)
+        self._right_presses = 0  # Right arrow presses since the recording was picked
 
         # Left: the recordings.
         self.list = QtWidgets.QListWidget()
         self.list.setToolTip("Play on hand recordings of the Compose tab, newest first")
         refresh_btn = QtWidgets.QPushButton("Refresh")
-        self.success_btn = QtWidgets.QPushButton("Success")
+        self.success_btn = QtWidgets.QPushButton("Success (S)")
         self.success_btn.setToolTip(
-            "Mark the picked recording as a success (press again to clear the mark)"
+            "Mark the picked recording as a success (press again to clear the mark). Key: S"
         )
-        self.fail_btn = QtWidgets.QPushButton("Fail")
+        self.fail_btn = QtWidgets.QPushButton("Fail (F)")
         self.fail_btn.setToolTip(
-            "Mark the picked recording as a failure (press again to clear the mark)"
+            "Mark the picked recording as a failure (press again to clear the mark). Key: F"
         )
         for btn, color in ((self.success_btn, LABEL_COLORS[SUCCESS]),
                            (self.fail_btn, LABEL_COLORS[FAILURE])):
@@ -7561,6 +7658,25 @@ class DemonstrationTab(QtWidgets.QWidget):
         refresh_btn.clicked.connect(self.refresh_recordings)
         self.success_btn.clicked.connect(lambda: self._mark(SUCCESS))
         self.fail_btn.clicked.connect(lambda: self._mark(FAILURE))
+        # Keys while this tab is shown: S / F mark the picked recording, Space plays / pauses,
+        # Right jumps to the Thumb's first contact, Up / Down pick the previous / next recording.
+        keys = [
+            ("S", lambda: self._mark(SUCCESS)),
+            ("F", lambda: self._mark(FAILURE)),
+            ("Space", self._toggle_play),
+            ("Right", self._jump_to_thumb_contact),
+            ("Up", lambda: self._step_recording(-1)),
+            ("Down", lambda: self._step_recording(1)),
+        ]
+        for key, action in keys:
+            shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self)
+            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+            shortcut.activated.connect(action)
+        self.play_btn.setToolTip(
+            "Play the recording back (nothing is sent to the hand). Keys: Space play / pause, "
+            "Right the Thumb's first contact, then the last 5 % (alternating), Up / Down "
+            "previous / next recording"
+        )
         self.delete_btn.clicked.connect(self._delete_picked)
         self.list.currentRowChanged.connect(self._load_picked)
         self._update_mark_buttons()
@@ -7618,12 +7734,29 @@ class DemonstrationTab(QtWidgets.QWidget):
         self.fail_btn.setChecked(label == FAILURE)
 
     def _mark(self, label: str) -> None:
-        """Marks the picked recording as ``label``; marking it with its own label clears it."""
+        """Marks the picked recording as ``label``; marking it with its own label clears it.
+        Changing a mark it already has (to the other one, or clearing it) asks first."""
         item = self.list.currentItem()
         if item is None:
             return
         path = item.data(QtCore.Qt.UserRole)
-        current = (load_label(path) or {}).get("label")
+        saved = load_label(path) or {}
+        current = saved.get("label")
+        if current in LABEL_TEXT:
+            name = os.path.splitext(os.path.basename(path))[0]
+            by = "" if saved.get("manual") else " by label_playbacks"
+            change = ("clear the mark" if current == label
+                      else f"change it to {LABEL_TEXT[label]}")
+            box = QtWidgets.QMessageBox(self)
+            box.setIcon(QtWidgets.QMessageBox.Warning)
+            box.setWindowTitle("Change mark")
+            box.setText(f"'{name}' is already marked {LABEL_TEXT[current]}{by}.")
+            box.setInformativeText(f"Are you sure you want to {change}?")
+            box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            box.setDefaultButton(QtWidgets.QMessageBox.No)
+            if box.exec_() != QtWidgets.QMessageBox.Yes:
+                self._update_mark_buttons()  # a clicked button shows the old mark again
+                return
         try:
             set_manual_label(path, None if current == label else label)
         except OSError as e:
@@ -7710,6 +7843,12 @@ class DemonstrationTab(QtWidgets.QWidget):
             f"<b>{rec.name}</b>: {self.duration:.1f} s, {rec.meta.get('ended', '?')} ({takes})"
         )
         self._plot(rec)
+        self._right_presses = 0
+        self._thumb_contact = thumb_contact_time(
+            rec, self._tip_ids["th"], self.node.counts_per_unit
+        )
+        if self._thumb_contact is not None:
+            self._mark_thumb_contact(self._thumb_contact)
         # The whole run on the (linked) time axes; each plot fits its own values.
         for plot in self._plots.values():
             plot.enableAutoRange(axis="y")
@@ -7770,6 +7909,49 @@ class DemonstrationTab(QtWidgets.QWidget):
                 )
                 plot.addItem(line)
                 self._marks.append((plot, line))
+
+    def _mark_thumb_contact(self, t: float) -> None:
+        """A "TH contact" line at ``t`` on the Thumb's plots (where Right jumps to)."""
+        color = "#00bcd4"
+        for r, field_name in enumerate([f for f, _, _ in DEMO_ROWS] + [DEMO_TIP_ROW]):
+            plot = self._plots.get((field_name, "th"))
+            if plot is None:
+                continue
+            line = pg.InfiniteLine(
+                t, angle=90, pen=pg.mkPen(color, width=1.5, style=QtCore.Qt.DashLine),
+                label="TH contact" if r in (0, len(DEMO_ROWS)) else None,
+                labelOpts={"position": 0.5, "color": color},
+            )
+            plot.addItem(line)
+            self._marks.append((plot, line))
+
+    def _jump_to_thumb_contact(self) -> None:
+        """Right arrow: the play bar to the Thumb's first contact with the pen, then (next
+        press) to the start of the last ``LAST_PART`` of the recording, then back, and so on;
+        playing on from there if it plays. Without a Thumb contact, always the last part."""
+        if self.rec is None:
+            return
+        last = (1.0 - LAST_PART) * self.duration
+        targets = [(self._thumb_contact, "Thumb contact")] if self._thumb_contact is not None else []
+        targets.append((last, f"last {LAST_PART:.0%}"))
+        t, what = targets[self._right_presses % len(targets)]
+        self._right_presses += 1
+        self.seek(t)
+        if self._timer.isActive():
+            self._play_audio()  # heard from the new time
+        note = "" if self._thumb_contact is not None else ", no Thumb contact found"
+        self.time_label.setText(f"{self.time_label.text()}  ({what}{note})")
+
+    def _step_recording(self, step: int) -> None:
+        """Up / Down arrow: the previous / next recording in the list."""
+        count = self.list.count()
+        if count == 0:
+            return
+        row = self.list.currentRow()
+        row = 0 if row < 0 else min(max(row + step, 0), count - 1)
+        if row != self.list.currentRow():
+            self.list.setCurrentRow(row)
+            self.list.scrollToItem(self.list.currentItem())
 
     def _plot_tips(self, rec: PlaybackRecording) -> None:
         """Fingertip taxel magnitudes of each finger over the run, from its Xela baseline (its
