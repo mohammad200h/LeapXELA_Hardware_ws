@@ -251,6 +251,9 @@ Success at the last timestep of a success, Fail at the last timestep of a failur
 at every other timestep. The dropdown next to the transform picks the Baseline tab recording whose no-contact baseline every
 episode uses (remembered; the newest until one is picked), tagged ``[Sparsh-skin]`` in the
 dropdown and in the Baseline tab's list (whose Use for Sparsh-skin picks it too).
+Process for DreamerV3 (the progress bar under it follows every Automation run) converts those episodes into DreamerV3 replay
+chunks in ``<recordings>/DV3/`` (``dv3_processing``, as LEQ_DV3's ``convert_episodes.py``
+does), to copy to ``LEQ_DV3/data/leap/<task>/``.
 Keys: Space plays / pauses, E adds the picked event (a duration event: the first press starts
 it, the second ends it), C / R confirm / reject the event to be confirmed, Left / Right move the play bar ``SEEK_FRACTION`` (1 %) of
 the recording back / forward, [ / ] jump to the start of the previous / next event, Up / Down
@@ -406,7 +409,7 @@ from mechanical_pen_data_collection.playback_recording import (
     update_label,
 )
 from mechanical_pen_data_collection import click_processing, episode_processing, nextcloud_backup
-from mechanical_pen_data_collection import sparsh_processing
+from mechanical_pen_data_collection import dv3_processing, sparsh_processing
 from mechanical_pen_data_collection.joint_conversion import HardwareToSim
 from push_button_pen_click_detection import audio_utils
 from mechanical_pen_data_collection.click_processing import (
@@ -9217,6 +9220,15 @@ class ProcessingTab(DemonstrationTab):
             "written with another baseline are written again"
         )
         self.sparsh_baseline_combo.activated.connect(self._sparsh_baseline_picked)
+        self.dv3_btn = QtWidgets.QPushButton("Process for DreamerV3")
+        self.dv3_btn.setToolTip(
+            f"Convert the episodes in {sparsh_processing.DEFAULT_OUTPUT_NAME}/ into DreamerV3 "
+            f"replay chunks in {dv3_processing.DEFAULT_OUTPUT_NAME}/ next to it (as LEQ_DV3's "
+            "convert_episodes.py does: actions shifted one step and scaled to [-1, 1], "
+            "is_first / is_last / is_terminal), replacing the chunks there; copy them to "
+            "LEQ_DV3/data/leap/<task>/ (do not run convert_episodes.py on them)"
+        )
+        self.dv3_btn.clicked.connect(self._process_dv3)
         self.process_status = QtWidgets.QLabel()
         # One bar for Process click, Process failure and the Sparsh-skin transform.
         self.process_bar = QtWidgets.QProgressBar()
@@ -9237,7 +9249,8 @@ class ProcessingTab(DemonstrationTab):
         sparsh_row.addWidget(QtWidgets.QLabel("Baseline:"))
         sparsh_row.addWidget(self.sparsh_baseline_combo, 1)
         automation_buttons.addLayout(sparsh_row)
-        automation_buttons.addWidget(self.process_bar)  # under Sparsh-skin transform / Baseline
+        automation_buttons.addWidget(self.dv3_btn)
+        automation_buttons.addWidget(self.process_bar)  # under Process for DreamerV3
         automation_buttons.addStretch(1)
         automation_layout.addLayout(automation_buttons)
         automation_layout.addWidget(self.process_status, 1)
@@ -9817,12 +9830,12 @@ class ProcessingTab(DemonstrationTab):
         self.process_bar.setValue(0)
         self.process_bar.setFormat("No processing running")
 
-    def _bar_start(self, name: str, total: int) -> None:
-        """A run of ``name`` over ``total`` recordings (or episodes) starts."""
-        self._bar_name = name
+    def _bar_start(self, name: str, total: int, unit: str = "recordings") -> None:
+        """A run of ``name`` over ``total`` ``unit`` starts."""
+        self._bar_name, self._bar_unit = name, unit
         self.process_bar.setRange(0, max(total, 1))
         self.process_bar.setValue(0)
-        self.process_bar.setFormat(f"{name}: %v / %m recordings (%p %)")
+        self.process_bar.setFormat(f"{name}: %v / %m {unit} (%p %)")
 
     def _bar_step(self, done: int, total: int) -> None:
         if total > 0 and total != self.process_bar.maximum():
@@ -9831,7 +9844,7 @@ class ProcessingTab(DemonstrationTab):
 
     def _bar_end(self) -> None:
         """Keeps the bar where it got to, marked finished."""
-        self.process_bar.setFormat(f"{self._bar_name} finished: %v / %m recordings")
+        self.process_bar.setFormat(f"{self._bar_name} finished: %v / %m {self._bar_unit}")
 
     def _rewards(self) -> dict[str, float]:
         return {key: spin.value() for key, spin in self.reward_spins.items()}
@@ -9872,7 +9885,7 @@ class ProcessingTab(DemonstrationTab):
             return
         self._save_rewards()
         self.process_reward_btn.setEnabled(False)
-        self._bar_start("Process reward", len(names))
+        self._bar_start("Process reward", len(names), "episodes")
 
         def step(done: int, total: int) -> None:
             self._bar_step(done, total)
@@ -9892,6 +9905,59 @@ class ProcessingTab(DemonstrationTab):
             )
         self._bar_end()
         self.process_reward_btn.setEnabled(True)
+
+    def _process_dv3(self) -> None:
+        """Converts the Sparsh-skin episodes into DreamerV3 chunks
+        (``dv3_processing.write_chunks``)."""
+        sparsh_dir = os.path.join(
+            self.store.compose_playback_dir, sparsh_processing.DEFAULT_OUTPUT_NAME
+        )
+        out_dir = os.path.join(self.store.compose_playback_dir, dv3_processing.DEFAULT_OUTPUT_NAME)
+        episodes = dv3_processing.episode_files(sparsh_dir)
+        if not episodes:
+            QtWidgets.QMessageBox.information(
+                self, "Process for DreamerV3",
+                f"No episodes in {sparsh_dir}: run the Sparsh-skin transform first.",
+            )
+            return
+        if self._sparsh_thread is not None and self._sparsh_thread.is_alive():
+            QtWidgets.QMessageBox.information(
+                self, "Process for DreamerV3", "Wait for the Sparsh-skin transform to finish."
+            )
+            return
+        answer = QtWidgets.QMessageBox.question(
+            self, "Process for DreamerV3",
+            f"Convert {len(episodes)} episodes into DreamerV3 chunks in {out_dir}? The chunks "
+            "there are replaced.",
+        )
+        if answer != QtWidgets.QMessageBox.Yes:
+            return
+        self.dv3_btn.setEnabled(False)
+        self._bar_start("Process for DreamerV3", len(episodes), "episodes")
+
+        def step(done: int, total: int) -> None:
+            self._bar_step(done, total)
+            QtWidgets.QApplication.processEvents()  # runs in the GUI thread: draw the bar
+
+        try:
+            manifest = dv3_processing.write_chunks(sparsh_dir, out_dir, step)
+        except OSError as e:
+            self.process_status.setText(f"Process for DreamerV3 failed: {e}")
+        else:
+            short = manifest[f"shorter_than_{dv3_processing.BATCH_LENGTH}"]
+            low, high = manifest["reward_range"] or (0.0, 0.0)
+            self.process_status.setText(
+                f"Process for DreamerV3: {len(manifest['written'])} chunks in {out_dir} · "
+                f"reward {low:g} to {high:g}"
+                + (" (all 0: set the rewards with Process reward)" if low == high == 0 else "")
+                + (f" · {len(manifest['skipped'])} failed (see its manifest.json)"
+                   if manifest["skipped"] else "")
+                + (f" · {len(short)} shorter than {dv3_processing.BATCH_LENGTH} steps (no "
+                   "training window)" if short else "")
+                + f" · copy them with: cp {out_dir}/*.npz LEQ_DV3/data/leap/<task>/"
+            )
+        self._bar_end()
+        self.dv3_btn.setEnabled(True)
 
     def _process_failure(self) -> None:
         """Marks ``terminal`` and ``truncated`` at the truncation length on the failed
@@ -10120,7 +10186,7 @@ class ProcessingTab(DemonstrationTab):
         if answer != QtWidgets.QMessageBox.Yes:
             return
         self.sparsh_transform_btn.setEnabled(False)
-        self._bar_start("Sparsh-skin transform", len(paths))
+        self._bar_start("Sparsh-skin transform", len(paths), "episodes")
         self.node.on_sparsh_progress = self._on_sparsh_progress
         self.process_status.setText(
             f"Sparsh-skin transform: {len(paths)} episodes (progress in the "
