@@ -49,15 +49,24 @@ class Click:
     score: float  # best template similarity of the press
 
 
-def load_templates(template_dir: str, sr: int) -> list[tuple[np.ndarray, int]]:
-    """(features, length in samples) of every WAV in ``template_dir`` at ``sr``."""
+def sample_templates(samples: list[np.ndarray], sr: int) -> list[tuple[np.ndarray, int]]:
+    """(features, length in samples) of click samples at ``sr``; too short ones are left out."""
     templates = []
-    for path in sorted(glob.glob(os.path.join(os.path.expanduser(template_dir), "*.wav"))):
-        x, rate = audio_utils.load_wav(path)
-        x = audio_utils.clean(audio_utils.resample(x, rate, sr), sr)
+    for x in samples:
+        x = audio_utils.clean(np.asarray(x, dtype=np.float32), sr)
         feat = audio_utils.features(x, sr)
         if feat.shape[1] >= 2:
             templates.append((feat, len(x)))
+    return templates
+
+
+def load_templates(template_dir: str, sr: int) -> list[tuple[np.ndarray, int]]:
+    """(features, length in samples) of every WAV in ``template_dir`` at ``sr``."""
+    samples = []
+    for path in sorted(glob.glob(os.path.join(os.path.expanduser(template_dir), "*.wav"))):
+        x, rate = audio_utils.load_wav(path)
+        samples.append(audio_utils.resample(x, rate, sr))
+    templates = sample_templates(samples, sr)
     if not templates:
         raise RuntimeError(f"No usable click templates (*.wav) in {template_dir}")
     return templates

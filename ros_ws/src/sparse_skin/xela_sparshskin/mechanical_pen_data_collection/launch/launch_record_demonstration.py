@@ -119,6 +119,12 @@ def generate_launch_description() -> LaunchDescription:
                 "(push_button_pen_click_detection launch_click_detector.py)",
             ),
             DeclareLaunchArgument(
+                "sparsh_skin_transformation",
+                default_value="true",
+                description="Start sparsh_skin_transformation (the Process tab's Sparsh-skin "
+                "transform of the episodes for the LEQ_DV3 world model)",
+            ),
+            DeclareLaunchArgument(
                 "min_contact_depth",
                 default_value="0.0005",
                 description="Finger-finger contacts shallower than this (m) are not counted, by "
@@ -193,6 +199,13 @@ def generate_launch_description() -> LaunchDescription:
                 ),
                 launch_arguments={"output_topic": LaunchConfiguration("click_topic")}.items(),
                 condition=IfCondition(LaunchConfiguration("click_detector")),
+            ),
+            Node(
+                package="mechanical_pen_data_collection",
+                executable="sparsh_skin_transformation",
+                name="sparsh_skin_transformation",
+                output="screen",
+                condition=IfCondition(LaunchConfiguration("sparsh_skin_transformation")),
             ),
             # The MuJoCo sim is always started (Compose tab: Test in sim, Play on sim).
             # Scoped: the include's cmd_topic would otherwise replace the hand's for the nodes

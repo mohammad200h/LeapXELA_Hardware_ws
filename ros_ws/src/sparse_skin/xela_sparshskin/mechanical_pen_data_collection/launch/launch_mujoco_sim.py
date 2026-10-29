@@ -110,5 +110,16 @@ def generate_launch_description() -> LaunchDescription:
                     ],
                 ],
             ),
+            # IK (mink) on the same model: paths between hand poses that keep the fingers apart
+            # (~/plan_to_pose, used by record_demonstration's Baseline tab).
+            Node(
+                package="mechanical_pen_data_collection",
+                executable="hand_ik",
+                name="hand_ik",
+                output="screen",
+                parameters=[
+                    {"model_path": ParameterValue(LaunchConfiguration("model_path"), value_type=str)},
+                ],
+            ),
         ]
     )

@@ -26,21 +26,19 @@ have a label are skipped unless ``--force``; labels set by hand on the Demonstra
 from __future__ import annotations
 
 import argparse
-import json
 import os
 from dataclasses import asdict
 from datetime import datetime
 
-import numpy as np
 
 from mechanical_pen_data_collection.bag_data import default_bag_dir
 from mechanical_pen_data_collection.playback_recording import (
     FAILURE,
     SUCCESS,
     PlaybackRecording,
-    label_path,
     list_playbacks,
     load_label,
+    update_label,
 )
 from push_button_pen_click_detection import audio_utils
 from push_button_pen_click_detection.offline_detector import (
@@ -118,6 +116,8 @@ def main() -> int:
     for path in reversed(paths):  # oldest first
         name = os.path.splitext(os.path.basename(path))[0]
         label = load_label(path)
+        if label is not None and "label" not in label:
+            label = None  # e.g. only click_press_labels' outcome: not labelled yet
         if args.force and not (label or {}).get("manual"):
             label = None
         kept = label is not None
@@ -131,8 +131,7 @@ def main() -> int:
             if label is None:
                 print(f"{name:12} no audio, not labelled")
                 continue
-            with open(label_path(path), "w") as f:
-                json.dump(label, f, indent=1)
+            update_label(path, **label)  # keeps other fields (the click_press outcome)
         counts[label["label"]] += 1
         clicks = ", ".join(f"{c['t']:.2f} s ({c['score']:.2f})" for c in label.get("clicks", []))
         live = ", ".join(f"{t:.2f}" for t in label.get("live_click_t", [])) or "-"

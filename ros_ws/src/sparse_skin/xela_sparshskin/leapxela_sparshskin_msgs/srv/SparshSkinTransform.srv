@@ -1,0 +1,18 @@
+# Sparsh-skin preprocessing of the labelled Play on hand episodes, written as LEQ_DV3
+# convert_episodes.py input (episode_<recording>.npz, sparsh_stats.json, manifest.json).
+string recordings_dir      # the Play on hand recordings (<box>_<n>.npz + .label.json)
+string output_dir          # where the episodes go ("": <recordings_dir>/sparsh_skin)
+string[] recordings        # file names in recordings_dir (empty: every one with an episode)
+float32 freq               # step rate (Hz, <= 0: 100)
+bool overwrite             # rewrite episodes already in output_dir
+string baseline_file       # Baseline tab recording (<demo_dir>/baselines/baseline_<time>.npz)
+                           # whose xela_baseline every episode uses ("": each recording's own)
+---
+bool success
+string message             # why it failed, or a summary
+uint32 written
+uint32 kept                # already in output_dir (not overwrite)
+uint32 skipped             # no episode, or failed (see manifest.json)
+string[] files             # episodes in output_dir (written and kept)
+float32[] xela_mean        # Sparsh-style global Xela mean / std (zeros as NaN)
+float32[] xela_std

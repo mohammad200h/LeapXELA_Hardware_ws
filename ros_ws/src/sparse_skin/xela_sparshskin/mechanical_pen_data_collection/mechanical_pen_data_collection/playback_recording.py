@@ -137,8 +137,9 @@ def next_playback_path(directory: str, take_name: str) -> str:
 
 
 # Labels of Play on hand recordings: ``<box>_<n>.label.json`` next to the recording, written
-# by ``label_playbacks`` (from the audio) or by the Demonstration tab's Success / Fail buttons
-# (``"manual": true``).
+# by ``label_playbacks`` (success / failure from the audio), by the Demonstration tab's Success /
+# Fail buttons (``"manual": true``) and by ``click_press_labels`` (``click_press``: how the
+# Thumb's press ended). A file without ``label`` has no success / failure mark.
 SUCCESS, FAILURE = "success", "failure"
 
 
@@ -157,14 +158,33 @@ def load_label(recording_path: str) -> dict | None:
 
 def set_manual_label(recording_path: str, label: str | None) -> None:
     """Marks a recording as ``label`` (SUCCESS / FAILURE) by hand, keeping what the label file
-    already holds (e.g. ``label_playbacks``' clicks); None removes the label file."""
-    path = label_path(recording_path)
+    already holds (e.g. ``label_playbacks``' clicks, the ``click_press`` outcome); None removes
+    the mark only (and the file when nothing else is left in it)."""
     if label is None:
-        if os.path.exists(path):
-            os.remove(path)
+        data = load_label(recording_path) or {}
+        for key in ("label", "manual", "labelled"):
+            data.pop(key, None)
+        write_label(recording_path, data)
         return
     data = load_label(recording_path) or {}
     data.update(label=label, manual=True, labelled=datetime.now().isoformat(timespec="seconds"))
+    write_label(recording_path, data)
+
+
+def update_label(recording_path: str, **fields) -> None:
+    """Adds ``fields`` to a recording's label file, keeping the rest (its mark too)."""
+    data = load_label(recording_path) or {}
+    data.update(fields)
+    write_label(recording_path, data)
+
+
+def write_label(recording_path: str, data: dict) -> None:
+    """Writes the label file (removes it when ``data`` is empty)."""
+    path = label_path(recording_path)
+    if not data:
+        if os.path.exists(path):
+            os.remove(path)
+        return
     with open(path, "w") as f:
         json.dump(data, f, indent=1)
 

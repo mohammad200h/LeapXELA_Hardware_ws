@@ -1,0 +1,14 @@
+# Path of the hand's sim joints from start to goal that keeps the fingers apart, planned by
+# hand_ik with mink (differential IK on xela_description/mjcf/scene.xml).
+string[] joint_names       # of start and goal (sim joints)
+float64[] start            # sim angles (rad)
+float64[] goal             # sim angles (rad)
+float32 dt                 # s between trajectory points (<= 0: the node's dt)
+---
+bool success
+string message             # why it failed, or a summary
+string[] joint_names       # columns of trajectory (as in the request)
+float64[] trajectory       # (steps, joint_names) row by row, sim angles, from start to goal
+uint32 steps
+float32 dt
+uint32 contacts            # trajectory points where two fingers touch

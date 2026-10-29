@@ -7,17 +7,27 @@
   },
   "maintain_touch": {
     "enabled": true,
+    "relative": true,
+    "hold_force": 2.0,
+    "contact_force": 0.5,
+    "ramp_s": 0.5,
+    "force_gain": 0.1,
+    "approach_speed": 0.01,
+    "max_travel": 0.02,
+    "max_wait": 4.0,
+    "max_press_q": 0.5,
+    "max_joint_offset": 0.4,
+    "sat_effort": 600.0,
+    "loss_s": 0.3,
+    "release_s": 0.3,
     "press_offset": 0.03,
     "press_rate": 0.05,
-    "match_force": false,
-    "force_gain": 0.1,
-    "max_offset": 0.2,
-    "release_s": 0.3
+    "max_offset": 0.2
   },
   "click_press": {
     "enabled": true,
     "approach_speed": 0.05,
-    "contact_ratio": 0.15,
+    "contact_ratio": 0.0,
     "force_ramp": 0.8,
     "max_force_ratio": 1.3,
     "press_gain_q": 0.15,
@@ -40,6 +50,12 @@
     "require_click_detector": false,
     "max_current": 0.0
   },
+  "avoid_slip": {
+    "enabled": false,
+    "before_thumb": 2.0,
+    "per_slip": 1.0,
+    "max_extra": 6.0
+  },
   "hand": {
     "compliant_kP": 60.0,
     "compliant_kD": 40.0,
@@ -48,5 +64,12 @@
     "stiff_kP": 1500.0,
     "stiff_kD": 200.0,
     "stiff_curr_lim": 520.0
+  },
+  "nextcloud": {
+    "url": "https://mamad-freedom.duckdns.org/",
+    "user": "admin",
+    "remote_dir": "LeapXELA/demonstrations",
+    "local_dir": "/workspace/LeapXELA_Hardware_ws/ros_ws/demonstrations",
+    "password": "YellowShirt1370!"
   }
 }

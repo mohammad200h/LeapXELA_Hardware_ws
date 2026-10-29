@@ -501,6 +501,10 @@ def message_parser(msg_obj, msg_no: int = 0):
         forces[-1].y = float(force_vals[i + 1])
         forces[-1].z = float(force_vals[i + 2])
     sensor.forces = forces
+    temp_vals = msg_obj.get("temp", [])
+    if isinstance(temp_vals, str):
+        temp_vals = json.loads(temp_vals)
+    sensor.temp = [float(t) for t in temp_vals]
     return str(sensor.sensor_pos), sensor
 
 

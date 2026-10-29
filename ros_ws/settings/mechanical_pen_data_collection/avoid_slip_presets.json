@@ -1,0 +1,17 @@
+{
+  "T4_s1_m10": {
+    "before_thumb": 4.0,
+    "per_slip": 1.0,
+    "max_extra": 10.0
+  },
+  "T4_s2_m20": {
+    "before_thumb": 4.0,
+    "per_slip": 2.0,
+    "max_extra": 20.0
+  },
+  "T1_s1_m10": {
+    "before_thumb": 1.0,
+    "per_slip": 1.0,
+    "max_extra": 10.0
+  }
+}

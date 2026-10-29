@@ -43,8 +43,8 @@ its takes; Index, Middle and Ring list only the takes with the pen box of the Th
 whatever its box), the box named next to the finger; its plots (joints, and fingertip taxel magnitudes when the take has Xela readings)
 show the whole take and the play bar (or the plot cursor) scrubs through
 it, with the camera recording and the FK taxels / Xela forces of the take following. As in the bag viewer,
-an event from ``events_file`` (default: installed ``events.json``) is added at the play bar
-position; events are bookmarked on the play bar and the plot, listed next to the plot (click
+an event from ``events_file`` (default: installed ``events.json``) whose ``tab`` (a name or a
+list) has "edit" is added at the play bar position; events are bookmarked on the play bar and the plot, listed next to the plot (click
 to seek, Edit / Delete) and saved in the take as ``events`` (JSON list of t, name, type, added,
 end). Events with ``"length": "duration"`` are marked with two clicks (start, then end) and
 their span is shaded on the play bar and the plot; ``end`` is null for instant events.
@@ -156,24 +156,37 @@ Ring press harder so the Thumb cannot push the pen out (``AvoidSlipSettings``, n
 switch, saved with Save settings): the fingers holding contact get ``before_thumb`` more hold
 force when the Thumb starts, and every slip of a finger adds ``per_slip``, up to ``max_extra``
 (``TouchPress.extra_force``; needs Zero, as the force is held from the live Xela).
+Save preset stores the three values under a name (``avoid_slip_presets.json``, next to the
+settings file); picking a preset in the dropdown next to it loads them, and each recording
+names the preset its values match in ``meta["avoid_slip_preset"]`` ("" for custom values).
 A take's ``random_episode_start`` regions (added on the Edit tab) mark where its episode may
 start: every Test in sim and Play on hand starts it at a time drawn uniformly from them (the
 part between ``episode_start`` and ``terminal``) instead of at ``episode_start``; the Edit tab's
 own Play still starts at ``episode_start``.
+The Click press row shows where the Thumb is in a Play on hand: moving to its start, held at
+it, playing its take, then its ``click_press`` state machine (approach, press, retract,
+release), the take on to ``terminal`` and finished; the current stage is highlighted, with the
+press's live status (force / target, slips) and how it ended (clicked, no click, kept sliding,
+... as ``click_press_labels``), which stays shown until the next one.
 Under the selected take's first frame, a Live view shows the camera with the selected bounding
 box drawn on it, in yellow, to line the pen up with it before playing.
 
 Demonstration tab: plays back the Compose tab's Play on hand recordings without sending
-anything to the hand. Keys: Space plays / pauses, Right jumps to the Thumb's first contact with
-the pen, and pressed again to the start of the last ``LAST_PART`` (5 %) of the recording
-(alternating from then on) (``thumb_contact_time``: its largest fingertip taxel rising ``THUMB_CONTACT_RISE`` above
-its level when the Thumb starts; marked "TH contact" on its plots), Up / Down pick the previous
-/ next recording. Under the list, Success and Fail (keys S and F) mark the picked
+anything to the hand. Keys: Space plays / pauses, Left / Right move the play bar ``SEEK_FRACTION``
+(1 %) of the recording back / forward, ] jumps to the Thumb's first contact with the pen, and
+pressed again to the start of the last ``LAST_PART`` (5 %) of the recording (alternating from
+then on; [ goes through them the other way) (``thumb_contact_time``: its largest fingertip taxel
+rising ``THUMB_CONTACT_RISE`` above its level when the Thumb starts; marked "TH contact" on its
+plots), Up / Down pick the previous / next recording. Above the list, the Success / Failed filters (its mark) and the Processed /
+Unprocessed ones (``is_processed``, as on the Processing tab): a recording is listed when it
+matches a ticked mark and a ticked state (a group with none ticked does not filter; none are
+ticked at first, so every recording is listed). Under the list, Success and Fail (keys S and F) mark the picked
 recording (pressing the lit one again clears it), saved next to it as ``<box>_<n>.label.json`` as ``label_playbacks``
 does; Delete removes it with its camera, audio and label files. Pick a recording and press Play (or drag the play bar): plots
 of each finger's joint positions, velocities and efforts (``leap_state``) with the run's
 timeline and slips marked, each finger's fingertip taxel magnitudes (recorded Xela, from the
-run's baseline), its camera recording with the bounding box drawn on it, and the FK
+run's baseline), its camera recording with the bounding box drawn on it (the Bounding box button over it, on
+by default, turns it off; on the Processing tab too), and the FK
 taxels with the recorded Xela readings follow the play bar. The microphone recording is plotted
 under the joints and, while playing, heard on the Audio output picked (named as Ubuntu's sound settings name it, e.g. "Front
 Headphones - USB Audio (hw:1,1)", ``audio_output_label``; remembered between runs;
@@ -181,6 +194,67 @@ Test plays a beep). With Stream to sim (on by default)
 the recorded joint positions are also sent to the MuJoCo sim on ``sim_cmd_topic``, converted to
 sim joints as ``convert_hardware_to_sim`` does. Play on hand saves the camera next to its
 recording, as ``<box>_<n>.mp4``.
+
+Processing tab: the Play on hand recordings marked success or failure on the Demonstration tab.
+Above the list, the Success / Failure filters (its mark) and the Processed / To be confirmed /
+Needs manual label ones (its state; processed: an ``episode_start`` and a ``terminal`` event, not to be
+confirmed, or ``processed`` set in its ``<box>_<n>.label.json``): a recording is listed when
+it matches a ticked mark and a ticked state (a group with none ticked does not filter, e.g.
+Failure + Processed lists the processed failures); each
+entry shows its mark and [processed] when it is. The picked recording plays back, in the
+bottom two thirds of the middle, as on the Demonstration tab (play bar, plots, camera, FK
+taxels, audio, Stream to sim and its keys but S / F; it is marked and deleted on the
+Demonstration tab); the top third is left empty. Under the play bar, the Reward (Process reward's
+values at the play bar's time: Every step from ``episode_start`` to ``terminal``, Success /
+Fail at ``terminal``) and the Contact and Slip lights show the Compose tab's lights at the play bar's time: the slips are the recording's
+``meta["slips"]``; the contacts
+(``recorded_contacts``) come from the ``maintain_touch_trace`` / ``click_press_trace`` of each
+finger's own play saved with it, lined up by the take time the trace's first region starts at
+(a finger whose play is not found shows no contact).
+Events whose ``tab`` has "processing" are added under the lights as on the Edit tab (picker,
+Add event / Start and End event, Cancel), marked on the play bar and the plots, listed next to
+the plots (click to seek, Edit renames, Delete) and saved in the recording's label file as
+``events`` (as a take's). A listed recording with no ``events`` saved gets ``episode_start``
+at its first command (``cmd_t``) by default; deleting it is kept (an empty list).
+The To be confirmed filter lists the recordings with an event found by an automation (Process
+click) and not confirmed yet; while it is ticked, the row under the list (where Refresh was;
+Refresh is now over the camera) picks the event (``AUTOMATION_EVENTS``) and Confirm keeps the
+picked recording's one, Reject deletes it (keys C / R; the recording stays a success, tagged
+[needs manual label] until the event is marked by hand, ``rejected`` in its label file), and
+the next recording is picked; a
+``Thumb_is_clicking_the_pen`` event (marked by hand, found by Process click or confirmed)
+gets ``terminal`` and ``success`` at its end if the recording has none (to be confirmed and
+rejected with a found one). Process click is
+in the Automation section, the top quarter of the empty space over the player. It
+(``click_processing``) cuts the confirmed
+``Thumb_is_clicking_the_pen`` events (at most ``click_processing.MAX_SAMPLES``, 10, spread over
+them) out of their recordings' audio as click samples and sends
+them with each recording's audio to click_detector's ``~/detect`` service
+(``click_detect_service``, leapxela_sparshskin_msgs/DetectClicks), which searches the
+successful recordings without one (and not searched before, ``process_click`` in the label
+file) while the Thumb plays; the click it finds is added as an
+event with ``params["to_be_confirmed"]``, which Confirm clears and Reject (or Delete under
+the events) removes. It runs in the background; pressing it again (Stop) stops it.
+Over Automation, Episodes (``episode_processing``) shows the truncation length (saved with the
+recordings in ``processing.json``) and the longest processed successful episode (its
+``episode_start`` to ``terminal``); Use longest sets the truncation length to it. Process
+failure (in Automation) marks ``terminal`` and ``truncated`` at ``episode_start`` + the
+truncation length on every failed recording without a ``terminal`` (moving the ones it marked
+before when the length changed); recordings that end earlier get ``terminal`` and ``fail`` at
+their last timestep. Sparsh-skin transform (in Automation) asks sparsh_skin_transformation's
+``~/transform`` service (``sparsh_transform_service``, leapxela_sparshskin_msgs/
+SparshSkinTransform) to preprocess every episode as Sparsh-skin does (``sparsh_processing``)
+into ``<recordings>/sparsh_skin/`` for the LEQ_DV3 world model; it runs in the background.
+Process reward sets the
+rewards of every episode written (and of those the transform writes, ``processing.json``):
+Success at the last timestep of a success, Fail at the last timestep of a failure, Every step
+at every other timestep. The dropdown next to the transform picks the Baseline tab recording whose no-contact baseline every
+episode uses (remembered; the newest until one is picked), tagged ``[Sparsh-skin]`` in the
+dropdown and in the Baseline tab's list (whose Use for Sparsh-skin picks it too).
+Keys: Space plays / pauses, E adds the picked event (a duration event: the first press starts
+it, the second ends it), C / R confirm / reject the event to be confirmed, Left / Right move the play bar ``SEEK_FRACTION`` (1 %) of
+the recording back / forward, [ / ] jump to the start of the previous / next event, Up / Down
+pick the previous / next recording.
 
 Analysis tab: the coverage and results of the pen boxes. Every pen box (of the edited takes, and
 of Play on hand recordings whose takes are gone) is drawn on the live camera (the first frame of
@@ -193,6 +267,13 @@ recordings (counted for the box the recording's takes have now, the Thumb's firs
 saved with it only when its takes are gone), success, fail and not labelled counts (``<box>_<n>.label.json``) and success rate; picking one
 shows its totals and a breakdown by the combination of takes each recording played.
 
+Click press outcome: how the Thumb's ``click_press`` ended in each Play on hand recording
+(``click_press_labels``: clicked, aborted_no_click, aborted_kept_sliding, aborted_no_contact,
+...), read from the Thumb's own play recording and saved in the recording's label file
+(``click_press``). The Demonstration tab shows it in the list and the title, the Analysis tab
+counts it per box and per combination; recordings without one are labelled as the tabs list
+them (``ros2 run mechanical_pen_data_collection label_click_press`` labels them all).
+
 Settings tab: the folder takes are saved into (``demo_dir``, can be changed while running), the
 command rate, playback ramp and free-finger deadband used while fingers are
 playing (applied immediately), and the compliant gains / deadband of ``hand_node``
@@ -203,6 +284,19 @@ Force replay (``force_replay``, set per contact in ``change_click_setting``) pre
 take's joints during its contact phases until the live fingertip force matches the recorded one,
 holding the take until the finger touches and until it clicks. Commands are sent from their own
 thread at the command rate.
+Backup to Nextcloud (``nextcloud_backup``): the server, user, app password, remote folder and
+the local folder to back up (the recordings folder by default); Sync uploads, in the
+background, the local folder and the app's own files (``backup_extras``: the settings folder,
+the event definitions, the click detector's templates and this GUI's Qt preferences, under
+``<remote folder>/_app``), every file the server does not have yet with the same size and time (nothing is
+deleted on either side) with a progress bar (press again to stop); Test connection logs in.
+Pull lists the backup and shows where each part of it (the recordings, each ``_app`` item;
+events.json both to the source, kept by the next build, and to the installed copy the app
+reads) will be downloaded, with how many files are new / changed / newer locally / the same;
+the destinations can be changed or a part left out before it downloads (newer local files are
+kept unless asked; restart the app to load restored settings).
+Save settings keeps them, the app password only with Remember password (in plain text; it
+is left out of the settings file Sync uploads, ``without_backup_password``).
 Save settings writes these (the folder, the playback / maintain touch values and the hand's
 gains) to ``<ws>/settings/mechanical_pen_data_collection/record_demonstration.json``; they are
 loaded at the next start, and the saved hand gains are applied once the hand node is found. A
@@ -222,6 +316,7 @@ Usage:
 
 from __future__ import annotations
 
+import array
 import functools
 import itertools
 import json
@@ -233,10 +328,12 @@ import sys
 import threading
 import wave
 import time
-from collections import deque
+import warnings
+from collections import Counter, deque
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime
 from typing import Callable
+from urllib.parse import urlparse
 
 import numpy as np
 from PyQt5 import QtCore, QtGui, QtWidgets  # imported before pyqtgraph so it binds to PyQt5
@@ -254,6 +351,7 @@ from rcl_interfaces.srv import GetParameters, SetParametersAtomically
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
+from leapxela_sparshskin_msgs.srv import DetectClicks, PlanHandPose, SparshSkinTransform
 from sensor_msgs.msg import Image, JointState
 from std_msgs.msg import Float32MultiArray, Int32, String
 
@@ -272,7 +370,11 @@ from mechanical_pen_data_collection.bag_viewer import (
     load_event_definitions,
 )
 from mechanical_pen_data_collection.click_press import (
+    APPROACH as CLICK_APPROACH,
+    DONE as CLICK_DONE,
     PRESS as CLICK_PRESSING,
+    RELEASE as CLICK_RELEASE,
+    RETRACT as CLICK_RETRACT,
     ClickPress,
     ClickPressSettings,
     FingerKinematics,
@@ -301,6 +403,29 @@ from mechanical_pen_data_collection.playback_recording import (
     load_label,
     next_playback_path,
     set_manual_label,
+    update_label,
+)
+from mechanical_pen_data_collection import click_processing, episode_processing, nextcloud_backup
+from mechanical_pen_data_collection import sparsh_processing
+from mechanical_pen_data_collection.joint_conversion import HardwareToSim
+from push_button_pen_click_detection import audio_utils
+from mechanical_pen_data_collection.click_processing import (
+    CLICK_END_EVENTS,
+    CLICK_EVENT,
+    TO_BE_CONFIRMED,
+    WITH,
+)
+from mechanical_pen_data_collection.click_press_labels import (
+    ABORTED_KEPT_SLIDING,
+    ABORTED_NO_CLICK,
+    ABORTED_NO_CONTACT,
+    CLICKED,
+    PAIR_WINDOW_S,
+    SHORT as PRESS_SHORT,
+    UNKNOWN as PRESS_UNKNOWN,
+    ThumbPlays,
+    classify_trace,
+    click_press_label,
 )
 from mechanical_pen_data_collection.pen_box_selection import (
     REF_QUANTILE,
@@ -379,6 +504,8 @@ SLIP_LIGHT_STYLE = (
 SLIP_COLORS = {"off": "#616161", "contact": "#43a047", "slip": "#ff1744"}
 # Key of the Compose tab's Play on hand among the node's playback recordings.
 COMPOSE_PLAY_KEY = "compose"
+# How long Process click waits for click_detector's ~/detect to answer one recording (s).
+CLICK_DETECT_TIMEOUT_S = 60.0
 # Edit tab Plays shorter than this (s) are not saved as playback recordings.
 MIN_PLAY_RECORDING_S = 0.5
 # Events that bound the part of a take the Edit tab's Play sends to the hand.
@@ -399,6 +526,17 @@ CLICK_PRESS_EVENT = "click_press"
 # Instant event: its ``params["joints"]`` replace force replay's press direction (per joint) for
 # the contact phase at or after it, and its ``params["force"]`` that phase's force replay values.
 CLICK_SETTING_EVENT = "change_click_setting"
+# Tabs an events.json event can be added on (its ``tab``).
+EDIT_TAB, PROCESSING_TAB = "edit", "processing"
+
+
+def event_tabs(info: dict) -> set[str]:
+    """The tabs an events.json event can be added on: its ``tab``, a name or a list of them
+    (none without one)."""
+    tab = info.get("tab", [])
+    return {tab} if isinstance(tab, str) else set(tab)
+
+
 # The click setting search presses from the take's joints this long before the contact starts.
 CLICK_SEARCH_LEAD_S = 0.2
 # Force replay values of a ``change_click_setting`` event (``params["force"]``, defaults:
@@ -549,6 +687,39 @@ class AvoidSlipSettings:
     before_thumb: float = 2.0  # force units added to the fingers holding when the Thumb starts
     per_slip: float = 1.0  # force units added to a finger per slip
     max_extra: float = 6.0  # largest extra force of a finger
+
+
+# The Avoid slip values a Compose tab preset holds (not ``enabled``).
+AVOID_SLIP_VALUES = ("before_thumb", "per_slip", "max_extra")
+
+
+def avoid_slip_presets_file() -> str:
+    """``<colcon workspace>/settings/<package>/avoid_slip_presets.json``, next to the settings."""
+    return os.path.join(os.path.dirname(settings_file()), "avoid_slip_presets.json")
+
+
+def load_avoid_slip_presets(path: str) -> dict[str, dict[str, float]]:
+    """Read the Avoid slip presets, {name: {before_thumb, per_slip, max_extra}} ({} if none)."""
+    if not os.path.exists(path):
+        return {}
+    with open(path) as f:
+        data = json.load(f)
+    if not isinstance(data, dict):
+        return {}
+    return {
+        str(name): {k: float(values[k]) for k in AVOID_SLIP_VALUES}
+        for name, values in data.items()
+        if isinstance(values, dict) and all(k in values for k in AVOID_SLIP_VALUES)
+    }
+
+
+def save_avoid_slip_presets(path: str, presets: dict[str, dict[str, float]]) -> None:
+    """Write the Avoid slip presets to ``path`` (replaced atomically)."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(presets, f, indent=2)
+    os.replace(tmp, path)
 
 
 @dataclass
@@ -849,30 +1020,13 @@ class Recording:
     sam_boxes: list  # detections for each ``sam_t``
 
 
-class HardwareToSim:
-    """Hardware joints to sim joints, as ``convert_hardware_to_sim`` converts them."""
-
-    def __init__(self) -> None:
-        from conversions.hardware_to_sim_conversion import map_hardware_to_sim
-        from conversions.sim_to_hardware_conversion import (
-            get_joint_names,
-            get_joint_ranges,
-            load_joint_config,
-            remap_joint_commands,
-        )
-
-        self._map = map_hardware_to_sim
-        self._remap = remap_joint_commands
-        config = load_joint_config()
-        self.sim_names, _ = get_joint_names(config)
-        leap = config["leapXela"]
-        self._hw_ranges = get_joint_ranges(self.sim_names, leap["hardware"])
-        self._sim_ranges = get_joint_ranges(self.sim_names, leap["sim"])
-
-    def __call__(self, hw_joint_names: list[str], q_hw: np.ndarray) -> list[float]:
-        """Sim angles (``sim_names`` order) of hardware joints ``q_hw`` (``hw_joint_names``)."""
-        ordered = self._remap(self.sim_names, hw_joint_names, [float(v) for v in q_hw])
-        return self._map(ordered, self._sim_ranges, self._hw_ranges)
+def xela_sensor_temps(sensor) -> np.ndarray:
+    """(taxels,) temperature of each taxel of a Xela ``SensorFull``: its own when the sensor
+    sends one per taxel, else the sensor's mean, else NaN (xela_server sends none)."""
+    n, temps = len(sensor.taxels), np.asarray(sensor.temp, dtype=np.float64)
+    if len(temps) == n:
+        return temps
+    return np.full(n, temps.mean() if len(temps) else np.nan)
 
 
 class LeapStateListener(Node):
@@ -894,6 +1048,32 @@ class LeapStateListener(Node):
         )
         self.xela_topic = self.declare_parameter("xela_topic", "/xServTopic").value
         self.click_topic = self.declare_parameter("click_topic", "/pen_click").value
+        # click_detector's service finding clicks in given audio from a few click samples.
+        self.click_detect_service = self.declare_parameter(
+            "click_detect_service", "/click_detector/detect"
+        ).value
+        self._click_detect = self.create_client(DetectClicks, self.click_detect_service)
+        # sparsh_skin_transformation's service writing the episodes for the world model.
+        self.sparsh_transform_service = self.declare_parameter(
+            "sparsh_transform_service", "/sparsh_skin_transformation/transform"
+        ).value
+        self._sparsh_transform = self.create_client(
+            SparshSkinTransform, self.sparsh_transform_service
+        )
+        # Its progress ({"done", "total", "text"} JSON), passed to ``on_sparsh_progress``.
+        self.on_sparsh_progress: Callable[[int, int, str], None] | None = None
+        self.create_subscription(
+            String,
+            self.declare_parameter(
+                "sparsh_progress_topic", "/sparsh_skin_transformation/progress"
+            ).value,
+            self._on_sparsh_progress, 10,
+        )
+        # hand_ik's service: paths between hand poses that keep the fingers apart (mink).
+        self.hand_ik_service = self.declare_parameter(
+            "hand_ik_service", "/hand_ik/plan_to_pose"
+        ).value
+        self._hand_ik = self.create_client(PlanHandPose, self.hand_ik_service)
         # Microphone stream of push_button_pen_click_detection's audio_publisher.
         self.audio_topic = self.declare_parameter("audio_topic", "/audio").value
         self.audio_rate = 48000  # updated from <audio_topic>/info
@@ -944,6 +1124,8 @@ class LeapStateListener(Node):
         self._rec_xela_t: list[float] = []
         self._rec_xela: list[np.ndarray] = []
         self._xela_history: deque[tuple[float, np.ndarray]] = deque(maxlen=HISTORY_LEN)
+        # (T,) temperature of each taxel's sensor, alongside ``_xela_history`` (NaN: none sent).
+        self._xela_temp_history: deque[np.ndarray] = deque(maxlen=HISTORY_LEN)
         # Sim messages with finger-finger contacts: (time.monotonic(), touching finger pairs).
         self._finger_contacts: deque[tuple[float, list[tuple[str, str]]]] = deque(
             maxlen=HISTORY_LEN
@@ -1048,6 +1230,78 @@ class LeapStateListener(Node):
             done(result)
 
         client.call_async(request).add_done_callback(finished)
+
+    def click_detect_ready(self) -> bool:
+        return self._click_detect.service_is_ready()
+
+    def detect_clicks(
+        self, samples: list[np.ndarray], audio: np.ndarray, sr: int
+    ) -> list[tuple[float, float]]:
+        """Pen clicks in ``audio`` by click_detector's ``~/detect`` with ``samples`` as its
+        templates, without press / release pairing: [(s from the start of ``audio``, score)].
+        Waits for the answer, so it is not called on the executor's thread; raises if the
+        service fails or does not answer within ``CLICK_DETECT_TIMEOUT_S``."""
+        def floats(x: np.ndarray) -> array.array:
+            out = array.array("f")
+            out.frombytes(np.asarray(x, dtype=np.float32).tobytes())
+            return out
+
+        request = DetectClicks.Request(
+            samples=floats(np.concatenate(samples)),
+            sample_lengths=[len(s) for s in samples],
+            audio=floats(audio), sample_rate=int(sr), threshold=0.0, pair=False,
+        )
+        answered = threading.Event()
+        future = self._click_detect.call_async(request)
+        future.add_done_callback(lambda _: answered.set())
+        if not answered.wait(CLICK_DETECT_TIMEOUT_S):
+            future.cancel()
+            raise TimeoutError(
+                f"{self.click_detect_service} did not answer in {CLICK_DETECT_TIMEOUT_S:.0f} s"
+            )
+        response = future.result()
+        if not response.success:
+            raise RuntimeError(f"{self.click_detect_service}: {response.message}")
+        return list(zip(response.times, response.scores))
+
+    def hand_ik_ready(self) -> bool:
+        return self._hand_ik.service_is_ready()
+
+    def plan_hand_pose(self, names: list[str], start, goal, done) -> None:
+        """Asks hand_ik for a path of sim joints ``names`` from ``start`` to ``goal``; ``done``
+        gets ((steps, len(names)) sim angles, dt, response) or an exception, on the
+        executor's thread."""
+        def convert(response):
+            if not response.success:
+                raise RuntimeError(f"{self.hand_ik_service}: {response.message}")
+            path = np.asarray(response.trajectory, dtype=float).reshape(-1, len(names))
+            return path, float(response.dt), response
+
+        request = PlanHandPose.Request(
+            joint_names=list(names), start=[float(v) for v in start],
+            goal=[float(v) for v in goal],
+        )
+        self._call(self._hand_ik, request, convert, done)
+
+    def sparsh_transform_ready(self) -> bool:
+        return self._sparsh_transform.service_is_ready()
+
+    def sparsh_transform(self, recordings_dir: str, baseline_file: str):
+        """sparsh_skin_transformation's ``~/transform`` of every episode in ``recordings_dir``
+        (into its ``sparsh_skin`` folder) with the baseline of ``baseline_file``; waits for the
+        answer (minutes), so it is not called on the executor's thread. Raises if the service
+        fails."""
+        request = SparshSkinTransform.Request(
+            recordings_dir=recordings_dir, baseline_file=baseline_file
+        )
+        answered = threading.Event()
+        future = self._sparsh_transform.call_async(request)
+        future.add_done_callback(lambda _: answered.set())
+        answered.wait()
+        response = future.result()
+        if not response.success:
+            raise RuntimeError(f"{self.sparsh_transform_service}: {response.message}")
+        return response
 
     def get_hand_params(self, names: list[str], done) -> None:
         """Calls ``done`` with {name: value} of the hand node's parameters, or an exception."""
@@ -1162,6 +1416,16 @@ class LeapStateListener(Node):
             mask = mask[:, :, 0]
         with self._lock:
             self._sam_put(stamp, "mask", np.ascontiguousarray(mask).copy())
+
+    def _on_sparsh_progress(self, msg: String) -> None:
+        callback = self.on_sparsh_progress
+        if callback is None:
+            return
+        try:
+            p = json.loads(msg.data)
+            callback(int(p["done"]), int(p["total"]), str(p.get("text", "")))
+        except (ValueError, KeyError, TypeError):
+            pass
 
     def _on_sam_boxes(self, msg: String) -> None:
         try:
@@ -1279,6 +1543,7 @@ class LeapStateListener(Node):
         readings = np.array(
             [[t.x, t.y, t.z] for s in msg.sensors for t in s.taxels], dtype=np.float64
         ).reshape(-1, 3)
+        temps = np.concatenate([xela_sensor_temps(s) for s in msg.sensors] or [np.empty(0)])
         stamp = self._stamp(msg.header)
         now = self.get_clock().now().nanoseconds * 1e-9
         if abs(stamp - now) > XELA_MAX_CLOCK_OFFSET_S:
@@ -1287,6 +1552,7 @@ class LeapStateListener(Node):
         with self._lock:
             self._xela = (self._xela[0] + 1, readings)
             self._xela_history.append((stamp, readings))
+            self._xela_temp_history.append(temps)
             for rec in self._play_recs.values():
                 if not rec["xela"] or len(readings) == len(rec["xela"][0][1]):
                     rec["xela"].append((stamp, readings.astype(np.float32)))
@@ -1404,6 +1670,19 @@ class LeapStateListener(Node):
             latest = self._xela[0]
             n = min(latest - seq, len(self._xela_history))
             return latest, list(self._xela_history)[len(self._xela_history) - n:] if n > 0 else []
+
+    def xela_temps_since(
+        self, seq: int
+    ) -> tuple[int, list[tuple[float, np.ndarray, np.ndarray]]]:
+        """``xela_since`` with each message's (T,) taxel temperatures:
+        (latest sequence number, (stamp, raw readings, temperatures) after ``seq``)."""
+        with self._lock:
+            latest = self._xela[0]
+            n = min(latest - seq, len(self._xela_history))
+            if n <= 0:
+                return latest, []
+            items = list(zip(self._xela_history, self._xela_temp_history))[-n:]
+        return latest, [(stamp, readings, temps) for (stamp, readings), temps in items]
 
     def latest_sim(self) -> tuple[int, list[str], np.ndarray | None]:
         """(sequence number, joint names, positions) of the latest ``sim_topic`` message."""
@@ -1605,6 +1884,10 @@ class TakeVideo:
             return None
         self._index = index
         return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+
+    def reread(self) -> None:
+        """The next ``read`` returns its frame even if it is the one shown."""
+        self._index = -1
 
     def release(self) -> None:
         if self._cap is not None:
@@ -3268,6 +3551,10 @@ class CreateTab(QtWidgets.QWidget):
         if self._stiff_sent and self.node.set_stiff_joints([]):
             self._stiff_sent = ()
 
+    def stiff_joints_set_elsewhere(self) -> None:
+        """Another tab (Baseline) set the hand's stiff_joints: the next update sends them."""
+        self._stiff_sent = ("(set elsewhere)",)
+
     # ---- commanding the hand ------------------------------------------------------------
 
     # The methods below that touch the shared state are called with ``_cmd_lock`` held.
@@ -4099,17 +4386,19 @@ class EditFingerPanel(QtWidgets.QWidget):
         # (take, contact phase) -> ClickSearch on the hand, set by the Edit tab.
         self.click_search: Callable[[FingerTake, ContactPhase], ClickSearch] | None = None
         self.event_defs = event_defs
-        # Events this finger can be given (``applied_to`` lists finger codes such as "IF").
+        # Events this finger can be given: those of the Edit tab (``tab``) that apply to it
+        # (``applied_to`` lists finger codes such as "IF").
         self._addable = {
             name: info for name, info in event_defs.items()
-            if not info.get("applied_to")
-            or finger.upper() in {
-                str(code).upper()
-                for code in (
-                    [info["applied_to"]] if isinstance(info["applied_to"], str)
-                    else info["applied_to"]
-                )
-            }
+            if EDIT_TAB in event_tabs(info)
+            and (not info.get("applied_to")
+                 or finger.upper() in {
+                     str(code).upper()
+                     for code in (
+                         [info["applied_to"]] if isinstance(info["applied_to"], str)
+                         else info["applied_to"]
+                     )
+                 })
         }
         self.take: FingerTake | None = None
         self.now = 0.0
@@ -5682,6 +5971,7 @@ class RecordingCounts:
     success: int = 0
     failure: int = 0
     modified: int = 0
+    press: Counter = field(default_factory=Counter)  # click_press outcome -> recordings
 
     @property
     def total(self) -> int:
@@ -5700,9 +5990,31 @@ class RecordingCounts:
     def add(self, path: str, modified: bool) -> None:
         self.paths.append(path)
         self.modified += modified
-        label = (load_label(path) or {}).get("label")
+        saved = load_label(path) or {}
+        label = saved.get("label")
         self.success += label == SUCCESS
         self.failure += label == FAILURE
+        self.press[saved.get("click_press") or PRESS_UNKNOWN] += 1
+
+    def merge(self, other: RecordingCounts) -> None:
+        self.paths += other.paths
+        self.success += other.success
+        self.failure += other.failure
+        self.modified += other.modified
+        self.press.update(other.press)
+
+    def press_other(self) -> int:
+        """Recordings whose press ended otherwise than in the main columns."""
+        return self.total - sum(self.press[k] for k in PRESS_COLUMNS)
+
+
+# Analysis tab: the click_press outcomes with their own column (the rest: "Other press").
+PRESS_COLUMNS = (CLICKED, ABORTED_NO_CLICK, ABORTED_KEPT_SLIDING, ABORTED_NO_CONTACT)
+
+
+def press_text(counts: RecordingCounts) -> str:
+    """The click_press outcomes of some recordings, e.g. "3 clicked, 10 no click"."""
+    return ", ".join(f"{n} {PRESS_SHORT.get(k, k)}" for k, n in counts.press.most_common()) or "-"
 
 
 def count_recordings(directory: str) -> dict[frozenset, RecordingCounts]:
@@ -5900,6 +6212,91 @@ class BoxFingerColumn(QtWidgets.QGroupBox):
                 ))
 
 
+class ClickPressStateView(QtWidgets.QWidget):
+    """Where the Thumb is in a Play on hand, and its ``click_press`` state machine: a row of
+    stages (the current one highlighted, those passed pale green), the press's live status and
+    how it ended."""
+
+    # (key, label, tooltip)
+    STAGES = (
+        ("moving", "Moving to start", "The Thumb moves to where its episode starts"),
+        ("held", "Held at start", "Held stiff at its start while Index / Middle / Ring play"),
+        ("take", "Take", "Plain position replay of the take, up to the click_press region"),
+        (CLICK_APPROACH, "Approach",
+         "Guarded move of the fingertip along the press axis until contact (take time held)"),
+        (CLICK_PRESSING, "Press",
+         "Force ramp along the press axis until a click or an abort (take time held)"),
+        (CLICK_RETRACT, "Retract", "Backs off along the press axis"),
+        (CLICK_RELEASE, "Release", "Take jumps to the region's end; blend back into it"),
+        ("after", "Take to terminal", "Plain position replay from the region's end"),
+        ("finished", "Finished", "The Thumb got to its terminal"),
+    )
+    STYLE = "QLabel {{ background-color: {bg}; color: {fg}; border-radius: 4px; padding: 2px 6px; {extra} }}"
+
+    def __init__(self) -> None:
+        super().__init__()
+        rows = QtWidgets.QVBoxLayout(self)
+        rows.setContentsMargins(0, 0, 0, 0)
+        rows.setSpacing(2)
+        layout = QtWidgets.QHBoxLayout()
+        rows.addLayout(layout)
+        layout.addWidget(QtWidgets.QLabel("<b>Click press:</b>"))
+        self.boxes: dict[str, QtWidgets.QLabel] = {}
+        for k, (key, label, tip) in enumerate(self.STAGES):
+            if k:
+                layout.addWidget(QtWidgets.QLabel("\u2192"))
+            box = QtWidgets.QLabel(label)
+            box.setToolTip(tip)
+            box.setStyleSheet(self.STYLE.format(bg="#eeeeee", fg="#9e9e9e", extra="font-weight: bold;"))
+            box.setMinimumWidth(box.sizeHint().width())  # never squashed into "Ap", "Pr"
+            self.boxes[key] = box
+            layout.addWidget(box)
+        layout.addStretch(1)
+        # Under the stages: how the press ended, and its live status.
+        self.outcome = QtWidgets.QLabel()
+        self.status = QtWidgets.QLabel()
+        line = QtWidgets.QHBoxLayout()
+        line.addSpacing(QtWidgets.QLabel("<b>Click press:</b>").sizeHint().width() + 6)
+        line.addWidget(self.outcome)
+        line.addWidget(self.status, 1)
+        rows.addLayout(line)
+        self._shown: tuple | None = None
+        self.show_stage(None, "", None)
+
+    def show_stage(self, stage: str | None, status: str, outcome: tuple[str, str] | None,
+                   no_press: bool = False) -> None:
+        """Highlights ``stage`` (None: idle), with the press ``status`` and its ``outcome``
+        ((label, why) from ``classify_trace``, None while undecided)."""
+        key = (stage, status, outcome, no_press)
+        if key == self._shown:
+            return
+        self._shown = key
+        keys = [k for k, _, _ in self.STAGES]
+        current = keys.index(stage) if stage in keys else -1
+        for k, name in enumerate(keys):
+            if k == current:
+                bg, fg, extra = "#1976d2", "white", "font-weight: bold;"
+            elif 0 <= k < current:
+                bg, fg, extra = "#c8e6c9", "#1b5e20", ""
+            else:
+                bg, fg, extra = "#eeeeee", "#9e9e9e", ""
+            if no_press and name in (CLICK_APPROACH, CLICK_PRESSING, CLICK_RETRACT,
+                                     CLICK_RELEASE):
+                bg, fg, extra = "#eeeeee", "#bdbdbd", "text-decoration: line-through;"
+            self.boxes[name].setStyleSheet(self.STYLE.format(bg=bg, fg=fg, extra=extra))
+        if outcome is None:
+            self.outcome.setText("<i>no click_press region in this take</i>" if no_press else "")
+            self.outcome.setToolTip("")
+        else:
+            label, why = outcome
+            color = COMBO_VALID_COLOR if label == CLICKED else COMBO_COLLIDE_COLOR
+            self.outcome.setText(
+                f"<span style='color:{color}'><b>{PRESS_SHORT.get(label, label)}</b></span>"
+            )
+            self.outcome.setToolTip(why)
+        self.status.setText(f"<span style='color:#616161'>{status}</span>" if status else "")
+
+
 class ComposeTab(QtWidgets.QWidget):
     """Pick a pen bounding box from the dropdown; every finger's takes recorded with exactly
     that box are listed and plotted, and the picked take's first camera frame is shown with it.
@@ -6005,7 +6402,7 @@ class ComposeTab(QtWidgets.QWidget):
             "Play the episode of every finger's selected take on the hand: Index, Middle and Ring "
             "together, then the Thumb once they have all got to their terminal, where they keep "
             "contact until the Thumb is done. Each runs as its Edit tab Play (maintain_touch, "
-            "click_press, force replay, playback recording)"
+            "click_press, force replay, playback recording). Key: Space play / stop"
         )
         self.hand_status = QtWidgets.QLabel()
         top = QtWidgets.QHBoxLayout()
@@ -6089,6 +6486,7 @@ class ComposeTab(QtWidgets.QWidget):
         self.avoid_switch.toggled.connect(lambda on: setattr(avoid_slip, "enabled", on))
         plays_row.addWidget(self.avoid_switch)
         plays_row.addWidget(QtWidgets.QLabel("Avoid slip"))
+        self.avoid_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
         for name, label, tip in (
             ("before_thumb", "Thumb", "Force units added to the fingers holding the pen when "
                                       "the Thumb starts"),
@@ -6098,8 +6496,33 @@ class ComposeTab(QtWidgets.QWidget):
             spin = double_spin(0.0, 50.0, 0.5, 1, "", tip)
             spin.setValue(getattr(avoid_slip, name))
             spin.valueChanged.connect(lambda v, n=name: setattr(avoid_slip, n, float(v)))
+            spin.valueChanged.connect(lambda _v: self._sync_avoid_preset())
+            self.avoid_spins[name] = spin
             plays_row.addWidget(QtWidgets.QLabel(f"+{label}" if name != "max_extra" else label))
             plays_row.addWidget(spin)
+        # Saved sets of the three Avoid slip values, to compare their Play on hand results.
+        self._avoid_presets_path = avoid_slip_presets_file()
+        try:
+            self._avoid_presets = load_avoid_slip_presets(self._avoid_presets_path)
+        except (OSError, ValueError) as e:
+            self.node.get_logger().warn(f"Could not read {self._avoid_presets_path}: {e}")
+            self._avoid_presets = {}
+        self.avoid_preset_combo = QtWidgets.QComboBox()
+        self.avoid_preset_combo.setToolTip(
+            "Avoid slip presets: picking one loads its Thumb / slip / max values. Each Play on "
+            "hand recording stores the preset its values match (meta avoid_slip_preset)"
+        )
+        self.avoid_preset_combo.activated.connect(self._load_avoid_preset)
+        save_preset = QtWidgets.QPushButton("Save preset")
+        save_preset.setToolTip("Save the three Avoid slip values under a name")
+        save_preset.clicked.connect(self._save_avoid_preset)
+        self.delete_preset_button = QtWidgets.QPushButton("Delete preset")
+        self.delete_preset_button.setToolTip("Delete the Avoid slip preset picked")
+        self.delete_preset_button.clicked.connect(self._delete_avoid_preset)
+        plays_row.addWidget(self.avoid_preset_combo)
+        plays_row.addWidget(save_preset)
+        plays_row.addWidget(self.delete_preset_button)
+        self._fill_avoid_presets()
         plays_row.addStretch(1)
 
         self.camera_title = QtWidgets.QLabel()
@@ -6144,12 +6567,20 @@ class ComposeTab(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         layout.addLayout(top)
         layout.addLayout(plays_row)
+        self.press_view = ClickPressStateView()
+        layout.addWidget(self.press_view)
+        self._press_seen = None  # the Thumb's last ClickPress (shown after its play too)
+        self._press_finished = False
         layout.addWidget(split, 1)
 
         self.box_combo.currentIndexChanged.connect(self._on_box)
         refresh_btn.clicked.connect(self.refresh_takes)
         self.sim_btn.clicked.connect(self._toggle_sim)
         self.hand_btn.clicked.connect(self._toggle_hand)
+        # Space while this tab is shown: Play on hand, or stop it if it is playing.
+        hand_key = QtWidgets.QShortcut(QtGui.QKeySequence("Space"), self)
+        hand_key.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        hand_key.activated.connect(self._toggle_hand)
         create_tab.playing_changed.connect(self._on_hand_playing_changed)
         create_tab.play_reached_end.connect(self._on_hand_reached_end)
         self.refresh_takes()
@@ -6605,6 +7036,7 @@ class ComposeTab(QtWidgets.QWidget):
                 ],
                 "slip_settings": asdict(SlipSettings()),
                 "avoid_slip": asdict(self.avoid_slip),
+                "avoid_slip_preset": self._matching_avoid_preset(),
                 "avoid_slip_extra": dict(self._extra),
                 "maintain_touch": asdict(self.create_tab.touch_settings),
                 "click_press": asdict(self.create_tab.press_settings),
@@ -6682,6 +7114,89 @@ class ComposeTab(QtWidgets.QWidget):
                     )
                     if self.avoid_slip.enabled:
                         self._add_extra_force(finger, self.avoid_slip.per_slip, "slip")
+
+    def _avoid_values(self) -> dict[str, float]:
+        return {name: round(float(getattr(self.avoid_slip, name)), 3)
+                for name in AVOID_SLIP_VALUES}
+
+    def _matching_avoid_preset(self) -> str:
+        """Name of the preset with the current Avoid slip values ("" if none)."""
+        values = self._avoid_values()
+        return next((name for name, preset in self._avoid_presets.items()
+                     if all(abs(preset[k] - values[k]) < 1e-6 for k in AVOID_SLIP_VALUES)), "")
+
+    def _fill_avoid_presets(self) -> None:
+        combo = self.avoid_preset_combo
+        combo.blockSignals(True)
+        combo.clear()
+        combo.addItem("(custom)", "")
+        for name in sorted(self._avoid_presets):
+            v = self._avoid_presets[name]
+            combo.addItem(name, name)
+            combo.setItemData(
+                combo.count() - 1,
+                f"+Thumb {v['before_thumb']:g}, +slip {v['per_slip']:g}, max {v['max_extra']:g}",
+                QtCore.Qt.ToolTipRole,
+            )
+        combo.blockSignals(False)
+        self._sync_avoid_preset()
+
+    def _sync_avoid_preset(self) -> None:
+        """Show the preset the current values match, (custom) when they match none."""
+        name = self._matching_avoid_preset()
+        combo = self.avoid_preset_combo
+        combo.blockSignals(True)
+        combo.setCurrentIndex(max(combo.findData(name), 0))
+        combo.blockSignals(False)
+        self.delete_preset_button.setEnabled(bool(name))
+
+    def _load_avoid_preset(self, index: int) -> None:
+        preset = self._avoid_presets.get(self.avoid_preset_combo.itemData(index) or "")
+        if preset is None:
+            return
+        for name, spin in self.avoid_spins.items():
+            spin.setValue(preset[name])  # also sets avoid_slip
+
+    def _write_avoid_presets(self) -> bool:
+        try:
+            save_avoid_slip_presets(self._avoid_presets_path, self._avoid_presets)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(
+                self, "Avoid slip presets", f"Could not save {self._avoid_presets_path}: {e}")
+            return False
+        return True
+
+    def _save_avoid_preset(self) -> None:
+        v = self._avoid_values()
+        default = self._matching_avoid_preset() or (
+            f"T{v['before_thumb']:g}_s{v['per_slip']:g}_m{v['max_extra']:g}")
+        name, ok = QtWidgets.QInputDialog.getText(
+            self, "Save Avoid slip preset",
+            f"Name for +Thumb {v['before_thumb']:g}, +slip {v['per_slip']:g}, "
+            f"max {v['max_extra']:g}:", text=default)
+        name = name.strip()
+        if not ok or not name:
+            return
+        if name in self._avoid_presets and self._avoid_presets[name] != v:
+            answer = QtWidgets.QMessageBox.question(
+                self, "Save Avoid slip preset", f"Replace the values of preset '{name}'?")
+            if answer != QtWidgets.QMessageBox.Yes:
+                return
+        self._avoid_presets[name] = v
+        if self._write_avoid_presets():
+            self._fill_avoid_presets()
+
+    def _delete_avoid_preset(self) -> None:
+        name = self.avoid_preset_combo.currentData() or ""
+        if name not in self._avoid_presets:
+            return
+        answer = QtWidgets.QMessageBox.question(
+            self, "Delete Avoid slip preset", f"Delete preset '{name}'?")
+        if answer != QtWidgets.QMessageBox.Yes:
+            return
+        del self._avoid_presets[name]
+        if self._write_avoid_presets():
+            self._fill_avoid_presets()
 
     def _add_extra_force(self, finger: str, amount: float, why: str) -> None:
         """Avoid slip: ``amount`` more hold force for ``finger`` (up to ``max_extra``)."""
@@ -7279,6 +7794,47 @@ class ComposeTab(QtWidgets.QWidget):
                       f"Playing combination {combo.name} in sim "
                       f"({combo.status_text(self._min_depth)})")
 
+    def _show_press_state(self) -> None:
+        """The Click press row: the Thumb's stage in a Play on hand (or a Thumb Play on the Edit
+        tab) and its click_press state machine."""
+        view = self.press_view
+        if self._hand_active and (self._moving == "th" or any(
+                t.finger == "th" for t in self._move_queue)):
+            self._press_seen, self._press_finished = None, False  # a new run: forget the last
+            moving = self._moving == "th"
+            view.show_stage("moving" if moving else None,
+                            "" if moving else "the other fingers move to their start first", None)
+            return
+        if self._hand_active and ("th" in self._at_start or "th" in self._await_release):
+            view.show_stage("held", "", None)
+            return
+        p = self.create_tab.playback("th")
+        press = p.press if p is not None else None
+        if p is not None and p.take.path.startswith("move to the start"):
+            p = press = None  # its move to the start: shown above
+        if press is not None and press is not self._press_seen:
+            self._press_seen, self._press_finished = press, False
+        if p is not None and press is None and self._hand_active:
+            view.show_stage("take" if not p.finished else "finished", "", None, no_press=True)
+            return
+        press = self._press_seen
+        if press is None:
+            view.show_stage(None, "", None)
+            return
+        decided = [e for e in press.trace if e.get("event") in ("click", "abort")]
+        outcome = classify_trace(press.trace) if decided else None
+        if p is None:  # the Thumb's play ended: the press's last state stays shown
+            self._press_finished = True
+            view.show_stage("finished" if decided else None, "", outcome)
+            return
+        if press.state in (CLICK_APPROACH, CLICK_PRESSING, CLICK_RETRACT, CLICK_RELEASE):
+            stage = press.state
+        elif press.state == CLICK_DONE or decided:
+            stage = "finished" if p.finished else "after"
+        else:
+            stage = "take"
+        view.show_stage(stage, press.status.replace("click press: ", ""), outcome)
+
     def close_video(self) -> None:
         self._video.release()
 
@@ -7290,6 +7846,7 @@ class ComposeTab(QtWidgets.QWidget):
             self._set_slip_lights()
         self._set_contact_lights()
         self._show_baseline_status()
+        self._show_press_state()
         if not self.isVisible():
             return
         seq, frame = self.node.latest_raw_frame()
@@ -7427,14 +7984,17 @@ DEMO_ROWS = (
 )
 # Key of the Demonstration tab's fingertip taxel row (under DEMO_ROWS) in its plot dicts.
 DEMO_TIP_ROW = "fingertip_taxels"
-# Demonstration tab, Right arrow: the Thumb touches the pen when its largest fingertip taxel
+# Demonstration tab, ] key: the Thumb touches the pen when its largest fingertip taxel
 # magnitude rises this much (force units) above its level when the Thumb starts. The largest
 # taxel, not the sum: curling alone raises the sum by a few units with no contact, and the
 # largest taxel jitters by under 0.005 before contact.
 THUMB_CONTACT_RISE = 0.05
 THUMB_ENTRY_S = 0.5  # s before the Thumb starts its level is taken over (median)
-# Demonstration tab, second Right arrow: the start of the recording's last part (this fraction).
+# Demonstration tab, second ] key: the start of the recording's last part (this fraction).
 LAST_PART = 0.05
+# How far Left / Right move the Demonstration and Processing tabs' play bar, as a fraction of
+# the recording.
+SEEK_FRACTION = 0.01
 
 
 def thumb_contact_time(
@@ -7458,6 +8018,14 @@ def thumb_contact_time(
     return float(rec.xela_t[hit[0]]) if len(hit) else None
 # How the Demonstration tab's list shows a recording's success / failure label.
 LABEL_TEXT = {SUCCESS: "SUCCESS", FAILURE: "FAIL"}
+# A recording's state on the Demonstration / Processing tab filters (``is_processed``).
+PROCESSED = "processed"
+UNPROCESSED = "unprocessed"
+# Demonstration tab filters: (name, check box text), its marks and its states.
+DEMONSTRATION_FILTERS = (
+    (SUCCESS, "Success"), (FAILURE, "Failed"), (PROCESSED, "Processed"),
+    (UNPROCESSED, "Unprocessed"),
+)
 LABEL_COLORS = {SUCCESS: "#2e7d32", FAILURE: "#c62828"}
 
 
@@ -7486,43 +8054,16 @@ class DemonstrationTab(QtWidgets.QWidget):
         self._audio_out = AudioOut()
         self._settings = QtCore.QSettings(PACKAGE_NAME, "record_demonstration")
         self._thumb_contact: float | None = None  # first Thumb contact of the recording (s)
-        self._right_presses = 0  # Right arrow presses since the recording was picked
+        self._jump_index = -1  # the ] / [ jump target last gone to (-1: none since picked)
 
         # Left: the recordings.
-        self.list = QtWidgets.QListWidget()
-        self.list.setToolTip("Play on hand recordings of the Compose tab, newest first")
-        refresh_btn = QtWidgets.QPushButton("Refresh")
-        self.success_btn = QtWidgets.QPushButton("Success (S)")
-        self.success_btn.setToolTip(
-            "Mark the picked recording as a success (press again to clear the mark). Key: S"
-        )
-        self.fail_btn = QtWidgets.QPushButton("Fail (F)")
-        self.fail_btn.setToolTip(
-            "Mark the picked recording as a failure (press again to clear the mark). Key: F"
-        )
-        for btn, color in ((self.success_btn, LABEL_COLORS[SUCCESS]),
-                           (self.fail_btn, LABEL_COLORS[FAILURE])):
-            btn.setCheckable(True)
-            btn.setStyleSheet(f"QPushButton:checked {{ background-color: {color}; color: white; }}")
-        self.delete_btn = QtWidgets.QPushButton("Delete")
-        self.delete_btn.setToolTip(
-            "Delete the picked recording with its camera, audio and label files"
-        )
-        mark_row = QtWidgets.QHBoxLayout()
-        mark_row.addWidget(self.success_btn)
-        mark_row.addWidget(self.fail_btn)
-        mark_row.addWidget(self.delete_btn)
-        left = QtWidgets.QGroupBox("Recordings")
-        left_layout = QtWidgets.QVBoxLayout(left)
-        left_layout.addWidget(self.list, 1)
-        left_layout.addLayout(mark_row)
-        left_layout.addWidget(refresh_btn)
+        left = self._recordings_panel()
 
         # Middle: controls and plots (rows: position / velocity / effort, columns: fingers).
         self.title = QtWidgets.QLabel("Pick a recording")
         self.play_btn = QtWidgets.QPushButton("Play")
         self.play_btn.setToolTip("Play the recording back (nothing is sent to the hand)")
-        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider = self._make_slider()
         self.slider.setRange(0, 0)
         self.time_label = QtWidgets.QLabel("0.00 / 0.00 s")
         self.stream_check = QtWidgets.QCheckBox("Stream to sim")
@@ -7633,21 +8174,32 @@ class DemonstrationTab(QtWidgets.QWidget):
         middle_layout.addLayout(outputs)
         middle_layout.addWidget(self.plots, 1)
 
-        # Right: the camera recording with the bounding box, and the FK taxels.
+        # Right: the camera recording with the bounding box (Bounding box over it turns it
+        # off), and the FK taxels.
         self.camera = CameraView("")
         self.camera.setWordWrap(True)
         self.camera.set_message("Pick a recording")
+        self.bbox_radio = QtWidgets.QRadioButton("Bounding box")
+        self.bbox_radio.setAutoExclusive(False)  # alone: a click turns it off again
+        self.bbox_radio.setChecked(True)
+        self.bbox_radio.setToolTip("Draw the run's pen box on the camera recording")
+        self.bbox_radio.toggled.connect(lambda _: self._redraw_frame())
+        camera_box = QtWidgets.QWidget()
+        camera_layout = QtWidgets.QVBoxLayout(camera_box)
+        camera_layout.setContentsMargins(0, 0, 0, 0)
+        camera_layout.addWidget(self.bbox_radio)
+        camera_layout.addWidget(self.camera, 1)
         self.hand = HandView(
             node.sim_topic, node.xela_topic, node.counts_per_unit, waiting="Pick a recording"
         )
         right = QtWidgets.QSplitter(QtCore.Qt.Vertical)
-        right.addWidget(self.camera)
+        right.addWidget(camera_box)
         right.addWidget(self.hand)
 
         split = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
         split.addWidget(left)
-        split.addWidget(middle)
-        split.addWidget(right)
+        split.addWidget(self._middle_column(middle))
+        split.addWidget(self._right_column(right))
         split.setSizes([250, 900, 500])
         layout = QtWidgets.QVBoxLayout(self)
         layout.addWidget(split)
@@ -7655,29 +8207,11 @@ class DemonstrationTab(QtWidgets.QWidget):
         self._timer = QtCore.QTimer(self)
         self._timer.setInterval(REFRESH_MS)
         self._timer.timeout.connect(self._tick)
-        refresh_btn.clicked.connect(self.refresh_recordings)
-        self.success_btn.clicked.connect(lambda: self._mark(SUCCESS))
-        self.fail_btn.clicked.connect(lambda: self._mark(FAILURE))
-        # Keys while this tab is shown: S / F mark the picked recording, Space plays / pauses,
-        # Right jumps to the Thumb's first contact, Up / Down pick the previous / next recording.
-        keys = [
-            ("S", lambda: self._mark(SUCCESS)),
-            ("F", lambda: self._mark(FAILURE)),
-            ("Space", self._toggle_play),
-            ("Right", self._jump_to_thumb_contact),
-            ("Up", lambda: self._step_recording(-1)),
-            ("Down", lambda: self._step_recording(1)),
-        ]
-        for key, action in keys:
-            shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self)
-            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
-            shortcut.activated.connect(action)
+        keys, keys_text = self._player_keys()
+        self._add_keys(keys)
         self.play_btn.setToolTip(
-            "Play the recording back (nothing is sent to the hand). Keys: Space play / pause, "
-            "Right the Thumb's first contact, then the last 5 % (alternating), Up / Down "
-            "previous / next recording"
+            f"Play the recording back (nothing is sent to the hand). Keys: {keys_text}"
         )
-        self.delete_btn.clicked.connect(self._delete_picked)
         self.list.currentRowChanged.connect(self._load_picked)
         self._update_mark_buttons()
         self.play_btn.clicked.connect(self._toggle_play)
@@ -7686,17 +8220,119 @@ class DemonstrationTab(QtWidgets.QWidget):
             lambda v: self.seek(v / SLIDER_STEPS_PER_SEC, from_slider=True)
         )
 
+    def _player_keys(self) -> tuple[list[tuple[str, Callable[[], None]]], str]:
+        """The player's keys (key, action) and how the Play button's tooltip lists them: Space
+        plays / pauses, Left / Right move the play bar ``SEEK_FRACTION`` of the recording back /
+        forward, ] / [ jump to the Thumb's first contact and the last ``LAST_PART`` (alternating),
+        Up / Down pick the previous / next recording."""
+        return [
+            ("Space", self._toggle_play),
+            ("Left", lambda: self._seek_by(-SEEK_FRACTION * self.duration)),
+            ("Right", lambda: self._seek_by(SEEK_FRACTION * self.duration)),
+            ("[", lambda: self._jump_to_thumb_contact(-1)),
+            ("]", lambda: self._jump_to_thumb_contact(1)),
+            ("Up", lambda: self._step_recording(-1)),
+            ("Down", lambda: self._step_recording(1)),
+        ], (f"Space play / pause, Left / Right {100 * SEEK_FRACTION:g} % of the recording back / "
+            f"forward, ] / [ the Thumb's first contact, then the last {LAST_PART:.0%} "
+            "(alternating), Up / Down previous / next recording")
+
+    def _add_keys(self, keys: list[tuple[str, Callable[[], None]]]) -> None:
+        """Shortcuts (key, action) that work while this tab is shown."""
+        for key, action in keys:
+            shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self)
+            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+            shortcut.activated.connect(action)
+
+    def _recordings_panel(self) -> QtWidgets.QWidget:
+        """The left panel: the recordings list (``self.list``), Success / Fail (keys S / F) and
+        Delete for the picked one, and Refresh."""
+        self.list = QtWidgets.QListWidget()
+        self.list.setToolTip("Play on hand recordings of the Compose tab, newest first")
+        self.filter_checks: dict[str, QtWidgets.QCheckBox] = {}
+        filters = QtWidgets.QGridLayout()
+        for i, (key, text) in enumerate(DEMONSTRATION_FILTERS):
+            check = QtWidgets.QCheckBox(text)
+            check.toggled.connect(lambda _: self.refresh_recordings())
+            filters.addWidget(check, i // 2, i % 2)
+            self.filter_checks[key] = check
+        self.filter_checks[PROCESSED].setToolTip(
+            f"Recordings with an '{EPISODE_START_EVENT}' and a '{EPISODE_END_EVENT}' event "
+            "(set on the Processing tab)"
+        )
+        self.filter_checks[UNPROCESSED].setToolTip("Recordings that are not processed")
+        self.count_label = QtWidgets.QLabel()
+        refresh_btn = QtWidgets.QPushButton("Refresh")
+        self.success_btn = QtWidgets.QPushButton("Success (S)")
+        self.success_btn.setToolTip(
+            "Mark the picked recording as a success (press again to clear the mark). Key: S"
+        )
+        self.fail_btn = QtWidgets.QPushButton("Fail (F)")
+        self.fail_btn.setToolTip(
+            "Mark the picked recording as a failure (press again to clear the mark). Key: F"
+        )
+        for btn, color in ((self.success_btn, LABEL_COLORS[SUCCESS]),
+                           (self.fail_btn, LABEL_COLORS[FAILURE])):
+            btn.setCheckable(True)
+            btn.setStyleSheet(f"QPushButton:checked {{ background-color: {color}; color: white; }}")
+        self.delete_btn = QtWidgets.QPushButton("Delete")
+        self.delete_btn.setToolTip(
+            "Delete the picked recording with its camera, audio and label files"
+        )
+        mark_row = QtWidgets.QHBoxLayout()
+        mark_row.addWidget(self.success_btn)
+        mark_row.addWidget(self.fail_btn)
+        mark_row.addWidget(self.delete_btn)
+        left = QtWidgets.QGroupBox("Recordings")
+        left_layout = QtWidgets.QVBoxLayout(left)
+        left_layout.addLayout(filters)
+        left_layout.addWidget(self.list, 1)
+        left_layout.addWidget(self.count_label)
+        left_layout.addLayout(mark_row)
+        left_layout.addWidget(refresh_btn)
+        refresh_btn.clicked.connect(self.refresh_recordings)
+        self.success_btn.clicked.connect(lambda: self._mark(SUCCESS))
+        self.fail_btn.clicked.connect(lambda: self._mark(FAILURE))
+        self.delete_btn.clicked.connect(self._delete_picked)
+        self._add_keys([("S", lambda: self._mark(SUCCESS)), ("F", lambda: self._mark(FAILURE))])
+        return left
+
+    def _middle_column(self, player: QtWidgets.QWidget) -> QtWidgets.QWidget:
+        """The middle of the tab around ``player`` (the title, controls and plots)."""
+        return player
+
+    def _right_column(self, views: QtWidgets.QWidget) -> QtWidgets.QWidget:
+        """The right of the tab around ``views`` (the camera and the FK taxels)."""
+        return views
+
+    def _make_slider(self) -> QtWidgets.QSlider:
+        """The play bar."""
+        return QtWidgets.QSlider(QtCore.Qt.Horizontal)
+
     def showEvent(self, ev) -> None:
         super().showEvent(ev)
         self.refresh_recordings()
 
     # ---- recordings ---------------------------------------------------------------------
 
+    def _demo_matches(self, saved: dict) -> bool:
+        """Whether a recording's label file matches a ticked mark (Success / Failed) and a
+        ticked state (Processed / Unprocessed); a group with none ticked does not filter."""
+        marks = [k for k in (SUCCESS, FAILURE) if self.filter_checks[k].isChecked()]
+        states = [k for k in (PROCESSED, UNPROCESSED) if self.filter_checks[k].isChecked()]
+        processed = PROCESSED if is_processed(saved) else UNPROCESSED
+        return ((not marks or saved.get("label") in marks)
+                and (not states or processed in states))
+
     def refresh_recordings(self) -> None:
-        """Lists every Play on hand recording, newest first, keeping the picked one."""
+        """Lists the Play on hand recordings that match the ticked filters, newest first,
+        keeping the picked one."""
         current = self.list.currentItem()
         keep = current.data(QtCore.Qt.UserRole) if current is not None else None
-        paths = list_playbacks(self.store.compose_playback_dir)
+        every = list_playbacks(self.store.compose_playback_dir)
+        paths = [path for path in every if self._demo_matches(load_label(path) or {})]
+        self.count_label.setText(f"{len(paths)} shown of {len(every)} recordings")
+        self._plays = None  # the Thumb plays, read when a recording has no press label yet
         self.list.blockSignals(True)
         self.list.clear()
         for path in paths:
@@ -7711,11 +8347,25 @@ class DemonstrationTab(QtWidgets.QWidget):
             self._load(None)
         self._update_mark_buttons()
 
+    def _press_label(self, path: str) -> str:
+        """How the recording's Thumb press ended (``click_press_labels``), worked out and saved
+        the first time."""
+        if not (load_label(path) or {}).get("click_press"):
+            if getattr(self, "_plays", None) is None:
+                self._plays = ThumbPlays(self.store.demo_dir)
+            return click_press_label(path, self._plays)
+        return click_press_label(path)
+
     def _show_label(self, item: QtWidgets.QListWidgetItem) -> None:
-        """The list entry of a recording, with its success / failure label and colour."""
+        """The list entry of a recording, with its success / failure label and colour, and how
+        its Thumb press ended."""
         path = item.data(QtCore.Qt.UserRole)
-        label = (load_label(path) or {}).get("label")
-        text = play_list_text(path)
+        press = self._press_label(path)
+        saved = load_label(path) or {}
+        label = saved.get("label")
+        text = f"{play_list_text(path)} \u00b7 press: {PRESS_SHORT.get(press, press)}"
+        if is_processed(saved):
+            text += "  [processed]"
         if label in LABEL_COLORS:
             text = f"[{LABEL_TEXT[label]}] {text}"
             item.setForeground(QtGui.QColor(LABEL_COLORS[label]))
@@ -7839,11 +8489,19 @@ class DemonstrationTab(QtWidgets.QWidget):
             f"{f.upper()} {os.path.splitext(os.path.basename(p))[0]}"
             for f, p in rec.meta.get("takes", {}).items()
         )
+        saved = load_label(path) or {}
+        press = saved.get("click_press")
+        why = saved.get("click_press_why", "")
+        press_html = "" if not press else (
+            f"<br>click press: <b>{PRESS_SHORT.get(press, press)}</b>"
+            + (f" ({why})" if why else "")
+        )
         self.title.setText(
             f"<b>{rec.name}</b>: {self.duration:.1f} s, {rec.meta.get('ended', '?')} ({takes})"
+            + press_html
         )
         self._plot(rec)
-        self._right_presses = 0
+        self._jump_index = -1
         self._thumb_contact = thumb_contact_time(
             rec, self._tip_ids["th"], self.node.counts_per_unit
         )
@@ -7911,7 +8569,7 @@ class DemonstrationTab(QtWidgets.QWidget):
                 self._marks.append((plot, line))
 
     def _mark_thumb_contact(self, t: float) -> None:
-        """A "TH contact" line at ``t`` on the Thumb's plots (where Right jumps to)."""
+        """A "TH contact" line at ``t`` on the Thumb's plots (where ] jumps to)."""
         color = "#00bcd4"
         for r, field_name in enumerate([f for f, _, _ in DEMO_ROWS] + [DEMO_TIP_ROW]):
             plot = self._plots.get((field_name, "th"))
@@ -7925,22 +8583,36 @@ class DemonstrationTab(QtWidgets.QWidget):
             plot.addItem(line)
             self._marks.append((plot, line))
 
-    def _jump_to_thumb_contact(self) -> None:
-        """Right arrow: the play bar to the Thumb's first contact with the pen, then (next
-        press) to the start of the last ``LAST_PART`` of the recording, then back, and so on;
-        playing on from there if it plays. Without a Thumb contact, always the last part."""
+    def _jump_to_thumb_contact(self, step: int) -> None:
+        """] (``step`` 1) / [ (-1): the play bar to the Thumb's first contact with the pen, then
+        (next press) to the start of the last ``LAST_PART`` of the recording, then back, and so
+        on ([ goes through them the other way); playing on from there if it plays. Without a
+        Thumb contact, always the last part."""
         if self.rec is None:
             return
         last = (1.0 - LAST_PART) * self.duration
         targets = [(self._thumb_contact, "Thumb contact")] if self._thumb_contact is not None else []
         targets.append((last, f"last {LAST_PART:.0%}"))
-        t, what = targets[self._right_presses % len(targets)]
-        self._right_presses += 1
+        self._jump_index = (self._jump_index + step) % len(targets)
+        t, what = targets[self._jump_index]
         self.seek(t)
         if self._timer.isActive():
             self._play_audio()  # heard from the new time
         note = "" if self._thumb_contact is not None else ", no Thumb contact found"
         self.time_label.setText(f"{self.time_label.text()}  ({what}{note})")
+
+    def _seek_by(self, dt: float) -> None:
+        """Moves the play bar ``dt`` s (back if negative)."""
+        if self.rec is None:
+            return
+        self.seek(self.now + dt)
+        if self._timer.isActive():
+            self._play_audio()  # heard from the new time
+
+    def _redraw_frame(self) -> None:
+        """Shows the camera frame at the play bar again (with or without the bounding box)."""
+        self._video.reread()
+        self.seek(self.now)
 
     def _step_recording(self, step: int) -> None:
         """Up / Down arrow: the previous / next recording in the list."""
@@ -8005,7 +8677,7 @@ class DemonstrationTab(QtWidgets.QWidget):
             frame = self._video.read(rec.video, max(index_at(rec.video_t, self.now), 0))
             if frame is not None:
                 corners = rec.meta.get("box_corners")
-                if corners is not None:
+                if corners is not None and self.bbox_radio.isChecked():
                     frame = draw_recorded_pen_pose(
                         frame, np.asarray(corners), f"box {rec.meta.get('box', '')}".strip()
                     )
@@ -8148,6 +8820,1353 @@ def double_spin(
     return spin
 
 
+# Processing tab filters: (name, check box text) of the label filters, and the processed one.
+PROCESSING_LABEL_FILTERS = ((SUCCESS, "Success"), (FAILURE, "Failure"))
+NEEDS_MANUAL_LABEL = "needs_manual_label"
+# Label file key: the names of the events found by an automation that were rejected.
+REJECTED = "rejected"
+# Events the Processing tab's automations add to be confirmed (Process click: the click).
+AUTOMATION_EVENTS = (CLICK_EVENT,)
+
+
+def to_be_confirmed(label: dict) -> bool:
+    """Whether a label file has an event to be confirmed (found by Process click)."""
+    return any((e.get("params") or {}).get(TO_BE_CONFIRMED) for e in label.get("events", []))
+
+
+def needs_manual_label(label: dict) -> bool:
+    """Whether a recording's event found by an automation was rejected (``rejected`` in its
+    label file) and the event was not marked by hand since."""
+    names = {e.get("name") for e in label.get("events", [])}
+    return any(name not in names for name in label.get(REJECTED, []))
+
+
+def is_processed(label: dict) -> bool:
+    """Whether a recording is processed: it has an ``episode_start`` and a ``terminal`` event
+    (not to be confirmed), or ``processed`` set in its label file."""
+    names = {
+        e.get("name") for e in label.get("events", [])
+        if not (e.get("params") or {}).get(TO_BE_CONFIRMED)
+    }
+    return {EPISODE_START_EVENT, EPISODE_END_EVENT} <= names or bool(label.get(PROCESSED))
+
+
+class ClickProcessSignals(QtCore.QObject):
+    """Process click's (or the Sparsh-skin transform's) thread to the Processing tab: progress
+    text, recordings done of how many (the progress bar), then the summary."""
+
+    progress = QtCore.pyqtSignal(str)
+    step = QtCore.pyqtSignal(int, int)
+    done = QtCore.pyqtSignal(str)
+
+# maintain_touch / click_press trace events that do not end a contact.
+CONTACT_KEEP_EVENTS = ("slip", "saturated")
+
+
+def finger_play(store: TakeStore, recording: str, finger: str, take_path: str) -> str | None:
+    """The play of ``finger``'s take saved with the Play on hand ``recording`` (as
+    ``ThumbPlays.find``: the one saved just before it)."""
+    try:
+        saved = os.path.getmtime(recording)
+        take_name = os.path.splitext(os.path.basename(take_path))[0]
+        plays = [(saved - os.path.getmtime(p), p) for p in store.list_playbacks(finger, take_name)]
+    except OSError:
+        return None
+    lo, hi = PAIR_WINDOW_S
+    near = [(gap, p) for gap, p in plays if lo <= gap <= hi]
+    return min(near, key=lambda gp: (gp[0] < 0, abs(gp[0])))[1] if near else None
+
+
+def trace_contact_spans(trace: list[dict], end: float) -> list[tuple[float, float]]:
+    """(start, end) trace times a maintain_touch / click_press trace was in contact: from each
+    "contact" to the next event that is not a slip or saturation (``end`` if none)."""
+    spans, since = [], None
+    for event in trace:
+        if since is None:
+            if event.get("event") == "contact":
+                since = event["t"]
+        elif event.get("event") not in CONTACT_KEEP_EVENTS:
+            spans.append((since, event["t"]))
+            since = None
+    if since is not None:
+        spans.append((since, end))
+    return spans
+
+
+def recorded_contacts(
+    store: TakeStore, recording: str, rec: PlaybackRecording, duration: float
+) -> dict[str, list[tuple[float, float]]]:
+    """When each finger was in contact with the pen in a Play on hand recording (its time, s),
+    as the Compose tab's Contact lights showed it: its ``maintain_touch`` holding or its
+    ``click_press`` pressing. Read from the traces of the finger's own play (saved with the
+    recording), lined up by the first trace event, which is at the take time its region
+    starts; fingers whose play is not found have none."""
+    timeline = rec.meta.get("timeline", [])
+    contacts: dict[str, list[tuple[float, float]]] = {}
+    for finger, take_path in rec.meta.get("takes", {}).items():
+        start = next((e["t"] for e in timeline
+                      if e["finger"] == finger and e["event"] == "start"), None)
+        end = next((e["t"] for e in timeline
+                    if e["finger"] == finger and e["event"] in ("finished", "stopped")), duration)
+        play = finger_play(store, recording, finger, take_path) if start is not None else None
+        if play is None:
+            continue
+        try:
+            with np.load(play, allow_pickle=False) as data:  # only the small entries are read
+                meta = json.loads(str(data["meta"]))
+                cmd_t, local = data["cmd_t"], data["cmd_local"]
+        except Exception:  # noqa: BLE001 - an unreadable play shows no contact
+            continue
+        spans = []
+        for key in ("maintain_touch_trace", "click_press_trace"):
+            trace = meta.get(key) or []
+            if not trace or not trace[0].get("region") or not len(local):
+                continue
+            side = np.sign(local - trace[0]["region"][0])
+            entered = np.flatnonzero((side == 0) | (side != side[0]))
+            shift = start + float(cmd_t[entered[0] if len(entered) else 0]) - trace[0]["t"]
+            spans += [(a + shift, b + shift) for a, b in trace_contact_spans(trace, end - shift)]
+        contacts[finger] = sorted(spans)
+    return contacts
+
+
+# The Processing tab's Reward shows the terminal reward this long from ``terminal`` (s).
+REWARD_TERMINAL_S = 0.25
+
+
+def set_light(light: QtWidgets.QLabel, color: str) -> None:
+    if light.property("color") != color:
+        light.setProperty("color", color)
+        light.setStyleSheet(SLIP_LIGHT_STYLE.format(color))
+
+
+class ProcessingTab(DemonstrationTab):
+    """The Play on hand recordings marked success or failure on the Demonstration tab, listed
+    when they match a ticked mark (Success, Failure) and a ticked state (Processed:
+    ``is_processed``, To be confirmed, Needs manual label), a group with none ticked not filtering; the picked one plays back as on the Demonstration tab.
+
+    Events of events.json whose ``tab`` has "processing" are added at the play bar as on the
+    Edit tab (a duration event takes two clicks: its start, then its end) and saved in the
+    recording's label file as ``events``; they are marked on the play bar and the plots and
+    listed next to the plots (click to seek, Edit renames, Delete removes)."""
+
+    REGION_ALPHA = 50
+    PENDING_ALPHA = 30
+
+    def __init__(
+        self, node: LeapStateListener, store: TakeStore, event_defs: dict[str, dict]
+    ) -> None:
+        self.event_defs = event_defs  # all of them, for the colours of saved events
+        self._addable = {
+            name: info for name, info in event_defs.items()
+            if PROCESSING_TAB in event_tabs(info)
+        }
+        self.events: list[TakeEvent] = []  # the picked recording's
+        self._pending: TakeEvent | None = None  # duration event whose end is not marked yet
+        self._event_items: list[tuple[pg.PlotItem, pg.GraphicsObject]] = []
+        self._pending_items: list[tuple[pg.PlotItem, pg.GraphicsObject]] = []
+        self._event_marks: list[tuple[int, QtGui.QColor, str]] = []  # saved events on the bar
+        self._event_spans: list[tuple[int, int, QtGui.QColor, str]] = []
+        self._click_thread: threading.Thread | None = None  # Process click, while it runs
+        self._click_stop = threading.Event()
+        self._click_signals = ClickProcessSignals()
+        self._sparsh_thread: threading.Thread | None = None  # Sparsh-skin transform, running
+        self._sparsh_signals = ClickProcessSignals()
+        super().__init__(node, store)
+        self._click_signals.progress.connect(self.process_status.setText)
+        self._click_signals.step.connect(self._bar_step)
+        self._click_signals.done.connect(self._process_click_done)
+        self._sparsh_signals.step.connect(self._bar_step)
+        self._sparsh_signals.progress.connect(self.process_status.setText)
+        self._sparsh_signals.done.connect(self._sparsh_transform_done)
+
+    def _recordings_panel(self) -> QtWidgets.QWidget:
+        """The left panel: the filters, the recordings that match them, their count, Refresh
+        and Process click."""
+        self.list = QtWidgets.QListWidget()
+        self.list.setToolTip(
+            "Play on hand recordings marked success / failure on the Demonstration tab, "
+            "newest first"
+        )
+        self.filter_checks: dict[str, QtWidgets.QCheckBox] = {}
+        filters = QtWidgets.QGridLayout()
+        for i, (key, text) in enumerate((*PROCESSING_LABEL_FILTERS, (PROCESSED, "Processed"),
+                                         (TO_BE_CONFIRMED, "To be confirmed"),
+                                         (NEEDS_MANUAL_LABEL, "Needs manual label"))):
+            check = QtWidgets.QCheckBox(text)
+            check.setChecked(key in LABEL_TEXT)  # the states narrow the list when ticked
+            check.toggled.connect(lambda _: self.refresh_recordings())
+            filters.addWidget(check, i // 2, i % 2)
+            self.filter_checks[key] = check
+        self.filter_checks[PROCESSED].setToolTip(
+            f"Recordings with an '{EPISODE_START_EVENT}' and a '{EPISODE_END_EVENT}' event "
+            "(not to be confirmed), or 'processed' set in their label file"
+        )
+        self.filter_checks[TO_BE_CONFIRMED].setToolTip(
+            f"Recordings with a '{CLICK_EVENT}' event found by Process click and not confirmed "
+            "yet"
+        )
+        self.filter_checks[NEEDS_MANUAL_LABEL].setToolTip(
+            "Successful recordings whose event found by Process click was rejected and that "
+            "have no such event marked by hand yet"
+        )
+        self.count_label = QtWidgets.QLabel()
+        # Shown while To be confirmed is ticked: the picked recording's events of the picked
+        # name that an automation found are confirmed or rejected.
+        self.confirm_combo = QtWidgets.QComboBox()
+        self.confirm_combo.setToolTip("The event (found by an automation) to confirm or reject")
+        for name in AUTOMATION_EVENTS:
+            self.confirm_combo.addItem(color_swatch(self._color(name)), name, name)
+        self.confirm_event_btn = QtWidgets.QPushButton("Confirm (C)")
+        self.confirm_event_btn.setToolTip(
+            "Keep the picked recording's event to be confirmed (a confirmed click is also a "
+            "Process click sample)"
+        )
+        self.reject_event_btn = QtWidgets.QPushButton("Reject (R)")
+        self.reject_event_btn.setToolTip(
+            "Delete the picked recording's event to be confirmed: it stays a success, tagged "
+            "[needs manual label] until you mark the event by hand (Process click does not "
+            "search it again)"
+        )
+        self.confirm_box = QtWidgets.QWidget()
+        confirm_row = QtWidgets.QHBoxLayout(self.confirm_box)
+        confirm_row.setContentsMargins(0, 0, 0, 0)
+        confirm_row.addWidget(self.confirm_combo, 1)
+        confirm_row.addWidget(self.confirm_event_btn)
+        confirm_row.addWidget(self.reject_event_btn)
+        to_confirm = self.filter_checks[TO_BE_CONFIRMED]
+        self.confirm_box.setVisible(to_confirm.isChecked())
+        to_confirm.toggled.connect(self.confirm_box.setVisible)
+        self.confirm_combo.currentIndexChanged.connect(lambda _: self._update_confirm_buttons())
+        self.confirm_event_btn.clicked.connect(lambda: self._resolve_picked(confirm=True))
+        self.reject_event_btn.clicked.connect(lambda: self._resolve_picked(confirm=False))
+        left = QtWidgets.QGroupBox("Recordings")
+        left_layout = QtWidgets.QVBoxLayout(left)
+        left_layout.addLayout(filters)
+        left_layout.addWidget(self.list, 1)
+        left_layout.addWidget(self.count_label)
+        left_layout.addWidget(self.confirm_box)
+        return left
+
+    def _update_mark_buttons(self) -> None:
+        """No Success / Fail / Delete buttons here: recordings are marked on the Demonstration
+        tab."""
+
+    # The recording's contact spans by finger, slips and fingers with a take (see ``_load``).
+    _contacts: dict[str, list[tuple[float, float]]] = {}
+    _slips: list[dict] = []
+    _played: set[str] = set()
+
+    def _middle_column(self, player: QtWidgets.QWidget) -> QtWidgets.QWidget:
+        """The top third: Episodes, Automation and ``self.top_panel`` (empty for now); the
+        player under it, with the Reward and the Contact and Slip lights under its play bar."""
+        row = QtWidgets.QHBoxLayout()
+        # (episode_start, terminal, label) of the recording's confirmed episode, or None.
+        self._reward_span: tuple[float, float, str] | None = None
+        self.reward_label = QtWidgets.QLabel()
+        self.reward_label.setToolTip(
+            "The episode's reward at the play bar's time (Process reward's values): Every step "
+            f"from '{EPISODE_START_EVENT}' to '{EPISODE_END_EVENT}', Success / Fail at "
+            f"'{EPISODE_END_EVENT}' (its last timestep); — outside the episode or without a "
+            f"confirmed '{EPISODE_START_EVENT}' and '{EPISODE_END_EVENT}'"
+        )
+        self.reward_label.setMinimumWidth(
+            self.reward_label.fontMetrics().horizontalAdvance("Reward: -000.000 (terminal)")
+        )
+        self.reward_label.setText("Reward: <span style='color:#9e9e9e'>— (no episode)</span>")
+        row.addWidget(self.reward_label)
+        row.addSpacing(12)
+        row.addWidget(QtWidgets.QLabel("Contact:"))
+        self.contact_lights: dict[str, QtWidgets.QLabel] = {}
+        for finger, _ in FINGERS:
+            light = QtWidgets.QLabel()
+            light.setToolTip(
+                f"{FINGER_LABEL[finger]} at the play bar's time: green in contact with the pen "
+                "(maintain touch holding, or the Thumb's click press pressing; from the "
+                "finger's own play saved with the recording)"
+            )
+            self.contact_lights[finger] = light
+            row.addWidget(light)
+            row.addWidget(QtWidgets.QLabel(finger.upper()))
+            row.addSpacing(4)
+        row.addSpacing(12)
+        row.addWidget(QtWidgets.QLabel("Slip:"))
+        self.slip_lights: dict[str, QtWidgets.QLabel] = {}
+        for finger in SLIP_FINGERS:
+            light = QtWidgets.QLabel()
+            light.setToolTip(
+                f"{FINGER_LABEL[finger]} at the play bar's time: grey not in contact, green in "
+                f"contact, red for {SLIP_LIGHT_S:.0f} s after a slip (the recording's slips)"
+            )
+            self.slip_lights[finger] = light
+            row.addWidget(light)
+            row.addWidget(QtWidgets.QLabel(finger.upper()))
+            row.addSpacing(4)
+        row.addStretch(1)
+        self._show_lights()
+        # The player's rows: title, play bar, audio output, plots.
+        player_layout = player.layout()
+        player_layout.insertLayout(2, row)
+
+        # Under the lights: the event picker with Add event (Start / End event) and Cancel.
+        self.event_combo = QtWidgets.QComboBox()
+        for name, info in self._addable.items():
+            text = f"{name}  (duration)" if self._is_duration(name) else name
+            self.event_combo.addItem(color_swatch(self._color(name)), text, name)
+            self.event_combo.setItemData(
+                self.event_combo.count() - 1,
+                f"[{info.get('type', '')}] {info.get('description', '')}",
+                QtCore.Qt.ToolTipRole,
+            )
+        self.add_btn = QtWidgets.QPushButton("Add event")
+        self.add_btn.setMinimumWidth(90)
+        self.cancel_btn = QtWidgets.QPushButton("Cancel")
+        self.cancel_btn.setToolTip("Discard the duration event being marked")
+        self.cancel_btn.hide()
+        event_row = QtWidgets.QHBoxLayout()
+        event_row.addWidget(self.event_combo, 1)
+        event_row.addWidget(self.add_btn)
+        event_row.addWidget(self.cancel_btn)
+        player_layout.insertLayout(3, event_row)
+
+        # Next to the plots: the recording's events, with Edit and Delete.
+        self.event_list = QtWidgets.QListWidget()
+        self.event_list.setFixedWidth(180)
+        self.edit_btn = QtWidgets.QPushButton("Edit")
+        self.delete_event_btn = QtWidgets.QPushButton("Delete")
+        list_buttons = QtWidgets.QHBoxLayout()
+        list_buttons.addWidget(self.edit_btn)
+        list_buttons.addWidget(self.delete_event_btn)
+        events_box = QtWidgets.QVBoxLayout()
+        events_box.addWidget(QtWidgets.QLabel("Events"))
+        events_box.addWidget(self.event_list, 1)
+        events_box.addLayout(list_buttons)
+        body = QtWidgets.QHBoxLayout()
+        index = player_layout.indexOf(self.plots)
+        player_layout.removeWidget(self.plots)
+        body.addWidget(self.plots, 1)
+        body.addLayout(events_box)
+        player_layout.insertLayout(index, body, 1)
+
+        self.add_btn.clicked.connect(self.add_event)
+        self.cancel_btn.clicked.connect(self.cancel_pending)
+        self.event_combo.currentIndexChanged.connect(lambda _: self._update_event_buttons())
+        self.edit_btn.clicked.connect(self.edit_selected_event)
+        self.delete_event_btn.clicked.connect(self.delete_selected_event)
+        self.event_list.itemClicked.connect(self._on_event_item)
+        self.event_list.itemActivated.connect(self._on_event_item)
+        self.event_list.itemSelectionChanged.connect(self._update_event_buttons)
+        self._update_event_buttons()
+
+        # The top third: Episodes and Automation over ``self.top_panel`` (empty for now).
+        self.process_click_btn = QtWidgets.QPushButton("Process click")
+        self.process_click_btn.setToolTip(
+            f"Send the confirmed '{CLICK_EVENT}' events as click samples to the click "
+            "detector's service, which searches the successful recordings without one (not "
+            "searched before); the click it finds is added as an event to be confirmed"
+        )
+        self.process_click_btn.clicked.connect(self._process_click)
+        self.process_failure_btn = QtWidgets.QPushButton("Process failure")
+        self.process_failure_btn.setToolTip(
+            f"Mark '{EPISODE_END_EVENT}' and '{episode_processing.TRUNCATED}' at "
+            f"'{EPISODE_START_EVENT}' + the truncation length on every failed recording "
+            f"without a '{EPISODE_END_EVENT}' (and move those it marked before, if the length "
+            f"changed); recordings that end earlier get '{EPISODE_END_EVENT}' and "
+            f"'{episode_processing.FAIL}' at their last timestep"
+        )
+        self.process_failure_btn.clicked.connect(self._process_failure)
+        self.process_reward_btn = QtWidgets.QPushButton("Process reward")
+        self.process_reward_btn.setToolTip(
+            "Set the rewards of every episode in "
+            f"{sparsh_processing.DEFAULT_OUTPUT_NAME}/ (Sparsh-skin transform): Success at the "
+            "last timestep of a success, Fail at the last timestep of a failure, Every step at "
+            "every other timestep. The Sparsh-skin transform uses them too."
+        )
+        self.process_reward_btn.clicked.connect(self._process_reward)
+        saved_rewards = episode_processing.load_rewards(self.store.compose_playback_dir)
+        self.reward_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
+        reward_row = QtWidgets.QHBoxLayout()
+        reward_row.addWidget(self.process_reward_btn)
+        for key, text, tip in (
+            ("success", "Success:", "Reward at the last timestep of a successful episode"),
+            ("fail", "Fail:", "Reward at the last timestep of a failed episode"),
+            ("step", "Every step:", "Reward at every other timestep"),
+        ):
+            spin = double_spin(
+                -1e6, 1e6, 0.1, 3, "",
+                f"{tip} (saved with the recordings in {episode_processing.SETTINGS_NAME})",
+            )
+            spin.setValue(saved_rewards[key])
+            spin.valueChanged.connect(lambda _: (self._save_rewards(), self._show_reward()))
+            self.reward_spins[key] = spin
+            reward_row.addWidget(QtWidgets.QLabel(text))
+            reward_row.addWidget(spin)
+        self.sparsh_transform_btn = QtWidgets.QPushButton("Sparsh-skin transform")
+        self.sparsh_transform_btn.setToolTip(
+            "Preprocess every episode ('episode_start' to 'terminal' of a success / failure) as "
+            "Sparsh-skin does, by the sparsh_skin_transformation service, into "
+            f"{sparsh_processing.DEFAULT_OUTPUT_NAME}/ next to the recordings: the LEQ_DV3 "
+            "world model's convert_episodes.py input (episodes already there are kept)"
+        )
+        self.sparsh_transform_btn.clicked.connect(self._sparsh_transform)
+        self.sparsh_baseline_combo = QtWidgets.QComboBox()
+        self.sparsh_baseline_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+        self.sparsh_baseline_combo.setToolTip(
+            "The Baseline tab recording whose no-contact baseline the Sparsh-skin transform "
+            f"subtracts from every episode (tagged {SPARSH_BASELINE_TAG} there); episodes "
+            "written with another baseline are written again"
+        )
+        self.sparsh_baseline_combo.activated.connect(self._sparsh_baseline_picked)
+        self.process_status = QtWidgets.QLabel()
+        # One bar for Process click, Process failure and the Sparsh-skin transform.
+        self.process_bar = QtWidgets.QProgressBar()
+        self.process_bar.setToolTip(
+            "Recordings done by the running Process click, Process failure or Sparsh-skin "
+            "transform"
+        )
+        self._bar_idle()
+        self.process_status.setWordWrap(True)
+        automation = QtWidgets.QGroupBox("Automation")
+        automation_layout = QtWidgets.QHBoxLayout(automation)
+        automation_buttons = QtWidgets.QVBoxLayout()
+        automation_buttons.addWidget(self.process_click_btn)
+        automation_buttons.addWidget(self.process_failure_btn)
+        automation_buttons.addLayout(reward_row)
+        sparsh_row = QtWidgets.QHBoxLayout()
+        sparsh_row.addWidget(self.sparsh_transform_btn)
+        sparsh_row.addWidget(QtWidgets.QLabel("Baseline:"))
+        sparsh_row.addWidget(self.sparsh_baseline_combo, 1)
+        automation_buttons.addLayout(sparsh_row)
+        automation_buttons.addWidget(self.process_bar)  # under Sparsh-skin transform / Baseline
+        automation_buttons.addStretch(1)
+        automation_layout.addLayout(automation_buttons)
+        automation_layout.addWidget(self.process_status, 1)
+        self.top_panel = QtWidgets.QWidget()
+        column = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(column)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self._episodes_box(), 1)
+        layout.addWidget(automation, 1)
+        layout.addWidget(self.top_panel, 2)
+        layout.addWidget(player, 8)  # the player keeps the bottom two thirds
+        return column
+
+    def _right_column(self, views: QtWidgets.QWidget) -> QtWidgets.QWidget:
+        """Refresh (the recordings list) over the camera and the FK taxels."""
+        refresh_btn = QtWidgets.QPushButton("Refresh")
+        refresh_btn.setToolTip("List the recordings again (their labels and events from disk)")
+        refresh_btn.clicked.connect(self.refresh_recordings)
+        column = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(column)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(refresh_btn)
+        layout.addWidget(views, 1)
+        return column
+
+    def _make_slider(self) -> QtWidgets.QSlider:
+        """The play bar, with the events marked over it."""
+        return SpanBookmarkSlider()
+
+    def _player_keys(self) -> tuple[list[tuple[str, Callable[[], None]]], str]:
+        """Space plays / pauses, E adds the picked event (a duration event: starts it, then
+        ends it), C / R confirm / reject the event to be confirmed, Left / Right move the play bar ``SEEK_FRACTION`` of the recording
+        back / forward, [ / ]
+        jump to the start of the previous / next event, Up / Down pick the previous / next
+        recording."""
+        return [
+            ("Space", self._toggle_play),
+            ("E", self.add_event),
+            ("C", lambda: self._resolve_picked(confirm=True)),
+            ("R", lambda: self._resolve_picked(confirm=False)),
+            ("Left", lambda: self._seek_by(-SEEK_FRACTION * self.duration)),
+            ("Right", lambda: self._seek_by(SEEK_FRACTION * self.duration)),
+            ("[", lambda: self._jump_to_event(-1)),
+            ("]", lambda: self._jump_to_event(1)),
+            ("Up", lambda: self._step_recording(-1)),
+            ("Down", lambda: self._step_recording(1)),
+        ], ("Space play / pause, E add event (a duration event: start, then end), C / R "
+            "confirm / reject the event to be confirmed, Left / Right "
+            f"{100 * SEEK_FRACTION:g} % of the recording back / forward, [ / ] start "
+            "of the previous / next event, Up / Down previous / next recording")
+
+    def _jump_to_event(self, step: int) -> None:
+        """Moves the play bar to the start of the previous (``step`` -1) or next (1) event."""
+        if self.rec is None:
+            return
+        starts = sorted({e.t for e in self.events})
+        tol = EVENT_TIME_RESOLUTION / 2
+        if step > 0:
+            t = next((s for s in starts if s > self.now + tol), None)
+        else:
+            t = next((s for s in reversed(starts) if s < self.now - tol), None)
+        if t is not None:
+            self.seek(t)
+            if self._timer.isActive():
+                self._play_audio()  # heard from the new time
+
+    def _load(self, path: str | None) -> None:
+        self._contacts, self._slips, self._played = {}, [], set()
+        self.events, self._pending = [], None
+        super()._load(path)
+        if self.rec is not None:
+            self._played = set(self.rec.meta.get("takes", {}))
+            self._slips = sorted(self.rec.meta.get("slips", []), key=lambda s: s["t"])
+            self._contacts = recorded_contacts(self.store, path, self.rec, self.duration)
+            self.events = [
+                TakeEvent(**e) for e in (load_label(path) or {}).get("events", [])
+            ]
+        self._show_lights()
+        self._refresh_events()
+
+    def seek(self, t: float, from_slider: bool = False) -> None:
+        super().seek(t, from_slider)
+        self._show_lights()
+        if self._pending is not None:
+            self._show_pending()
+        self._update_event_buttons()
+
+    # ---- events -------------------------------------------------------------------------
+
+    def _color(self, name: str, alpha: int = 255) -> QtGui.QColor:
+        color = QtGui.QColor(self.event_defs.get(name, {}).get("color", UNKNOWN_EVENT_COLOR))
+        color.setAlpha(alpha)
+        return color
+
+    def _is_duration(self, name: str) -> bool:
+        return self.event_defs.get(name, {}).get("length") == "duration"
+
+    def _event_plots(self) -> list[pg.PlotItem]:
+        return [*self._plots.values(), self.audio_plot]
+
+    def _event_line(self, t: float, color: QtGui.QColor) -> pg.InfiniteLine:
+        return pg.InfiniteLine(
+            pos=t, angle=90, movable=False,
+            pen=pg.mkPen(color, width=1.5, style=QtCore.Qt.DashLine),
+        )
+
+    def _event_region(self, start: float, end: float, name: str, alpha: int) -> pg.LinearRegionItem:
+        region = pg.LinearRegionItem(
+            values=(start, end), movable=False, brush=pg.mkBrush(self._color(name, alpha)),
+        )
+        for line in region.lines:
+            line.setPen(pg.mkPen(self._color(name), width=1.5, style=QtCore.Qt.DashLine))
+        region.setZValue(-10)
+        return region
+
+    def _draw(self, make) -> list[tuple[pg.PlotItem, pg.GraphicsObject]]:
+        """``make()`` drawn on every plot."""
+        items = []
+        for plot in self._event_plots():
+            item = make()
+            plot.addItem(item, ignoreBounds=True)
+            items.append((plot, item))
+        return items
+
+    def _add_default_events(self, path: str) -> None:
+        """Saves the default events of a recording that has none saved (no ``events`` in its
+        label file; one whose events were all deleted keeps none): ``episode_start`` at its
+        first command (``cmd_t``, as the action on /cmd_xela starts there)."""
+        if EPISODE_START_EVENT not in self._addable:
+            return
+        try:
+            with np.load(path, allow_pickle=False) as data:
+                cmd_t = data["cmd_t"]
+            t = round(float(cmd_t[0]), 3) if len(cmd_t) else 0.0
+            event = TakeEvent(
+                t=t, name=EPISODE_START_EVENT,
+                type=self.event_defs[EPISODE_START_EVENT].get("type", ""), added=time.time(),
+            )
+            update_label(path, events=[asdict(event)])
+        except Exception as e:  # noqa: BLE001 - unreadable recording: no default events
+            self.node.get_logger().warn(f"Processing: no default events for {path}: {e}")
+
+    def _event_at(self, t: float) -> TakeEvent | None:
+        return next((e for e in self.events if abs(e.t - t) < EVENT_TIME_RESOLUTION), None)
+
+    def _refresh_events(self) -> None:
+        """The list, play bar marks and plot lines / regions of the recording's events."""
+        self._update_reward_span()
+        for plot, item in self._event_items:
+            plot.removeItem(item)
+        self._event_items = []
+        self.event_list.clear()
+        self._event_marks, self._event_spans = [], []
+        for i, event in enumerate(self.events, start=1):
+            color = self._color(event.name)
+            tip = f"{event.name} @ {event.span_text()}"
+            if event.params.get(TO_BE_CONFIRMED):
+                tip += f" (to be confirmed, score {event.params.get('score', 0.0):.2f})"
+            item = QtWidgets.QListWidgetItem(color_swatch(color), f"{i}. {tip}")
+            item.setData(QtCore.Qt.UserRole, i - 1)
+            self.event_list.addItem(item)
+            value = int(round(event.t * SLIDER_STEPS_PER_SEC))
+            self._event_marks.append((value, color, tip))
+            if event.end is None:
+                self._event_items += self._draw(lambda: self._event_line(event.t, color))
+            else:
+                end = int(round(event.end * SLIDER_STEPS_PER_SEC))
+                self._event_marks.append((end, color, tip))
+                self._event_spans.append((value, end, color, tip))
+                self._event_items += self._draw(
+                    lambda: self._event_region(event.t, event.end, event.name, self.REGION_ALPHA)
+                )
+        self._show_pending()
+        self._update_event_buttons()
+
+    def _show_pending(self) -> None:
+        """Play bar / plots with the saved events plus the duration event being marked, shaded
+        from its start to the play bar."""
+        for plot, item in self._pending_items:
+            plot.removeItem(item)
+        self._pending_items = []
+        marks, spans = list(self._event_marks), list(self._event_spans)
+        p = self._pending
+        if p is not None:
+            color = self._color(p.name)
+            start, end = sorted((p.t, self.now))
+            tip = f"{p.name} from {p.t:.2f} s (end not marked yet)"
+            marks.append((int(round(p.t * SLIDER_STEPS_PER_SEC)), color, tip))
+            spans.append((int(round(start * SLIDER_STEPS_PER_SEC)),
+                          int(round(end * SLIDER_STEPS_PER_SEC)), color, tip))
+            self._pending_items = (
+                self._draw(lambda: self._event_region(start, end, p.name, self.PENDING_ALPHA))
+                + self._draw(lambda: self._event_line(p.t, color))
+            )
+        self.slider.set_marks(marks)
+        self.slider.set_spans(spans)
+
+    def _selected_event(self) -> TakeEvent | None:
+        item = self.event_list.currentItem()
+        if self.rec is None or item is None or not item.isSelected():
+            return None
+        return self.events[item.data(QtCore.Qt.UserRole)]
+
+    def _update_event_buttons(self) -> None:
+        self._update_confirm_buttons()
+        event = self._selected_event()
+        selected = event is not None
+        self.edit_btn.setEnabled(selected)
+        self.delete_event_btn.setEnabled(selected)
+        p = self._pending
+        self.cancel_btn.setVisible(p is not None)
+        self.event_combo.setEnabled(self.rec is not None and p is None)
+        if self.rec is None or not self._addable:
+            self.add_btn.setText("Add event")
+            self.add_btn.setEnabled(False)
+            self.add_btn.setToolTip(
+                "" if self._addable
+                else f"No events with \"tab\": \"{PROCESSING_TAB}\" in events.json"
+            )
+            return
+        if p is not None:
+            self.add_btn.setText("End event")
+            self.add_btn.setEnabled(True)
+            self.add_btn.setToolTip(
+                f"Mark the end of '{p.name}' (started at {p.t:.2f} s) at the current time"
+            )
+            return
+        duration = self._is_duration(self.event_combo.currentData())
+        self.add_btn.setText("Start event" if duration else "Add event")
+        existing = self._event_at(self.now)
+        self.add_btn.setEnabled(existing is None)
+        self.add_btn.setToolTip(
+            f"'{existing.name}' already starts at this time" if existing is not None
+            else "Mark where the selected event starts; click again where it ends" if duration
+            else f"Store the selected event at the current time in {self.rec.name}.label.json"
+        )
+
+    def _on_event_item(self, item: QtWidgets.QListWidgetItem) -> None:
+        if self.rec is not None:
+            self.seek(self.events[item.data(QtCore.Qt.UserRole)].t)
+
+    def _save_events(self, events: list[TakeEvent], title: str) -> bool:
+        """Saves ``events`` as the recording's (in its label file)."""
+        try:
+            update_label(self.rec.path, events=[asdict(e) for e in events])
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(
+                self, title, f"Could not save the events of {self.rec.path}:\n{e}"
+            )
+            return False
+        self.events = events
+        self._refresh_events()
+        return True
+
+    def add_event(self) -> None:
+        """Adds an instant event at the play bar, or starts / ends a duration event there."""
+        if self.rec is None:
+            return
+        if self._pending is not None:
+            self._end_pending()
+            return
+        name = self.event_combo.currentData()
+        if name is None:
+            return
+        existing = self._event_at(self.now)
+        if existing is not None:
+            QtWidgets.QMessageBox.information(
+                self, "Add event", f"There is already a '{existing.name}' event at {existing.t:.3f} s"
+            )
+            return
+        event = TakeEvent(
+            t=self.now, name=name, type=self.event_defs[name].get("type", ""), added=time.time()
+        )
+        if self._is_duration(name):
+            self._pending = event
+            self._show_pending()
+            self._update_event_buttons()
+        elif self._save_events(self.events + [event], "Add event"):
+            self.event_list.scrollToBottom()
+
+    def _end_pending(self) -> None:
+        p = self._pending
+        start, end = sorted((p.t, self.now))
+        if end - start < EVENT_TIME_RESOLUTION:
+            QtWidgets.QMessageBox.information(
+                self, "End event", f"Move the play bar to where '{p.name}' ends, then click again."
+            )
+            return
+        existing = self._event_at(start) if start != p.t else None
+        if existing is not None:
+            QtWidgets.QMessageBox.information(
+                self, "End event", f"There is already a '{existing.name}' event at {existing.t:.3f} s"
+            )
+            return
+        self._pending = None
+        event = TakeEvent(t=start, name=p.name, type=p.type, added=p.added, end=end)
+        events = self.events + [event]
+        if event.name == CLICK_EVENT:
+            events = self._with_click_end(events, event)
+        if self._save_events(events, "End event"):
+            self.event_list.scrollToBottom()
+        else:
+            self._pending = p
+            self._show_pending()
+            self._update_event_buttons()
+
+    def cancel_pending(self) -> None:
+        self._pending = None
+        self._show_pending()
+        self._update_event_buttons()
+
+    def edit_selected_event(self) -> None:
+        """Renames the selected event to another of the same length."""
+        event = self._selected_event()
+        if event is None:
+            return
+        same_length = {
+            name: info for name, info in self._addable.items()
+            if self._is_duration(name) == (event.end is not None)
+        }
+        dialog = EditEventDialog(
+            self, event, same_length, self._color,
+            note=f"{self.rec.name}.label.json will be updated.",
+        )
+        if dialog.exec_() != QtWidgets.QDialog.Accepted or dialog.name() == event.name:
+            return
+        row = self.event_list.currentRow()
+        name = dialog.name()
+        renamed = replace(event, name=name, type=self.event_defs[name].get("type", ""))
+        if self._save_events([renamed if e is event else e for e in self.events], "Edit event"):
+            self.event_list.setCurrentRow(row)
+
+    def delete_selected_event(self) -> None:
+        event = self._selected_event()
+        if event is None:
+            return
+        answer = QtWidgets.QMessageBox.warning(
+            self,
+            "Delete event",
+            f"Delete '{event.name}' at {event.span_text()} from {self.rec.name}.label.json?\n"
+            "This cannot be undone.",
+            QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel,
+            QtWidgets.QMessageBox.Cancel,
+        )
+        if answer == QtWidgets.QMessageBox.Ok:
+            self._save_events([e for e in self.events if e is not event], "Delete event")
+
+    def _with_click_end(self, events: list[TakeEvent], click: TakeEvent) -> list[TakeEvent]:
+        """``events`` plus ``terminal`` and ``success`` at the end of the click event ``click``
+        (those the recording has none of yet)."""
+        types = {name: self.event_defs.get(name, {}).get("type", "") for name in CLICK_END_EVENTS}
+        return [
+            TakeEvent(**e) for e in click_processing.with_end_events(
+                [asdict(e) for e in events], asdict(click), types
+            )
+        ]
+
+    def _confirm_pending(self) -> list[TakeEvent]:
+        """The picked recording's events to be confirmed of the confirm row's name."""
+        name = self.confirm_combo.currentData()
+        return [
+            e for e in self.events if e.params.get(TO_BE_CONFIRMED)
+            and (e.name == name or e.params.get(WITH) == name)
+        ]
+
+    def _update_confirm_buttons(self) -> None:
+        pending = bool(self._confirm_pending())
+        self.confirm_event_btn.setEnabled(pending and self._pending is None)
+        self.reject_event_btn.setEnabled(pending and self._pending is None)
+
+    def _resolve_picked(self, confirm: bool) -> None:
+        """Confirms (keeps, as if marked by hand) or rejects (deletes) the picked recording's
+        events to be confirmed of the confirm row's name, then picks the next recording when
+        this one leaves the list."""
+        pending = self._confirm_pending()
+        if not pending:
+            return
+        if confirm:
+            events = [
+                replace(e, params={k: v for k, v in e.params.items() if k != TO_BE_CONFIRMED})
+                if any(e is p for p in pending) else e
+                for e in self.events
+            ]
+            for click in [e for e in events if e.name == CLICK_EVENT and e.end is not None]:
+                events = self._with_click_end(events, click)
+        else:
+            events = [e for e in self.events if not any(e is p for p in pending)]
+        row = self.list.currentRow()
+        if self._save_events(events, "Confirm" if confirm else "Reject"):
+            if not confirm:  # the event is to be marked by hand: [needs manual label]
+                name = self.confirm_combo.currentData()
+                rejected = (load_label(self.rec.path) or {}).get(REJECTED, [])
+                try:
+                    update_label(self.rec.path, **{REJECTED: sorted({*rejected, name})})
+                except OSError as e:
+                    QtWidgets.QMessageBox.warning(
+                        self, "Reject", f"Could not save the rejection of {self.rec.path}:\n{e}"
+                    )
+            self.refresh_recordings()  # its [to be confirmed] tag goes
+            if self.list.currentRow() < 0 and self.list.count():
+                self.list.setCurrentRow(min(row, self.list.count() - 1))
+
+    def _in_contact(self, finger: str) -> bool:
+        return any(a <= self.now < b for a, b in self._contacts.get(finger, []))
+
+    def _update_reward_span(self) -> None:
+        """The episode the Reward follows: the recording's confirmed ``episode_start`` and
+        ``terminal`` (its events as they are now) and its label."""
+        self._reward_span = None
+        if self.rec is not None:
+            label = (load_label(self.rec.path) or {}).get("label")
+            span = sparsh_processing.episode_span(
+                {"label": label, "events": [asdict(e) for e in self.events]}
+            )
+            if not isinstance(span, str):
+                self._reward_span = (*span, label)
+        self._show_reward()
+
+    def _show_reward(self) -> None:
+        """The reward at the play bar's time."""
+        if not hasattr(self, "reward_spins"):  # built after the player
+            return
+        span = self._reward_span
+        if span is None:
+            self.reward_label.setText("Reward: <span style='color:#9e9e9e'>— (no episode)</span>")
+            return
+        start, end, label = span
+        rewards = self._rewards()
+        if start <= self.now < end:
+            text = f"<b>{rewards['step']:g}</b> (step)"
+        elif end <= self.now < end + REWARD_TERMINAL_S:
+            success = label == SUCCESS
+            color = COMBO_VALID_COLOR if success else COMBO_COLLIDE_COLOR
+            value = rewards["success"] if success else rewards["fail"]
+            text = (f"<span style='color:{color}'><b>{value:g}</b> "
+                    f"({'success' if success else 'fail'})</span>")
+        else:
+            text = "<span style='color:#9e9e9e'>— (outside the episode)</span>"
+        self.reward_label.setText(f"Reward: {text}")
+
+    def _show_lights(self) -> None:
+        """The Contact and Slip lights (and the Reward) at the play bar's time, as the Compose
+        tab showed them during the Play on hand."""
+        self._show_reward()
+        for finger, light in self.contact_lights.items():
+            set_light(light, CONTACT_COLORS["contact" if self._in_contact(finger) else "off"])
+        for finger, light in self.slip_lights.items():
+            slipped = any(0.0 <= self.now - s["t"] < SLIP_LIGHT_S
+                          for s in self._slips if s["finger"] == finger)
+            if finger not in self._played:
+                state = "off"
+            elif slipped:
+                state = "slip"
+            else:
+                state = "contact" if self._in_contact(finger) else "off"
+            set_light(light, SLIP_COLORS[state])
+
+    def _matches(self, saved: dict) -> bool:
+        """Whether a recording's label file matches a ticked mark (Success / Failure) and a
+        ticked state (Processed / To be confirmed / Needs manual label); a group with none ticked does not
+        filter."""
+        marks = [key for key, _ in PROCESSING_LABEL_FILTERS if self.filter_checks[key].isChecked()]
+        states = [
+            test for key, test in ((PROCESSED, is_processed), (TO_BE_CONFIRMED, to_be_confirmed),
+                                   (NEEDS_MANUAL_LABEL, needs_manual_label))
+            if self.filter_checks[key].isChecked()
+        ]
+        return ((not marks or saved.get("label") in marks)
+                and (not states or any(test(saved) for test in states)))
+
+    def refresh_recordings(self) -> None:
+        """Lists the labelled recordings that match the ticked filters, keeping the picked one.
+        A recording without saved events gets the default ones (``_add_default_events``)."""
+        current = self.list.currentItem()
+        keep = current.data(QtCore.Qt.UserRole) if current is not None else None
+        labelled = []
+        for path in list_playbacks(self.store.compose_playback_dir):
+            saved = load_label(path) or {}
+            if saved.get("label") in LABEL_TEXT:
+                if "events" not in saved:
+                    self._add_default_events(path)
+                labelled.append((path, saved))
+        shown = [(path, saved) for path, saved in labelled if self._matches(saved)]
+        self.list.blockSignals(True)
+        self.list.clear()
+        for path, saved in shown:
+            label = saved["label"]
+            done = "  [processed]" if is_processed(saved) else ""
+            done += "  [to be confirmed]" if to_be_confirmed(saved) else ""
+            done += "  [needs manual label]" if needs_manual_label(saved) else ""
+            item = QtWidgets.QListWidgetItem(f"[{LABEL_TEXT[label]}] {play_list_text(path)}{done}")
+            item.setData(QtCore.Qt.UserRole, path)
+            item.setToolTip(path)
+            item.setForeground(QtGui.QColor(LABEL_COLORS[label]))
+            self.list.addItem(item)
+        paths = [path for path, _ in shown]
+        self.list.setCurrentRow(paths.index(keep) if keep in paths else -1)
+        self.list.blockSignals(False)
+        if keep is not None and keep not in paths:
+            self._load(None)
+        processed = sum(is_processed(saved) for _, saved in labelled)
+        confirm = sum(to_be_confirmed(saved) for _, saved in labelled)
+        manual = sum(needs_manual_label(saved) for _, saved in labelled)
+        self.count_label.setText(
+            f"{len(shown)} shown of {len(labelled)} labelled ({processed} processed, "
+            f"{confirm} to be confirmed, {manual} need a manual label)"
+        )
+        self._show_episode_stats(labelled)
+
+    # ---- Episodes and Process failure ---------------------------------------------------
+
+    def _episodes_box(self) -> QtWidgets.QGroupBox:
+        """The truncation length, Use longest and the episode statistics."""
+        saved = episode_processing.load_truncation(self.store.compose_playback_dir)
+        self.truncation_spin = double_spin(
+            0.0, 3600.0, 0.5, 2, " s",
+            f"How long an episode ('{EPISODE_START_EVENT}' to '{EPISODE_END_EVENT}') may run "
+            "before it is truncated; Process failure marks failed recordings at it (saved with "
+            f"the recordings in {episode_processing.SETTINGS_NAME})",
+        )
+        self.truncation_spin.setSpecialValueText("not set")
+        self.truncation_spin.setValue(saved or 0.0)
+        self.truncation_spin.valueChanged.connect(self._save_truncation)
+        self.use_longest_btn = QtWidgets.QPushButton("Use longest")
+        self.use_longest_btn.setToolTip(
+            "Set the truncation length to the longest processed successful episode"
+        )
+        self.use_longest_btn.clicked.connect(self._use_longest)
+        self.episode_stats_label = QtWidgets.QLabel()
+        self.episode_stats_label.setWordWrap(True)
+        self._longest: tuple[str, float] | None = None
+        row = QtWidgets.QHBoxLayout()
+        row.addWidget(QtWidgets.QLabel("Truncation length:"))
+        row.addWidget(self.truncation_spin)
+        row.addWidget(self.use_longest_btn)
+        row.addStretch(1)
+        box = QtWidgets.QGroupBox("Episodes")
+        layout = QtWidgets.QVBoxLayout(box)
+        layout.addLayout(row)
+        layout.addWidget(self.episode_stats_label, 1)
+        return box
+
+    def _show_episode_stats(self, labelled: list[tuple[str, dict]]) -> None:
+        stats = episode_processing.episode_stats(labelled, SUCCESS, FAILURE)
+        self._longest = stats.longest
+        self.use_longest_btn.setEnabled(stats.longest is not None)
+        if stats.longest is None:
+            text = "Longest successful episode: none processed yet"
+        else:
+            path, length = stats.longest
+            lengths = [s for _, s in stats.lengths]
+            text = (
+                f"Longest successful episode: <b>{length:.2f} s</b> "
+                f"({os.path.splitext(os.path.basename(path))[0]}) · "
+                f"median {np.median(lengths):.2f} s over {len(lengths)} processed successes"
+            )
+        text += (
+            f"<br>Failures with '{EPISODE_END_EVENT}': {stats.failures_done} of "
+            f"{stats.failures}"
+        )
+        self.episode_stats_label.setText(text)
+
+    def _save_truncation(self, value: float) -> None:
+        try:
+            episode_processing.save_truncation(self.store.compose_playback_dir, value)
+        except OSError as e:
+            self.node.get_logger().warn(f"Processing: could not save the truncation length: {e}")
+
+    def _use_longest(self) -> None:
+        if self._longest is not None:
+            self.truncation_spin.setValue(round(self._longest[1], 2))
+
+    # ---- the progress bar of Process click / Process failure / Sparsh-skin transform -------
+
+    def _bar_idle(self) -> None:
+        self.process_bar.setRange(0, 1)
+        self.process_bar.setValue(0)
+        self.process_bar.setFormat("No processing running")
+
+    def _bar_start(self, name: str, total: int) -> None:
+        """A run of ``name`` over ``total`` recordings (or episodes) starts."""
+        self._bar_name = name
+        self.process_bar.setRange(0, max(total, 1))
+        self.process_bar.setValue(0)
+        self.process_bar.setFormat(f"{name}: %v / %m recordings (%p %)")
+
+    def _bar_step(self, done: int, total: int) -> None:
+        if total > 0 and total != self.process_bar.maximum():
+            self.process_bar.setMaximum(total)
+        self.process_bar.setValue(min(done, self.process_bar.maximum()))
+
+    def _bar_end(self) -> None:
+        """Keeps the bar where it got to, marked finished."""
+        self.process_bar.setFormat(f"{self._bar_name} finished: %v / %m recordings")
+
+    def _rewards(self) -> dict[str, float]:
+        return {key: spin.value() for key, spin in self.reward_spins.items()}
+
+    def _save_rewards(self) -> None:
+        try:
+            episode_processing.save_rewards(self.store.compose_playback_dir, self._rewards())
+        except OSError as e:
+            self.process_status.setText(f"Could not save the rewards: {e}")
+
+    def _process_reward(self) -> None:
+        """Sets the rewards of every Sparsh-skin episode (``sparsh_processing.apply_rewards``)."""
+        out_dir = os.path.join(
+            self.store.compose_playback_dir, sparsh_processing.DEFAULT_OUTPUT_NAME
+        )
+        names = [n for n in (os.listdir(out_dir) if os.path.isdir(out_dir) else [])
+                 if n.startswith(sparsh_processing.EPISODE_PREFIX) and n.endswith(".npz")]
+        if not names:
+            QtWidgets.QMessageBox.information(
+                self, "Process reward",
+                f"No episodes in {out_dir}: run the Sparsh-skin transform first (it uses these "
+                "rewards too).",
+            )
+            return
+        if self._sparsh_thread is not None and self._sparsh_thread.is_alive():
+            QtWidgets.QMessageBox.information(
+                self, "Process reward", "Wait for the Sparsh-skin transform to finish."
+            )
+            return
+        rewards = self._rewards()
+        answer = QtWidgets.QMessageBox.question(
+            self, "Process reward",
+            f"Set the rewards of {len(names)} episodes in {out_dir}: {rewards['success']:g} at "
+            f"the last timestep of a success, {rewards['fail']:g} at the last timestep of a "
+            f"failure, {rewards['step']:g} at every other timestep?",
+        )
+        if answer != QtWidgets.QMessageBox.Yes:
+            return
+        self._save_rewards()
+        self.process_reward_btn.setEnabled(False)
+        self._bar_start("Process reward", len(names))
+
+        def step(done: int, total: int) -> None:
+            self._bar_step(done, total)
+            QtWidgets.QApplication.processEvents()  # runs in the GUI thread: draw the bar
+
+        try:
+            counts = sparsh_processing.apply_rewards(out_dir, rewards, step)
+        except OSError as e:
+            self.process_status.setText(f"Process reward failed: {e}")
+        else:
+            self.process_status.setText(
+                f"Process reward: {counts[SUCCESS]} successes ({rewards['success']:g} at the "
+                f"end), {counts[FAILURE]} failures ({rewards['fail']:g} at the end), "
+                f"{rewards['step']:g} at every other step"
+                + (f" · {counts['failed']} episodes could not be rewritten"
+                   if counts["failed"] else "")
+            )
+        self._bar_end()
+        self.process_reward_btn.setEnabled(True)
+
+    def _process_failure(self) -> None:
+        """Marks ``terminal`` and ``truncated`` at the truncation length on the failed
+        recordings (``episode_processing.truncate_failure``)."""
+        length = self.truncation_spin.value()
+        if length <= 0.0:
+            QtWidgets.QMessageBox.information(
+                self, "Process failure", "Set the truncation length first (e.g. Use longest)."
+            )
+            return
+        targets = []
+        for path in list_playbacks(self.store.compose_playback_dir):
+            label = load_label(path) or {}
+            if (label.get("label") == FAILURE
+                    and episode_processing.failure_target(label, length)):
+                targets.append(path)
+        if not targets:
+            QtWidgets.QMessageBox.information(
+                self, "Process failure",
+                f"Every failed recording has a '{EPISODE_END_EVENT}' event already.",
+            )
+            return
+        answer = QtWidgets.QMessageBox.question(
+            self, "Process failure",
+            f"Mark '{EPISODE_END_EVENT}' and '{episode_processing.TRUNCATED}' at "
+            f"'{EPISODE_START_EVENT}' + {length:.2f} s on {len(targets)} failed recordings? "
+            f"Those that end earlier get '{EPISODE_END_EVENT}' and "
+            f"'{episode_processing.FAIL}' at their last timestep.",
+        )
+        if answer != QtWidgets.QMessageBox.Yes:
+            return
+        types = {
+            name: self.event_defs.get(name, {}).get("type", "")
+            for name in episode_processing.FAILURE_END_EVENTS
+        }
+        outcomes = {"truncated": 0, "ended": 0, "no start": 0, "failed": 0}
+        self._bar_start("Process failure", len(targets))
+        for i, path in enumerate(targets, start=1):
+            try:
+                outcomes[episode_processing.truncate_failure(path, length, types)] += 1
+            except Exception as e:  # noqa: BLE001 - one bad recording does not stop it
+                outcomes["failed"] += 1
+                self.node.get_logger().warn(f"Process failure: {path}: {e}")
+            self._bar_step(i, len(targets))
+            QtWidgets.QApplication.processEvents()  # runs in the GUI thread: draw the bar
+        self._bar_end()
+        self.process_status.setText(
+            f"Process failure: {len(targets)} failed recordings · {outcomes['truncated']} "
+            f"truncated at {length:.2f} s · {outcomes['ended']} end before it: "
+            f"'{EPISODE_END_EVENT}' and '{episode_processing.FAIL}' at their last timestep"
+            + (f", {outcomes['no start']} have no '{EPISODE_START_EVENT}'"
+               if outcomes["no start"] else "")
+            + (f", {outcomes['failed']} failed (see the log)" if outcomes["failed"] else "")
+        )
+        self.refresh_recordings()
+        if self.rec is not None and self._pending is None:  # shows the events it added
+            self.events = [
+                TakeEvent(**e) for e in (load_label(self.rec.path) or {}).get("events", [])
+            ]
+            self._refresh_events()
+
+    # ---- Process click ------------------------------------------------------------------
+
+    def _process_click(self) -> None:
+        """Starts Process click in the background, or asks the running one to stop."""
+        if self._click_thread is not None and self._click_thread.is_alive():
+            self._click_stop.set()
+            self.process_click_btn.setEnabled(False)
+            self.process_status.setText("Process click: stopping after this recording...")
+            return
+        paths = list_playbacks(self.store.compose_playback_dir)
+        marks = click_processing.marked_clicks(paths)
+        if not marks:
+            QtWidgets.QMessageBox.information(
+                self, "Process click",
+                f"Mark the click with a '{CLICK_EVENT}' event on some successful recordings "
+                "first: they are the click detector's templates.",
+            )
+            return
+        if not self.node.click_detect_ready():
+            QtWidgets.QMessageBox.warning(
+                self, "Process click",
+                f"The click detector's service '{self.node.click_detect_service}' is not "
+                "available: start click_detector (push_button_pen_click_detection "
+                "launch_click_detector.py).",
+            )
+            return
+        targets = click_processing.to_process(paths, SUCCESS)
+        if not targets:
+            QtWidgets.QMessageBox.information(
+                self, "Process click",
+                f"Every successful recording has a '{CLICK_EVENT}' event or was searched "
+                "already.",
+            )
+            return
+        types = {
+            name: self.event_defs.get(name, {}).get("type", "")
+            for name in (CLICK_EVENT, *CLICK_END_EVENTS)
+        }
+        self._click_stop.clear()
+        self.process_click_btn.setText("Stop")
+        self.process_status.setText(
+            f"Process click: {min(len(marks), click_processing.MAX_SAMPLES)} of {len(marks)} "
+            f"marked clicks as samples, searching {len(targets)} recordings..."
+        )
+        self._bar_start("Process click", len(targets))
+        self._click_thread = threading.Thread(
+            target=self._run_process_click, args=(marks, targets, types), daemon=True
+        )
+        self._click_thread.start()
+
+    def _run_process_click(
+        self, marks: list[tuple[str, float, float]], targets: list[str], types: dict
+    ) -> None:
+        """Process click's thread: reports through ``click_progress`` / ``click_done``."""
+        sr = click_processing.SAMPLE_RATE
+        found = failed = searched = 0
+        spent = 0.0  # s spent searching
+        used = click_processing.pick_marks(marks)
+        detector = {
+            "service": self.node.click_detect_service, "pair": False,
+            "marked_clicks": len(marks),
+        }
+        try:
+            samples = click_processing.click_samples(used, sr)
+            if not samples:
+                raise RuntimeError("the marked clicks have no audio")
+            duration = click_processing.marked_duration(marks)
+            used_text = f"{len(samples)} of {len(marks)} marked clicks as samples"
+            for i, path in enumerate(targets, start=1):
+                if self._click_stop.is_set():
+                    break
+                tic = time.monotonic()
+                try:
+                    result = click_processing.process_recording(
+                        path, samples, sr, self.node.detect_clicks, duration, types,
+                        detector,
+                    )
+                    found += result["found"]
+                except Exception as e:  # noqa: BLE001 - one bad recording does not stop it
+                    failed += 1
+                    self.node.get_logger().warn(f"Process click: {path}: {e}")
+                last = time.monotonic() - tic
+                spent, searched = spent + last, i
+                self._click_signals.step.emit(i, len(targets))
+                left = spent / i * (len(targets) - i)
+                self._click_signals.progress.emit(
+                    f"Process click: {i} / {len(targets)} searched, {found} clicks found"
+                    + (f", {failed} failed" if failed else "")
+                    + f" · {used_text} · {spent / i:.1f} s per recording (last {last:.1f} s), "
+                    f"~{left / 60:.0f} min left"
+                )
+        except Exception as e:  # noqa: BLE001
+            self._click_signals.done.emit(f"Process click failed: {e}")
+            return
+        stopped = " (stopped)" if self._click_stop.is_set() else ""
+        average = f"{spent / searched:.1f} s per recording" if searched else "nothing searched"
+        self._click_signals.done.emit(
+            f"Process click{stopped}: {found} clicks found to be confirmed"
+            + (f", {failed} recordings failed (see the log)" if failed else "")
+            + f" · {used_text} · {average}"
+        )
+
+    def showEvent(self, ev) -> None:
+        super().showEvent(ev)
+        self._refresh_sparsh_baselines()
+
+    def _refresh_sparsh_baselines(self) -> None:
+        """Lists the Baseline tab's recordings in the dropdown, the one used picked and tagged."""
+        paths = list_baselines(self.store.demo_dir)
+        used = sparsh_baseline(self.store.demo_dir)
+        combo = self.sparsh_baseline_combo
+        combo.clear()
+        if not paths:
+            combo.addItem("No baseline: record one on the Baseline tab", None)
+            return
+        for path in paths:
+            text = baseline_list_text(path)
+            combo.addItem(f"{SPARSH_BASELINE_TAG} {text}" if path == used else text, path)
+            combo.setItemData(combo.count() - 1, path, QtCore.Qt.ToolTipRole)
+        combo.setCurrentIndex(paths.index(used))
+
+    def _sparsh_baseline_picked(self, index: int) -> None:
+        path = self.sparsh_baseline_combo.itemData(index)
+        if path:
+            set_sparsh_baseline(path)
+            self._refresh_sparsh_baselines()
+
+    def _sparsh_transform(self) -> None:
+        """Starts the Sparsh-skin transform of the episodes in the background, with the
+        dropdown's baseline."""
+        if self._sparsh_thread is not None and self._sparsh_thread.is_alive():
+            return
+        self._refresh_sparsh_baselines()
+        baseline = self.sparsh_baseline_combo.currentData()
+        if not baseline:
+            QtWidgets.QMessageBox.warning(
+                self, "Sparsh-skin transform",
+                "No baseline recording: record one on the Baseline tab (the hand in the open "
+                "pose, nothing touching the skin).",
+            )
+            return
+        if not self.node.sparsh_transform_ready():
+            QtWidgets.QMessageBox.warning(
+                self, "Sparsh-skin transform",
+                f"The service '{self.node.sparsh_transform_service}' is not available: start "
+                "sparsh_skin_transformation (mechanical_pen_data_collection).",
+            )
+            return
+        directory = self.store.compose_playback_dir
+        paths, skipped = sparsh_processing.eligible_episodes(directory)
+        if not paths:
+            QtWidgets.QMessageBox.information(
+                self, "Sparsh-skin transform",
+                "No recording has an episode ('episode_start' and 'terminal', labelled success "
+                "or failure).",
+            )
+            return
+        out_dir = os.path.join(directory, sparsh_processing.DEFAULT_OUTPUT_NAME)
+        answer = QtWidgets.QMessageBox.question(
+            self, "Sparsh-skin transform",
+            f"Preprocess {len(paths)} episodes into {out_dir} with the baseline "
+            f"{os.path.basename(baseline)} ({baseline_list_text(baseline)})? ({len(skipped)} "
+            "recordings have no episode; episodes already there with this baseline are kept.)",
+        )
+        if answer != QtWidgets.QMessageBox.Yes:
+            return
+        self.sparsh_transform_btn.setEnabled(False)
+        self._bar_start("Sparsh-skin transform", len(paths))
+        self.node.on_sparsh_progress = self._on_sparsh_progress
+        self.process_status.setText(
+            f"Sparsh-skin transform: {len(paths)} episodes (progress in the "
+            "sparsh_skin_transformation log)..."
+        )
+
+        def run() -> None:
+            try:
+                response = self.node.sparsh_transform(directory, baseline)
+                text = f"Sparsh-skin transform: {response.message}"
+            except Exception as e:  # noqa: BLE001
+                text = f"Sparsh-skin transform failed: {e}"
+            self._sparsh_signals.done.emit(text)
+
+        self._sparsh_thread = threading.Thread(target=run, daemon=True)
+        self._sparsh_thread.start()
+
+    def _on_sparsh_progress(self, done: int, total: int, text: str) -> None:
+        """sparsh_skin_transformation's progress (executor thread)."""
+        self._sparsh_signals.step.emit(done, total)
+        if done:
+            self._sparsh_signals.progress.emit(f"Sparsh-skin transform: {text}")
+
+    def _sparsh_transform_done(self, text: str) -> None:
+        self.node.on_sparsh_progress = None
+        self._bar_end()
+        self.process_status.setText(text)
+        self.sparsh_transform_btn.setEnabled(True)
+
+    def _process_click_done(self, text: str) -> None:
+        self.process_status.setText(text)
+        self._bar_end()
+        self.process_click_btn.setText("Process click")
+        self.process_click_btn.setEnabled(True)
+        self.refresh_recordings()
+        if self.rec is not None and self._pending is None:  # shows the events it added
+            self.events = [
+                TakeEvent(**e) for e in (load_label(self.rec.path) or {}).get("events", [])
+            ]
+            self._refresh_events()
+
+    def close_video(self) -> None:
+        self._click_stop.set()
+        super().close_video()
+
+
 # Analysis tab: box colours by success rate (RGB), from fail to success; grey with no labels.
 ANALYSIS_FAIL_RGB = np.array([229, 57, 53], dtype=float)
 ANALYSIS_SUCCESS_RGB = np.array([67, 160, 71], dtype=float)
@@ -8228,7 +10247,8 @@ class AnalysisTab(QtWidgets.QWidget):
         top.addWidget(refresh_btn)
         self.box_table = self._table(
             ["Box", "Centre (px)", "Takes", "Demonstrations", "Success", "Fail",
-             "Not labelled", "Success rate", "Hide"]
+             "Not labelled", "Success rate", "Clicked", "No click", "Kept sliding",
+             "No contact", "Other press", "Hide"]
         )
         self.box_table.setToolTip(
             "Pen boxes of the edited takes (each named after the take it belongs to, with the "
@@ -8239,7 +10259,8 @@ class AnalysisTab(QtWidgets.QWidget):
         self.box_title.setWordWrap(True)
         self.combo_table = self._table(
             ["Combination", "Demonstrations", "Success", "Fail", "Not labelled",
-             "Success rate", "Modified"]
+             "Success rate", "Modified", "Clicked", "No click", "Kept sliding", "No contact",
+             "Other press"]
         )
         self.combo_table.setToolTip(
             "Play on hand recordings of the box by the takes they played (labels from the "
@@ -8304,10 +10325,14 @@ class AnalysisTab(QtWidgets.QWidget):
                 for take in takes:
                     box_of_take[(finger, take.name)] = name
         order = {finger: i for i, (finger, _) in enumerate(FINGERS)}
+        plays = None  # the Thumb plays, read when a recording has no press label yet
         for path in list_playbacks(self.store.compose_playback_dir):
             info = recording_info(path)
             if info is None:
                 continue
+            if not (load_label(path) or {}).get("click_press"):
+                plays = plays or ThumbPlays(self.store.demo_dir)
+                click_press_label(path, plays)
             # The box its takes have now (the Thumb's first), as the Pose switches show it;
             # the box saved with the recording only when none of its takes is left.
             played = sorted(info["takes"], key=lambda fn: order.get(fn[0], 9))
@@ -8330,14 +10355,13 @@ class AnalysisTab(QtWidgets.QWidget):
         keep = self._selected
         total = RecordingCounts()
         for box in self._boxes:
-            total.success += box.recordings.success
-            total.failure += box.recordings.failure
-            total.paths += box.recordings.paths
+            total.merge(box.recordings)
         self.overall.setText(
             f"<b>{len(self._boxes)}</b> bounding box(es); <b>{total.total}</b> demonstrations: "
             f"<span style='color:{COMBO_VALID_COLOR}'><b>{total.success} success</b></span>, "
             f"<span style='color:{COMBO_COLLIDE_COLOR}'><b>{total.failure} fail</b></span>, "
             f"{total.unlabelled} not labelled (success rate {rate_text(total)})"
+            f"<br>click press: {press_text(total)}"
         )
         table = self.box_table
         table.blockSignals(True)
@@ -8352,6 +10376,7 @@ class AnalysisTab(QtWidgets.QWidget):
             ) or "none (deleted or changed box)"
             values = [box.name, centre, takes, rec.total, rec.success, rec.failure,
                       rec.unlabelled, rate_text(rec)]
+            values += [rec.press[k] for k in PRESS_COLUMNS] + [rec.press_other()]
             for col, value in enumerate(values):
                 item = QtWidgets.QTableWidgetItem()
                 item.setData(QtCore.Qt.DisplayRole, value)
@@ -8413,7 +10438,8 @@ class AnalysisTab(QtWidgets.QWidget):
             f"<span style='color:{COMBO_COLLIDE_COLOR}'><b>{rec.failure} fail</b></span>, "
             f"{rec.unlabelled} not labelled (success rate {rate_text(rec)})"
             + (f"; {rec.modified} modified" if rec.modified else "")
-            + ("" if rec.total else " - nothing recorded with this box yet")
+            + (f"<br>click press: {press_text(rec)}" if rec.total else
+               " - nothing recorded with this box yet")
         )
         combos = sorted(box.by_combination.items(), key=lambda kv: (-kv[1].total, takes_name(kv[0])))
         table.setRowCount(len(combos))
@@ -8422,6 +10448,7 @@ class AnalysisTab(QtWidgets.QWidget):
             name = takes_name(key) + (f"  (deleted: {', '.join(missing)})" if missing else "")
             values = [name, counts.total, counts.success, counts.failure, counts.unlabelled,
                       rate_text(counts), counts.modified or ""]
+            values += [counts.press[k] for k in PRESS_COLUMNS] + [counts.press_other()]
             for col, value in enumerate(values):
                 item = QtWidgets.QTableWidgetItem()
                 item.setData(QtCore.Qt.DisplayRole, value)
@@ -8494,6 +10521,861 @@ class AnalysisTab(QtWidgets.QWidget):
 
     def close_video(self) -> None:
         self._video.release()
+
+
+def backup_extras(events_file: str) -> list[tuple[str, str]]:
+    """(local file or folder, name under the backup's ``_app``) of what the app needs besides
+    the recordings folder: Settings tab values and avoid slip presets, the event definitions
+    it loaded, the click detector's templates and this GUI's Qt preferences (audio output,
+    Analysis tab boxes)."""
+    return [
+        (os.path.dirname(settings_file()), "settings"),
+        (os.path.realpath(events_file), "events"),
+        (audio_utils.DEFAULT_TEMPLATE_DIR, "pen_click_templates"),
+        (QtCore.QSettings(PACKAGE_NAME, "record_demonstration").fileName(), "qt_settings"),
+    ]
+
+
+def source_events_file() -> str | None:
+    """events.json in this package's source (found from its colcon build folder), or None."""
+    try:
+        ws = os.path.dirname(default_bag_dir())
+        with open(os.path.join(ws, "build", PACKAGE_NAME, "CMakeCache.txt")) as f:
+            for line in f:
+                if line.startswith(f"{PACKAGE_NAME}_SOURCE_DIR:"):
+                    path = os.path.join(line.split("=", 1)[1].strip(), PACKAGE_NAME, "events.json")
+                    return path if os.path.isdir(os.path.dirname(path)) else None
+    except Exception:  # noqa: BLE001 - not built with colcon here
+        pass
+    return None
+
+
+def pull_targets(local_dir: str, events_file: str) -> list[nextcloud_backup.PullTarget]:
+    """Where Pull puts each part of the backup by default (as ``backup_extras`` sent them):
+    the recordings into ``local_dir``, events.json into the source (kept by the next build)
+    and the installed copy the app reads."""
+    app = nextcloud_backup.APP_DIR
+    T = nextcloud_backup.PullTarget
+    targets = [
+        T("Recordings", "", local_dir),
+        T("Settings (Settings tab, avoid slip presets)", f"{app}/settings",
+          os.path.dirname(settings_file())),
+    ]
+    source = source_events_file()
+    if source is not None:
+        targets.append(T("Event definitions (source)", f"{app}/events", source, is_file=True))
+    targets += [
+        T("Event definitions (installed, read by the app)", f"{app}/events",
+          os.path.realpath(events_file), is_file=True),
+        T("Click detector templates", f"{app}/pen_click_templates",
+          audio_utils.DEFAULT_TEMPLATE_DIR),
+        T("Qt preferences (audio output, Analysis boxes)", f"{app}/qt_settings",
+          QtCore.QSettings(PACKAGE_NAME, "record_demonstration").fileName(), is_file=True),
+    ]
+    return targets
+
+
+class PullDialog(QtWidgets.QDialog):
+    """Where Pull downloads each part of the backup: a row per ``PullTarget`` with its
+    destination (editable, Browse), what it would do there and a box to leave it out."""
+
+    def __init__(
+        self, parent: QtWidgets.QWidget, remote: dict[str, tuple[int, float]],
+        targets: list[nextcloud_backup.PullTarget], where: str,
+    ) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Pull from Nextcloud")
+        self.resize(1100, 420)
+        self._remote = remote
+        self._targets = targets
+        self._rows: list[tuple[QtWidgets.QCheckBox, QtWidgets.QLineEdit, QtWidgets.QLabel]] = []
+        grid = QtWidgets.QGridLayout()
+        for col, text in enumerate(("Part of the backup", "Downloaded to", "", "What it does")):
+            grid.addWidget(QtWidgets.QLabel(f"<b>{text}</b>"), 0, col)
+        for i, target in enumerate(targets, start=1):
+            check = QtWidgets.QCheckBox(target.label)
+            check.setChecked(True)
+            edit = QtWidgets.QLineEdit(target.dest)
+            edit.setMinimumWidth(480)
+            edit.setToolTip("A file" if target.is_file else "A folder (created if missing)")
+            browse = QtWidgets.QPushButton("Browse...")
+            info = QtWidgets.QLabel()
+            browse.clicked.connect(lambda _, t=target, e=edit: self._browse(t, e))
+            edit.editingFinished.connect(self._update)
+            check.toggled.connect(self._update)
+            grid.addWidget(check, i, 0)
+            grid.addWidget(edit, i, 1)
+            grid.addWidget(browse, i, 2)
+            grid.addWidget(info, i, 3)
+            self._rows.append((check, edit, info))
+        grid.setColumnStretch(1, 1)
+        self.overwrite_check = QtWidgets.QCheckBox(
+            "Also overwrite local files that are newer than the backup's"
+        )
+        self.overwrite_check.toggled.connect(self._update)
+        self.summary = QtWidgets.QLabel()
+        self.summary.setWordWrap(True)
+        buttons = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        self.pull_btn = buttons.button(QtWidgets.QDialogButtonBox.Ok)
+        self.pull_btn.setText("Pull")
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(QtWidgets.QLabel(
+            f"Check where each part of the backup in {where} goes, then Pull. Files the same "
+            "locally are skipped. Restart the app afterwards to load restored settings."
+        ))
+        layout.addLayout(grid)
+        layout.addStretch(1)
+        layout.addWidget(self.overwrite_check)
+        layout.addWidget(self.summary)
+        layout.addWidget(buttons)
+        self._update()
+
+    def _browse(self, target: nextcloud_backup.PullTarget, edit: QtWidgets.QLineEdit) -> None:
+        if target.is_file:
+            path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self, target.label, edit.text(), options=QtWidgets.QFileDialog.DontConfirmOverwrite
+            )
+        else:
+            path = QtWidgets.QFileDialog.getExistingDirectory(self, target.label, edit.text())
+        if path:
+            edit.setText(path)
+            self._update()
+
+    def targets(self) -> list[nextcloud_backup.PullTarget]:
+        """The ticked parts with their (edited) destinations."""
+        return [
+            replace(t, dest=edit.text().strip())
+            for t, (check, edit, _) in zip(self._targets, self._rows)
+            if check.isChecked() and edit.text().strip()
+        ]
+
+    def plan(self) -> list[nextcloud_backup.PullFile]:
+        return nextcloud_backup.plan_pull(self._remote, self.targets(), BACKUP_REDACT)
+
+    def _update(self) -> None:
+        overwrite = self.overwrite_check.isChecked()
+        get = {"new", "changed", "local newer"} if overwrite else {"new", "changed"}
+        n = size = 0
+        for target, (check, edit, info) in zip(self._targets, self._rows):
+            edit.setToolTip(edit.text())
+            files = nextcloud_backup.plan_pull(
+                self._remote, [replace(target, dest=edit.text())], BACKUP_REDACT
+            )
+            if not files:
+                info.setText("<span style='color:#757575'>not in the backup</span>")
+                continue
+            count = {state: sum(f.state == state for f in files)
+                     for state in ("new", "changed", "local newer", "same")}
+            mb = sum(f.size for f in files if f.state in get) / 1e6
+            info.setText(
+                f"{len(files)} files: {count['new']} new, {count['changed']} changed, "
+                f"{count['local newer']} newer locally"
+                + (" (overwritten)" if overwrite else " (kept)")
+                + f", {count['same']} the same · {mb:.1f} MB to download"
+            )
+            if check.isChecked():
+                n += sum(f.state in get for f in files)
+                size += sum(f.size for f in files if f.state in get)
+        self.summary.setText(f"<b>{n} files ({size / 1e6:.1f} MB) will be downloaded.</b>")
+        self.pull_btn.setEnabled(n > 0)
+
+
+def without_backup_password(content: bytes) -> bytes:
+    """The settings file as backed up: without the Nextcloud app password."""
+    data = json.loads(content)
+    if isinstance(data, dict) and isinstance(data.get("nextcloud"), dict):
+        data["nextcloud"].pop("password", None)
+    return json.dumps(data, indent=2).encode()
+
+
+# Files Sync uploads changed (and Pull compares as uploaded): the settings, without the password.
+BACKUP_REDACT = {settings_file(): without_backup_password}
+
+
+class BackupSignals(QtCore.QObject):
+    """Backup to Nextcloud's thread to the Settings tab: (bytes done, bytes to send, files
+    done, files to send, current file), then the summary (and whether it went wrong)."""
+
+    progress = QtCore.pyqtSignal(object)
+    done = QtCore.pyqtSignal(str, bool)
+
+
+BASELINE_POSE = "open"  # the pose the baseline is recorded in: 0 on every sim joint (flat hand)
+BASELINE_RECORD_S = 10.0  # s of Xela readings Record takes
+BASELINE_COLLECT_MS = 200  # how often a recording takes the new Xela readings
+BASELINE_SETTLE_S = 1.0  # s Record waits at the pose before recording (fingers settle)
+BASELINE_POSE_TOLERANCE = 0.05  # rad: further from the pose and the recording is flagged
+BASELINE_TABLE_MS = 200  # how often the taxel table is redrawn
+BASELINE_COLUMNS = ["Taxel", "x", "y", "z", "Temp", "Rec x", "Rec y", "Rec z", "Rec temp"]
+
+
+SPARSH_BASELINE_KEY = "sparsh_baseline"  # QSettings: the baseline the Sparsh-skin transform uses
+SPARSH_BASELINE_TAG = "[Sparsh-skin]"  # next to it in the baseline lists
+
+
+def baseline_dir(demo_dir: str) -> str:
+    return os.path.join(demo_dir, "baselines")
+
+
+def list_baselines(demo_dir: str) -> list[str]:
+    """The Baseline tab's recordings, newest first."""
+    directory = baseline_dir(demo_dir)
+    names = os.listdir(directory) if os.path.isdir(directory) else []
+    return sorted(
+        (os.path.join(directory, n) for n in names
+         if n.startswith("baseline_") and n.endswith(".npz")),
+        reverse=True,
+    )
+
+
+def sparsh_baseline(demo_dir: str) -> str | None:
+    """The baseline the Sparsh-skin transform uses: the one picked (Processing tab dropdown or
+    the Baseline tab's Use for Sparsh-skin), or the newest while none is (None: there is none)."""
+    paths = list_baselines(demo_dir)
+    picked = QtCore.QSettings(PACKAGE_NAME, "record_demonstration").value(SPARSH_BASELINE_KEY, "")
+    return picked if picked in paths else (paths[0] if paths else None)
+
+
+def set_sparsh_baseline(path: str) -> None:
+    QtCore.QSettings(PACKAGE_NAME, "record_demonstration").setValue(SPARSH_BASELINE_KEY, path)
+
+
+def baseline_list_text(path: str) -> str:
+    """A baseline recording's list entry: its date and time (``meta``, or the file name of a
+    recording without one), length, readings and distance from the pose."""
+    stamp = os.path.basename(path)[len("baseline_"):-len(".npz")]
+    try:
+        when = datetime.strptime(stamp, "%Y%m%d_%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        when = stamp
+    try:
+        with np.load(path) as data:
+            t = data["t"]
+            error = float(data["pose_error"]) if "pose_error" in data.files else np.nan
+            meta = baseline_meta(data)
+    except Exception:
+        return f"{when} \u00b7 unreadable"
+    if "date" in meta:
+        when = f"{meta['date']} {meta['time']}"
+    text = f"{when} \u00b7 {t[-1] if len(t) else 0.0:.1f} s \u00b7 {len(t)} readings"
+    if np.isfinite(error) and error > BASELINE_POSE_TOLERANCE:
+        text += f" \u00b7 \u26a0 {error:.2f} rad"
+    return text
+
+
+def baseline_meta(data) -> dict:
+    """The ``meta`` of a loaded baseline recording ({} for one saved before it had one)."""
+    return json.loads(str(data["meta"])) if "meta" in data.files else {}
+
+
+class BaselineStateView(QtWidgets.QWidget):
+    """Where the Baseline tab's Record is, as the Compose tab's ``ClickPressStateView``
+    shows the click press: a row of stages (the current one highlighted, those passed pale
+    green), how it ended and its live status."""
+
+    # (key, label, tooltip)
+    STAGES = (
+        ("planning", "Plan path", "hand_ik (mink) plans a path to the pose that keeps the "
+         "fingers apart"),
+        ("moving", f"Move to {BASELINE_POSE} pose",
+         "The path is played on the hand, every joint on the stiff gains"),
+        ("settling", "Settle", f"Held at the pose {BASELINE_SETTLE_S:g} s so the fingers and "
+         "the skin settle"),
+        ("recording", "Record", f"{BASELINE_RECORD_S:g} s of Xela readings and temperatures "
+         "(nothing may touch the skin)"),
+        ("saved", "Saved", "Saved to <demo_dir>/baselines and picked in the Recordings list"),
+    )
+    STYLE = ClickPressStateView.STYLE
+    TITLE = "<b>Baseline:</b>"
+
+    def __init__(self) -> None:
+        super().__init__()
+        rows = QtWidgets.QVBoxLayout(self)
+        rows.setContentsMargins(0, 0, 0, 0)
+        rows.setSpacing(2)
+        layout = QtWidgets.QHBoxLayout()
+        rows.addLayout(layout)
+        layout.addWidget(QtWidgets.QLabel(self.TITLE))
+        self.boxes: dict[str, QtWidgets.QLabel] = {}
+        for k, (key, label, tip) in enumerate(self.STAGES):
+            if k:
+                layout.addWidget(QtWidgets.QLabel("\u2192"))
+            box = QtWidgets.QLabel(label)
+            box.setToolTip(tip)
+            box.setMinimumWidth(box.sizeHint().width())
+            self.boxes[key] = box
+            layout.addWidget(box)
+        layout.addStretch(1)
+        # Under the stages: how it ended, and its live status.
+        self.outcome = QtWidgets.QLabel()
+        self.status = QtWidgets.QLabel()
+        line = QtWidgets.QHBoxLayout()
+        line.addSpacing(QtWidgets.QLabel(self.TITLE).sizeHint().width() + 6)
+        line.addWidget(self.outcome)
+        line.addWidget(self.status, 1)
+        rows.addLayout(line)
+        self.stage: str | None = None
+        self.show_stage(None)
+
+    def show_stage(self, stage: str | None, status: str = "",
+                   outcome: tuple[str, bool] | None = None) -> None:
+        """Highlights ``stage`` (None: idle) with its live ``status``, and ``outcome`` ((text,
+        whether it went well), None while it runs). A stage that ended with an outcome is
+        shown passed (went well) or red (did not)."""
+        self.stage = stage
+        keys = [k for k, _, _ in self.STAGES]
+        current = keys.index(stage) if stage in keys else -1
+        for k, name in enumerate(keys):
+            if k == current and outcome is not None and not outcome[1]:
+                bg, fg, extra = COMBO_COLLIDE_COLOR, "white", "font-weight: bold;"
+            elif k == current and outcome is None:
+                bg, fg, extra = "#1976d2", "white", "font-weight: bold;"
+            elif 0 <= k <= current:
+                bg, fg, extra = "#c8e6c9", "#1b5e20", ""
+            else:
+                bg, fg, extra = "#eeeeee", "#9e9e9e", ""
+            self.boxes[name].setStyleSheet(self.STYLE.format(bg=bg, fg=fg, extra=extra))
+        if outcome is None:
+            self.outcome.setText("")
+        else:
+            text, ok = outcome
+            color = COMBO_VALID_COLOR if ok else COMBO_COLLIDE_COLOR
+            self.outcome.setText(f"<span style='color:{color}'><b>{text}</b></span>")
+        self.status.setText(f"<span style='color:#616161'>{status}</span>" if status else "")
+
+
+class BaselinePlanSignals(QtCore.QObject):
+    """hand_ik's answer (executor thread) to the Baseline tab."""
+
+    planned = QtCore.pyqtSignal(object)
+
+
+class BaselineTab(QtWidgets.QWidget):
+    """Records a Sparsh-skin style no-contact baseline: Record asks hand_ik (mink) for a path
+    from the hand's joints (as sim angles) to the open pose (0 on every sim joint) that keeps
+    the fingers apart, and plays it on the hand with every joint on the hand node's stiff
+    (playback) gains, which hold it there while the tab is shown (compliant again when it is
+    left; Record is Stop until the recording starts); it waits ``BASELINE_SETTLE_S`` at the
+    pose, then takes ``BASELINE_RECORD_S`` of Xela readings and temperatures (nothing may touch the skin), saved
+    with their mean as ``<demo_dir>/baselines/baseline_<time>.npz``, with a ``meta`` JSON
+    (``baseline_meta``: the date and time it started and ended, its length, readings, rate,
+    taxels, temperature and pose). The Recordings panel on the
+    left lists them, newest first (Up / Down pick the previous / next, Delete removes the picked
+    one, Use for Sparsh-skin makes it the Sparsh-skin transform's baseline, tagged
+    ``SPARSH_BASELINE_TAG``); ``BaselineStateView`` shows the stage of a Record (plan, move, settle, record,
+    saved); the table shows every taxel's live reading and temperature next to the picked
+    recording's means."""
+
+    _RECORD_TEXT = f"Record {BASELINE_RECORD_S:g} s"
+
+    def __init__(self, node: LeapStateListener, create_tab: CreateTab) -> None:
+        super().__init__()
+        self.node = node
+        self.create_tab = create_tab  # keeps the playing fingers' stiff_joints
+        self._stiff = False  # every joint given the hand's stiff gains by this tab
+        self._to_sim: HardwareToSim | None = None  # loaded on first use
+        self._planning = False
+        self._signals = BaselinePlanSignals()
+        self._signals.planned.connect(self._on_planned)
+        # (time.monotonic() at its start, (steps, 16) hardware path, dt) of the move.
+        self._move: tuple[float, np.ndarray, float] | None = None
+        self._move_timer = QtCore.QTimer(self)
+        self._move_timer.setInterval(10)
+        self._move_timer.timeout.connect(self._move_step)
+        self._settle_timer = QtCore.QTimer(self)
+        self._settle_timer.setSingleShot(True)
+        self._settle_timer.setInterval(int(BASELINE_SETTLE_S * 1000))
+        self._settle_timer.timeout.connect(self._record_now)
+        # [last Xela sequence taken, stamp at Record, (stamp, readings, temps) taken so far,
+        # local datetime at Record]: taken every BASELINE_COLLECT_MS, as the node only keeps
+        # HISTORY_LEN messages.
+        self._record: list | None = None
+        self._collect_timer = QtCore.QTimer(self)
+        self._collect_timer.setInterval(BASELINE_COLLECT_MS)
+        self._collect_timer.timeout.connect(self._collect)
+        self._recorded: tuple[np.ndarray, np.ndarray] | None = None  # (T, 3) mean, (T,) temp
+        self._table_drawn = 0.0
+
+        self.record_btn = QtWidgets.QPushButton(self._RECORD_TEXT)
+        self.record_btn.setToolTip(
+            f"Move the hand to the {BASELINE_POSE} pose (0 on every sim joint) along a path "
+            f"hand_ik (mink) plans to keep the fingers apart, wait {BASELINE_SETTLE_S:g} s, then "
+            f"record {BASELINE_RECORD_S:g} s of Xela readings and temperatures as the "
+            "no-contact baseline (nothing may touch the skin). Pressing it again before the "
+            "recording starts stops."
+        )
+        self.record_btn.clicked.connect(self._toggle_record)
+        self.pose_label = QtWidgets.QLabel()
+        self.temp_label = QtWidgets.QLabel()
+        self.status = QtWidgets.QLabel(
+            f"Record moves the hand to the {BASELINE_POSE} pose first: make sure nothing will "
+            "touch the skin."
+        )
+        self.status.setWordWrap(True)
+        self.state_view = BaselineStateView()
+        self.table = QtWidgets.QTableWidget(0, len(BASELINE_COLUMNS))
+        self.table.setHorizontalHeaderLabels(BASELINE_COLUMNS)
+        self.table.verticalHeader().setVisible(False)
+        self.table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+
+        buttons = QtWidgets.QHBoxLayout()
+        buttons.addWidget(self.record_btn)
+        buttons.addWidget(self.pose_label, 1)
+        middle = QtWidgets.QWidget()
+        middle_layout = QtWidgets.QVBoxLayout(middle)
+        middle_layout.setContentsMargins(0, 0, 0, 0)
+        middle_layout.addLayout(buttons)
+        middle_layout.addWidget(self.state_view)
+        middle_layout.addWidget(self.status)
+        middle_layout.addWidget(self.temp_label)
+        middle_layout.addWidget(self.table, 1)
+
+        split = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        split.addWidget(self._recordings_panel())
+        split.addWidget(middle)
+        split.setSizes([250, 1150])
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(split)
+
+    def _recordings_panel(self) -> QtWidgets.QWidget:
+        """The left panel, as on the Demonstration tab: the baseline recordings list
+        (``self.list``, newest first, the Sparsh-skin transform's tagged
+        ``SPARSH_BASELINE_TAG``), Use for Sparsh-skin and Delete for the picked one, and
+        Refresh."""
+        self.list = QtWidgets.QListWidget()
+        self.list.setToolTip(
+            f"Baseline recordings in <demo_dir>/baselines, newest first: the picked one's means "
+            "are shown in the table's Rec columns"
+        )
+        self.list.currentRowChanged.connect(self._load_picked)
+        self.count_label = QtWidgets.QLabel()
+        self.delete_btn = QtWidgets.QPushButton("Delete")
+        self.delete_btn.setToolTip("Delete the picked baseline recording")
+        self.delete_btn.setEnabled(False)
+        self.delete_btn.clicked.connect(self._delete_picked)
+        self.use_btn = QtWidgets.QPushButton("Use for Sparsh-skin")
+        self.use_btn.setToolTip(
+            "The Sparsh-skin transform (Processing tab) subtracts the picked baseline from "
+            f"every episode (tagged {SPARSH_BASELINE_TAG}; also picked in its dropdown)"
+        )
+        self.use_btn.setEnabled(False)
+        self.use_btn.clicked.connect(self._use_picked)
+        refresh_btn = QtWidgets.QPushButton("Refresh")
+        refresh_btn.clicked.connect(self.refresh_recordings)
+        left = QtWidgets.QGroupBox("Recordings")
+        left_layout = QtWidgets.QVBoxLayout(left)
+        left_layout.addWidget(self.list, 1)
+        left_layout.addWidget(self.count_label)
+        buttons = QtWidgets.QHBoxLayout()
+        buttons.addWidget(self.use_btn)
+        buttons.addWidget(self.delete_btn)
+        left_layout.addLayout(buttons)
+        left_layout.addWidget(refresh_btn)
+        for key, step in (("Up", -1), ("Down", 1)):
+            shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self)
+            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+            shortcut.activated.connect(functools.partial(self._step_recording, step))
+        return left
+
+    def showEvent(self, event) -> None:  # noqa: N802 - Qt
+        super().showEvent(event)
+        self.refresh_recordings()
+
+    # ---- recordings --------------------------------------------------------------------
+
+    def refresh_recordings(self, pick: str | None = None) -> None:
+        """Lists the baseline recordings, newest first, keeping the picked one (or picking
+        ``pick``)."""
+        if pick is None:
+            current = self.list.currentItem()
+            pick = current.data(QtCore.Qt.UserRole) if current is not None else None
+        paths = list_baselines(self.node.demo_dir)
+        used = sparsh_baseline(self.node.demo_dir)
+        self.count_label.setText(f"{len(paths)} recordings")
+        self.list.blockSignals(True)
+        self.list.clear()
+        for path in paths:
+            text = baseline_list_text(path)
+            item = QtWidgets.QListWidgetItem(
+                f"{SPARSH_BASELINE_TAG} {text}" if path == used else text
+            )
+            item.setData(QtCore.Qt.UserRole, path)
+            item.setToolTip(path + ("\nUsed by the Sparsh-skin transform (Processing tab)"
+                                    if path == used else ""))
+            if path == used:
+                font = item.font()
+                font.setBold(True)
+                item.setFont(font)
+            self.list.addItem(item)
+        self.list.setCurrentRow(paths.index(pick) if pick in paths else -1)
+        self.list.blockSignals(False)
+        self._load_picked()
+
+    def _step_recording(self, step: int) -> None:
+        """Picks the previous (-1) / next (1) recording of the list."""
+        if self.list.count():
+            row = self.list.currentRow()
+            row = 0 if row < 0 else min(max(row + step, 0), self.list.count() - 1)
+            self.list.setCurrentRow(row)
+
+    def _load_picked(self, *_) -> None:
+        """Shows the picked recording's means in the table (none picked: empty Rec columns)."""
+        item = self.list.currentItem()
+        self.delete_btn.setEnabled(item is not None)
+        self.use_btn.setEnabled(item is not None)
+        self._recorded = None
+        self._table_drawn = 0.0
+        if item is None:
+            return
+        path = item.data(QtCore.Qt.UserRole)
+        try:
+            with np.load(path) as data:
+                self._recorded = (data["xela_baseline"], data["temp_mean"])
+                std = data["xela_std"]
+                meta = baseline_meta(data)
+        except Exception as e:
+            self.status.setText(f"Could not load {path}: {e}")
+            return
+        span = (f" \u00b7 {meta['started']} \u2013 {meta['ended']}" if "started" in meta
+                else " \u00b7 no metadata (an older recording)")
+        temp = (f" \u00b7 mean temperature {meta['temp_mean']:.2f}"
+                if meta.get("temp_mean") is not None else "")
+        self.status.setText(
+            f"{baseline_list_text(path)}{span} \u00b7 taxel std median {np.median(std):.1f} counts "
+            f"(max {std.max():.1f}){temp} \u00b7 {path}"
+        )
+
+    def _use_picked(self) -> None:
+        """The picked recording becomes the Sparsh-skin transform's baseline."""
+        item = self.list.currentItem()
+        if item is not None:
+            set_sparsh_baseline(item.data(QtCore.Qt.UserRole))
+            self.refresh_recordings()
+
+    def _delete_picked(self) -> None:
+        """Deletes the picked recording, once confirmed."""
+        item = self.list.currentItem()
+        if item is None:
+            return
+        path = item.data(QtCore.Qt.UserRole)
+        box = QtWidgets.QMessageBox(self)
+        box.setIcon(QtWidgets.QMessageBox.Warning)
+        box.setWindowTitle("Delete recording")
+        box.setText(f"Delete the baseline recording '{os.path.basename(path)}'?")
+        box.setInformativeText(f"{path} is removed from disk. This cannot be undone.")
+        cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
+        confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
+        box.setDefaultButton(cancel)
+        box.exec_()
+        if box.clickedButton() is not confirm:
+            return
+        try:
+            os.remove(path)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(
+                self, "Delete recording", f"Could not delete {path}:\n{e}"
+            )
+        else:
+            self.node.get_logger().info(f"Deleted the baseline recording '{path}'")
+        self.list.setCurrentRow(-1)
+        self.refresh_recordings()
+
+    def _sim_now(self) -> tuple[list[str], np.ndarray] | None:
+        """(sim joint names, sim angles) of the hand's latest joints, or None."""
+        q = self.node.latest()
+        if q is None:
+            return None
+        if self._to_sim is None:
+            self._to_sim = HardwareToSim()
+        return list(self._to_sim.sim_names), np.array(self._to_sim(self.node.joint_names, q))
+
+    @staticmethod
+    def _pose_sim(names: list[str]) -> np.ndarray:
+        """The open pose's sim angles of joints ``names``: 0 on every joint."""
+        return np.zeros(len(names))
+
+    def _pose_error(self) -> float | None:
+        """Largest joint distance (rad, sim angles) of the hand from the pose, or None."""
+        now = self._sim_now()
+        if now is None:
+            return None
+        return float(np.max(np.abs(now[1] - self._pose_sim(now[0]))))
+
+    # ---- moving to the pose ------------------------------------------------------------
+
+    def _start_move(self) -> bool:
+        """Starts planning the move to the pose; False (with a warning) if it cannot."""
+        now = self._sim_now()
+        if now is None:
+            QtWidgets.QMessageBox.warning(
+                self, "Baseline", "No hand state yet: is the hand (leaphand_node) running?"
+            )
+            return False
+        names, start = now
+        goal = self._pose_sim(names)
+        if not self.node.hand_ik_ready():
+            QtWidgets.QMessageBox.warning(
+                self, "Baseline",
+                f"The IK service '{self.node.hand_ik_service}' is not available: start hand_ik "
+                "(mechanical_pen_data_collection launch_mujoco_sim.py starts it).",
+            )
+            return False
+        # A compliant hand only tracks commands on its stiff joints: all of them, to move.
+        if not self.node.set_stiff_joints(list(self.node.joint_names)):
+            QtWidgets.QMessageBox.warning(
+                self, "Baseline",
+                f"The hand node '{self.node.hand_node}' does not answer: its joints cannot be "
+                "made stiff to follow the path.",
+            )
+            return False
+        self._stiff = True
+        self.create_tab.stiff_joints_set_elsewhere()
+        self._planning = True
+        self.status.setText(f"Planning the path to the {BASELINE_POSE} pose (hand_ik)...")
+        self.state_view.show_stage("planning", f"hand_ik '{self.node.hand_ik_service}'")
+        self.node.plan_hand_pose(names, start, goal, self._signals.planned.emit)
+        return True
+
+    def _on_planned(self, result) -> None:
+        """hand_ik's path (sim angles): converted to hardware angles and played on the hand."""
+        if not self._planning:  # stopped meanwhile
+            return
+        self._planning = False
+        if isinstance(result, Exception):
+            self._stop_move(f"Planning failed: {result}", ("Planning failed", False))
+            return
+        path_sim, dt, response = result
+        names = list(response.joint_names)
+        by_name = [dict(zip(self._to_sim.sim_names, self._to_sim.to_hardware(names, q)))
+                   for q in path_sim]
+        path = np.array([[q[n] for n in self.node.joint_names] for q in by_name])
+        self._move = (time.monotonic(), path, dt)
+        self.state_view.show_stage("moving", f"{len(path) * dt:.1f} s path")
+        self.status.setText(
+            f"Moving to the {BASELINE_POSE} pose along the IK path: {response.message}"
+        )
+        self._move_timer.start()
+
+    def _move_step(self) -> None:
+        """Sends the point of the path due now."""
+        if self._move is None:
+            return
+        start, path, dt = self._move
+        i = min(int((time.monotonic() - start) / dt), len(path) - 1)
+        self.node.send_command(path[i])
+        if i == len(path) - 1:  # there: held while it settles
+            self._move_timer.stop()
+            self._move = None
+            self.status.setText(
+                f"At the {BASELINE_POSE} pose: recording in {BASELINE_SETTLE_S:g} s..."
+            )
+            self.state_view.show_stage("settling", f"{BASELINE_SETTLE_S:g} s at the pose")
+            self._settle_timer.start()
+
+    def _moving(self) -> bool:
+        """Whether Record is planning, moving to the pose or settling there."""
+        return self._move is not None or self._planning or self._settle_timer.isActive()
+
+    def _stop_move(self, text: str, outcome: tuple[str, bool] | None = None) -> None:
+        """Ends Record's move (or its settling), shown ending with ``outcome``."""
+        self._move_timer.stop()
+        self._settle_timer.stop()
+        self._move = None
+        self._planning = False
+        self.record_btn.setText(self._RECORD_TEXT)
+        self.record_btn.setEnabled(self._record is None)
+        self.status.setText(text)
+        if outcome is not None:
+            self.state_view.show_stage(self.state_view.stage, "", outcome)
+
+    def hideEvent(self, event) -> None:  # noqa: N802 - Qt
+        """Leaving the tab stops a move and makes the hand compliant again."""
+        if self._moving():
+            self._stop_move("Stopped (left the tab).", ("Stopped (left the tab)", False))
+        if self._stiff and self.node.set_stiff_joints([]):
+            self._stiff = False
+            self.create_tab.stiff_joints_set_elsewhere()
+        super().hideEvent(event)
+
+    # ---- recording ---------------------------------------------------------------------
+
+    def _toggle_record(self) -> None:
+        """Record: moves the hand to the pose, ``_record_now`` once it has been there
+        ``BASELINE_SETTLE_S``; pressed again before that (Stop), stops."""
+        if self._moving():
+            self._stop_move("Stopped.", ("Stopped", False))
+            return
+        if self.node.latest_xela()[1] is None:
+            QtWidgets.QMessageBox.warning(
+                self, "Baseline", f"No Xela readings on '{self.node.xela_topic}' yet."
+            )
+            return
+        if self._start_move():
+            self.record_btn.setText("Stop")
+
+    def _record_now(self) -> None:
+        """Starts taking the ``BASELINE_RECORD_S`` of Xela readings."""
+        self.record_btn.setText(self._RECORD_TEXT)
+        seq, readings = self.node.latest_xela()
+        if readings is None:
+            self.record_btn.setEnabled(True)
+            self.status.setText(f"Record: no Xela readings on '{self.node.xela_topic}'.")
+            self.state_view.show_stage("recording", "", ("No Xela readings", False))
+            return
+        self._record = [seq, self.node.get_clock().now().nanoseconds * 1e-9, [],
+                        datetime.now().astimezone()]
+        self.record_btn.setEnabled(False)
+        self.status.setText(f"Recording {BASELINE_RECORD_S:g} s...")
+        self.state_view.show_stage("recording", f"0.0 / {BASELINE_RECORD_S:g} s")
+        self._collect_timer.start()
+        # A little longer, so the last messages of the recording have arrived.
+        QtCore.QTimer.singleShot(int((BASELINE_RECORD_S + 0.2) * 1000), self._finish_record)
+
+    def _collect(self) -> None:
+        """Takes the Xela messages that came since the last time."""
+        if self._record is None:
+            return
+        self._record[0], items = self.node.xela_temps_since(self._record[0])
+        self._record[2].extend(items)
+        elapsed = self.node.get_clock().now().nanoseconds * 1e-9 - self._record[1]
+        progress = (f"{min(elapsed, BASELINE_RECORD_S):.1f} / {BASELINE_RECORD_S:g} s "
+                    f"({len(self._record[2])} readings)")
+        self.status.setText(f"Recording {progress}...")
+        self.state_view.show_stage("recording", progress)
+
+    def _finish_record(self) -> None:
+        self._collect_timer.stop()
+        self.record_btn.setEnabled(True)
+        if self._record is None:
+            return
+        self._collect()
+        _, start, items, started = self._record
+        self._record = None
+        items = [it for it in items if start <= it[0] <= start + BASELINE_RECORD_S]
+        if items:  # a recording holds one taxel count
+            items = [it for it in items if len(it[1]) == len(items[0][1])]
+        if not items:
+            self.status.setText(f"Record: no Xela readings in {BASELINE_RECORD_S:g} s.")
+            self.state_view.show_stage("recording", "", ("No Xela readings", False))
+            return
+        t = np.array([stamp for stamp, _, _ in items]) - start
+        xela = np.stack([readings for _, readings, _ in items]).astype(np.float32)
+        temp = np.stack([temps for _, _, temps in items]).astype(np.float32)
+        mean, std = xela.mean(axis=0), xela.std(axis=0)
+        with warnings.catch_warnings():  # taxels without a temperature are all NaN
+            warnings.simplefilter("ignore", RuntimeWarning)
+            temp_mean = np.nanmean(temp, axis=0)
+        error, q, now = self._pose_error(), self.node.latest(), self._sim_now()
+        sim_names = now[0] if now is not None else []
+        pose = self._pose_sim(sim_names) if now is not None else None  # sim angles
+        directory = baseline_dir(self.node.demo_dir)
+        os.makedirs(directory, exist_ok=True)
+        path = os.path.join(directory, f"baseline_{started.strftime('%Y%m%d_%H%M%S')}.npz")
+        has_temp = np.isfinite(temp_mean)
+        meta = {
+            "date": started.strftime("%Y-%m-%d"),
+            "time": started.strftime("%H:%M:%S"),
+            "started": started.isoformat(timespec="seconds"),
+            "ended": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "duration_s": BASELINE_RECORD_S,
+            "readings": len(t),
+            "rate_hz": len(t) / BASELINE_RECORD_S,
+            "taxels": int(xela.shape[1]),
+            "xela_topic": self.node.xela_topic,
+            "temp_mean": float(np.mean(temp_mean[has_temp])) if has_temp.any() else None,
+            "std_median": float(np.median(std)),
+            "pose": BASELINE_POSE,
+            "pose_error": error,
+            "at_pose": error is not None and error <= BASELINE_POSE_TOLERANCE,
+        }
+        np.savez_compressed(
+            path,
+            t=t, xela=xela, temp=temp, xela_baseline=mean, xela_std=std, temp_mean=temp_mean,
+            joint_names=np.array(self.node.joint_names),
+            q=q if q is not None else np.empty(0),
+            sim_joint_names=np.array(sim_names),
+            q_sim=now[1] if now is not None else np.empty(0),
+            pose=BASELINE_POSE, pose_sim=pose if pose is not None else np.empty(0),
+            pose_error=np.nan if error is None else error,
+            stamp=start,
+            meta=json.dumps(meta),
+        )
+        self.refresh_recordings(pick=path)  # lists it and shows its means in the table
+        self.state_view.show_stage(
+            "saved", os.path.basename(path),
+            ("Saved", True) if meta["at_pose"]
+            else (f"Saved, but {error:.2f} rad from the pose" if error is not None
+                  else "Saved, pose unknown", False),
+        )
+        self.status.setText(
+            f"Recorded {len(t)} readings in {BASELINE_RECORD_S:g} s "
+            f"({len(t) / BASELINE_RECORD_S:.0f} Hz) · taxel std median "
+            f"{np.median(std):.1f} counts (max {std.max():.1f}) · "
+            + (f"mean temperature {np.mean(temp_mean[has_temp]):.2f}" if has_temp.any()
+               else "no temperature from xela_server")
+            + f" · saved to {path}"
+            + ("" if error is None or error <= BASELINE_POSE_TOLERANCE else
+               f"  ⚠ the hand was {error:.2f} rad from the {BASELINE_POSE} pose")
+        )
+
+    # ---- live view ---------------------------------------------------------------------
+
+    def refresh(self) -> None:
+        if not self.isVisible():
+            return
+        error = self._pose_error()
+        self.pose_label.setText(
+            "No hand state" if error is None
+            else f"{error:.3f} rad (sim) from the {BASELINE_POSE} pose"
+            + (" ✓" if error <= BASELINE_POSE_TOLERANCE else "")
+        )
+        now = time.monotonic()
+        if now - self._table_drawn < BASELINE_TABLE_MS / 1000:
+            return
+        seq, readings = self.node.latest_xela()
+        if readings is None:
+            self.temp_label.setText(f"No Xela readings on '{self.node.xela_topic}'")
+            return
+        self._table_drawn = now
+        _, items = self.node.xela_temps_since(seq - 1)
+        temps = items[-1][2] if items else np.full(len(readings), np.nan)
+        finite = temps[np.isfinite(temps)]
+        self.temp_label.setText(
+            f"Temperature: min {finite.min():.2f} · mean {finite.mean():.2f} · "
+            f"max {finite.max():.2f}" if len(finite)
+            else "Temperature: none from xela_server"
+        )
+        self._fill_table(readings, temps)
+
+    def _fill_table(self, readings: np.ndarray, temps: np.ndarray) -> None:
+        def text(v: float, digits: int) -> str:
+            return "" if not np.isfinite(v) else f"{v:.{digits}f}"
+
+        n = len(readings)
+        mean, temp_mean = self._recorded if self._recorded is not None else (None, None)
+        if mean is not None and len(mean) != n:
+            mean = temp_mean = None
+        self.table.setUpdatesEnabled(False)
+        if self.table.rowCount() != n:
+            self.table.setRowCount(n)
+        for i in range(n):
+            row = [str(i), *(text(v, 0) for v in readings[i]),
+                   text(temps[i] if i < len(temps) else np.nan, 2)]
+            if mean is not None:
+                row += [*(text(v, 1) for v in mean[i]), text(temp_mean[i], 2)]
+            else:
+                row += [""] * 4
+            for c, value in enumerate(row):
+                item = self.table.item(i, c)
+                if item is None:
+                    self.table.setItem(i, c, QtWidgets.QTableWidgetItem(value))
+                elif item.text() != value:
+                    item.setText(value)
+        self.table.setUpdatesEnabled(True)
 
 
 class SettingsTab(QtWidgets.QWidget):
@@ -8602,11 +11484,12 @@ class SettingsTab(QtWidgets.QWidget):
 
         touch_box = self._build_touch_box()
         press_box = self._build_press_box()
+        backup_box = self._build_backup_box(saved.get("nextcloud", {}))
 
         save_btn = QtWidgets.QPushButton("Save settings")
         save_btn.setToolTip(
-            "Save the folder, playback, maintain touch, click press and hand values; they are "
-            "used at the "
+            "Save the folder, playback, maintain touch, click press, hand and Nextcloud values; "
+            "they are used at the "
             f"next start.\n{saved_path}"
         )
         self.save_status = QtWidgets.QLabel(
@@ -8626,6 +11509,7 @@ class SettingsTab(QtWidgets.QWidget):
         sections_layout.addWidget(touch_box)
         sections_layout.addWidget(press_box)
         sections_layout.addWidget(self.hand_box)
+        sections_layout.addWidget(backup_box)
         sections_layout.addStretch(1)
         scroll = QtWidgets.QScrollArea()
         scroll.setWidgetResizable(True)
@@ -8848,6 +11732,277 @@ class SettingsTab(QtWidgets.QWidget):
          "Finger joint current (leap_state effort) that aborts the press at once (0: off)"),
     )
 
+    # ---- Backup to Nextcloud ------------------------------------------------------------
+
+    def _build_backup_box(self, saved: dict) -> QtWidgets.QGroupBox:
+        """Server, user, app password, remote and local folders, Test connection, Sync and
+        its progress bar."""
+        self._backup_thread: threading.Thread | None = None
+        self._backup_stop = threading.Event()
+        self._backup_signals = BackupSignals()
+        self._backup_signals.progress.connect(self._backup_progress)
+        self._backup_signals.done.connect(self._backup_done)
+        self.nc_url = QtWidgets.QLineEdit(saved.get("url", ""))
+        self.nc_url.setPlaceholderText("https://cloud.example.com")
+        self.nc_url.setToolTip("The address of the Nextcloud server (as in the browser)")
+        self.nc_user = QtWidgets.QLineEdit(saved.get("user", ""))
+        self.nc_user.setToolTip("Your Nextcloud login name")
+        self.nc_password = QtWidgets.QLineEdit(saved.get("password", ""))
+        self.nc_password.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.nc_password.setToolTip(
+            "An app password: Nextcloud > Settings > Security > Devices & sessions > Create new "
+            "app password (your login password works too, unless two-factor login is on)"
+        )
+        self.nc_remember = QtWidgets.QCheckBox("Remember password")
+        self.nc_remember.setChecked(bool(saved.get("password")))
+        self.nc_remember.setToolTip(
+            f"Save settings also writes the app password, in plain text, to {self._saved_path} "
+            "(Sync leaves it out of the copy it uploads)"
+        )
+        self.nc_remote = QtWidgets.QLineEdit(
+            saved.get("remote_dir", nextcloud_backup.NextcloudConfig.remote_dir)
+        )
+        self.nc_remote.setToolTip("Folder on the server the files are uploaded into (created if missing)")
+        self.nc_local = QtWidgets.QLineEdit(saved.get("local_dir") or self.store.demo_dir)
+        self.nc_local.setToolTip("Folder backed up, with everything in it (the recordings folder)")
+        local_browse = QtWidgets.QPushButton("Browse...")
+        local_browse.clicked.connect(self._browse_backup_dir)
+        password_row = QtWidgets.QHBoxLayout()
+        password_row.addWidget(self.nc_password, 1)
+        password_row.addWidget(self.nc_remember)
+        local_row = QtWidgets.QHBoxLayout()
+        local_row.addWidget(self.nc_local, 1)
+        local_row.addWidget(local_browse)
+        self.nc_test_btn = QtWidgets.QPushButton("Test connection")
+        self.nc_test_btn.clicked.connect(self._test_backup)
+        self.nc_sync_btn = QtWidgets.QPushButton("Sync")
+        self.nc_sync_btn.setToolTip(
+            "Upload every file of the local folder, and the app's own files (settings, event "
+            "definitions, click templates, Qt preferences; under <remote folder>/_app), the "
+            "server does not have yet with the same size and time (nothing is deleted on "
+            "either side); press again to stop\n"
+            + "\n".join(f"_app/{name}: {path}" for path, name in backup_extras(self.node.events_file))
+        )
+        self.nc_sync_btn.clicked.connect(self._sync_backup)
+        self.nc_pull_btn = QtWidgets.QPushButton("Pull")
+        self.nc_pull_btn.setToolTip(
+            "Download the backup: shows where each part of it goes first (change or leave "
+            "out any), then downloads what is missing or different locally; press again to stop"
+        )
+        self.nc_pull_btn.clicked.connect(self._pull_backup)
+        buttons = QtWidgets.QHBoxLayout()
+        buttons.addWidget(self.nc_test_btn)
+        buttons.addWidget(self.nc_sync_btn)
+        buttons.addWidget(self.nc_pull_btn)
+        buttons.addStretch(1)
+        self.nc_progress = QtWidgets.QProgressBar()
+        self.nc_progress.setRange(0, 1000)
+        self.nc_progress.setValue(0)
+        self.nc_progress.setFormat("%p %")
+        self.nc_status = QtWidgets.QLabel("Not synced in this session.")
+        self.nc_status.setWordWrap(True)
+        box = QtWidgets.QGroupBox("Backup to Nextcloud")
+        form = QtWidgets.QFormLayout(box)
+        form.addRow("Server:", self.nc_url)
+        form.addRow("User:", self.nc_user)
+        form.addRow("App password:", password_row)
+        form.addRow("Remote folder:", self.nc_remote)
+        form.addRow("Local folder:", local_row)
+        form.addRow("", buttons)
+        form.addRow(self.nc_progress)
+        form.addRow(self.nc_status)
+        return box
+
+    def _backup_config(self) -> nextcloud_backup.NextcloudConfig:
+        url = self.nc_url.text().strip()
+        if url and "://" not in url:
+            url = "https://" + url
+        return nextcloud_backup.NextcloudConfig(
+            url=url, user=self.nc_user.text().strip(), password=self.nc_password.text(),
+            remote_dir=self.nc_remote.text().strip(),
+            local_dir=os.path.abspath(os.path.expanduser(self.nc_local.text().strip())),
+        )
+
+    def _backup_saved(self) -> dict:
+        cfg = self._backup_config()
+        data = {"url": cfg.url, "user": cfg.user, "remote_dir": cfg.remote_dir,
+                "local_dir": cfg.local_dir}
+        if self.nc_remember.isChecked() and cfg.password:
+            data["password"] = cfg.password
+        return data
+
+    def _browse_backup_dir(self) -> None:
+        path = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Folder to back up", self.nc_local.text()
+        )
+        if path:
+            self.nc_local.setText(path)
+
+    def _backup_status(self, text: str, error: bool = False) -> None:
+        self.nc_status.setText(f"<span style='color:#d32f2f'>{text}</span>" if error else text)
+
+    def _test_backup(self) -> None:
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        try:
+            self._backup_status(nextcloud_backup.test_connection(self._backup_config()))
+        except Exception as e:  # noqa: BLE001 - shown to the user
+            self._backup_status(f"Could not connect: {e}", error=True)
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+
+    def _sync_backup(self) -> None:
+        """Starts the backup in the background, or asks the running one to stop."""
+        if self._backup_running():
+            self._backup_stop.set()
+            self.nc_sync_btn.setEnabled(False)
+            self._backup_status("Stopping...")
+            return
+        cfg = self._backup_config()
+        if not cfg.url or not cfg.user or not cfg.password:
+            self._backup_status("Fill in the server, user and app password.", error=True)
+            return
+        self._start_backup_thread(self.nc_sync_btn, self._run_backup, cfg)
+
+    def _start_backup_thread(self, button: QtWidgets.QPushButton, target, *args) -> None:
+        """Runs Sync or Pull (``target``) in the background; ``button`` becomes its Stop."""
+        self._backup_stop.clear()
+        self._backup_button = button
+        for btn in (self.nc_sync_btn, self.nc_pull_btn, self.nc_test_btn):
+            btn.setEnabled(btn is button)
+        button.setText("Stop")
+        self.nc_progress.setValue(0)
+        self._backup_started = time.monotonic()
+        self._backup_thread = threading.Thread(target=target, args=args, daemon=True)
+        self._backup_thread.start()
+
+    def _backup_running(self) -> bool:
+        return self._backup_thread is not None and self._backup_thread.is_alive()
+
+    def _pull_backup(self) -> None:
+        """Lists the backup, shows where each part goes (``PullDialog``) and, once confirmed,
+        downloads it in the background; or asks the running one to stop."""
+        if self._backup_running():
+            self._backup_stop.set()
+            self.nc_pull_btn.setEnabled(False)
+            self._backup_status("Stopping...")
+            return
+        cfg = self._backup_config()
+        if not cfg.url or not cfg.user or not cfg.password:
+            self._backup_status("Fill in the server, user and app password.", error=True)
+            return
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
+        self._backup_status("Listing the backup...")
+        QtWidgets.QApplication.processEvents()
+        try:
+            remote = nextcloud_backup.list_backup(cfg)
+        except Exception as e:  # noqa: BLE001 - shown to the user
+            self._backup_status(f"Could not list the backup: {e}", error=True)
+            return
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
+        if not remote:
+            self._backup_status(f"There is no backup in {cfg.remote_dir}.", error=True)
+            return
+        self._backup_status(f"{len(remote)} files in the backup.")
+        dialog = PullDialog(
+            self, remote, pull_targets(cfg.local_dir, self.node.events_file),
+            f"{urlparse(cfg.url).netloc}/{cfg.remote_dir}",
+        )
+        if dialog.exec_() != QtWidgets.QDialog.Accepted:
+            return
+        self._start_backup_thread(
+            self.nc_pull_btn, self._run_pull, cfg, dialog.plan(),
+            dialog.overwrite_check.isChecked(),
+        )
+
+    def _run_pull(self, cfg, files, overwrite: bool) -> None:
+        """Pull's thread: reports through ``_backup_signals``."""
+        try:
+            result = nextcloud_backup.pull(
+                cfg, files, self._throttled_progress(), self._backup_stop, overwrite
+            )
+        except Exception as e:  # noqa: BLE001 - shown to the user
+            self._backup_signals.done.emit(f"Pull failed: {e}", True)
+            return
+        spent = time.monotonic() - self._backup_started
+        text = (
+            f"{'Stopped' if result.cancelled else 'Pulled'} from {cfg.remote_dir}: "
+            f"{result.downloaded} files downloaded ({result.bytes_received / 1e6:.1f} MB in "
+            f"{spent:.0f} s), {result.skipped} already the same"
+            + (f", {result.kept_newer} newer locally kept" if result.kept_newer else "")
+        )
+        if result.failed:
+            text += f", {len(result.failed)} failed (first: {result.failed[0][0]}: " \
+                    f"{result.failed[0][1]}; see the log)"
+            for rel, why in result.failed:
+                self.node.get_logger().warn(f"Pull from Nextcloud: {rel}: {why}")
+        if result.downloaded:
+            text += ". Restart the app to load restored settings."
+        self._backup_signals.done.emit(text, bool(result.failed))
+
+    def _throttled_progress(self):
+        """A progress callback for the thread: at most 10 updates a second (and the last)."""
+        last = [0.0]
+
+        def progress(*info) -> None:
+            now = time.monotonic()
+            if now - last[0] >= 0.1 or not info[4]:
+                last[0] = now
+                self._backup_signals.progress.emit(info)
+
+        return progress
+
+    def _run_backup(self, cfg: nextcloud_backup.NextcloudConfig) -> None:
+        """The backup's thread: reports through ``_backup_signals``."""
+        try:
+            result = nextcloud_backup.sync(
+                cfg, self._throttled_progress(), self._backup_stop, backup_extras(self.node.events_file),
+                redact=BACKUP_REDACT,
+            )
+        except Exception as e:  # noqa: BLE001 - shown to the user
+            self._backup_signals.done.emit(f"Sync failed: {e}", True)
+            return
+        spent = time.monotonic() - self._backup_started
+        text = (
+            f"{'Stopped' if result.cancelled else 'Synced'} to {cfg.remote_dir}: "
+            f"{result.uploaded} files uploaded ({result.bytes_sent / 1e6:.1f} MB in "
+            f"{spent:.0f} s), {result.skipped} already there"
+        )
+        if result.failed:
+            text += f", {len(result.failed)} failed (first: {result.failed[0][0]}: " \
+                    f"{result.failed[0][1]}; see the log)"
+            for rel, why in result.failed:
+                self.node.get_logger().warn(f"Backup to Nextcloud: {rel}: {why}")
+        self._backup_signals.done.emit(text, bool(result.failed))
+
+    def _backup_progress(self, info: tuple) -> None:
+        sent, total, files_done, files, current = info
+        if total:
+            self.nc_progress.setValue(int(1000 * sent / total))
+        spent = max(time.monotonic() - self._backup_started, 1e-3)
+        rate = sent / spent
+        left = (total - sent) / rate if rate > 0 else 0.0
+        if not files and current:
+            self._backup_status(current)  # listing the server
+            return
+        self._backup_status(
+            f"{files_done} / {files} files, {sent / 1e6:.1f} / {total / 1e6:.1f} MB, "
+            f"{rate / 1e6:.1f} MB/s, ~{left / 60:.0f} min left"
+            + (f"\n{current}" if current else "")
+        )
+
+    def _backup_done(self, text: str, error: bool) -> None:
+        self._backup_status(text, error)
+        if not error and "Stopped" not in text:
+            self.nc_progress.setValue(self.nc_progress.maximum())
+        self.nc_sync_btn.setText("Sync")
+        self.nc_pull_btn.setText("Pull")
+        for btn in (self.nc_sync_btn, self.nc_pull_btn, self.nc_test_btn):
+            btn.setEnabled(True)
+
+    def stop_backup(self) -> None:
+        self._backup_stop.set()
+
     def _build_press_box(self) -> QtWidgets.QGroupBox:
         self.press_check = QtWidgets.QCheckBox(f"Press in '{CLICK_PRESS_EVENT}' regions")
         self.press_check.setToolTip(
@@ -8922,6 +12077,7 @@ class SettingsTab(QtWidgets.QWidget):
             "click_press": asdict(self.press_settings),
             "avoid_slip": asdict(self.avoid_slip),
             "hand": self._saved_hand,
+            "nextcloud": self._backup_saved(),
         }
         try:
             os.makedirs(os.path.dirname(self._saved_path), exist_ok=True)
@@ -9052,7 +12208,9 @@ class MainWindow(QtWidgets.QMainWindow):
             node, self.store, event_defs, self.create_tab, self.edit_tab, avoid_slip
         )
         self.demo_tab = DemonstrationTab(node, self.store)
+        self.processing_tab = ProcessingTab(node, self.store, event_defs)
         self.analysis_tab = AnalysisTab(node, self.store)
+        self.baseline_tab = BaselineTab(node, self.create_tab)
         self.settings_tab = SettingsTab(
             node, self.store, settings, touch_settings, press_settings, saved, saved_path,
             avoid_slip,
@@ -9067,7 +12225,9 @@ class MainWindow(QtWidgets.QMainWindow):
         tabs.addTab(self.edit_tab, "Edit")
         tabs.addTab(self.compose_tab, "Compose")
         tabs.addTab(self.demo_tab, "Demonstration")
+        tabs.addTab(self.processing_tab, "Processing")
         tabs.addTab(self.analysis_tab, "Analysis")
+        tabs.addTab(self.baseline_tab, "Baseline")
         tabs.addTab(self.settings_tab, "Settings")
         self.setCentralWidget(tabs)
 
@@ -9076,6 +12236,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._timer.timeout.connect(self.edit_tab.refresh)
         self._timer.timeout.connect(self.compose_tab.refresh)
         self._timer.timeout.connect(self.analysis_tab.refresh)
+        self._timer.timeout.connect(self.baseline_tab.refresh)
         self._timer.start(REFRESH_MS)
         # The MuJoCo window opens before this one and ends up behind it: bring it to the front
         # once it appears (checked every second for SIM_WINDOW_WAIT_S).
@@ -9146,6 +12307,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.compose_tab.stop_sim()
         self.compose_tab.close_video()
         self.demo_tab.close_video()
+        self.processing_tab.close_video()
+        self.settings_tab.stop_backup()
         super().closeEvent(ev)
 
 

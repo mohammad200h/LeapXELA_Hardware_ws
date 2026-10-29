@@ -4,3 +4,4 @@ string model
 uint8 sensor_pos
 Taxel[] taxels
 Forces[] forces
+float32[] temp

@@ -31,6 +31,9 @@ set(PYTHON_ENTRY_POINTS
   "record_demonstration:record_demonstration"
   "analyze_playback:analyze_playback"
   "label_playbacks:label_playbacks"
+  "label_click_press:click_press_labels"
+  "sparsh_skin_transformation:sparsh_skin_transformation"
+  "hand_ik:hand_ik"
 )
 foreach(entry ${PYTHON_ENTRY_POINTS})
   string(REPLACE ":" ";" entry ${entry})

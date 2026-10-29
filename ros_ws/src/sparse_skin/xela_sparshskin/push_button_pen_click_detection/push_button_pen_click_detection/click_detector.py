@@ -20,6 +20,12 @@ Publishes:
   - std_msgs/Float32 on ``<output_topic>/score``: best template similarity,
     for tuning ``threshold``
 
+Service ``~/detect`` (leapxela_sparshskin_msgs/DetectClicks): a few click samples and the
+audio to search, both as arrays; the samples are the templates (not template_dir) and the
+audio is searched as ``offline_detector`` does, with this node's energy_gate, rate_hz and
+pairing gaps (threshold and pair come with the request). It runs in its own callback group,
+so the live detection goes on meanwhile.
+
 ROS parameters:
   - audio_topic (str, default ""): take the audio from this std_msgs/Float32MultiArray topic
     (``audio_publisher``) instead of opening the mic, which only one program can hold; empty
@@ -48,7 +54,9 @@ import time
 
 import numpy as np
 import rclpy
-from rclpy.executors import ExternalShutdownException
+from leapxela_sparshskin_msgs.srv import DetectClicks
+from rclpy.callback_groups import MutuallyExclusiveCallbackGroup
+from rclpy.executors import ExternalShutdownException, MultiThreadedExecutor
 from rclpy.node import Node
 from scipy import signal
 from std_msgs.msg import Float32, Float32MultiArray, Int32
@@ -86,6 +94,7 @@ class ClickDetector(Node):
         min_gap = float(self.declare_parameter("min_gap_s", 0.05).value)
         max_gap = float(self.declare_parameter("max_gap_s", 0.5).value)
         quiet = float(self.declare_parameter("quiet_s", 0.15).value)
+        self._rate_hz, self._gaps = rate_hz, (min_gap, max_gap, quiet)  # for ~/detect
         if self._pair and min_gap < EVENT_MERGE_S:
             self.get_logger().warn(
                 f"min_gap_s {min_gap} is below {EVENT_MERGE_S} s; closer events are merged"
@@ -131,6 +140,10 @@ class ClickDetector(Node):
             self._stream.start()
             source = f"[{device}] {sd.query_devices(device)['name']} @ {self._sr} Hz"
         self.create_timer(1.0 / rate_hz, self._tick)
+        self.create_service(
+            DetectClicks, "~/detect", self._on_detect,
+            callback_group=MutuallyExclusiveCallbackGroup(),
+        )
         pairing = (
             f", press/release gap {min_gap}-{max_gap} s, quiet {quiet} s" if self._pair
             else ", no press/release pairing"
@@ -226,6 +239,55 @@ class ClickDetector(Node):
         score, frame = max(audio_utils.best_match(feat, live) for feat, _ in self._templates)
         return score, frame * audio_utils.STFT_HOP
 
+    def _on_detect(self, request, response):
+        """``~/detect``: the clicks of ``request.audio`` with ``request.samples`` as templates."""
+        # offline_detector imports this module's constants, so it is imported here.
+        from push_button_pen_click_detection.offline_detector import (
+            DetectorSettings,
+            detect_clicks,
+            sample_templates,
+        )
+
+        sr = int(request.sample_rate) or self._sr
+        values = np.asarray(request.samples, dtype=np.float32)
+        lengths = [int(n) for n in request.sample_lengths]
+        audio = np.asarray(request.audio, dtype=np.float32)
+        if sum(lengths) != len(values):
+            response.success = False
+            response.message = (
+                f"sample_lengths add up to {sum(lengths)}, but there are {len(values)} samples"
+            )
+            return response
+        bounds = np.cumsum([0] + lengths)
+        templates = sample_templates(
+            [values[a:b] for a, b in zip(bounds[:-1], bounds[1:])], sr
+        )
+        if not templates:
+            response.success = False
+            response.message = "no click sample is long enough to be a template"
+            return response
+        min_gap, max_gap, quiet = self._gaps
+        settings = DetectorSettings(
+            threshold=float(request.threshold) if request.threshold > 0 else self._threshold,
+            energy_gate=self._energy_gate, pair=bool(request.pair),
+            min_gap_s=min_gap, max_gap_s=max_gap, quiet_s=quiet, rate_hz=self._rate_hz,
+        )
+        if len(audio) <= max(n for _, n in templates):
+            clicks = []
+        else:
+            clicks = detect_clicks(audio, sr, templates, settings)
+        response.success = True
+        response.times = [float(c.t) for c in clicks]
+        response.scores = [float(c.score) for c in clicks]
+        response.release_times = (
+            [float(c.release) for c in clicks if c.release is not None] if settings.pair else []
+        )
+        response.message = (
+            f"{len(clicks)} click(s) in {len(audio) / sr:.1f} s of audio with "
+            f"{len(templates)} sample(s)"
+        )
+        return response
+
     def destroy_node(self) -> None:
         if self._stream is not None:
             self._stream.stop()
@@ -241,8 +303,11 @@ def main(args=None):
         rclpy.logging.get_logger("click_detector").error(str(exc))
         rclpy.shutdown()
         raise SystemExit(1)
+    # Two threads: a ~/detect request runs while the live detection keeps ticking.
+    executor = MultiThreadedExecutor(num_threads=2)
+    executor.add_node(node)
     try:
-        rclpy.spin(node)
+        executor.spin()
     except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:

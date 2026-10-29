@@ -1,0 +1,14 @@
+# Pen clicks in ``audio``, found by click_detector with a few click samples as its templates
+# (in place of the WAVs in its template_dir).
+float32[] samples          # the click samples' audio (mono, [-1, 1]), one after another
+uint32[] sample_lengths    # how many values of ``samples`` each click sample has
+float32[] audio            # the audio to search (mono, [-1, 1])
+uint32 sample_rate         # of ``samples`` and ``audio`` (0: the detector's sample_rate)
+float32 threshold          # similarity a match needs (<= 0: the detector's threshold)
+bool pair                  # report only press / release pairs (false: every match)
+---
+bool success
+string message             # why it failed, or a summary
+float32[] times            # s from the start of ``audio``: each click (its press with pair)
+float32[] scores           # each click's best similarity to the samples
+float32[] release_times    # with pair, each click's release (s); empty without
