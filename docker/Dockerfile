@@ -302,5 +302,25 @@ RUN cd /workspace/LeapXELA_Hardware_ws/ros_ws/src/multipanda_ros2 && \
     git clone -b wip_ros_control_humble --depth 1 https://github.com/tenfoldpaper/mujoco_ros_pkgs.git mujoco_ros_pkgs
 ENV MUJOCO_DIR=/usr/local
 ENV ROS_VERSION=2
+
+##### LEQ_DV3 #######
+# Not `pip install -e .`: LEQ_DV3/requirements.txt is incomplete (no msgpack/ruamel/zmq) and unpinned.
+# wandb<0.20 keeps protobuf<5 for mediapipe (newer wandb needs protobuf>=5).
+RUN python3 -m pip install --no-cache-dir \
+    "jax[cuda12]==0.6.2" \
+    "optax==0.2.8" \
+    "chex==0.1.90" \
+    "tensorflow-probability==0.25.0" \
+    "msgpack" \
+    "ruamel.yaml" \
+    "pyzmq" \
+    "einops" \
+    "cloudpickle" \
+    "psutil" \
+    "rich" \
+    "colored" \
+    "wandb<0.20" \
+    "protobuf<5"
+
 ###### Shell #######
 CMD /bin/bash

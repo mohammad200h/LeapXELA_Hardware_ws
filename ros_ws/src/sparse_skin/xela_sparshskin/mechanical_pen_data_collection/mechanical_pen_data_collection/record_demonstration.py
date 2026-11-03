@@ -67,7 +67,10 @@ Cartesian press of the fingertip (``click_press``): a guarded move along the way
 moved while loading in the take until contact, a fingertip force ramp until the pen clicks, a
 retract, then the take continues from the region's end. Force replay is off over the
 region. Its values are the Settings tab's Click press section (a region's ``params`` can
-override them).
+override them); on the Edit tab, each finger's click press dropdown (left of its takes) picks
+the settings its Play uses instead: "Default (Settings tab)", or one made with Add click press
+setting (saved in ``<ws>/settings/<package>/click_press_settings.json``; a Play's recording
+keeps them in ``meta["click_press"]`` / ``meta["click_press_name"]``).
 A ``change_click_setting`` event (Thumb) opens the joints of force replay's press direction
 for the contact phase at (or after) it, prefilled with the computed one; the values entered
 (``params["joints"]``) replace that phase's direction, normalised, in force replay on both
@@ -83,6 +86,11 @@ Events with an ``applied_to`` list or code (finger codes such as ``"IF"``) are o
 those fingers.
 While a finger plays, its plot shows the hand's measured joints (``leap_state``) dashed over
 the take (solid), at the take time each was measured.
+Next to the finger's name, "Control:" shows how it is driven at that moment
+(``playback_control``): position only (with why force replay is off: reverse, no Xela in the
+take, no contact phase, no live baseline), position with force replay armed for a later contact,
+position + force (force replay's state and offset) in a contact phase, a click press or a
+maintain touch.
 Every Play on the Edit tab is recorded (``playback_recording``) and saved, once it stops, as
 ``<demo_dir>/playbacks/<finger>/<take>_<n>.npz`` (n = 1, 2, ...): the commands sent, the measured
 joint positions, velocities and efforts, the raw Xela readings and the clicks heard. The Plays
@@ -277,6 +285,26 @@ Click press outcome: how the Thumb's ``click_press`` ended in each Play on hand 
 counts it per box and per combination; recordings without one are labelled as the tabs list
 them (``ros2 run mechanical_pen_data_collection label_click_press`` labels them all).
 
+Learning about your own body tab: the hand moves itself to random goal poses and back
+(``self_exploration``). Play on sim / Play on hand ask hand_ik for the paths open pose (0 on every sim joint)
+-> goal and goal -> open; the episode is the first, ``BODY_HOLD_S`` at the goal, then the
+second. The Combinations panel (right) lists every combination of the mode: which fingers move
+(Workspace exploration, all 15 combinations of fingers) or touch the palm's pads with their
+fingertips (Fingers -> palm, all 15), or the sensor pad (fingertip, md / px / bs uspa44) of the
+Index, Middle or Ring finger the thumb's fingertip touches (Thumb -> fingers, 12). Generate
+finds goals for each (5 by default, saved in ``<demo_dir>/body_learning/combinations.json``).
+Workspace goals are further (L2 of the sim joint angles) than the novelty threshold from every
+goal and every trajectory point already played on the hand; touch goals are in contact after a
+MuJoCo reset to them. Play on sim / Play on hand (under the list) plan the picked goal, a goal of
+the picked combination, or (none picked) one of the combination the hand reached least; Reject
+puts the picked goal on a black list. The hand view is in the middle, below the status.
+Play on sim previews
+the episode in the MuJoCo sim; Play on hand moves the hand to the open pose first if needed,
+plays it with every joint stiff and records the joint positions, velocities and efforts, every
+taxel's Xela reading and temperature and the commands to
+``<demo_dir>/body_learning/<mode>/<mode>_<time>.npz`` (listed in the tab, not with the
+Demonstration tab's recordings; also saved when stopped), which then counts as explored.
+
 Settings tab: the folder takes are saved into (``demo_dir``, can be changed while running), the
 command rate, playback ramp and free-finger deadband used while fingers are
 playing (applied immediately), and the compliant gains / deadband of ``hand_node``
@@ -331,6 +359,7 @@ import sys
 import threading
 import wave
 import time
+import uuid
 import warnings
 from collections import Counter, deque
 from dataclasses import asdict, dataclass, field, replace
@@ -411,6 +440,7 @@ from mechanical_pen_data_collection.playback_recording import (
 from mechanical_pen_data_collection import click_processing, episode_processing, nextcloud_backup
 from mechanical_pen_data_collection import dv3_processing, sparsh_processing
 from mechanical_pen_data_collection.joint_conversion import HardwareToSim
+from mechanical_pen_data_collection import self_exploration
 from push_button_pen_click_detection import audio_utils
 from mechanical_pen_data_collection.click_processing import (
     CLICK_END_EVENTS,
@@ -482,6 +512,7 @@ COMPLIANT_DEADBAND = 0.05
 PLAY_BAR_STEPS = 1000
 # Fingers whose Create tab panel has a Reverse button (play the take from its end to its start).
 REVERSE_FINGERS = ("if", "mf", "rf")
+PRESS_SETTING_FINGERS = ("th",)  # Edit tab panels with a click press setting dropdown
 # Fingers whose new takes inherit the pen box of the selected Thumb take.
 PEN_BOX_FROM_THUMB = ("if", "mf", "rf")
 # leaphand_node runs these hardware motors (indices in leap_state's joint order) at 75 % of kP
@@ -621,6 +652,39 @@ def load_saved_settings(path: str) -> dict:
     with open(path) as f:
         data = json.load(f)
     return data if isinstance(data, dict) else {}
+
+
+# Create tab click press settings: the Settings tab's (``DEFAULT_PRESS``) and named ones saved
+# next to the settings file.
+DEFAULT_PRESS = "Default (Settings tab)"
+PRESS_PRESETS_FILE = "click_press_settings.json"
+
+
+def press_presets_file() -> str:
+    """``<colcon workspace>/settings/<package>/click_press_settings.json``."""
+    return os.path.join(os.path.dirname(settings_file()), PRESS_PRESETS_FILE)
+
+
+def load_press_presets(path: str) -> dict[str, ClickPressSettings]:
+    """Named click press settings saved at ``path`` (none if there is no file)."""
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except FileNotFoundError:
+        return {}
+    presets = {}
+    for name, values in data.get("presets", {}).items():
+        presets[name] = ClickPressSettings()
+        apply_saved_hold_settings(presets[name], values)
+    return presets
+
+
+def save_press_presets(path: str, presets: dict[str, ClickPressSettings]) -> None:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump({"presets": {name: asdict(s) for name, s in presets.items()}}, f, indent=2)
+    os.replace(tmp, path)
 
 
 def apply_saved_hold_settings(settings, saved: dict) -> None:
@@ -1094,7 +1158,8 @@ class LeapStateListener(Node):
         self._history: deque[tuple[float, np.ndarray]] = deque(maxlen=HISTORY_LEN)
         self._effort: np.ndarray | None = None  # latest leap_state effort (present current)
         # Recordings of Plays in progress (``start_play_recording``), by key: buffers of
-        # (stamp, position, velocity, effort), (stamp, xela readings) and click edge stamps.
+        # (stamp, position, velocity, effort), (stamp, xela readings), the readings' taxel
+        # temperatures and click edge stamps.
         self._play_recs: dict[str, dict] = {}
         self._recording = False
         self._rec_t: list[float] = []
@@ -1559,6 +1624,7 @@ class LeapStateListener(Node):
             for rec in self._play_recs.values():
                 if not rec["xela"] or len(readings) == len(rec["xela"][0][1]):
                     rec["xela"].append((stamp, readings.astype(np.float32)))
+                    rec["xela_temp"].append(temps.astype(np.float32))
             # A take holds one taxel count; readings of another size are dropped.
             if self._recording and (
                 not self._rec_xela or len(readings) == len(self._rec_xela[0])
@@ -1647,10 +1713,13 @@ class LeapStateListener(Node):
             return path, stamps
 
     def start_play_recording(self, key: str) -> None:
-        """Starts buffering leap_state (position, velocity, effort), Xela and clicks under
-        ``key`` (independent of the Create tab's recording)."""
+        """Starts buffering leap_state (position, velocity, effort), Xela (readings and each
+        taxel's temperature) and clicks under ``key`` (independent of the Create tab's
+        recording)."""
         with self._lock:
-            self._play_recs[key] = {"state": [], "xela": [], "clicks": [], "cmd": []}
+            self._play_recs[key] = {
+                "state": [], "xela": [], "xela_temp": [], "clicks": [], "cmd": []
+            }
 
     def stop_play_recording(self, key: str) -> dict | None:
         """The buffers recorded under ``key`` since ``start_play_recording`` (None if none)."""
@@ -2562,8 +2631,16 @@ class FingerPanel(QtWidgets.QWidget):
             "While on, new recordings inherit this pen box."
         )
 
+        # While playing: how the finger is being controlled right now (``playback_control``).
+        self.control_label = QtWidgets.QLabel()
+        self.control_label.setToolTip(
+            "Control during Play: position (the take's joints only), position + force (force "
+            "replay pushing past the take in a contact phase), click press or maintain touch"
+        )
+
         header = QtWidgets.QHBoxLayout()
-        header.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"), 1)
+        header.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"))
+        header.addWidget(self.control_label, 1)
         header.addWidget(QtWidgets.QLabel("Pose"))
         header.addWidget(self.pose_switch)
         bar_row = QtWidgets.QHBoxLayout()
@@ -2617,6 +2694,12 @@ class FingerPanel(QtWidgets.QWidget):
             "solid: demonstration, dashed: measured" if on else None, size="9pt"
         )
         self.tip_plot.set_playing(on)
+        if not on:
+            self.control_label.setText("")
+
+    def set_control(self, text: str, color: str) -> None:
+        """Shows how the finger is controlled during Play (``playback_control``)."""
+        self.control_label.setText(f"<span style='color:{color}'>Control: {text}</span>")
 
     def fill_takes(self, store: TakeStore, select: str | None = None) -> None:
         """Lists the takes of this finger, selecting ``select`` (default: keep the selection)."""
@@ -2650,6 +2733,69 @@ class FingerPanel(QtWidgets.QWidget):
         self.play_bar.setValue(int(round(local / self.duration * PLAY_BAR_STEPS)) if self.duration else 0)
         self.play_bar.blockSignals(False)
         self.time_label.setText(f"{local:.2f} / {self.duration:.2f} s")
+
+
+class AddPressSettingDialog(QtWidgets.QDialog):
+    """A name and every click press value (the Settings tab's fields), starting from
+    ``start``; ``settings()`` is the new setting."""
+
+    def __init__(self, parent, start: ClickPressSettings, taken: set[str], name: str) -> None:
+        super().__init__(parent)
+        self.setWindowTitle("Add click press setting")
+        self._taken = taken
+        self.name_edit = QtWidgets.QLineEdit(name)
+        name_tip = "Name of the setting in the finger's click press dropdown"
+        self.name_edit.setToolTip(name_tip)
+        self.enabled_check = press_enabled_check()
+        self.enabled_check.setChecked(start.enabled)
+        self.detector_check = press_detector_check()
+        self.detector_check.setChecked(start.require_click_detector)
+        self.spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
+        fields = QtWidgets.QWidget()
+        form = QtWidgets.QFormLayout(fields)
+        form.addRow(tip_label("Name:", name_tip), self.name_edit)
+        form.addRow(self.enabled_check)
+        for group in press_setting_groups(self.spins, self.detector_check):
+            form.addRow(group)
+        for name_, *_, scale, _ in SettingsTab.PRESS_FIELDS:
+            self.spins[name_].setValue(getattr(start, name_) * scale)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(fields)
+        self.error = QtWidgets.QLabel()
+        self.error.setStyleSheet("color: #d32f2f;")
+        buttons = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        buttons.accepted.connect(self._accept)
+        buttons.rejected.connect(self.reject)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(scroll, 1)
+        layout.addWidget(self.error)
+        layout.addWidget(buttons)
+        self.resize(460, 640)
+
+    def name(self) -> str:
+        return self.name_edit.text().strip()
+
+    def _accept(self) -> None:
+        name = self.name()
+        if not name or name == DEFAULT_PRESS:
+            self.error.setText("Give it a name.")
+        elif name in self._taken:
+            self.error.setText(f"'{name}' exists already.")
+        else:
+            self.accept()
+
+    def settings(self) -> ClickPressSettings:
+        s = ClickPressSettings(
+            enabled=self.enabled_check.isChecked(),
+            require_click_detector=self.detector_check.isChecked(),
+        )
+        for name, *_, scale, _ in SettingsTab.PRESS_FIELDS:
+            kind = type(getattr(s, name))  # max_slips is a count
+            setattr(s, name, kind(round(self.spins[name].value() / scale, 9)))
+        return s
 
 
 def sample_take(take: FingerTake, local: float) -> np.ndarray:
@@ -2687,6 +2833,7 @@ class Playback:
     last_step: float = 0.0  # time.monotonic() of the last command step
     # Force replay (None: plain position replay) and the live fingertip it reads.
     force: ForceTracker | None = None
+    no_force_why: str = ""  # why ``force`` is None (shown with the control mode)
     tip_ids: np.ndarray | None = None
     live_baseline: np.ndarray | None = None  # (T, 3) live view's baseline at Play
     # (ROS time, commanded hand pose) of every command step, plotted against ``leap_state``.
@@ -2712,6 +2859,33 @@ class Playback:
         if self.stop is not None:
             return self.stop
         return 0.0 if self.reverse else self.take.duration
+
+
+# Colors of the control modes shown in a playing finger's panel.
+CONTROL_POSITION_COLOR = "#616161"
+CONTROL_FORCE_COLOR = "#e65100"
+CONTROL_PRESS_COLOR = "#6a1b9a"
+CONTROL_TOUCH_COLOR = "#1565c0"
+
+
+def playback_control(p: Playback) -> tuple[str, str]:
+    """(text, color) of how ``p`` controls its finger at this moment: a click press or a
+    maintain touch over their regions, position + force while force replay is in a contact
+    phase, otherwise position (saying whether force replay is armed for a later contact, or why
+    it is off)."""
+    if p.probe is not None:
+        return "click setting search", CONTROL_PRESS_COLOR
+    if p.press is not None and p.press.state not in ("", CLICK_DONE):
+        return f"click press ({p.press.state})", CONTROL_PRESS_COLOR
+    if p.touch is not None and p.touch.status:
+        return "position + touch hold", CONTROL_TOUCH_COLOR
+    if p.force is not None:
+        if p.force.status:
+            return (f"position + force ({p.force.status}, +{p.force.offset:.2f} rad)",
+                    CONTROL_FORCE_COLOR)
+        return "position (force replay armed for contact)", CONTROL_POSITION_COLOR
+    why = f": {p.no_force_why}" if p.no_force_why else ""
+    return f"position only{why}", CONTROL_POSITION_COLOR
 
 
 class CreateTab(QtWidgets.QWidget):
@@ -3075,10 +3249,12 @@ class CreateTab(QtWidgets.QWidget):
         touch_spans: tuple[tuple[float, float, dict], ...] = (),
         select: bool = True,
         hold_at_end: bool = False,
+        press_settings: ClickPressSettings | None = None,
     ) -> bool:
         """Plays ``take`` on ``finger`` from take time ``offset`` to ``stop`` (default: its end,
         or its start in reverse), selecting it in the finger's panel. The finger is held in
-        contact over the (start, end, params) ``touch_spans``. With ``hold_at_end`` it stays at
+        contact over the (start, end, params) ``touch_spans``; click press regions use
+        ``press_settings`` (default: the Settings tab's). With ``hold_at_end`` it stays at
         ``stop`` (``play_reached_end`` is emitted) until ``release_end_hold``. False if it
         cannot start."""
         if finger in self._playing:
@@ -3102,11 +3278,12 @@ class CreateTab(QtWidgets.QWidget):
             self.node.get_logger().info(
                 f"{panel.label}: playing {take.name} in reverse; plain position replay"
             )
-            force = None
+            force, no_force_why = None, "reverse"
             press = None
         else:
-            press = self._click_press(finger, take, cols, tip_ids, q, offset)
-            force = self._force_tracker(
+            press = self._click_press(finger, take, cols, tip_ids, q, offset,
+                                      press_settings or self.press_settings)
+            force, no_force_why = self._force_tracker(
                 finger, take, tip_mags, offset,
                 [(r.start, r.end) for r in press.regions] if press is not None else [],
             )
@@ -3129,6 +3306,7 @@ class CreateTab(QtWidgets.QWidget):
                 stop=stop,
                 last_step=now,
                 force=force,
+                no_force_why=no_force_why,
                 tip_ids=tip_ids,
                 live_baseline=self.hand.baseline,
                 tip_mags=tip_mags,
@@ -3210,23 +3388,24 @@ class CreateTab(QtWidgets.QWidget):
     def _force_tracker(
         self, finger: str, take: FingerTake, tip_mags: np.ndarray | None, offset: float,
         press_spans: list[tuple[float, float]] = (),
-    ) -> ForceTracker | None:
-        """Force replay of ``take`` from take time ``offset``; None (plain position replay) when
-        the take has no contact phase or the live fingertip force cannot be measured. Contact
-        phases overlapping a ``press_spans`` (click_press) region get force replay off."""
+    ) -> tuple[ForceTracker | None, str]:
+        """Force replay of ``take`` from take time ``offset`` and, when it is None (plain
+        position replay: the take has no contact phase or the live fingertip force cannot be
+        measured), why. Contact phases overlapping a ``press_spans`` (click_press) region get
+        force replay off."""
         log = self.node.get_logger()
         label = FINGER_LABEL[finger]
         if tip_mags is None:
             log.info(f"{label}: {take.name} has no Xela readings; plain position replay")
-            return None
+            return None, "no Xela in the take"
         force = tip_mags.sum(axis=1)
         phases = contact_phases(take.xela_t, force, take.t, take.q)
         if not phases:
             log.info(f"{label}: no contact phase in {take.name}; plain position replay")
-            return None
+            return None, "no contact phase in the take"
         if self.hand.baseline is None:
             log.warn(f"{label}: no live Xela baseline (press Zero); plain position replay")
-            return None
+            return None, "no live Xela baseline (press Zero)"
         for p in phases:
             click = f"click at {p.click:.2f} s" if p.click is not None else "no click"
             log.info(f"{label}: {take.name} contact {p.start:.2f}-{p.end:.2f} s, "
@@ -3243,7 +3422,7 @@ class CreateTab(QtWidgets.QWidget):
             log=lambda msg: log.info(f"{label} force replay: {msg}"),
         )
         tracker.reset(offset)
-        return tracker
+        return tracker, ""
 
     def _hand_kinematics(self) -> HandKinematics | None:
         """Fingertip kinematics from hardware joints (None if they cannot load)."""
@@ -3259,7 +3438,7 @@ class CreateTab(QtWidgets.QWidget):
 
     def _click_press(
         self, finger: str, take: FingerTake, cols: list[int], tip_ids: np.ndarray | None,
-        q_hand: np.ndarray, offset: float,
+        q_hand: np.ndarray, offset: float, settings: ClickPressSettings,
     ) -> ClickPress | None:
         """Click press over the take's ``click_press`` regions from take time ``offset``; None
         when it has none or they cannot run (no Xela readings, recorded sim joints, live
@@ -3267,7 +3446,7 @@ class CreateTab(QtWidgets.QWidget):
         spans = sorted(
             (e.t, e.end, e.params) for e in take.events
             if e.name == CLICK_PRESS_EVENT and e.end is not None and e.end > offset
-        ) if self.press_settings.enabled else []
+        ) if settings.enabled else []
         if not spans:
             return None
         log = self.node.get_logger()
@@ -3316,7 +3495,7 @@ class CreateTab(QtWidgets.QWidget):
         if not regions:
             return None
         press = ClickPress(
-            regions, self.press_settings,
+            regions, settings,
             log=lambda msg: log.info(f"{label} {CLICK_PRESS_EVENT}: {msg}"),
         )
         press.reset(offset)
@@ -3831,6 +4010,7 @@ class CreateTab(QtWidgets.QWidget):
         for finger, p in self._playing.items():
             panel = self.panels[finger]
             panel.set_position(p.local)
+            panel.set_control(*playback_control(p))
             if p.press is not None and p.press.status:
                 panel.time_label.setText(f"{panel.time_label.text()}  [{p.press.status}]")
             elif p.touch is not None and p.touch.status:
@@ -4422,6 +4602,11 @@ class EditFingerPanel(QtWidgets.QWidget):
         self.box_label = QtWidgets.QLabel()
         self.take_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon)
         self.take_combo.setMinimumContentsLength(10)
+        # Thumb only (``PRESS_SETTING_FINGERS``): the click press settings its Play uses.
+        self.press_combo: QtWidgets.QComboBox | None = None
+        self.add_press_btn: QtWidgets.QPushButton | None = None
+        if finger in PRESS_SETTING_FINGERS:
+            self._build_press_setting()
         self.delete_take_btn = QtWidgets.QPushButton("Delete take")
         self.delete_take_btn.setMinimumWidth(90)
         self.delete_take_btn.setToolTip("Delete the selected take from disk")
@@ -4463,7 +4648,12 @@ class EditFingerPanel(QtWidgets.QWidget):
         bar_row.addWidget(self.time_label)
         controls = QtWidgets.QGridLayout()
         controls.addLayout(header, 0, 0, 1, 2)
-        controls.addWidget(self.take_combo, 1, 0)
+        take_row = QtWidgets.QHBoxLayout()
+        if self.press_combo is not None:
+            take_row.addWidget(self.press_combo, 1)
+            take_row.addWidget(self.add_press_btn)
+        take_row.addWidget(self.take_combo, 1)
+        controls.addLayout(take_row, 1, 0)
         controls.addWidget(self.delete_take_btn, 1, 1)
         controls.addWidget(self.event_combo, 2, 0)
         controls.addLayout(event_buttons, 2, 1)
@@ -4549,6 +4739,21 @@ class EditFingerPanel(QtWidgets.QWidget):
         self.event_list.itemSelectionChanged.connect(self._update_buttons)
         self._load_selected()
 
+    def _build_press_setting(self) -> None:
+        self.press_combo = QtWidgets.QComboBox()
+        self.press_combo.setToolTip(
+            f"Click press settings Play uses in the take's '{CLICK_PRESS_EVENT}' regions: "
+            f"{DEFAULT_PRESS} are the Settings tab's, the others are added with Add click press "
+            "setting"
+        )
+        self.press_combo.setSizeAdjustPolicy(
+            QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon
+        )
+        self.press_combo.setMinimumContentsLength(8)
+        self.add_press_btn = QtWidgets.QPushButton("Add click press setting")
+        self.add_press_btn.setToolTip(
+            "Create a named click press setting, starting from the one picked on the left"
+        )
     def _color(self, name: str, alpha: int = 255) -> QtGui.QColor:
         color = QtGui.QColor(self.event_defs.get(name, {}).get("color", UNKNOWN_EVENT_COLOR))
         color.setAlpha(alpha)
@@ -5303,8 +5508,17 @@ class EditTab(QtWidgets.QWidget):
         self._xela_seq = 0
         self._pose_finger: str | None = None  # finger whose Pose switch is on
         self._pose_corners: np.ndarray | None = None  # (4, 2) its take's pen box
-        # Plays being recorded, by finger: take, replay_of, start time and live baseline.
+        # Plays being recorded, by finger: take, replay_of, start time, live baseline and the
+        # click press settings (and their name) of a Play.
         self._play_recs: dict[str, dict] = {}
+        # Named click press settings the finger panels pick from (besides DEFAULT_PRESS, the
+        # Settings tab's).
+        self._presets_path = press_presets_file()
+        try:
+            self.press_presets = load_press_presets(self._presets_path)
+        except Exception as e:  # noqa: BLE001 - shown
+            node.get_logger().warn(f"Could not load {self._presets_path}: {e}")
+            self.press_presets = {}
 
         grid = QtWidgets.QWidget()
         grid_layout = QtWidgets.QGridLayout(grid)
@@ -5320,6 +5534,11 @@ class EditTab(QtWidgets.QWidget):
             panel.delete_requested.connect(self.delete_requested)
             panel.play_requested.connect(self._toggle_play)
             panel.replay_requested.connect(self._toggle_replay)
+            if panel.press_combo is not None:
+                panel.add_press_btn.clicked.connect(
+                    lambda _, f=finger: self._add_press_setting(f)
+                )
+                self._fill_press_combo(panel)
             panel.take_loaded.connect(self._on_take_loaded)
             panel.pose_switch.toggled.connect(lambda on, f=finger: self._on_pose(f, on))
             panel.click_search = functools.partial(ClickSearch, node, create_tab, finger)
@@ -5393,19 +5612,67 @@ class EditTab(QtWidgets.QWidget):
 
     # ---- play ---------------------------------------------------------------------------
 
+    # ---- click press settings ----------------------------------------------------------
+
+    def press_settings_of(self, finger: str) -> ClickPressSettings:
+        """The click press settings picked in ``finger``'s panel (the Settings tab's for
+        ``DEFAULT_PRESS``, and for the fingers without one)."""
+        combo = self.panels[finger].press_combo
+        name = combo.currentData() if combo is not None else None
+        return self.press_presets.get(name, self.create_tab.press_settings)
+
+    def _fill_press_combo(self, panel: EditFingerPanel, select: str | None = None) -> None:
+        keep = select or panel.press_combo.currentData() or DEFAULT_PRESS
+        panel.press_combo.blockSignals(True)
+        panel.press_combo.clear()
+        for name in (DEFAULT_PRESS, *sorted(self.press_presets)):
+            panel.press_combo.addItem(name, name)
+        panel.press_combo.setCurrentIndex(max(panel.press_combo.findData(keep), 0))
+        panel.press_combo.blockSignals(False)
+
+    def _add_press_setting(self, finger: str) -> None:
+        """Add click press setting: a new named setting, from the one picked in ``finger``'s
+        panel, then picked there."""
+        n = len(self.press_presets) + 1
+        while f"Click press {n}" in self.press_presets:
+            n += 1
+        dialog = AddPressSettingDialog(
+            self.window(), self.press_settings_of(finger), set(self.press_presets),
+            f"Click press {n}",
+        )
+        if dialog.exec_() != QtWidgets.QDialog.Accepted:
+            return
+        name = dialog.name()
+        self.press_presets[name] = dialog.settings()
+        try:
+            save_press_presets(self._presets_path, self.press_presets)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(
+                self, "Add click press setting", f"Could not save {self._presets_path}:\n{e}"
+            )
+        else:
+            self.node.get_logger().info(
+                f"Added the click press setting '{name}' to {self._presets_path}"
+            )
+        for f, panel in self.panels.items():
+            if panel.press_combo is not None:
+                self._fill_press_combo(panel, select=name if f == finger else None)
+
     def _toggle_play(self, finger: str) -> None:
         if self.create_tab.playback(finger) is not None:
             self.create_tab.stop_play(finger)
             return
-        self._start_play(finger)
+        self._start_play(finger, press_settings=self.press_settings_of(finger))
 
     def _start_play(
-        self, finger: str, hold_at_end: bool = False, start: float | None = None
+        self, finger: str, hold_at_end: bool = False, start: float | None = None,
+        press_settings: ClickPressSettings | None = None,
     ) -> bool:
         """Plays the episode of ``finger``'s take on the hand, from ``start`` (default:
         ``episode_start``) to ``terminal``; False if it cannot start. With ``hold_at_end`` the
         finger stays held in contact at ``terminal`` (its last ``maintain_touch`` region
-        stretched to it) until ``release_end_hold``."""
+        stretched to it) until ``release_end_hold``. Click press regions use
+        ``press_settings`` (default: the Settings tab's)."""
         panel = self.panels[finger]
         span = panel.episode_span()
         if panel.take is None or span is None:
@@ -5414,10 +5681,10 @@ class EditTab(QtWidgets.QWidget):
         spans = panel.touch_spans()
         if hold_at_end:
             spans = touch_spans_to_end(spans, start, end)
-        self._start_play_recording(finger, panel.take)
+        self._start_play_recording(finger, panel.take, press_settings=press_settings)
         if not self.create_tab.play_take(
             finger, panel.take, start, reverse=end < start, stop=end,
-            touch_spans=spans, hold_at_end=hold_at_end,
+            touch_spans=spans, hold_at_end=hold_at_end, press_settings=press_settings,
         ):
             self._cancel_play_recording(finger)
             return False
@@ -5480,13 +5747,19 @@ class EditTab(QtWidgets.QWidget):
             self._cancel_play_recording(finger)
 
     def _start_play_recording(
-        self, finger: str, take: FingerTake, replay_of: str = ""
+        self, finger: str, take: FingerTake, replay_of: str = "",
+        press_settings: ClickPressSettings | None = None,
     ) -> None:
+        press = press_settings or self.create_tab.press_settings
         self._play_recs[finger] = {
             "take": take,
             "replay_of": replay_of,
             "t0": self.node.get_clock().now().nanoseconds * 1e-9,
             "baseline": self.create_tab.hand.baseline,
+            "press": press,
+            "press_name": next(
+                (n for n, p in self.press_presets.items() if p is press), DEFAULT_PRESS
+            ),
         }
         self.node.start_play_recording(finger)
 
@@ -5536,7 +5809,8 @@ class EditTab(QtWidgets.QWidget):
                 "take_start": float(playback.offset),
                 "take_end": float(playback.end),
                 "reverse": bool(playback.reverse),
-                "click_press": asdict(self.create_tab.press_settings),
+                "click_press": asdict(info["press"]),
+                "click_press_name": info["press_name"],
                 "maintain_touch": asdict(self.create_tab.touch_settings),
                 "hold": asdict(self.create_tab.settings),
                 "click_press_trace": playback.press.trace if playback.press is not None else [],
@@ -8823,6 +9097,52 @@ def double_spin(
     return spin
 
 
+def tip_label(text: str, tooltip: str) -> QtWidgets.QLabel:
+    """A form row's name, showing ``tooltip`` too (not only its field)."""
+    label = QtWidgets.QLabel(text)
+    label.setToolTip(tooltip)
+    return label
+
+
+def press_enabled_check() -> QtWidgets.QCheckBox:
+    check = QtWidgets.QCheckBox(f"Press in '{CLICK_PRESS_EVENT}' regions")
+    check.setToolTip(
+        f"During Play, replace the take over a '{CLICK_PRESS_EVENT}' region with a press of "
+        "the fingertip along the recorded force until the pen clicks (needs Xela readings in "
+        "the take and a Zero baseline before Play)"
+    )
+    return check
+
+
+def press_detector_check() -> QtWidgets.QCheckBox:
+    check = QtWidgets.QCheckBox("Only the click detector ends a press")
+    check.setToolTip(
+        "Count only click_topic as the click (a force drop with the fingertip giving way "
+        "does not)"
+    )
+    return check
+
+
+def press_setting_groups(
+    spins: dict[str, QtWidgets.QDoubleSpinBox], detector_check: QtWidgets.QCheckBox
+) -> list[QtWidgets.QGroupBox]:
+    """One box per ``SettingsTab.PRESS_SECTIONS`` with its ``PRESS_FIELDS`` spin boxes (added
+    to ``spins``), ``detector_check`` in the click detection one."""
+    fields = {f[0]: f for f in SettingsTab.PRESS_FIELDS}
+    groups = []
+    for title, names in SettingsTab.PRESS_SECTIONS:
+        group = QtWidgets.QGroupBox(title)
+        form = QtWidgets.QFormLayout(group)
+        for name in names:
+            _, label, lo, hi, step, decimals, suffix, _, tooltip = fields[name]
+            spins[name] = double_spin(lo, hi, step, decimals, suffix, tooltip)
+            form.addRow(tip_label(f"{label}:", tooltip), spins[name])
+        if "click_min_ratio" in names:
+            form.addRow(detector_check)
+        groups.append(group)
+    return groups
+
+
 # Processing tab filters: (name, check box text) of the label filters, and the processed one.
 PROCESSING_LABEL_FILTERS = ((SUCCESS, "Success"), (FAILURE, "Failure"))
 NEEDS_MANUAL_LABEL = "needs_manual_label"
@@ -11444,6 +11764,1669 @@ class BaselineTab(QtWidgets.QWidget):
         self.table.setUpdatesEnabled(True)
 
 
+BODY_DIR = "body_learning"  # episodes: <demo_dir>/body_learning/<mode>/<mode>_<time>.npz
+BODY_MODES = (
+    (self_exploration.WORKSPACE, "Workspace exploration"),
+    (self_exploration.PALM_TOUCH, "Fingers \u2192 palm"),
+    (self_exploration.THUMB_TOUCH, "Thumb \u2192 fingers"),
+)
+BODY_MODE_LABEL = dict(BODY_MODES)
+BODY_PAD_LABEL = {
+    "ds_tip": "fingertip", "md_uspa44": "md pad", "px_uspa44": "px pad", "bs_uspa44": "bs pad",
+}
+BODY_HOLD_S = 1.0  # s an episode holds its goal before going back to the open pose
+BODY_NOVELTY_RAD = 0.5  # default novelty threshold (rad, L2 of the sim joint angles)
+BODY_PLAY_MS = 10  # how often a play sends the point of its path due
+BODY_RECORD_KEY = "body_learning"  # the node's play recording of a Play on hand
+BODY_TOUCH_RISE = 1.0  # fingertip taxel rise (units) from the episode's start: a touch felt
+BODY_PLAN_RETRIES = 3  # new poses of the same touch tried when hand_ik cannot plan one
+BODY_GOALS_PER_COMBO = 5  # default goals Generate finds for each combination
+# Goals a search finds before giving up when all are near rejected ones or their paths
+# (hand_ik in the model, open -> goal -> open) collide.
+BODY_REJECT_TRIES = 20
+BODY_CHECK_DT = 0.02  # s between the points of the paths a goal search plans to check
+BODY_HAND_PLAYS = 5  # default times Play on hand plays (and records) an episode
+BODY_COMBOS_FILE = "combinations.json"  # <demo_dir>/body_learning/: the goals found ahead
+BODY_FULL_COLOR, BODY_PARTIAL_COLOR, BODY_NONE_COLOR = "#2e7d32", "#ef6c00", "#9e9e9e"
+
+
+def body_dir(demo_dir: str, mode: str) -> str:
+    return os.path.join(demo_dir, BODY_DIR, mode)
+
+
+def list_body_episodes(demo_dir: str) -> list[str]:
+    """The Learning about your own body tab's episodes of every mode, newest first."""
+    paths = []
+    for mode, _ in BODY_MODES:
+        directory = body_dir(demo_dir, mode)
+        if os.path.isdir(directory):
+            paths += [os.path.join(directory, n) for n in os.listdir(directory)
+                      if n.startswith(f"{mode}_") and n.endswith(".npz")]
+    # <mode>_<YYYYmmdd_HHMMSS>.npz: newest first across the modes
+    return sorted(paths, key=lambda p: os.path.basename(p)[-19:], reverse=True)
+
+
+def body_episode_meta(path: str) -> dict:
+    try:
+        with np.load(path, allow_pickle=False) as data:
+            return json.loads(str(data["meta"]))
+    except Exception:  # noqa: BLE001 - listed without details
+        return {}
+
+
+def body_touch_text(touches: dict) -> str:
+    """'Thumb -> if_ds_tip 1.2 mm, ...' of a self-touch's touches: the pads and how deep the
+    fingertips were in contact with them with MuJoCo reset to the goal."""
+    return ", ".join(
+        f"{FINGER_LABEL[f]} \u2192 {t['pad']}"
+        + (f" {t['contact_depth'] * 1000:.1f} mm" if "contact_depth" in t else "")
+        for f, t in touches.items()
+    )
+
+
+def body_item_label(key: str, mode: str | None = None) -> str:
+    """'Thumb + Ring \u2192 palm' / 'Thumb \u2192 Index md pad' of a touch, 'Thumb + Ring
+    move' of a workspace combination."""
+    combo = self_exploration.palm_combination(key)
+    if combo is not None:
+        return " + ".join(FINGER_LABEL[f] for f in combo) + (
+            " move" if mode == self_exploration.WORKSPACE else " \u2192 palm")
+    finger, pad = key.split("_", 1)
+    return f"Thumb \u2192 {FINGER_LABEL.get(finger, finger)} {BODY_PAD_LABEL.get(pad, pad)}"
+
+
+def body_episode_text(path: str) -> str:
+    meta = body_episode_meta(path)
+    mode = self_exploration.episode_mode(path)
+    text = f"{BODY_MODE_LABEL.get(mode, mode)} {meta.get('started', os.path.basename(path))}"
+    if meta.get("item"):
+        text += f" \u00b7 {body_item_label(meta['item'], mode)}"
+    if meta.get("ended_by") == "stopped":
+        text += " \u00b7 stopped"
+    return text
+
+
+class BodyLearningSignals(QtCore.QObject):
+    """Answers from other threads (goal search, hand_ik) to the Learning about your own body
+    tab: (generation, payload) or (generation, exception)."""
+
+    goal_found = QtCore.pyqtSignal(object)
+    planned = QtCore.pyqtSignal(object)
+    generated = QtCore.pyqtSignal(object)  # Generate: (run, mode, item, entry | error) / (run,)
+
+
+class BodyLearningTab(QtWidgets.QWidget):
+    """The hand learns about its own body (``self_exploration``): Play on sim / Play on hand
+    take a goal pose and ask hand_ik (mink) for the paths open pose (0 on every sim joint) -> goal and
+    goal -> open; the episode is the first, ``BODY_HOLD_S`` at the goal, then the second.
+    Each mode has its combinations (``self_exploration.mode_items``), listed in the
+    Combinations panel on the right: which fingers move (Workspace exploration) or touch the
+    palm with their fingertips (Fingers → palm), every combination of the four fingers, or
+    the sensor pad of another finger the thumb's fingertip touches (Thumb → fingers).
+    Generate finds goals ahead for each combination (``BODY_GOALS_PER_COMBO`` by default, in
+    the model, in the background), saved in ``<demo_dir>/body_learning/combinations.json``.
+    Workspace goals are novel: further (L2 of the sim joint angles) than the threshold from
+    every goal and every trajectory point played on the hand so far (the saved episodes, of
+    every mode); touch goals are in contact after a MuJoCo reset to them.
+    They plan the goal picked in the panel; with a combination picked, its goal played
+    least on the hand; with nothing picked, a goal of the combination the hand reached least.
+    A combination without goals is searched for there and then.
+    Play on sim streams the episode to the MuJoCo sim (a preview: nothing is saved and it is
+    not explored). Play on hand first moves the hand to the open pose (an IK path, not
+    recorded) if it is not there, then plays the episode with every joint on the hand node's
+    stiff gains (compliant again when the tab is left) while recording the joint positions,
+    velocities and efforts, every taxel's Xela reading and temperature, and the commands; it is
+    saved (also when stopped) to ``<demo_dir>/body_learning/<mode>/<mode>_<time>.npz`` and
+    listed on the left, not with the Demonstration tab's recordings."""
+
+    def __init__(self, node: LeapStateListener, create_tab: CreateTab) -> None:
+        super().__init__()
+        self.node = node
+        self.create_tab = create_tab  # keeps the playing fingers' stiff_joints
+        self._to_sim: HardwareToSim | None = None
+        self._ik = None  # hand_ik.HandIK, loaded by the first goal search
+        self._check_data = None  # MjData of _ik.model checking the goal searches' paths
+        self._check_model = None  # model (and data) checking the planned episodes
+        self._episode_data = None
+        self._solver: self_exploration.SelfTouchSolver | None = None
+        self._rng = np.random.default_rng()
+        self._explored: self_exploration.ExploredSet | None = None
+        # mode -> combination (item_key) -> episodes that reached it on the hand
+        self._all_episodes: list[str] = []  # saved episodes of every mode, newest first
+        self._counts: dict[str, dict[str, int]] = {}
+        self._goal_counts: dict[str, int] = {}  # stored goal id -> episodes that reached it
+        self._bank: self_exploration.GoalBank | None = None  # the goals found ahead
+        self._stiff = False  # every joint given the hand's stiff gains by this tab
+        self._ik_lock = threading.Lock()  # one goal search at a time uses the IK model
+        # Bumped to drop the answers of a search / plan that was stopped.
+        self._generation = 0
+        self._busy = ""  # "" or what runs in the background: "search" / "plan"
+        # Generate: bumped to stop it; (mode, done, total) while it runs, else None.
+        self._gen_run = 0
+        self._generating: tuple[str, int, int] | None = None
+        # (mode, names, job, replans) of the last goal search, for another pose of its touch.
+        self._search_job: tuple | None = None
+        self._play_when_planned: str | None = None  # "sim" / "hand": play once planned
+        # Play on hand's repeats: [plays recorded, plays wanted] while it runs, else None.
+        self._hand_plays: list[int] | None = None
+        # The episode planned: mode, goal_sim, info, then out / path_sim / path_hw, dt.
+        self._episode: dict | None = None
+        # The play running: target "sim" / "hand", path (hardware), dt, start, recorded...
+        self._play: dict | None = None
+        # (sim names, goal, title) shown on the hand view unless Live or playing on the hand.
+        self._shown_goal: tuple[list[str], np.ndarray, str] | None = None
+        self._sim_seq = -1
+        self._xela_seq = -1
+        self._signals = BodyLearningSignals()
+        self._signals.goal_found.connect(self._on_goal_found)
+        self._signals.planned.connect(self._on_planned)
+        self._signals.generated.connect(self._on_generated)
+        self._timer = QtCore.QTimer(self)
+        self._timer.setInterval(BODY_PLAY_MS)
+        self._timer.timeout.connect(self._play_step)
+
+        split = QtWidgets.QSplitter(QtCore.Qt.Horizontal)
+        split.addWidget(self._episodes_panel())
+        split.addWidget(self._middle_column())
+        split.addWidget(self._combinations_panel())
+        split.setSizes([300, 700, 600])
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(split)
+        self._update_buttons()
+
+    # ---- layout ------------------------------------------------------------------------
+
+    def _episodes_panel(self) -> QtWidgets.QWidget:
+        """The left panel: the episodes played on the hand (newest first), Delete, Refresh."""
+        self.list = QtWidgets.QListWidget()
+        self.list.setToolTip(
+            f"Episodes of the mode picked played on the hand, in <demo_dir>/{BODY_DIR}/<mode>, "
+            "newest first: the picked one's goal is shown on the hand view (Up / Down move "
+            "between the goals in Combinations)"
+        )
+        self.list.currentRowChanged.connect(self._load_picked)
+        self.count_label = QtWidgets.QLabel()
+        self.delete_btn = QtWidgets.QPushButton("Delete")
+        self.delete_btn.setToolTip(
+            "Delete the picked episode (it no longer counts as explored)"
+        )
+        self.delete_btn.setEnabled(False)
+        self.delete_btn.clicked.connect(self._delete_picked)
+        refresh_btn = QtWidgets.QPushButton("Refresh")
+        refresh_btn.clicked.connect(self.reload)
+        left = QtWidgets.QGroupBox("Episodes")
+        left_layout = QtWidgets.QVBoxLayout(left)
+        left_layout.addWidget(self.list, 1)
+        left_layout.addWidget(self.count_label)
+        buttons = QtWidgets.QHBoxLayout()
+        buttons.addWidget(self.delete_btn)
+        buttons.addWidget(refresh_btn)
+        left_layout.addLayout(buttons)
+        # Up / Down: the previous / next goal in Combinations; Space: Play on hand (or Stop).
+        for key, slot in (("Up", functools.partial(self._step_goal, -1)),
+                          ("Down", functools.partial(self._step_goal, 1)),
+                          ("Space", lambda: self.hand_btn.click())):
+            shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self)
+            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+            shortcut.activated.connect(slot)
+        return left
+
+    def _middle_column(self) -> QtWidgets.QWidget:
+        """Mode, the workspace options, what happens, and the hand view below."""
+        self.mode_combo = QtWidgets.QComboBox()
+        for mode, label in BODY_MODES:
+            self.mode_combo.addItem(label, mode)
+        self.mode_combo.currentIndexChanged.connect(self._mode_changed)
+        self.workspace_box = self._workspace_options()
+
+        self.stage_label = QtWidgets.QLabel()
+        self.stage_label.setStyleSheet("font-weight: bold;")
+        self.pose_label = QtWidgets.QLabel()
+        self.status = QtWidgets.QLabel(
+            "Generate finds goals for every combination of the mode; Play on sim plans the "
+            "picked one and previews it, Play on hand plans it, runs and records it."
+        )
+        self.status.setWordWrap(True)
+        self.status.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+
+        mode_row = QtWidgets.QHBoxLayout()
+        mode_row.addWidget(QtWidgets.QLabel("Mode"))
+        mode_row.addWidget(self.mode_combo, 1)
+        middle = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(middle)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(mode_row)
+        layout.addWidget(self.workspace_box)
+        layout.addWidget(self.stage_label)
+        layout.addWidget(self.pose_label)
+        layout.addWidget(self.status)
+        layout.addWidget(self._view_column(), 1)
+        return middle
+
+    def _workspace_options(self) -> QtWidgets.QWidget:
+        box = QtWidgets.QGroupBox("Workspace exploration")
+        self.novelty_spin = double_spin(
+            0.05, 5.0, 0.05, 2, " rad",
+            "A new goal is further than this (L2 of the sim joint angles) from every goal and "
+            "every trajectory point already played on the hand",
+        )
+        self.novelty_spin.setValue(BODY_NOVELTY_RAD)
+        self.novelty_spin.valueChanged.connect(lambda *_: self._fill_combinations())
+        self.explored_label = QtWidgets.QLabel()
+        form = QtWidgets.QFormLayout(box)
+        form.addRow("Novelty threshold", self.novelty_spin)
+        form.addRow("Explored", self.explored_label)
+        return box
+
+    def _combinations_panel(self) -> QtWidgets.QGroupBox:
+        """Combinations panel (right): every combination of the mode, the goals found for
+        each, and Generate."""
+        self.min_depth_spin = double_spin(
+            0.0, 20.0, 0.1, 2, " mm",
+            "Two fingers not meant to touch may go no deeper than this into one another, at the "
+            "goal and along the path to it and back (hand_ik in the model; the episode's own "
+            "plan is checked too, another pose tried if it collides). Goals found are listed "
+            "only if they pass; default: the sim's min_contact_depth, deeper contacts it "
+            "reports as collisions"
+        )
+        self.min_depth_spin.setValue(self.node.min_contact_depth * 1000.0)
+        self.min_depth_spin.valueChanged.connect(lambda *_: self._fill_combinations())
+        self.per_combo_spin = QtWidgets.QSpinBox()
+        self.per_combo_spin.setRange(1, 50)
+        self.per_combo_spin.setValue(BODY_GOALS_PER_COMBO)
+        self.per_combo_spin.setToolTip("Goals Generate finds for each combination")
+        self.per_combo_spin.valueChanged.connect(lambda *_: self._fill_combinations())
+        self.gen_btn = QtWidgets.QPushButton("Generate")
+        self.gen_btn.setToolTip(
+            "Find goals in the model (in the background) for every combination of the mode "
+            "that has fewer than the goals per combination: touches checked by a MuJoCo reset "
+            "to the goal, workspace goals novel (those no longer novel are replaced). Saved in "
+            f"<demo_dir>/{BODY_DIR}/{BODY_COMBOS_FILE}"
+        )
+        self.gen_btn.clicked.connect(self._toggle_generate)
+        self.gen_progress = QtWidgets.QLabel()
+        self.combo_summary = QtWidgets.QLabel()
+        self.combo_summary.setWordWrap(True)
+        self.combo_tree = QtWidgets.QTreeWidget()
+        self.combo_tree.setHeaderLabels(["Combination", "Goals", "On the hand"])
+        self.combo_tree.setToolTip(
+            "The mode's combinations and their goals. Goals: found / wanted (✗ the model "
+            "found none). On the hand: episodes played on the hand that reached it. Pick a "
+            "goal to see it on the hand view and play it with Play on sim / hand"
+        )
+        header = self.combo_tree.header()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        for c in (1, 2):
+            header.setSectionResizeMode(c, QtWidgets.QHeaderView.ResizeToContents)
+        header.setStretchLastSection(False)
+        self.combo_tree.currentItemChanged.connect(self._on_combination)
+        self.combo_details = QtWidgets.QTextBrowser()
+        clear_btn = QtWidgets.QPushButton("Clear pick")
+        clear_btn.setToolTip(
+            "Pick nothing: Play on sim / hand take a goal of the combination reached least"
+        )
+        clear_btn.clicked.connect(lambda: self.combo_tree.setCurrentItem(None))
+        plan = (
+            "Plans (hand_ik) the episode open pose \u2192 goal, "
+            f"{BODY_HOLD_S:g} s there, goal \u2192 open pose, unless it is the one planned "
+            "already: of the goal picked; with a combination picked, of its goal played least "
+            "on the hand; with nothing picked, of a goal of the combination reached least (a "
+            "combination without goals is searched for now). Stop while planning or playing"
+        )
+        self.sim_btn = QtWidgets.QPushButton("Play on sim")
+        self.sim_btn.setToolTip(
+            f"{plan}. Then streams it to the MuJoCo sim on '{self.node.sim_cmd_topic}' (a "
+            "preview: not saved, not explored)"
+        )
+        self.sim_btn.clicked.connect(functools.partial(self._play_picked, "sim"))
+        self.hand_btn = QtWidgets.QPushButton("Play on hand")
+        self.hand_btn.setToolTip(
+            f"{plan}. Space too. Then plays it on the hand (moving it to the open pose first if "
+            "needed) "
+            "and records the joints, every taxel's reading and temperature into this tab's "
+            f"episodes (<demo_dir>/{BODY_DIR})"
+        )
+        self.hand_btn.clicked.connect(functools.partial(self._play_picked, "hand"))
+        self.plays_spin = QtWidgets.QSpinBox()
+        self.plays_spin.setRange(1, 100)
+        self.plays_spin.setValue(BODY_HAND_PLAYS)
+        self.plays_spin.setToolTip(
+            "Times Play on hand plays the episode, one after another from the open pose, each "
+            "recorded and saved as an episode of its own (Stop ends the one playing and the "
+            "rest)"
+        )
+        self.reject_btn = QtWidgets.QPushButton("Reject")
+        self.reject_btn.setToolTip(
+            "Remove the picked goal (and its planned episode) and put it on the black list "
+            f"in {BODY_COMBOS_FILE}: it is never used again, nor goals within "
+            f"{self_exploration.REJECT_RADIUS:g} rad of it"
+        )
+        self.reject_btn.clicked.connect(self._reject_picked)
+        options = QtWidgets.QHBoxLayout()
+        options.addWidget(QtWidgets.QLabel("Min depth:"))
+        options.addWidget(self.min_depth_spin)
+        options.addWidget(QtWidgets.QLabel("Goals per combination:"))
+        options.addWidget(self.per_combo_spin)
+        options.addStretch(1)
+        options.addWidget(clear_btn)
+        gen_row = QtWidgets.QHBoxLayout()
+        gen_row.addWidget(self.gen_btn)
+        gen_row.addWidget(self.gen_progress, 1)
+        gen_row.addWidget(self.reject_btn)
+        top = QtWidgets.QWidget()
+        top_layout = QtWidgets.QVBoxLayout(top)
+        top_layout.setContentsMargins(0, 0, 0, 0)
+        top_layout.addLayout(options)
+        top_layout.addLayout(gen_row)
+        top_layout.addWidget(self.combo_summary)
+        top_layout.addWidget(self.combo_tree, 1)
+        goal_row = QtWidgets.QHBoxLayout()
+        goal_row.addWidget(self.sim_btn)
+        goal_row.addWidget(self.hand_btn)
+        goal_row.addWidget(QtWidgets.QLabel("Plays:"))
+        goal_row.addWidget(self.plays_spin)
+        top_layout.addLayout(goal_row)
+        split = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        split.addWidget(top)
+        split.addWidget(self.combo_details)
+        split.setSizes([550, 150])
+        self.combo_panel = QtWidgets.QGroupBox("Combinations")
+        QtWidgets.QVBoxLayout(self.combo_panel).addWidget(split)
+        return self.combo_panel
+
+    def _view_column(self) -> QtWidgets.QWidget:
+        self.view_label = QtWidgets.QLabel("Live")
+        self.live_check = QtWidgets.QCheckBox("Live")
+        self.live_check.setToolTip(
+            "Show the live hand instead of the goal (always live while playing on the hand)"
+        )
+        self.live_check.toggled.connect(lambda _: self._show_view())
+        self.hand = HandView(self.node.sim_topic, self.node.xela_topic, self.node.counts_per_unit)
+        top = QtWidgets.QHBoxLayout()
+        top.addWidget(self.view_label, 1)
+        top.addWidget(self.live_check)
+        column = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(column)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(top)
+        layout.addWidget(self.hand, 1)
+        return column
+
+    def _mode(self) -> str:
+        return self.mode_combo.currentData()
+
+    def _mode_changed(self, *_) -> None:
+        mode = self._mode()
+        self.workspace_box.setVisible(mode == self_exploration.WORKSPACE)
+        self.combo_panel.setTitle(f"Combinations: {BODY_MODE_LABEL[mode]}")
+        self.combo_tree.setCurrentItem(None)
+        self._fill_combinations()
+        self._list_episodes()
+        if self._episode is not None and self._episode["mode"] != self._mode():
+            self._drop_episode()
+
+    # ---- combinations ------------------------------------------------------------------
+
+    def _bank_path(self) -> str:
+        return os.path.join(self.node.demo_dir, BODY_DIR, BODY_COMBOS_FILE)
+
+    @property
+    def _min_depth(self) -> float:
+        """Min depth (m): deepest contact of two fingers not meant to touch."""
+        return self.min_depth_spin.value() / 1000.0
+
+    def _goals_of(self, mode: str, item: str) -> list[dict]:
+        """The stored goals of a combination that can still be played: no two fingers
+        deeper into one another than the min depth (on the path checked when found), and for
+        workspace exploration, still novel."""
+        entries = self._bank.of(mode, item) if self._bank is not None else []
+        entries = [e for e in entries if e.get("collision_depth", 0.0) <= self._min_depth]
+        if mode == self_exploration.WORKSPACE and self._explored is not None:
+            threshold = self.novelty_spin.value()
+            entries = [e for e in entries if self._explored.novelty(e["goal"]) > threshold]
+        return entries
+
+    def _goal_text(self, mode: str, entry: dict) -> str:
+        if entry.get("touches"):
+            return body_touch_text(entry["touches"])
+        novelty = (self._explored.novelty(entry["goal"]) if self._explored is not None
+                   else entry.get("novelty", 0.0))
+        return f"novelty {novelty:.2f} rad"
+
+    def _fill_combinations(self) -> None:
+        """The mode's combinations with their goals, the picked one kept."""
+        mode = self._mode()
+        picked = self._picked_combination()
+        wanted = self.per_combo_spin.value()
+        counts = self._counts.get(mode, {})
+        failed = self._bank.failed.get(mode, {}) if self._bank is not None else {}
+        keep = None
+        full = found = 0
+        items = self_exploration.mode_items(mode)
+        self.combo_tree.blockSignals(True)
+        self.combo_tree.clear()
+        for key in items:
+            entries = self._goals_of(mode, key)
+            found += min(len(entries), wanted)
+            full += len(entries) >= wanted
+            if entries:
+                color = BODY_FULL_COLOR if len(entries) >= wanted else BODY_PARTIAL_COLOR
+                goals = f"{len(entries)}/{wanted}"
+            elif key in failed:
+                color, goals = COMBO_COLLIDE_COLOR, "✗"
+            else:
+                color, goals = BODY_NONE_COLOR, f"0/{wanted}"
+            top = QtWidgets.QTreeWidgetItem(
+                [body_item_label(key, mode), goals, str(counts.get(key, 0))]
+            )
+            top.setData(0, QtCore.Qt.UserRole, (key, None))
+            top.setForeground(0, QtGui.QColor(color))
+            top.setForeground(1, QtGui.QColor(color))
+            top.setTextAlignment(1, QtCore.Qt.AlignCenter)
+            top.setTextAlignment(2, QtCore.Qt.AlignCenter)
+            if key in failed:
+                top.setToolTip(0, f"The model found no goal: {failed[key]}")
+            for n, entry in enumerate(entries, 1):
+                child = QtWidgets.QTreeWidgetItem([
+                    f"Goal {n}: {self._goal_text(mode, entry)}", "",
+                    str(self._goal_counts.get(entry["id"], 0)),
+                ])
+                child.setData(0, QtCore.Qt.UserRole, (key, entry["id"]))
+                child.setTextAlignment(2, QtCore.Qt.AlignCenter)
+                top.addChild(child)
+                if picked == (key, entry["id"]):
+                    keep = child
+            self.combo_tree.addTopLevelItem(top)
+            if picked == (key, None):
+                keep = top
+            if keep is not None and keep.parent() is top:
+                top.setExpanded(True)
+        self.combo_tree.setCurrentItem(keep)
+        self.combo_tree.blockSignals(False)
+        played = sum(counts.get(k, 0) for k in items)
+        self.combo_summary.setText(
+            f"{len(items)} combination(s); <span style='color:{BODY_FULL_COLOR}'><b>{full} "
+            f"with {wanted} goals</b></span>, {found} / {len(items) * wanted} goals found"
+            + (f", <span style='color:{COMBO_COLLIDE_COLOR}'>{len(failed)} not found</span>"
+               if failed else "")
+            + f"; {played} reached on the hand"
+        )
+        self._on_combination()
+
+    def _picked_combination(self) -> tuple[str, str | None] | None:
+        """(combination, stored goal id or None) picked in the panel, or None."""
+        item = self.combo_tree.currentItem()
+        return item.data(0, QtCore.Qt.UserRole) if item is not None else None
+
+    def _stored_goal(self, mode: str, key: str, goal_id: str) -> dict | None:
+        return next((e for e in self._goals_of(mode, key) if e["id"] == goal_id), None)
+
+    def _on_combination(self, *_) -> None:
+        """Details of the picked combination / goal; a goal is shown on the hand view."""
+        mode = self._mode()
+        picked = self._picked_combination()
+        if hasattr(self, "hand_btn"):
+            self._update_buttons()
+        if picked is None:
+            self.combo_details.setHtml(
+                "<i>Nothing picked: Play on sim / hand take a goal of the combination reached least on "
+                "the hand.</i>" if self._bank is not None and any(self._bank.goals.get(mode, {}).values())
+                else "<i>No goals yet: Generate finds them.</i>"
+            )
+            return
+        key, goal_id = picked
+        rows = [("Combination", body_item_label(key, mode)),
+                ("On the hand", str(self._counts.get(mode, {}).get(key, 0)))]
+        failed = self._bank.failed.get(mode, {}).get(key) if self._bank is not None else None
+        if failed:
+            rows.append(("Not found", failed))
+        entries = self._goals_of(mode, key)
+        if goal_id is None:
+            rows.append(("Goals", str(len(entries))))
+            for n, entry in enumerate(entries, 1):
+                rows.append((f"Goal {n}", f"{self._goal_text(mode, entry)}, "
+                                          f"{self._goal_counts.get(entry['id'], 0)} on the hand"))
+        else:
+            entry = self._stored_goal(mode, key, goal_id)
+            if entry is not None:
+                n = entries.index(entry) + 1
+                rows += [(f"Goal {n}", self._goal_text(mode, entry)),
+                         ("Found", entry.get("created", "")),
+                         ("On the hand", str(self._goal_counts.get(goal_id, 0)))]
+                if self._play is None and not self._busy:
+                    self._show_goal(self._bank.names, entry["goal"],
+                                    f"{body_item_label(key, mode)}: goal {n}")
+        self.combo_details.setHtml("<table cellspacing='2'>" + "".join(
+            f"<tr><td><b>{k}</b></td><td>{v}</td></tr>" for k, v in rows
+        ) + "</table>")
+
+    def _load_bank(self) -> None:
+        names = self._sim_names()
+        if names is not None:
+            self._bank = self_exploration.GoalBank.load(self._bank_path(), names)
+
+    def _save_bank(self) -> None:
+        try:
+            self._bank.save(self._bank_path())
+        except OSError as e:
+            self.node.get_logger().warn(f"Could not save {self._bank_path()}: {e}")
+
+    def _toggle_generate(self) -> None:
+        """Generate; Stop while it runs."""
+        if self._generating is not None:
+            self._gen_run += 1
+            self._generating = None
+            self.gen_progress.setText("Stopped")
+            self._update_buttons()
+            return
+        names = self._sim_names()
+        if names is None:
+            return
+        if self._explored is None or self._bank is None:
+            self.reload()
+        mode = self._mode()
+        wanted = self.per_combo_spin.value()
+        if mode == self_exploration.WORKSPACE:  # those no longer novel are replaced
+            novel = {e["id"] for k in self_exploration.mode_items(mode)
+                     for e in self._goals_of(mode, k)}
+            stale = {e["id"] for entries in self._bank.goals.get(mode, {}).values()
+                     for e in entries} - novel
+            if stale:
+                self._bank.remove(mode, stale)
+                self._save_bank()
+        jobs = [(key, wanted - len(self._goals_of(mode, key)))
+                for key in self_exploration.mode_items(mode)]
+        jobs = [(key, n) for key, n in jobs if n > 0]
+        if not jobs:
+            self.gen_progress.setText(f"Every combination has {wanted} goals")
+            return
+        explored = self_exploration.ExploredSet(len(names))
+        explored.goals, explored.points = self._explored.goals, self._explored.points
+        for key, _ in jobs:  # workspace goals are novel to the other goals found too
+            for entry in self._bank.of(mode, key):
+                explored.add_episode(entry["goal"], np.empty((0, len(names))))
+        self._gen_run += 1
+        self._generating = (mode, 0, sum(n for _, n in jobs))
+        self._show_generating()
+        self._update_buttons()
+        threading.Thread(
+            target=self._generate,
+            args=(self._gen_run, mode, names, jobs, explored, self.novelty_spin.value(),
+                  self._min_depth),
+            daemon=True,
+        ).start()
+
+    def _generate(
+        self, run: int, mode: str, names: list[str], jobs: list[tuple[str, int]],
+        explored: self_exploration.ExploredSet, threshold: float, min_depth: float,
+    ) -> None:
+        """Runs on its own thread: finds the goals ``jobs`` asks for ((combination, how
+        many)), sending each (or why a combination has none: the rest of it is skipped) to
+        ``generated``, then (run,)."""
+        try:
+            with self._ik_lock:
+                self._load_solver()
+                for key, n in jobs:
+                    for _ in range(n):
+                        if run != self._gen_run:
+                            return
+                        try:
+                            goal, info = self._find(
+                                mode, names, key, explored, threshold, min_depth
+                            )
+                        except RuntimeError as e:
+                            self._signals.generated.emit((run, mode, key, e))
+                            break
+                        explored.add_episode(goal, np.empty((0, len(names))))
+                        entry = {
+                            "id": uuid.uuid4().hex[:12], "goal": goal,
+                            "created": datetime.now().astimezone().isoformat(timespec="seconds"),
+                            **info,
+                        }
+                        self._signals.generated.emit((run, mode, key, entry))
+        except Exception as e:  # noqa: BLE001 - shown
+            self._signals.generated.emit((run, mode, None, e))
+        self._signals.generated.emit((run,))
+
+    def _on_generated(self, answer) -> None:
+        if answer[0] != self._gen_run or self._generating is None:
+            return
+        if len(answer) == 1:  # done
+            self._generating = None
+            self.gen_progress.setText("Done")
+            self._update_buttons()
+            return
+        _, mode, key, result = answer
+        gen_mode, done, total = self._generating
+        if isinstance(result, Exception):
+            if key is None:
+                self.gen_progress.setText(f"Failed: {result}")
+                self.node.get_logger().error(f"Learning about your own body: {result}")
+                return
+            self._bank.fail(mode, key, str(result))
+            self.node.get_logger().info(
+                f"Learning about your own body: no goal for {body_item_label(key, mode)} "
+                f"({result})"
+            )
+        else:
+            self._bank.add(mode, key, result)
+            done += 1
+        self._save_bank()
+        self._generating = (gen_mode, done, total)
+        self._show_generating(key)
+        if mode == self._mode():
+            self._fill_combinations()
+
+    def _show_generating(self, key: str | None = None) -> None:
+        mode, done, total = self._generating
+        self.gen_progress.setText(
+            f"{done} / {total} goals" + (f" · last: {body_item_label(key, mode)}"
+                                          if key else "") + "..."
+        )
+
+    def _picked_episode_ready(self) -> bool:
+        """Whether the episode planned is of the goal (or the combination) picked, or with
+        nothing picked, of the mode."""
+        picked, episode = self._picked_combination(), self._episode
+        if episode is None or "path_hw" not in episode or episode["mode"] != self._mode():
+            return False
+        info = episode["info"]
+        return picked is None or info.get("item") == picked[0] and (
+            picked[1] is None or info.get("goal_id") == picked[1])
+
+    def _play_picked(self, target: str) -> None:
+        """Play on sim / hand ("sim" / "hand"): plays the episode of the picked goal,
+        planning it first if it is not the one planned; Stop while planning or playing."""
+        toggle = self._toggle_sim if target == "sim" else self._toggle_hand
+        if self._busy in ("search", "plan"):  # Stop the planning
+            self._play_when_planned = None
+            self._toggle_goal()
+            return
+        if self._play is not None or self._busy == "open" or self._picked_episode_ready():
+            toggle()  # Stop the play, or play the episode planned
+            return
+        self._play_when_planned = target
+        self._toggle_goal()
+        if not self._busy:  # nothing to plan
+            self._play_when_planned = None
+        self._update_buttons()
+
+    def _reject_picked(self) -> None:
+        """Rejects the picked goal: off the list, on the black list, its episode dropped."""
+        picked = self._picked_combination()
+        if picked is None or picked[1] is None or self._bank is None:
+            return
+        mode, (key, goal_id) = self._mode(), picked
+        episode = self._episode
+        if episode is not None and episode["info"].get("goal_id") == goal_id:
+            if self._play is not None or self._busy == "open":
+                QtWidgets.QMessageBox.warning(
+                    self, "Reject", "Stop the play of this goal first."
+                )
+                return
+            if self._busy:  # planning it
+                self._generation += 1
+                self._busy = ""
+                self._play_when_planned = None
+            self._episode = None
+            self._set_stage("Rejected", False)
+        if self._bank.reject(mode, key, goal_id) is None:
+            return
+        self._save_bank()
+        self.node.get_logger().info(
+            f"Learning about your own body: rejected goal {goal_id} of "
+            f"{body_item_label(key, mode)}"
+        )
+        self.status.setText(
+            f"Rejected a goal of {body_item_label(key, mode)}: it is on the black list and "
+            "is not used again."
+        )
+        self._shown_goal = None
+        self._show_view()
+        # Pick its combination, so the next goal of it is one click away.
+        self.combo_tree.setCurrentItem(None)
+        self._fill_combinations()
+        for i in range(self.combo_tree.topLevelItemCount()):
+            top = self.combo_tree.topLevelItem(i)
+            if top.data(0, QtCore.Qt.UserRole)[0] == key:
+                self.combo_tree.setCurrentItem(top)
+                top.setExpanded(True)
+        self._update_buttons()
+
+    # ---- goal search -------------------------------------------------------------------
+
+    def _load_solver(self) -> None:
+        """The IK model (and touch solver), loaded on first use; under ``_ik_lock``."""
+        if self._ik is None:
+            from mechanical_pen_data_collection.hand_ik import HandIK
+
+            self._ik = HandIK()
+        if self._solver is None:
+            self._solver = self_exploration.SelfTouchSolver(self._ik)
+            import mujoco
+
+            self._check_data = mujoco.MjData(self._ik.model)  # ``_path_collision``'s own
+
+    def _find(
+        self, mode: str, names: list[str], key: str,
+        explored: self_exploration.ExploredSet, threshold: float, min_depth: float,
+    ) -> tuple[np.ndarray, dict]:
+        """(goal, info) of combination ``key`` of ``mode``: not near a rejected goal of it,
+        and no two fingers not meant to touch deeper than ``min_depth`` into one another on
+        the path open -> goal -> open hand_ik plans in the model (``info["collision_depth"]``:
+        the deepest such contact). Raises RuntimeError if the model finds none. Under
+        ``_ik_lock``."""
+        self._solver.min_depth = min_depth
+        reason = ""
+        for _ in range(BODY_REJECT_TRIES):
+            goal, info = self._find_one(mode, names, key, explored, threshold)
+            if self._bank.near_rejected(mode, key, goal):
+                reason = "near a rejected goal"
+                continue
+            depth, pair, problem = self._path_collision(mode, names, key, goal)
+            if problem or depth > min_depth:
+                reason = problem or (f"{pair[0]}-{pair[1]} {depth * 1000:.2f} mm deep on its "
+                                     "path")
+                continue
+            info["collision_depth"] = depth
+            return goal, info
+        raise RuntimeError(f"none of {BODY_REJECT_TRIES} goals found kept; last: {reason}")
+
+    def _path_collision(
+        self, mode: str, names: list[str], key: str, goal: np.ndarray,
+    ) -> tuple[float, tuple[str, str] | None, str]:
+        """(deepest contact of two fingers not meant to touch, the pair, "" or why there is
+        no path) on the path open -> goal -> open that hand_ik plans in the model (the
+        waypoints too). Under ``_ik_lock``."""
+        poses = [np.zeros(len(names)),
+                 *self_exploration.waypoints(names, goal, self_exploration.palm_combination(key)
+                                             if mode == self_exploration.PALM_TOUCH else None),
+                 goal]
+        poses += poses[-2::-1]
+        try:
+            path = np.concatenate([self._ik.plan(names, a, b, BODY_CHECK_DT)[0]
+                                   for a, b in zip(poses, poses[1:])])
+        except RuntimeError as e:
+            return 0.0, None, f"no path: {e}"
+        depth, pair, _ = self_exploration.finger_collision(
+            self._ik.model, self._check_data, names, path,
+            self_exploration.touch_pairs(mode, key),
+        )
+        return depth, pair, ""
+
+    def _find_one(
+        self, mode: str, names: list[str], key: str,
+        explored: self_exploration.ExploredSet, threshold: float,
+    ) -> tuple[np.ndarray, dict]:
+        combo = self_exploration.palm_combination(key)
+        if mode == self_exploration.WORKSPACE:
+            goal, novelty, samples = self_exploration.sample_workspace_goal(
+                self._ik, names, self._rng, explored, threshold, fingers=combo
+            )
+            return goal, {"novelty": novelty, "threshold": threshold, "samples": samples}
+        if mode == self_exploration.PALM_TOUCH:
+            goal, touches = self._solver.palm_touch(names, combo, self._rng)
+        else:
+            goal, touches = self._solver.thumb_touch(names, key, self._rng)
+        return goal, {"touches": touches, "novelty": explored.novelty(goal)}
+
+    # ---- episodes ----------------------------------------------------------------------
+
+    def showEvent(self, event) -> None:  # noqa: N802 - Qt
+        super().showEvent(event)
+        self.reload()
+
+    def reload(self, pick: str | None = None) -> None:
+        """Lists the mode's episodes (keeping the picked one, or picking ``pick``) and
+        rebuilds what is explored and touched from the episodes of every mode."""
+        paths = list_body_episodes(self.node.demo_dir)
+        self._all_episodes = paths
+        self._list_episodes(pick)
+        names = self._sim_names()
+        if names is not None:
+            self._explored = self_exploration.ExploredSet.from_episodes(paths, names)
+        self._counts = {
+            mode: self_exploration.touch_counts(
+                [p for p in paths if self_exploration.episode_mode(p) == mode]
+            ) for mode, _ in BODY_MODES
+        }
+        self._goal_counts = self_exploration.touch_counts(paths, "goal_id")
+        self._load_bank()
+        self._show_explored()
+
+    def _list_episodes(self, pick: str | None = None) -> None:
+        """The episodes of the mode picked, newest first, keeping the picked one (or picking
+        ``pick``)."""
+        if pick is None:
+            current = self.list.currentItem()
+            pick = current.data(QtCore.Qt.UserRole) if current is not None else None
+        mode = self._mode()
+        paths = [p for p in self._all_episodes if self_exploration.episode_mode(p) == mode]
+        self.count_label.setText(
+            f"{len(paths)} {BODY_MODE_LABEL[mode]} episodes ({len(self._all_episodes)} in all)"
+        )
+        self.list.blockSignals(True)
+        self.list.clear()
+        for path in paths:
+            item = QtWidgets.QListWidgetItem(body_episode_text(path))
+            item.setData(QtCore.Qt.UserRole, path)
+            item.setToolTip(path)
+            self.list.addItem(item)
+        self.list.setCurrentRow(paths.index(pick) if pick in paths else -1)
+        self.list.blockSignals(False)
+        self.delete_btn.setEnabled(self.list.currentItem() is not None)
+
+    def _show_explored(self) -> None:
+        explored = self._explored
+        self.explored_label.setText(
+            "No joint conversion" if explored is None
+            else f"{len(explored.goals)} goals, {len(explored.points)} trajectory points"
+        )
+        self._fill_combinations()
+
+    def _step_goal(self, step: int) -> None:
+        """Picks the previous (``step`` -1) / next (1) goal in Combinations, across the
+        combinations (from a combination picked: its first goal / the goal before it)."""
+        tree = self.combo_tree
+        goals = [tree.topLevelItem(t).child(c) for t in range(tree.topLevelItemCount())
+                 for c in range(tree.topLevelItem(t).childCount())]
+        if not goals:
+            return
+
+        def position(item: QtWidgets.QTreeWidgetItem) -> tuple[float, float]:
+            parent = item.parent()
+            if parent is None:  # a combination: before its goals
+                return tree.indexOfTopLevelItem(item), -0.5
+            return tree.indexOfTopLevelItem(parent), parent.indexOfChild(item)
+
+        current = tree.currentItem()
+        here = position(current) if current is not None else (-1.0, 0.0)
+        if step > 0:
+            target = next((g for g in goals if position(g) > here), goals[-1])
+        else:
+            target = next((g for g in reversed(goals) if position(g) < here), goals[0])
+        target.parent().setExpanded(True)
+        tree.setCurrentItem(target)
+        tree.scrollToItem(target)
+
+    def _load_picked(self, *_) -> None:
+        """Shows the picked episode's goal on the hand view and what it was in the status."""
+        item = self.list.currentItem()
+        self.delete_btn.setEnabled(item is not None)
+        if item is None:
+            return
+        path = item.data(QtCore.Qt.UserRole)
+        try:
+            with np.load(path, allow_pickle=False) as data:
+                names = [str(n) for n in data["sim_joint_names"]]
+                goal = data["goal_sim"]
+                meta = json.loads(str(data["meta"]))
+                readings, temps = len(data["xela_t"]), np.asarray(data["xela_temp"])
+        except Exception as e:
+            self.status.setText(f"Could not load {path}: {e}")
+            return
+        self._show_goal(names, goal, f"Goal of {os.path.basename(path)}")
+        text = (
+            f"{BODY_MODE_LABEL.get(meta.get('mode'), meta.get('mode'))} \u00b7 "
+            f"{meta.get('started', '')} \u00b7 {meta.get('duration_s', 0):.1f} s, "
+            f"{meta.get('ended_by', '')}" + ("" if meta.get("goal_reached") else
+                                             ", goal not reached")
+            + f" \u00b7 {readings} Xela readings"
+            + (" with temperatures" if np.isfinite(temps).any() else "")
+        )
+        if meta.get("novelty") is not None:
+            text += f" \u00b7 novelty {meta['novelty']:.2f} rad"
+        if meta.get("item"):
+            text += f" \u00b7 {body_item_label(meta['item'], meta.get('mode'))}"
+        if meta.get("touches"):
+            felt = meta.get("touch_felt", {})
+            parts = []
+            for f, t in meta["touches"].items():
+                part = f"{FINGER_LABEL[f]} \u2192 {t['pad']}"
+                if f in felt:
+                    part += f" (rise {felt[f]['rise']:.1f}{', felt' if felt[f]['felt'] else ''})"
+                parts.append(part)
+            text += " \u00b7 " + ", ".join(parts)
+        self.status.setText(f"{text} \u00b7 {path}")
+
+    def _delete_picked(self) -> None:
+        item = self.list.currentItem()
+        if item is None:
+            return
+        path = item.data(QtCore.Qt.UserRole)
+        box = QtWidgets.QMessageBox(self)
+        box.setIcon(QtWidgets.QMessageBox.Warning)
+        box.setWindowTitle("Delete episode")
+        box.setText(f"Delete the episode '{os.path.basename(path)}'?")
+        box.setInformativeText(
+            f"{path} is removed from disk and no longer counts as explored. This cannot be "
+            "undone."
+        )
+        cancel = box.addButton(QtWidgets.QMessageBox.Cancel)
+        confirm = box.addButton("Confirm", QtWidgets.QMessageBox.DestructiveRole)
+        box.setDefaultButton(cancel)
+        box.exec_()
+        if box.clickedButton() is not confirm:
+            return
+        try:
+            os.remove(path)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(self, "Delete episode", f"Could not delete {path}:\n{e}")
+        else:
+            self.node.get_logger().info(f"Deleted the episode '{path}'")
+        self.list.setCurrentRow(-1)
+        self.reload()
+
+    # ---- joints ------------------------------------------------------------------------
+
+    def _sim_names(self) -> list[str] | None:
+        """Sim joint names (the order of every sim pose here), or None if the joint
+        conversion cannot load."""
+        if self._to_sim is None:
+            try:
+                self._to_sim = HardwareToSim()
+            except Exception as e:  # noqa: BLE001 - shown
+                self.status.setText(f"Could not load the joint conversion: {e}")
+                return None
+        return list(self._to_sim.sim_names)
+
+    def _sim_now(self) -> np.ndarray | None:
+        """Sim angles of the hand's latest joints, or None."""
+        q = self.node.latest()
+        if q is None or self._sim_names() is None:
+            return None
+        return np.array(self._to_sim(self.node.joint_names, q))
+
+    def _to_hardware(self, names: list[str], path_sim: np.ndarray) -> np.ndarray:
+        """(steps, 16) hardware commands (``node.joint_names``) of sim angles ``path_sim``."""
+        by_name = [dict(zip(self._to_sim.sim_names, self._to_sim.to_hardware(names, q)))
+                   for q in path_sim]
+        return np.array([[q[n] for n in self.node.joint_names] for q in by_name])
+
+    def _open_error(self) -> float | None:
+        """Largest joint distance (rad, sim angles) of the hand from the open pose."""
+        now = self._sim_now()
+        return None if now is None else float(np.max(np.abs(now)))
+
+    # ---- planning a goal ---------------------------------------------------------------
+
+    def _toggle_goal(self) -> None:
+        """Plans an episode (``_play_picked``); stops while it searches or plans."""
+        if self._busy:
+            self._generation += 1
+            self._busy = ""
+            self._set_stage("Stopped", False)
+            self.status.setText("Stopped the goal search.")
+            self._update_buttons()
+            return
+        names = self._sim_names()
+        if names is None:
+            return
+        if not self.node.hand_ik_ready():
+            QtWidgets.QMessageBox.warning(
+                self, "Learning about your own body",
+                f"The IK service '{self.node.hand_ik_service}' is not available: start hand_ik "
+                "(mechanical_pen_data_collection launch_mujoco_sim.py starts it).",
+            )
+            return
+        mode = self._mode()
+        if self._explored is None or self._bank is None:
+            self.reload()
+        keys = self_exploration.mode_items(mode)
+        counts = self._counts.get(mode, {})
+        picked = self._picked_combination()
+        if picked is not None:
+            candidates = [picked[0]]
+        else:  # reached least first; those the model found no goal for last
+            failed = set(self._bank.failed.get(mode, {}))
+            candidates = self_exploration.least_covered(keys, counts, failed)
+            candidates += self_exploration.least_covered(
+                [k for k in keys if k in failed], counts, set()
+            )
+        threshold = self.novelty_spin.value()
+        self._drop_episode()
+        # A stored goal: the picked one, or the one played least of the first combination
+        # that has any.
+        for key in candidates:
+            entries = self._goals_of(mode, key)
+            if picked is not None and picked[1] is not None:
+                entries = [e for e in entries if e["id"] == picked[1]]
+            if not entries:
+                if picked is not None:
+                    break
+                continue
+            entry = min(entries, key=lambda e: self._goal_counts.get(e["id"], 0))
+            info = {"item": key, "goal_id": entry["id"], "novelty": (
+                self._explored.novelty(entry["goal"]) if self._explored is not None else None
+            )}
+            if entry.get("touches"):
+                info["touches"] = entry["touches"]
+            else:
+                info.update(threshold=threshold, samples=entry.get("samples", 0))
+            self._search_job = (mode, names, dict(
+                candidates=[key], threshold=threshold, min_depth=self._min_depth), 0)
+            self._generation += 1
+            self._busy = "search"
+            self._on_goal_found((self._generation, (mode, names, entry["goal"], info)))
+            return
+        self._start_search(mode, names, dict(
+            candidates=candidates, threshold=threshold, min_depth=self._min_depth))
+
+    def _start_search(self, mode: str, names: list[str], job: dict, replans: int = 0) -> None:
+        """Searches a goal of ``mode`` in the background (``_find_goal``); ``replans``: how
+        many poses hand_ik could not plan before this search."""
+        explored = self_exploration.ExploredSet(len(names))
+        explored.goals, explored.points = self._explored.goals, self._explored.points
+        self._search_job = (mode, names, job, replans)
+        self._generation += 1
+        self._busy = "search"
+        self._set_stage(
+            f"Searching a {BODY_MODE_LABEL[mode].lower()} goal"
+            + (f" (another pose: {replans} could not be planned)" if replans else "") + "..."
+        )
+        self._update_buttons()
+        threading.Thread(
+            target=self._find_goal, args=(self._generation, mode, names, explored, job),
+            daemon=True,
+        ).start()
+
+    def _find_goal(
+        self, generation: int, mode: str, names: list[str],
+        explored: self_exploration.ExploredSet, job: dict,
+    ) -> None:
+        """Runs on its own thread: the goal of ``mode`` (``goal_found`` gets it)."""
+        try:
+            with self._ik_lock:
+                result = self._search(generation, mode, names, explored, job)
+        except Exception as e:  # noqa: BLE001 - shown
+            result = e
+        self._signals.goal_found.emit((generation, result))
+
+    def _search(
+        self, generation: int, mode: str, names: list[str],
+        explored: self_exploration.ExploredSet, job: dict,
+    ) -> tuple:
+        """(mode, names, goal, info) of a new goal of ``mode``, trying the combinations
+        ``candidates`` in turn (until stopped): goal None when none is found; ``info`` has
+        the combination found (``item``) and the ones that failed (``failed``: (key,
+        reason))."""
+        self._load_solver()
+        failed = []
+        for key in job["candidates"]:
+            if generation != self._generation:  # stopped
+                break
+            try:
+                goal, info = self._find(
+                    mode, names, key, explored, job["threshold"], job["min_depth"]
+                )
+            except RuntimeError as e:
+                failed.append((key, str(e)))
+                continue
+            return mode, names, goal, {"item": key, **info, "failed": failed}
+        return mode, names, None, {"failed": failed}
+
+    def _on_goal_found(self, answer) -> None:
+        generation, result = answer
+        if generation != self._generation:
+            return
+        if isinstance(result, Exception):
+            self._busy = ""
+            self._set_stage("No goal", False)
+            self.status.setText(f"No goal: {result}")
+            self._update_buttons()
+            return
+        mode, names, goal, info = result
+        failed = info.pop("failed", [])
+        for key, reason in failed:
+            self._bank.fail(mode, key, reason)
+        if failed:
+            self._save_bank()
+            self._fill_combinations()
+        skipped = "".join(
+            f"<br>{body_item_label(key, mode)}: {reason}" for key, reason in failed
+        )
+        if goal is None:
+            self._busy = ""
+            self._set_stage("No touch found", False)
+            self.status.setText(f"The model found no pose for:{skipped}" if failed
+                                else "Stopped the goal search.")
+            self._update_buttons()
+            return
+        if failed:
+            self.node.get_logger().info(
+                "Learning about your own body: no pose for " + "; ".join(
+                    f"{body_item_label(key, mode)} ({reason})" for key, reason in failed
+                )
+            )
+        if "goal_id" not in info and "item" in info:  # searched now: kept with the others
+            entry = {"id": uuid.uuid4().hex[:12], "goal": goal,
+                     "created": datetime.now().astimezone().isoformat(timespec="seconds"),
+                     **{k: v for k, v in info.items() if k != "item"}}
+            self._bank.add(mode, info["item"], entry)
+            self._save_bank()
+            info["goal_id"] = entry["id"]
+            self._fill_combinations()
+        self._episode = {"mode": mode, "names": names, "goal_sim": goal, "info": info}
+        self._show_goal(names, goal, "Goal")
+        self._busy = "plan"
+        # open -> (waypoints) -> goal, then back the same way: one hand_ik path per leg.
+        open_pose = np.zeros(len(names))
+        mids = self_exploration.waypoints(
+            names, goal, self_exploration.palm_combination(info.get("item", ""))
+        )
+        out, back = [open_pose, *mids, goal], [goal, *mids[::-1], open_pose]
+        self._episode.update(
+            legs=[("out", a, b) for a, b in zip(out, out[1:])]
+            + [("back", a, b) for a, b in zip(back, back[1:])],
+            paths={"out": [], "back": []}, messages={"out": [], "back": []},
+        )
+        self._plan_leg()
+
+    def _plan_leg(self) -> None:
+        """Asks hand_ik for the episode's next leg."""
+        episode = self._episode
+        legs = episode["legs"]
+        done = sum(len(paths) for paths in episode["paths"].values())
+        kind, start, goal = legs[done]
+        where = "open \u2192 goal" if kind == "out" else "goal \u2192 open"
+        self._set_stage(
+            f"Planning {where} (hand_ik)"
+            + (f", leg {done + 1} / {len(legs)}" if len(legs) > 2 else "") + "..."
+        )
+        self._plan(kind, start, goal)
+
+    def _plan(self, leg: str, start: np.ndarray, goal: np.ndarray) -> None:
+        generation = self._generation
+        self.node.plan_hand_pose(
+            self._episode["names"] if self._episode is not None else self._sim_names(),
+            start, goal,
+            lambda result: self._signals.planned.emit((generation, leg, result)),
+        )
+
+    def _on_planned(self, answer) -> None:
+        """hand_ik's paths: the "out" legs (open -> goal), then the "back" ones (goal -> open)
+        make the episode; "open" is Play on hand's move to the open pose."""
+        generation, leg, result = answer
+        if generation != self._generation:
+            return
+        if leg == "open":
+            self._on_open_planned(result)
+            return
+        if isinstance(result, Exception):
+            self._another_pose(str(result))
+            return
+        path, dt, response = result
+        episode = self._episode
+        episode["dt"] = dt
+        episode["paths"][leg].append(path)
+        episode["messages"][leg].append(response.message)
+        if sum(len(paths) for paths in episode["paths"].values()) < len(episode["legs"]):
+            self._plan_leg()
+            return
+        self._busy = ""
+        del episode["legs"]
+        paths = episode.pop("paths")
+        messages = episode.pop("messages")
+        out = self_exploration.join_paths(paths["out"])
+        back = self_exploration.join_paths(paths["back"])
+        episode["plan_out"] = "; ".join(messages["out"])
+        episode["plan_back"] = "; ".join(messages["back"])
+        episode["path_sim"] = self_exploration.episode_path(out, back, dt, BODY_HOLD_S)
+        info = episode["info"]
+        depth, pair, index = self._episode_collision(episode)
+        if depth > self._min_depth:
+            if "goal_id" in info:  # graded: no longer listed at this min depth
+                for entry in self._bank.of(episode["mode"], info["item"]):
+                    if entry["id"] == info["goal_id"]:
+                        entry["collision_depth"] = max(entry.get("collision_depth", 0.0), depth)
+                self._save_bank()
+                self._fill_combinations()
+            self._another_pose(
+                f"{pair[0]}-{pair[1]} {depth * 1000:.2f} mm deep at {index * dt:.2f} s of the "
+                f"planned episode (min depth {self._min_depth * 1000:.2f} mm)"
+            )
+            return
+        info["collision_depth"] = depth
+        episode["path_hw"] = self._to_hardware(episode["names"], episode["path_sim"])
+        # Where the goal is held: [goal_from, goal_to) of the path.
+        episode["goal_from"] = len(out) - 1
+        episode["goal_to"] = len(out) + int(round(BODY_HOLD_S / dt))
+        what = (
+            f"{body_item_label(info['item'], episode['mode'])} (in contact after a MuJoCo "
+            f"reset to the goal: {body_touch_text(info['touches'])})"
+            if "touches" in info
+            else f"{body_item_label(info['item'], episode['mode'])}, novelty "
+                 f"{info['novelty']:.2f} rad (threshold {info['threshold']:.2f})"
+        )
+        self._set_stage(
+            f"Ready: {len(episode['path_sim']) * dt:.1f} s episode", True
+        )
+        self.status.setText(
+            f"{BODY_MODE_LABEL[episode['mode']]} goal: {what}. Out: {episode['plan_out']}. "
+            f"Back: {episode['plan_back']}."
+        )
+        self._update_buttons()
+        target, self._play_when_planned = self._play_when_planned, None
+        if target == "sim":
+            self._toggle_sim()
+        elif target == "hand":
+            self._toggle_hand()
+
+    def _episode_collision(self, episode: dict) -> tuple[float, tuple[str, str] | None, int]:
+        """Deepest contact of two fingers not meant to touch on the planned episode (MuJoCo
+        set to each point, on a model of its own: the goal searches use ``_ik``'s)."""
+        if self._check_model is None:
+            import mujoco
+
+            from mechanical_pen_data_collection.hand_ik import default_model_path
+
+            self._check_model = mujoco.MjModel.from_xml_path(default_model_path())
+            self._episode_data = mujoco.MjData(self._check_model)
+        return self_exploration.finger_collision(
+            self._check_model, self._episode_data, episode["names"], episode["path_sim"],
+            self_exploration.touch_pairs(episode["mode"], episode["info"].get("item", "")),
+        )
+
+    def _another_pose(self, reason: str) -> None:
+        """The episode could not be planned (or collides): another pose of the same
+        combination, up to ``BODY_PLAN_RETRIES`` poses."""
+        mode, names, job, replans = self._search_job
+        info = self._episode["info"]
+        self._episode = None
+        if replans + 1 < BODY_PLAN_RETRIES:
+            self.node.get_logger().info(
+                f"Learning about your own body: pose not used ({reason}), trying another"
+            )
+            if "item" in info:
+                job = dict(job, candidates=[info["item"]])
+            self._start_search(mode, names, job, replans + 1)
+            return
+        self._busy = ""
+        self._play_when_planned = None
+        self._set_stage("Planning failed", False)
+        self.status.setText(
+            f"No episode for {BODY_PLAN_RETRIES} poses"
+            + (f" of {body_item_label(info['item'], mode)}" if "item" in info else "")
+            + f"; last: {reason}"
+        )
+        self._update_buttons()
+
+    def _drop_episode(self) -> None:
+        if self._play is None:
+            self._episode = None
+            self._shown_goal = None
+            self._update_buttons()
+
+    # ---- playing -----------------------------------------------------------------------
+
+    def _toggle_sim(self) -> None:
+        if self._play is not None:
+            if self._play["target"] == "sim":
+                self._end_play("stopped")
+            return
+        episode = self._episode
+        if episode is None or "path_hw" not in episode:
+            return
+        if not self.node.sim_listening():
+            self.status.setText(
+                f"Nothing subscribes to '{self.node.sim_cmd_topic}': is mujoco_sim_node running?"
+            )
+        elif not raise_x11_window(SIM_WINDOW_TITLE):
+            self.node.get_logger().warn(
+                f"Could not bring the '{SIM_WINDOW_TITLE}' window to the front (viewer:=false?)"
+            )
+        self._contact_seq, _ = self.node.finger_contacts_since(0)
+        self._start_play("sim", episode["path_hw"], episode["dt"])
+
+    def _toggle_hand(self) -> None:
+        if self._play is not None or self._busy == "open":
+            if self._busy == "open" or self._play["target"] == "hand":
+                self._hand_plays = None  # no more repeats
+                self._end_play("stopped")
+            return
+        episode = self._episode
+        if episode is None or "path_hw" not in episode:
+            return
+        error = self._open_error()
+        if error is None:
+            QtWidgets.QMessageBox.warning(
+                self, "Learning about your own body",
+                "No hand state yet: is the hand (leaphand_node) running?",
+            )
+            return
+        # A compliant hand only tracks commands on its stiff joints: all of them, to move.
+        if not self.node.set_stiff_joints(list(self.node.joint_names)):
+            QtWidgets.QMessageBox.warning(
+                self, "Learning about your own body",
+                f"The hand node '{self.node.hand_node}' does not answer: its joints cannot be "
+                "made stiff to follow the path.",
+            )
+            return
+        self._stiff = True
+        self.create_tab.stiff_joints_set_elsewhere()
+        self._hand_plays = [0, self.plays_spin.value()]
+        if error <= BASELINE_POSE_TOLERANCE:
+            self._start_episode_on_hand()
+            return
+        self._busy = "open"
+        self._set_stage(f"Planning the move to the open pose ({error:.2f} rad away)...")
+        self._plan("open", self._sim_now(), np.zeros(len(episode["names"])))
+        self._update_buttons()
+
+    def _on_open_planned(self, result) -> None:
+        if self._busy != "open":
+            return
+        self._busy = ""
+        if isinstance(result, Exception):
+            self._set_stage("Planning failed", False)
+            self.status.setText(f"Could not plan the move to the open pose: {result}")
+            self._update_buttons()
+            return
+        path, dt, _ = result
+        self._set_stage("Moving to the open pose (not recorded)...")
+        self._start_play("hand", self._to_hardware(self._episode["names"], path), dt,
+                         record=False)
+
+    def _start_episode_on_hand(self) -> None:
+        episode = self._episode
+        self.node.start_play_recording(BODY_RECORD_KEY)
+        self._start_play(
+            "hand", episode["path_hw"], episode["dt"], record=True,
+            t0=self.node.get_clock().now().nanoseconds * 1e-9,
+            started=datetime.now().astimezone(),
+            baseline=self.create_tab.hand.baseline,
+        )
+
+    def _start_play(self, target: str, path: np.ndarray, dt: float, **extra) -> None:
+        send = self.node.send_command if target == "hand" else (
+            lambda q: self.node.send_sim_command(self.node.joint_names, q)
+        )
+        self._play = {"target": target, "path": path, "dt": dt, "send": send,
+                      "start": time.monotonic(), "index": -1, "cmd": [], "touched": {},
+                      **extra}
+        self._update_buttons()
+        self._play_step()
+        self._timer.start()
+
+    def _play_step(self) -> None:
+        """Sends the point of the path due now; ends the play after the last."""
+        play = self._play
+        if play is None:
+            return
+        elapsed = time.monotonic() - play["start"]
+        path, dt = play["path"], play["dt"]
+        i = min(int(elapsed / dt), len(path) - 1)
+        if i != play["index"]:
+            play["index"] = i
+            play["send"](path[i])
+            play["cmd"].append((self.node.get_clock().now().nanoseconds * 1e-9, i))
+        progress = f"{min(elapsed, len(path) * dt):.1f} / {len(path) * dt:.1f} s"
+        if play["target"] == "sim":
+            self._read_contacts()
+        if play.get("record") is not None or play["target"] == "sim":
+            if play.get("record") is False:
+                self._set_stage(f"Moving to the open pose (not recorded) {progress}")
+            else:
+                episode = self._episode
+                leg = ("open \u2192 goal" if i < episode["goal_from"] else
+                       "at the goal" if i < episode["goal_to"] else "goal \u2192 open")
+                where = "sim" if play["target"] == "sim" else "hand, recording" + (
+                    f" (play {self._hand_plays[0] + 1} / {self._hand_plays[1]})"
+                    if self._hand_plays else "")
+                touching = (f" \u00b7 touching: {pair_text(sorted(play['touching']))}"
+                            if play.get("touching") else "")
+                self._set_stage(f"Playing on {where}: {leg} {progress}{touching}")
+        if i == len(path) - 1:
+            self._end_play("finished")
+
+    def _read_contacts(self) -> None:
+        """The sim's finger-finger contacts since the last call."""
+        play = self._play
+        self._contact_seq, items = self.node.finger_contacts_since(self._contact_seq)
+        recent = time.monotonic() - 2.0 * BODY_PLAY_MS / 1000.0
+        play["touching"] = set()
+        for stamp, pairs in items:
+            for pair in pairs:
+                play["touched"].setdefault(pair, max(stamp - play["start"], 0.0))
+            if stamp >= recent:
+                play["touching"].update(pairs)
+
+    def _end_play(self, ended_by: str) -> None:
+        """Ends the play (or Play on hand's planning of the move to the open pose)."""
+        self._timer.stop()
+        play = self._play
+        if play is not None and play["target"] == "sim":
+            self._read_contacts()
+        self._play = None
+        if play is None:  # planning the move to the open pose
+            self._generation += 1
+            self._busy = ""
+            self._set_stage("Stopped", False)
+            self._update_buttons()
+            return
+        if play["target"] == "sim":
+            touched = play["touched"]
+            self._set_stage(f"Sim play {ended_by}", ended_by == "finished")
+            self.status.setText(
+                "Sim: finger contacts " + ", ".join(
+                    f"{pair_text([pair])} at {t:.2f} s"
+                    for pair, t in sorted(touched.items(), key=lambda item: item[1])
+                ) if touched else
+                "Sim: no finger-finger contacts (touches of the palm are not reported)"
+            )
+        elif play["record"]:
+            plays = self._hand_plays
+            if plays is not None:
+                plays[0] += 1
+            more = ended_by == "finished" and plays is not None and plays[0] < plays[1]
+            if not self._save_episode(play, ended_by, keep=more):
+                more = False  # shown; not played again
+            if more:  # back at the open pose: the next play
+                self._start_episode_on_hand()
+                return
+            self._hand_plays = None
+        elif ended_by == "finished":  # at the open pose: now the episode
+            self._start_episode_on_hand()
+            return
+        else:
+            self._set_stage("Stopped the move to the open pose", False)
+        self._update_buttons()
+
+    def _save_episode(self, play: dict, ended_by: str, keep: bool = False) -> bool:
+        """Saves the Play on hand that just ended, also when stopped, with what it played;
+        ``keep``: the episode is kept to be played again. Whether it was saved."""
+        log = self.node.get_logger()
+        buffers = self.node.stop_play_recording(BODY_RECORD_KEY) or {}
+        episode = self._episode
+        mode, names, dt = episode["mode"], episode["names"], episode["dt"]
+        reached = play["index"]  # last path point sent
+        goal_reached = reached >= episode["goal_from"]
+        t0 = play["t0"]
+        state, xela = buffers.get("state", []), buffers.get("xela", [])
+        temps = buffers.get("xela_temp", [])
+        empty16 = np.empty((0, NUM_JOINTS))
+        xela_t = np.array([x[0] for x in xela]) - t0 if xela else np.empty(0)
+        xela_arr = np.stack([x[1] for x in xela]) if xela else np.empty((0, 0, 3), np.float32)
+        started: datetime = play["started"]
+        meta = {
+            "mode": mode,
+            "started": started.isoformat(timespec="seconds"),
+            "ended": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "ended_by": ended_by,
+            "duration_s": (reached + 1) * dt,
+            "goal_reached": bool(goal_reached),
+            "dt": dt,
+            "hold_s": BODY_HOLD_S,
+            "goal_from": episode["goal_from"],
+            "goal_to": episode["goal_to"],
+            "plan_out": episode["plan_out"],
+            "plan_back": episode["plan_back"],
+            "xela_topic": self.node.xela_topic,
+            "play": self._hand_plays[0] if self._hand_plays else 1,  # n of plays_of
+            "plays_of": self._hand_plays[1] if self._hand_plays else 1,
+            **episode["info"],
+        }
+        if "touches" in episode["info"] and len(xela_t):
+            meta["touch_felt"] = self._touch_felt(episode, xela_t, xela_arr)
+        directory = body_dir(self.node.demo_dir, mode)
+        path = os.path.join(directory, f"{mode}_{started.strftime('%Y%m%d_%H%M%S')}.npz")
+        cmd_t = np.array([t for t, _ in play["cmd"]]) - t0
+        cmd_i = np.array([i for _, i in play["cmd"]], dtype=int)
+        baseline = play["baseline"]
+        try:
+            os.makedirs(directory, exist_ok=True)
+            np.savez_compressed(
+                path,
+                joint_names=np.array(self.node.joint_names),
+                sim_joint_names=np.array(names),
+                goal_sim=episode["goal_sim"],
+                goal_reached=goal_reached,
+                path_sim=episode["path_sim"][: reached + 1],
+                planned_path_sim=episode["path_sim"],
+                cmd_t=cmd_t,
+                cmd_q=episode["path_hw"][cmd_i] if len(cmd_i) else empty16,
+                cmd_q_sim=episode["path_sim"][cmd_i] if len(cmd_i) else empty16,
+                state_t=np.array([x[0] for x in state]) - t0 if state else np.empty(0),
+                position=np.stack([x[1] for x in state]) if state else empty16,
+                velocity=np.stack([x[2] for x in state]) if state else empty16,
+                effort=np.stack([x[3] for x in state]) if state else empty16,
+                xela_t=xela_t,
+                xela=xela_arr,
+                xela_temp=np.stack(temps) if temps else np.empty((0, 0), np.float32),
+                xela_baseline=baseline if baseline is not None else np.empty((0, 3)),
+                stamp=t0,
+                meta=json.dumps(meta),
+            )
+        except Exception as e:  # noqa: BLE001 - shown
+            self._set_stage("Not saved", False)
+            self.status.setText(f"Could not save the episode {path}: {e}")
+            log.warn(f"Could not save the episode {path}: {e}")
+            return False
+        log.info(f"Learning about your own body: saved {path} ({ended_by}, "
+                 f"{len(state)} joint states, {len(xela)} Xela readings)")
+        plays = (f", play {self._hand_plays[0]} / {self._hand_plays[1]}"
+                 if self._hand_plays else "")
+        self._set_stage(
+            f"Saved ({ended_by}{plays})" if goal_reached else f"Saved, goal not reached{plays}",
+            goal_reached,
+        )
+        felt = meta.get("touch_felt", {})
+        self.status.setText(
+            f"Saved {len(state)} joint states and {len(xela)} Xela readings to {path}"
+            + ("" if not felt else " \u00b7 felt: " + ", ".join(
+                f"{FINGER_LABEL[f]} {'yes' if v['felt'] else 'no'} (rise {v['rise']:.1f})"
+                for f, v in felt.items()
+            ))
+        )
+        self.reload(pick=path)
+        if goal_reached and not keep:  # done: the next one is a new goal
+            self._episode = None
+        return True
+
+    def _touch_felt(self, episode: dict, xela_t: np.ndarray, xela: np.ndarray) -> dict:
+        """Per touching finger: the largest rise (units) of its fingertip taxels while the
+        goal was held, from their reading at the episode's start (curled fingertips read a
+        few units without contact, so not from zero), and whether it is ``BODY_TOUCH_RISE``."""
+        ids = fingertip_taxel_ids()
+        dt = episode["dt"]
+        held = (xela_t >= episode["goal_from"] * dt) & (xela_t <= episode["goal_to"] * dt)
+        felt = {}
+        for finger in episode["info"]["touches"]:
+            if ids is None or not held.any() or xela.shape[1] <= ids[finger].max():
+                continue
+            mags = taxel_magnitudes(xela[held], xela[0], ids[finger], self.node.counts_per_unit)
+            rise = float(mags.max())
+            felt[finger] = {"rise": rise, "felt": rise >= BODY_TOUCH_RISE}
+        return felt
+
+    # ---- state -------------------------------------------------------------------------
+
+    def _set_stage(self, text: str, ok: bool | None = None) -> None:
+        color = {True: "#2e7d32", False: "#d32f2f", None: ""}[ok]
+        self.stage_label.setText(
+            f"<span style='color:{color}'>{text}</span>" if color else text
+        )
+
+    def _update_buttons(self) -> None:
+        play = self._play["target"] if self._play is not None else None
+        moving_open = self._busy == "open" or (
+            self._play is not None and self._play.get("record") is False
+        )
+        searching = self._busy in ("search", "plan")
+        generating = self._generating is not None
+        idle = play is None and not self._busy
+        self.gen_btn.setText("Stop" if generating else "Generate")
+        self.gen_btn.setEnabled(generating or not searching)
+        picked = self._picked_combination()
+        self.reject_btn.setEnabled(picked is not None and picked[1] is not None)
+        stop_sim = play == "sim" or (searching and self._play_when_planned == "sim")
+        self.sim_btn.setText("Stop" if stop_sim else "Play on sim")
+        self.sim_btn.setEnabled(stop_sim or idle)
+        stop_hand = play == "hand" or moving_open or (
+            searching and self._play_when_planned == "hand")
+        self.hand_btn.setText("Stop" if stop_hand else "Play on hand")
+        self.hand_btn.setEnabled(stop_hand or idle)
+        self.mode_combo.setEnabled(play is None and not self._busy and not generating)
+
+    def _show_goal(self, names: list[str], goal: np.ndarray, title: str) -> None:
+        self._shown_goal = (names, np.asarray(goal, dtype=float), title)
+        self._show_view()
+
+    def _showing_goal(self) -> bool:
+        playing_hand = self._play is not None and self._play["target"] == "hand"
+        return (self._shown_goal is not None and not self.live_check.isChecked()
+                and not playing_hand)
+
+    def _show_view(self) -> None:
+        """The goal (unless Live or playing on the hand) or the live hand (next refresh)."""
+        if self._showing_goal():
+            names, goal, title = self._shown_goal
+            self.view_label.setText(title)
+            self.hand.set_joints(names, goal)
+        else:
+            self.view_label.setText("Live")
+        self._sim_seq = -1
+
+    def stop(self) -> None:
+        """Stops whatever plays or is searched (a Play on hand is saved)."""
+        if self._play is not None or self._busy == "open":
+            self._end_play("stopped")
+        self._generation += 1
+        self._busy = ""
+        self._gen_run += 1
+        self._generating = None
+        self._update_buttons()
+
+    def hideEvent(self, event) -> None:  # noqa: N802 - Qt
+        """Leaving the tab stops a play and makes the hand compliant again."""
+        if self._play is not None or self._busy == "open":
+            self._end_play("stopped")
+        if self._stiff and self.node.set_stiff_joints([]):
+            self._stiff = False
+            self.create_tab.stiff_joints_set_elsewhere()
+        super().hideEvent(event)
+
+    def refresh(self) -> None:
+        if not self.isVisible():
+            return
+        error = self._open_error()
+        self.pose_label.setText(
+            "No hand state" if error is None
+            else f"Hand: {error:.3f} rad (sim) from the open pose"
+            + (" \u2713" if error <= BASELINE_POSE_TOLERANCE else "")
+        )
+        if not self._showing_goal():
+            self.view_label.setText("Live")
+            sim_seq, sim_names, sim_q = self.node.latest_sim()
+            if sim_q is not None and sim_seq != self._sim_seq:
+                self._sim_seq = sim_seq
+                self.hand.set_joints(sim_names, sim_q)
+        xela_seq, readings = self.node.latest_xela()
+        if readings is not None and xela_seq != self._xela_seq:
+            self._xela_seq = xela_seq
+            self.hand.set_readings(readings)
+
+
 class SettingsTab(QtWidgets.QWidget):
     """Playback / compliance values of this GUI (applied immediately) and the compliant
     gains of the hand node (applied with "Apply to hand")."""
@@ -11797,6 +13780,20 @@ class SettingsTab(QtWidgets.QWidget):
         ("max_current", "Abort current", 0.0, 2000.0, 10.0, 0, "", 1.0,
          "Finger joint current (leap_state effort) that aborts the press at once (0: off)"),
     )
+    # (title, PRESS_FIELDS names) of the boxes the fields are shown in, in the order a press
+    # runs; every field is in one.
+    PRESS_SECTIONS = (
+        ("1. Approach: move to the pen until touching",
+         ("approach_speed", "contact_ratio", "max_travel", "max_wait")),
+        ("2. Press: push harder until the click",
+         ("force_ramp", "max_force_ratio", "press_gain_q", "max_press_q", "max_joint_offset")),
+        ("Motor current limit", ("sat_effort", "sat_hold_s", "max_current")),
+        ("Slip: the thumb sliding on the pen cap",
+         ("slip_shift", "button_travel", "slip_across", "slip_backoff", "slip_tilt",
+          "max_slips")),
+        ("Click detection", ("click_min_ratio", "click_advance")),
+        ("3. Retract and release", ("retract", "release_s")),
+    )
 
     # ---- Backup to Nextcloud ------------------------------------------------------------
 
@@ -12070,27 +14067,15 @@ class SettingsTab(QtWidgets.QWidget):
         self._backup_stop.set()
 
     def _build_press_box(self) -> QtWidgets.QGroupBox:
-        self.press_check = QtWidgets.QCheckBox(f"Press in '{CLICK_PRESS_EVENT}' regions")
-        self.press_check.setToolTip(
-            f"During Play, replace the take over a '{CLICK_PRESS_EVENT}' region with a press of "
-            "the fingertip along the recorded force until the pen clicks (needs Xela readings in "
-            "the take and a Zero baseline before Play)"
-        )
+        self.press_check = press_enabled_check()
         self.press_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
         press_reset = QtWidgets.QPushButton("Reset to defaults")
         box = QtWidgets.QGroupBox("Click press (Play, applied immediately)")
         form = QtWidgets.QFormLayout(box)
         form.addRow(self.press_check)
-        for name, label, lo, hi, step, decimals, suffix, _, tooltip in self.PRESS_FIELDS:
-            spin = double_spin(lo, hi, step, decimals, suffix, tooltip)
-            self.press_spins[name] = spin
-            form.addRow(f"{label}:", spin)
-        self.press_detector_check = QtWidgets.QCheckBox("Only the click detector ends a press")
-        self.press_detector_check.setToolTip(
-            "Count only click_topic as the click (a force drop with the fingertip giving way "
-            "does not)"
-        )
-        form.addRow(self.press_detector_check)
+        self.press_detector_check = press_detector_check()
+        for group in press_setting_groups(self.press_spins, self.press_detector_check):
+            form.addRow(group)
         form.addRow("", press_reset)
         self._show_press_settings()
         for spin in self.press_spins.values():
@@ -12277,6 +14262,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.processing_tab = ProcessingTab(node, self.store, event_defs)
         self.analysis_tab = AnalysisTab(node, self.store)
         self.baseline_tab = BaselineTab(node, self.create_tab)
+        self.body_tab = BodyLearningTab(node, self.create_tab)
         self.settings_tab = SettingsTab(
             node, self.store, settings, touch_settings, press_settings, saved, saved_path,
             avoid_slip,
@@ -12294,6 +14280,7 @@ class MainWindow(QtWidgets.QMainWindow):
         tabs.addTab(self.processing_tab, "Processing")
         tabs.addTab(self.analysis_tab, "Analysis")
         tabs.addTab(self.baseline_tab, "Baseline")
+        tabs.addTab(self.body_tab, "Learning about your own body")
         tabs.addTab(self.settings_tab, "Settings")
         self.setCentralWidget(tabs)
 
@@ -12303,6 +14290,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._timer.timeout.connect(self.compose_tab.refresh)
         self._timer.timeout.connect(self.analysis_tab.refresh)
         self._timer.timeout.connect(self.baseline_tab.refresh)
+        self._timer.timeout.connect(self.body_tab.refresh)
         self._timer.start(REFRESH_MS)
         # The MuJoCo window opens before this one and ends up behind it: bring it to the front
         # once it appears (checked every second for SIM_WINDOW_WAIT_S).
@@ -12346,8 +14334,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.create_tab.reload_takes()
         self.edit_tab.refresh_takes()
         self.compose_tab.refresh_takes()
+        self.body_tab.reload()
 
     def closeEvent(self, ev) -> None:
+        self.body_tab.stop()
         self.compose_tab.stop_hand()
         self.compose_tab.stop_combination_check()
         self.analysis_tab.close_video()

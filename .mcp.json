@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "wandb": {
+      "command": "bash",
+      "args": [
+        "-c",
+        "set -a; . /workspace/LeapXELA_Hardware_ws/LEQ_DV3/.env; set +a; exec uvx --python 3.12 --with 'weave>=0.52.35,<0.53' --from git+https://github.com/wandb/wandb-mcp-server wandb_mcp_server"
+      ]
+    }
+  }
+}

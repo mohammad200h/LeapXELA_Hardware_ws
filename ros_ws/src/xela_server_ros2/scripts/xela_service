@@ -440,7 +440,6 @@ class ServiceNode(Node):
         """
         with self.__lock:
             self.data = data
-            print(f"data: {data}")
             obj = SensStream()
             obj.header = Header(stamp=rclpy.time.Time(nanoseconds=time_stamp * 1e9).to_msg())
             obj.sensors = tuple(data.values())
