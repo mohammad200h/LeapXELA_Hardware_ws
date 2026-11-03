@@ -170,7 +170,7 @@ names the preset its values match in ``meta["avoid_slip_preset"]`` ("" for custo
 A take's ``random_episode_start`` regions (added on the Edit tab) mark where its episode may
 start: every Test in sim and Play on hand starts it at a time drawn uniformly from them (the
 part between ``episode_start`` and ``terminal``) instead of at ``episode_start``; the Edit tab's
-own Play still starts at ``episode_start``.
+own Play does too with its finger's Random start checked (else from ``episode_start``).
 The Click press row shows where the Thumb is in a Play on hand: moving to its start, held at
 it, playing its take, then its ``click_press`` state machine (approach, press, retract,
 release), the take on to ``terminal`` and finished; the current stage is highlighted, with the
@@ -4637,10 +4637,17 @@ class EditFingerPanel(QtWidgets.QWidget):
         self.pose_switch.setToolTip(
             "Draw this finger's selected take's pen box on the live camera, in yellow"
         )
+        self.random_start_check = QtWidgets.QCheckBox("Random start")
+        self.random_start_check.setToolTip(
+            f"Play starts the episode at a time drawn from the take's '{RANDOM_START_EVENT}' "
+            "regions, as the Compose tab does (episode_start without any), instead of at "
+            "episode_start"
+        )
 
         header = QtWidgets.QHBoxLayout()
         header.addWidget(QtWidgets.QLabel(f"<b>{label}</b>"))
         header.addWidget(self.box_label, 1)
+        header.addWidget(self.random_start_check)
         header.addWidget(QtWidgets.QLabel("Pose"))
         header.addWidget(self.pose_switch)
         bar_row = QtWidgets.QHBoxLayout()
@@ -5511,6 +5518,7 @@ class EditTab(QtWidgets.QWidget):
         # Plays being recorded, by finger: take, replay_of, start time, live baseline and the
         # click press settings (and their name) of a Play.
         self._play_recs: dict[str, dict] = {}
+        self._rng = np.random.default_rng()  # Play's random start (``random_start_check``)
         # Named click press settings the finger panels pick from (besides DEFAULT_PRESS, the
         # Settings tab's).
         self._presets_path = press_presets_file()
@@ -5662,7 +5670,16 @@ class EditTab(QtWidgets.QWidget):
         if self.create_tab.playback(finger) is not None:
             self.create_tab.stop_play(finger)
             return
-        self._start_play(finger, press_settings=self.press_settings_of(finger))
+        start = None
+        panel = self.panels[finger]
+        if panel.random_start_check.isChecked() and panel.take is not None:
+            start = sample_episode_start(panel.take, self._rng)
+            self.node.get_logger().info(
+                f"{FINGER_LABEL[finger]}: random start at {start:.2f} s" if start is not None
+                else f"{FINGER_LABEL[finger]}: no '{RANDOM_START_EVENT}' region in the "
+                     "episode; starting at episode_start"
+            )
+        self._start_play(finger, start=start, press_settings=self.press_settings_of(finger))
 
     def _start_play(
         self, finger: str, hold_at_end: bool = False, start: float | None = None,
