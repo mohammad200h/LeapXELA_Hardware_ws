@@ -1,0 +1,14 @@
+# The reward of a trained reward model (reward_models' rank2reward_inference /
+# coupled_local_global_inference) over one Play on hand recording's Sparsh-skin episode
+# (episode_start to terminal, at the run's step rate).
+string run_dir             # a training run (holds model.pt); empty: the newest run
+string recording           # the recording's .npz
+---
+bool success
+string message
+string run_dir             # the run used
+string label               # the recording's label (success / failure / empty)
+float32[] t                # s, the recording's time of each episode step used
+float32[] reward           # the reward at each t
+string[] term_names        # the parts of the reward (e.g. progress, discriminator)
+float32[] terms            # len(term_names) x len(t), one term after another

@@ -1,0 +1,21 @@
+# One action chunk of the Sparsh-skin play policy (mechanical_pen_data_collection's
+# play_policy_node) from the hand's newest state: the live Sparsh-skin step (Xela forces with
+# the baseline subtracted + FK taxel positions) -> diffusion policy -> joint targets.
+# Called by record_demonstration's Self-play tab every n_exec steps.
+string checkpoint          # play policy checkpoint (.pt); empty: the node's parameter
+string baseline            # Baseline-tab file (.npz); empty: the checkpoint's (its training episodes')
+float32 eta                # stochastic DDIM strength (1.0 = DDPM-like, 0 = deterministic)
+float32 init_noise_scale   # scale on the initial latent (DSP self-play: 1.1)
+int32 seed                 # >= 0: seed the sample (repeatable); < 0: random
+---
+bool success
+string message
+string checkpoint          # the checkpoint used
+string baseline            # the baseline used
+string[] joint_names       # sim joint names of the chunk's columns
+float32 dt                 # s between chunk steps (1 / the policy's rate)
+int32 horizon              # chunk steps
+int32 n_exec               # steps to execute before asking again
+float64[] chunk            # horizon x len(joint_names), sim joint angles (rad), row-major
+float32 obs_age_s          # age of the oldest stream (Xela / leap_state) used
+float32 infer_s            # time spent sampling

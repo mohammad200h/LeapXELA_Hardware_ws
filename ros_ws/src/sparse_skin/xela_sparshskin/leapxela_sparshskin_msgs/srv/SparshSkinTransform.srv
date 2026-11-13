@@ -1,7 +1,7 @@
 # Sparsh-skin preprocessing of the labelled Play on hand episodes, written as LEQ_DV3
 # convert_episodes.py input (episode_<recording>.npz, sparsh_stats.json, manifest.json).
 string recordings_dir      # the Play on hand recordings (<box>_<n>.npz + .label.json)
-string output_dir          # where the episodes go ("": <recordings_dir>/sparsh_skin)
+string output_dir          # where the episodes go ("": <recordings_dir>/sparsh_skin/<freq>hz)
 string[] recordings        # file names in recordings_dir (empty: every one with an episode)
 float32 freq               # step rate (Hz, <= 0: 100)
 bool overwrite             # rewrite episodes already in output_dir

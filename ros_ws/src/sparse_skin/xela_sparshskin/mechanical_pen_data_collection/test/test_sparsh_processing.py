@@ -153,3 +153,48 @@ def test_rewards_from_processing_json_and_process_reward(tmp_path):
     ok, bad = rewards("episode_th_1_1.npz"), rewards("episode_th_1_2.npz")
     assert ok.tolist() == [0.0] * (len(ok) - 1) + [1.0]
     assert bad.tolist() == [0.0] * (len(bad) - 1) + [-1.0]
+
+
+def test_resample_modes():
+    assert sp.resample_mode(101.0, 100.0) == sp.INTERPOLATE  # within DROP_MARGIN
+    assert sp.resample_mode(101.0, 50.0) == sp.DROP
+    assert sp.resample_mode(10.0, 50.0) == sp.INTERPOLATE
+    assert sp.resample_mode(30.0, 100.0, held=True) == sp.HOLD_REPEAT
+    assert sp.resample_mode(30.0, 10.0, held=True) == sp.HOLD_DROP
+    t = np.arange(6) * 0.01
+    v = np.arange(6.0)[:, None]
+    grid = np.linspace(0.0, 0.05, 3)
+    assert sp.resample(t, v, grid, sp.DROP).ravel().tolist() == [0.0, 3.0, 5.0]  # recorded
+    assert np.allclose(sp.resample(t, v, grid, sp.INTERPOLATE).ravel(), [0.0, 2.5, 5.0])
+
+
+def test_rate_folders_keep_other_rates(tmp_path):
+    recordings = os.path.join(tmp_path, "rec")
+    os.makedirs(recordings)
+    recording(os.path.join(recordings, "th_1_1.npz"))
+    for hz in (100.0, 25.0):
+        sp.write_dataset(recordings, sp.rate_dir(recordings, hz), IdentityToSim(), freq=hz)
+    folders = sp.rate_dirs(recordings)
+    assert list(folders) == [100.0, 25.0]
+    assert folders[25.0].endswith(os.path.join(sp.DEFAULT_OUTPUT_NAME, "25hz"))
+    for hz, folder in folders.items():
+        assert sp.count_episodes(folder) == 1
+        with np.load(os.path.join(folder, "episode_th_1_1.npz")) as data:
+            meta = json.loads(str(data["metadata_json"]))
+            assert meta["freq"] == hz
+            assert meta["resampling"]["xela"]["mode"] == (
+                sp.INTERPOLATE if hz == 100.0 else sp.DROP
+            )
+
+
+def test_migrate_flat_output(tmp_path):
+    recordings = os.path.join(tmp_path, "rec")
+    os.makedirs(recordings)
+    recording(os.path.join(recordings, "th_1_1.npz"))
+    flat = os.path.join(recordings, sp.DEFAULT_OUTPUT_NAME)
+    sp.write_dataset(recordings, flat, IdentityToSim(), freq=50.0)  # before the rate folders
+    moved = sp.migrate_flat_output(recordings)
+    assert moved == sp.rate_dir(recordings, 50.0)
+    assert sorted(os.listdir(moved)) == ["episode_th_1_1.npz", sp.MANIFEST_NAME, sp.STATS_NAME]
+    assert sorted(os.listdir(flat)) == ["50hz"]
+    assert sp.migrate_flat_output(recordings) is None

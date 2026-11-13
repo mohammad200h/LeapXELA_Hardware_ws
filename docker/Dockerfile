@@ -322,5 +322,20 @@ RUN python3 -m pip install --no-cache-dir \
     "wandb<0.20" \
     "protobuf<5"
 
+##### sparsh-skin-leapXela #######
+# Sparsh-skin SSL training (facebookresearch/sparsh-multisensory-touch @219ee2f, patched to run
+# without xformers, so it uses the image's torch). hydra-core 1.3 needs omegaconf<2.4.
+# Not upstream's environment.yml: it pins torch 2.0 / CUDA 11.8 and xformers.
+RUN python3 -m pip install --no-cache-dir \
+    "hydra-core==1.3.2" \
+    "hydra-colorlog==1.2.0" \
+    "lightning==2.4.0" \
+    "rootutils" \
+    "scikit-learn" \
+    "pandas"
+# Editable, so the bind-mounted workspace (create_container.sh) is what gets imported.
+RUN python3 -m pip install --no-cache-dir --no-deps -e /workspace/LeapXELA_Hardware_ws/sparsh-skin-leapXela
+ENV XFORMERS_DISABLED=1
+
 ###### Shell #######
 CMD /bin/bash

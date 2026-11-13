@@ -1,8 +1,8 @@
 """DreamerV3 replay chunks of the Sparsh-skin episodes, for LEQ_DV3's world model and LEQ.
 
 Does what LEQ_DV3's ``data/leap/convert_episodes.py`` does to the ``sparsh_processing``
-episodes (``<recordings>/sparsh_skin/episode_*.npz``), so its output folder (``DV3`` next to
-them) can be copied as is to ``LEQ_DV3/data/leap/<task>/`` and trained with
+episodes (``<recordings>/sparsh_skin/<rate>hz/episode_*.npz``), so its output folder
+(``DV3/<rate>hz`` next to them, a folder per step rate) can be copied as is to ``LEQ_DV3/data/leap/<task>/`` and trained with
 ``--task leap_<task>``. The chunks are converted already: do not run ``convert_episodes.py``
 on them (the actions would be shifted and scaled twice).
 

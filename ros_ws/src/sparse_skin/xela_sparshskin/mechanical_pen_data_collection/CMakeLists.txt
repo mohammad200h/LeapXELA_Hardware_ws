@@ -34,6 +34,8 @@ set(PYTHON_ENTRY_POINTS
   "label_click_press:click_press_labels"
   "sparsh_skin_transformation:sparsh_skin_transformation"
   "hand_ik:hand_ik"
+  "synthetic_data:synthetic_data"
+  "play_policy_node:play_policy_node"
 )
 foreach(entry ${PYTHON_ENTRY_POINTS})
   string(REPLACE ":" ";" entry ${entry})
@@ -45,6 +47,9 @@ foreach(entry ${PYTHON_ENTRY_POINTS})
     "import sys\n"
     "from ${PROJECT_NAME}.${module_name} import main\n"
     "sys.exit(main())\n")
+  # Executable in the build tree too: --symlink-install links lib/ to this file.
+  file(CHMOD ${script} PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
   install(PROGRAMS ${script} DESTINATION lib/${PROJECT_NAME})
 endforeach()
 

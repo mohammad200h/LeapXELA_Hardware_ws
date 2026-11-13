@@ -1,0 +1,35 @@
+# Train a reward model (reward_models' rank2reward_train / coupled_local_global_train) on the
+# Sparsh-skin episodes (flex_taxel_fk forces_local and positions) of the labelled Play on hand
+# recordings of ``recordings_dir``. Zero / empty fields use the node's
+# defaults (its ROS parameters).
+string recordings_dir      # Play on hand recordings (record_demonstration's compose_playbacks)
+string output_dir          # runs are written to <output_dir>/<run name>/ (empty: node default)
+int32 epochs
+int32 batch_size
+float32 learning_rate
+float32 val_fraction       # share of the recordings held out for validation (by recording)
+float32 step_hz            # the episodes are taken at this rate (every episode_hz/step_hz steps)
+float32 episode_hz         # the Sparsh-skin episodes of sparsh_skin/<episode_hz>hz/ (0: 100)
+int32 seed
+bool wandb                 # log the run to Weights & Biases
+string wandb_project       # empty: WANDB_PROJECT, or the node default
+string wandb_name          # empty: WANDB_NAME, or <method>_<time>
+---
+bool success
+string message
+string run_dir             # holds model.pt, config.json, metrics.jsonl, eval.json
+string wandb_url           # empty without W&B
+float32 train_loss
+float32 val_loss
+float32 val_metric         # the method's main validation score (see val_metric_name)
+string val_metric_name
+---
+string stage               # loading / training / evaluating / ...
+float32 progress           # 0 to 1 over the whole run
+int32 epoch
+int32 epochs
+float32 train_loss
+float32 val_loss
+float32 val_metric
+string val_metric_name
+string status

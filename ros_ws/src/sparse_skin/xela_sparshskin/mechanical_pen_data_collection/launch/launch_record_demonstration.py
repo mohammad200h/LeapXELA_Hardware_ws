@@ -125,6 +125,24 @@ def generate_launch_description() -> LaunchDescription:
                 "transform of the episodes for the LEQ_DV3 world model)",
             ),
             DeclareLaunchArgument(
+                "reward_models",
+                default_value="true",
+                description="Start the reward_models training actions and inference services "
+                "(the Reward Design tab's Train and Visualize)",
+            ),
+            DeclareLaunchArgument(
+                "play_policy",
+                default_value="true",
+                description="Start play_policy_node (the Self-play tab's Sparsh-skin play policy; "
+                "torch loads the checkpoint at the first request)",
+            ),
+            DeclareLaunchArgument(
+                "play_policy_checkpoint",
+                default_value="",
+                description="play_policy_node's default checkpoint (empty: the newest leap_sparsh "
+                "ckpt_best.pt under <ws>/play_policy/runs/play_policy)",
+            ),
+            DeclareLaunchArgument(
                 "min_contact_depth",
                 default_value="0.0005",
                 description="Finger-finger contacts shallower than this (m) are not counted, by "
@@ -206,6 +224,22 @@ def generate_launch_description() -> LaunchDescription:
                 name="sparsh_skin_transformation",
                 output="screen",
                 condition=IfCondition(LaunchConfiguration("sparsh_skin_transformation")),
+            ),
+            Node(
+                package="mechanical_pen_data_collection",
+                executable="play_policy_node",
+                name="play_policy_node",
+                output="screen",
+                parameters=[{"checkpoint": LaunchConfiguration("play_policy_checkpoint")}],
+                condition=IfCondition(LaunchConfiguration("play_policy")),
+            ),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    PathJoinSubstitution(
+                        [FindPackageShare("reward_models"), "launch", "reward_models.launch.py"]
+                    )
+                ),
+                condition=IfCondition(LaunchConfiguration("reward_models")),
             ),
             # The MuJoCo sim is always started (Compose tab: Test in sim, Play on sim).
             # Scoped: the include's cmd_topic would otherwise replace the hand's for the nodes

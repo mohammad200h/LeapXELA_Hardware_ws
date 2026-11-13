@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>reward_models</name>
+  <version>0.0.0</version>
+  <description>Learned reward models (Rank2Reward, Coupled Local Global) for the mechanical pen task: training action servers and inference services, logged to Weights &amp; Biases.</description>
+  <maintainer email="mohammad200h@hotmail.com">root</maintainer>
+  <license>TODO: License declaration</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>leapxela_sparshskin_msgs</exec_depend>
+  <exec_depend>mechanical_pen_data_collection</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-opencv</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+  <!-- torch and wandb come from pip (the LEQ_DV3 / system Python), not rosdep -->
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

@@ -4,7 +4,8 @@
 Service ``~/transform`` (leapxela_sparshskin_msgs/SparshSkinTransform): preprocesses the
 labelled episodes of ``recordings_dir`` as Sparsh-skin does (``sparsh_processing``), with the
 no-contact baseline of ``baseline_file`` (a Baseline tab recording), and writes them to
-``output_dir`` as LEQ_DV3 ``data/leap/convert_episodes.py`` input. Called by
+``output_dir`` (default ``<recordings_dir>/sparsh_skin/<rate>hz``, a folder per step rate)
+as LEQ_DV3 ``data/leap/convert_episodes.py`` input. Called by
 record_demonstration's Process tab (Sparsh-skin transform); it answers when every episode is
 written, logging each one and publishing its progress on ``~/progress`` (std_msgs/String, JSON
 ``{"done", "total", "text"}``) for the tab's progress bar.
@@ -55,10 +56,10 @@ class SparshSkinTransformation(Node):
             response.success = False
             response.message = f"{recordings_dir!r} is not a directory"
             return response
-        out_dir = request.output_dir or os.path.join(
-            recordings_dir, sparsh_processing.DEFAULT_OUTPUT_NAME
-        )
         freq = float(request.freq) if request.freq > 0 else self._freq
+        # A folder per rate: only a transform at the same rate overwrites its episodes.
+        sparsh_processing.migrate_flat_output(recordings_dir)
+        out_dir = request.output_dir or sparsh_processing.rate_dir(recordings_dir, freq)
         baseline = request.baseline_file
         if baseline and not os.path.isfile(baseline):
             response.success = False
@@ -87,9 +88,9 @@ class SparshSkinTransformation(Node):
         response.xela_mean = [float(v) for v in manifest["xela_mean"]]
         response.xela_std = [float(v) for v in manifest["xela_std"]]
         response.message = (
-            f"{response.written} episodes written, {response.kept} kept, "
-            f"{response.skipped} skipped ({failed} failed) in {out_dir}, baseline "
-            f"{os.path.basename(baseline) if baseline else 'of each recording'}"
+            f"{response.written} episodes written at {freq:g} Hz, {response.kept} kept, "
+            + f"{response.skipped} skipped ({failed} failed) in {out_dir}, baseline "
+            + f"{os.path.basename(baseline) if baseline else 'of each recording'}"
         )
         self.get_logger().info(response.message)
         return response

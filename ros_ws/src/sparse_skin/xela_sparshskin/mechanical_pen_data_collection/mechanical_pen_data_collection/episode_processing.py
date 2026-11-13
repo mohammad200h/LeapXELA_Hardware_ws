@@ -88,6 +88,32 @@ def save_rewards(recordings_dir: str, rewards: dict[str, float]) -> None:
         json.dump(data, f, indent=1)
 
 
+SPARSH_FREQ_KEY = "sparsh_freq_hz"  # the Sparsh-skin transform's step rate (Processing tab)
+
+
+def load_sparsh_freq(recordings_dir: str) -> float | None:
+    """The saved Sparsh-skin step rate (Hz), or None."""
+    try:
+        with open(settings_path(recordings_dir)) as f:
+            value = json.load(f).get(SPARSH_FREQ_KEY)
+    except (OSError, ValueError, AttributeError):
+        return None
+    return float(value) if value is not None else None
+
+
+def save_sparsh_freq(recordings_dir: str, freq: float) -> None:
+    path = settings_path(recordings_dir)
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        data = {}
+    data[SPARSH_FREQ_KEY] = float(freq)
+    os.makedirs(recordings_dir, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=1)
+
+
 def confirmed(label: dict, name: str) -> list[dict]:
     return [
         e for e in (label or {}).get("events", [])

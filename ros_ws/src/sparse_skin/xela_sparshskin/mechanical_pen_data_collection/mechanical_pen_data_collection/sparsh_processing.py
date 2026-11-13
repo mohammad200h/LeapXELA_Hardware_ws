@@ -4,8 +4,13 @@ Follows Sparsh-skin's Xela pipeline (sparsh-multisensory-touch ``XelaSSLDataset`
 ``generate_policy_dataset.py``) on each labelled episode (``episode_start`` to ``terminal``,
 confirmed, of a ``success`` / ``failure`` recording):
 
-- a common ``np.linspace`` time grid at ``freq`` (100 Hz) over the span every stream covers;
-- Xela x, y, z and the joints resampled onto it with ``CubicSpline``;
+- a common ``np.linspace`` time grid at ``freq`` (100 Hz by default, ``FREQ_CHOICES`` on the
+  Processing tab) over the span every stream covers;
+- Xela x, y, z and the joints resampled onto it (``resample``): interpolated with
+  ``CubicSpline`` when the stream is recorded slower than ``freq`` (or about as fast), or, when
+  it is recorded faster (by more than ``DROP_MARGIN``), its extra samples dropped: each step
+  takes the recorded sample nearest to it (``resample_mode``); the commands are held (the last
+  one sent at or before each step: repeated when slower than ``freq``, dropped when faster);
 - Xela values outside [``XELA_LOW``, ``XELA_HIGH``] set to 0 (a dead taxel), and the no-contact
   baseline subtracted where x is not 0: the ``xela_baseline`` of a Baseline tab recording
   (``baseline_file``, the same for every episode), or else the recording's own;
@@ -22,13 +27,16 @@ preprocessed Xela counts, ``flex_taxel_fk/positions`` (T, 368, 3), ``rewards`` (
 success, ``fail`` at the last step of a failure, ``step`` at every other step; Process reward
 sets them again on the episodes written, ``apply_rewards``), and ``metadata_json`` (``terminated_by_env``: a success, or a failure
 whose ``terminal`` was marked by hand; not one Process failure added; ``baseline``: the
-baseline file, or "recording"; ``rewards``: the values used). An episode already written with another baseline is rewritten.
+baseline file, or "recording"; ``rewards``: the values used; ``resampling``: each stream's
+recorded rate and how it was resampled). An episode already written with another baseline or
+step rate is rewritten.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import datetime
 from typing import Callable
 
@@ -53,11 +61,80 @@ from mechanical_pen_data_collection.playback_recording import (
 )
 
 FREQ = 100.0  # Hz, Sparsh-skin's interpolating_freq
+# Step rates offered on the Processing tab (Hz).
+FREQ_CHOICES = (100.0, 50.0, 30.0, 25.0, 20.0, 15.0, 10.0, 5.0)
+# A stream is decimated (samples dropped) only when recorded more than this many times faster
+# than the step rate; otherwise it is interpolated (Xela, ~101 Hz, is interpolated at 100 Hz).
+DROP_MARGIN = 1.05
+INTERPOLATE, DROP = "interpolate", "drop"
+HOLD_REPEAT, HOLD_DROP = "hold (repeat)", "hold (drop)"
+# The recorded streams: (key, its time array, text). ``positions`` are FK of the joints.
+STREAMS = (
+    ("xela", "xela_t", "Xela forces"),
+    ("joints", "state_t", "joints (leap_state) -> FK taxel positions"),
+    ("actions", "cmd_t", "commands (actions)"),
+)
 XELA_LOW, XELA_HIGH = 20000.0, 60000.0  # valid raw Xela range (outside: dead taxel, 0)
 EPISODE_PREFIX = "episode_"
 STATS_NAME = "sparsh_stats.json"
 MANIFEST_NAME = "manifest.json"
-DEFAULT_OUTPUT_NAME = "sparsh_skin"  # next to the recordings
+DEFAULT_OUTPUT_NAME = "sparsh_skin"  # next to the recordings, a folder per rate in it
+RATE_DIR_RE = re.compile(r"^(\d+(?:\.\d+)?)hz$")
+
+
+def rate_folder_name(freq: float) -> str:
+    """The folder of a step rate's episodes: ``100hz``, ``25hz``, ``12.5hz``."""
+    return f"{float(freq):g}hz"
+
+
+def rate_dir(recordings_dir: str, freq: float, output_name: str = DEFAULT_OUTPUT_NAME) -> str:
+    """``<recordings_dir>/sparsh_skin/<rate>hz``: the episodes processed at ``freq``; only a
+    transform at the same rate overwrites them."""
+    return os.path.join(recordings_dir, output_name, rate_folder_name(freq))
+
+
+def rate_dirs(recordings_dir: str, output_name: str = DEFAULT_OUTPUT_NAME) -> dict[float, str]:
+    """{rate (Hz): folder} of the rates processed so far, fastest first."""
+    root = os.path.join(recordings_dir, output_name)
+    found = {}
+    for name in os.listdir(root) if os.path.isdir(root) else []:
+        match = RATE_DIR_RE.match(name)
+        if match and os.path.isdir(os.path.join(root, name)):
+            found[float(match.group(1))] = os.path.join(root, name)
+    return dict(sorted(found.items(), reverse=True))
+
+
+def count_episodes(folder: str) -> int:
+    return sum(n.startswith(EPISODE_PREFIX) and n.endswith(".npz")
+               for n in (os.listdir(folder) if os.path.isdir(folder) else []))
+
+
+def migrate_flat_output(
+    recordings_dir: str, output_name: str = DEFAULT_OUTPUT_NAME, files_re: str = "",
+) -> str | None:
+    """Moves output written straight into ``<recordings_dir>/<output_name>/`` (before the
+    folder per rate) into its rate's folder, the rate from its ``manifest.json`` (``freq``,
+    100 Hz if none). ``files_re``: the files to move (default: ``episode_*.npz``); the manifest
+    and ``sparsh_stats.json`` go along. Returns the folder moved to, or None."""
+    root = os.path.join(recordings_dir, output_name)
+    if not os.path.isdir(root):
+        return None
+    pattern = re.compile(files_re or rf"^{EPISODE_PREFIX}.*\.npz$")
+    loose = [n for n in os.listdir(root)
+             if os.path.isfile(os.path.join(root, n)) and pattern.match(n)]
+    if not loose:
+        return None
+    try:
+        with open(os.path.join(root, MANIFEST_NAME)) as f:
+            freq = float(json.load(f).get("freq") or FREQ)
+    except (OSError, ValueError, TypeError, AttributeError):
+        freq = FREQ
+    target = rate_dir(recordings_dir, freq, output_name)
+    os.makedirs(target, exist_ok=True)
+    for name in loose + [n for n in (MANIFEST_NAME, STATS_NAME)
+                         if os.path.isfile(os.path.join(root, n))]:
+        os.replace(os.path.join(root, name), os.path.join(target, name))
+    return target
 
 
 def output_name(recording_path: str) -> str:
@@ -106,6 +183,61 @@ def time_grid(start: float, end: float, freq: float) -> np.ndarray:
     return np.linspace(start, end, int((end - start) * freq))
 
 
+def stream_rate(t: np.ndarray) -> float:
+    """A stream's recorded rate (Hz): 1 / its median sample interval (0: fewer than 2)."""
+    t = np.asarray(t, np.float64)
+    if len(t) < 2:
+        return 0.0
+    dt = np.median(np.diff(t))
+    return float(1.0 / dt) if dt > 0 else 0.0
+
+
+def resample_mode(source_hz: float, freq: float, held: bool = False) -> str:
+    """How a stream recorded at ``source_hz`` gets onto a ``freq`` grid: ``DROP`` when it is
+    faster by more than ``DROP_MARGIN``, else ``INTERPOLATE``; a ``held`` stream (commands) is
+    ``HOLD_DROP`` / ``HOLD_REPEAT`` instead."""
+    faster = source_hz > freq * DROP_MARGIN
+    if held:
+        return HOLD_DROP if faster else HOLD_REPEAT
+    return DROP if faster else INTERPOLATE
+
+
+def resample(t: np.ndarray, values: np.ndarray, grid: np.ndarray, mode: str) -> np.ndarray:
+    """``values`` (stamped ``t``, strictly increasing) on ``grid``: ``INTERPOLATE`` with a
+    ``CubicSpline``, ``DROP`` the recorded sample nearest each step (the others dropped)."""
+    if mode == INTERPOLATE:
+        return CubicSpline(t, values, axis=0)(grid)
+    right = np.clip(np.searchsorted(t, grid), 1, len(t) - 1)
+    nearest = np.where(grid - t[right - 1] <= t[right] - grid, right - 1, right)
+    return np.asarray(values)[nearest]
+
+
+def recording_rates(path: str) -> dict[str, float]:
+    """{stream key: recorded rate (Hz)} of a recording (only its time arrays are read)."""
+    with np.load(path, allow_pickle=False) as data:
+        return {key: stream_rate(data[t_name]) if t_name in data.files else 0.0
+                for key, t_name, _ in STREAMS}
+
+
+def typical_rates(paths: list[str]) -> dict[str, float]:
+    """{stream key: median recorded rate (Hz)} over ``paths`` (unreadable ones skipped)."""
+    rates: dict[str, list[float]] = {key: [] for key, _, _ in STREAMS}
+    for path in paths:
+        try:
+            for key, hz in recording_rates(path).items():
+                if hz > 0:
+                    rates[key].append(hz)
+        except Exception:  # noqa: BLE001
+            continue
+    return {key: float(np.median(v)) if v else 0.0 for key, v in rates.items()}
+
+
+def resampling_plan(rates: dict[str, float], freq: float) -> dict[str, str]:
+    """{stream key: mode} for streams recorded at ``rates`` on a ``freq`` grid."""
+    return {key: resample_mode(rates.get(key, 0.0), freq, held=key == "actions")
+            for key, _, _ in STREAMS}
+
+
 def _increasing(t: np.ndarray, values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     """Drops samples not later than every one before them (a repeated or backwards stamp;
     CubicSpline needs strictly increasing times)."""
@@ -114,22 +246,43 @@ def _increasing(t: np.ndarray, values: np.ndarray) -> tuple[np.ndarray, np.ndarr
 
 
 def preprocess_xela(
-    xela_t: np.ndarray, xela: np.ndarray, baseline: np.ndarray, grid: np.ndarray
+    xela_t: np.ndarray, xela: np.ndarray, baseline: np.ndarray, grid: np.ndarray,
+    mode: str = INTERPOLATE,
 ) -> np.ndarray:
-    """(T, 368, 3) Xela on ``grid`` in FK order: resampled, outliers 0, baseline subtracted
-    where x is not 0 (``xela`` and ``baseline`` by hardware id)."""
+    """(T, 368, 3) Xela on ``grid`` in FK order: resampled (``mode``, ``resample``), outliers
+    0, baseline subtracted where x is not 0 (``xela`` and ``baseline`` by hardware id)."""
     t, x = _increasing(np.asarray(xela_t, np.float64), np.asarray(xela, np.float64))
-    out = CubicSpline(t, x, axis=0)(grid)
+    return clean_xela(np.array(resample(t, x, grid, mode), np.float64), baseline)
+
+
+def clean_xela(xela: np.ndarray, baseline: np.ndarray) -> np.ndarray:
+    """(..., 368, 3) raw Xela by hardware id -> FK order with outliers 0 and the baseline
+    subtracted where x is not 0: ``preprocess_xela`` after resampling, and ``live_obs``."""
+    out = np.array(xela, np.float64)
     out = np.where((out < XELA_LOW) | (out > XELA_HIGH), 0.0, out)
     mask = out[..., 0] != 0
     out[mask] -= np.broadcast_to(np.asarray(baseline, np.float64), out.shape)[mask]
-    return out[:, fk.TAXEL_IDS_IN_FK_ORDER].astype(np.float32)
+    return out[..., fk.TAXEL_IDS_IN_FK_ORDER, :].astype(np.float32)
 
 
 def sim_joints(to_sim: Callable, names: list[str], q_hw: np.ndarray) -> np.ndarray:
     """(N, 16) hardware joints ``q_hw`` (columns ``names``) as sim angles in FK order."""
     sim = np.array([to_sim(names, q) for q in q_hw], dtype=np.float64).reshape(-1, 16)
     return fk.joint_angles_in_fk_order(list(to_sim.sim_names), sim).astype(np.float64)
+
+
+def live_obs(
+    xela: np.ndarray, baseline: np.ndarray, to_sim: Callable, names: list[str],
+    q_hw: np.ndarray, urdf_path=None,
+) -> np.ndarray:
+    """One live Sparsh-skin step, as an episode's: (368, 6) float32 per taxel in FK order,
+    ``flex_taxel_fk/forces_local`` then ``flex_taxel_fk/positions``. ``xela`` (368, 3) raw by
+    hardware id (the newest ``/xServTopic`` reading), ``q_hw`` (16,) hardware joints in
+    ``names`` order (the newest ``leap_state``). Same code as ``transform_recording``."""
+    forces = clean_xela(np.asarray(xela, np.float64)[None], baseline)[0]
+    joints = sim_joints(to_sim, names, np.asarray(q_hw, np.float64)[None])
+    positions, _ = fk.get_fk_taxel_frames(joints, urdf_path, mujoco_world=False)
+    return np.concatenate([forces, np.asarray(positions, np.float32)[0]], -1)
 
 
 RECORDING_BASELINE = "recording"  # an episode's ``baseline`` when it used the recording's own
@@ -192,8 +345,12 @@ def apply_rewards(
 
 def episode_baseline(path: str) -> str | None:
     """The ``baseline`` an episode file was written with (None: unknown)."""
+    return episode_metadata(path).get("baseline")
+
+
+def episode_metadata(path: str) -> dict:
     with np.load(path) as data:
-        return json.loads(str(data["metadata_json"])).get("baseline")
+        return json.loads(str(data["metadata_json"]))
 
 
 def transform_recording(
@@ -220,10 +377,12 @@ def transform_recording(
     if len(grid) < 2:
         raise ValueError(f"episode shorter than one step at {freq:g} Hz")
 
-    forces = preprocess_xela(rec.xela_t, rec.xela, baseline, grid)
+    rates = {key: stream_rate(getattr(rec, t_name)) for key, t_name, _ in STREAMS}
+    plan = resampling_plan(rates, freq)
+    forces = preprocess_xela(rec.xela_t, rec.xela, baseline, grid, plan["xela"])
 
     state_t, q = _increasing(rec.state_t, sim_joints(to_sim, rec.joint_names, rec.position))
-    joints = CubicSpline(state_t, q, axis=0)(grid)
+    joints = resample(state_t, q, grid, plan["joints"])
     positions, _ = fk.get_fk_taxel_frames(joints, urdf_path, mujoco_world=False)
 
     # Commands are piecewise constant: the last one sent at or before each step.
@@ -240,6 +399,8 @@ def transform_recording(
         "t_end": round(float(grid[-1]), 4),
         "freq": freq,
         "steps": len(grid),
+        "resampling": {key: {"source_hz": round(rates[key], 2), "mode": plan[key]}
+                       for key in plan},
         "joint_order": fk.LEAP_JOINT_ORDER,
         "taxel_order": "XELA_FLATTEN_ORDER",
         "forces_local": "Sparsh-skin preprocessed Xela counts (outliers 0, baseline subtracted)",
@@ -299,7 +460,8 @@ def write_dataset(
     """Writes the episodes of ``recordings`` (file names in ``recordings_dir``; None: every
     one with an episode) to ``out_dir`` with ``sparsh_stats.json`` and ``manifest.json``, with
     the baseline of ``baseline_file`` ("": each recording's own). Episodes already there are
-    kept unless ``overwrite`` or written with another baseline. ``progress(done, total,
+    kept unless ``overwrite`` or written with another baseline or step rate (``out_dir`` is
+    the rate's own folder, ``rate_dir``, so other rates are not touched). ``progress(done, total,
     text)`` is called before the first and after each recording. Returns the manifest."""
     baseline = load_baseline(baseline_file) if baseline_file else None
     used = os.path.abspath(baseline_file) if baseline_file else RECORDING_BASELINE
@@ -319,7 +481,9 @@ def write_dataset(
         name, recording = output_name(path), os.path.basename(path)
         target = os.path.join(out_dir, name)
         try:
-            if os.path.exists(target) and not overwrite and episode_baseline(target) == used:
+            meta = episode_metadata(target) if os.path.exists(target) else {}
+            if (meta and not overwrite and meta.get("baseline") == used
+                    and abs(float(meta.get("freq", FREQ)) - freq) < 1e-6):
                 set_episode_rewards(target, rewards)  # kept, with the rewards saved now
                 with np.load(target) as data:
                     stats.add(data["flex_taxel_fk/forces_local"])

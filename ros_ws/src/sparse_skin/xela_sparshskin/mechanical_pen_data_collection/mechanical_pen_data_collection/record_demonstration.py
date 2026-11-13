@@ -252,7 +252,9 @@ before when the length changed); recordings that end earlier get ``terminal`` an
 their last timestep. Sparsh-skin transform (in Automation) asks sparsh_skin_transformation's
 ``~/transform`` service (``sparsh_transform_service``, leapxela_sparshskin_msgs/
 SparshSkinTransform) to preprocess every episode as Sparsh-skin does (``sparsh_processing``)
-into ``<recordings>/sparsh_skin/`` for the LEQ_DV3 world model; it runs in the background.
+into ``<recordings>/sparsh_skin/<rate>hz/`` (the Rate dropdown; a folder per rate, so only a
+transform at the same rate overwrites them) for the LEQ_DV3 world model; it runs in the
+background.
 Process reward sets the
 rewards of every episode written (and of those the transform writes, ``processing.json``):
 Success at the last timestep of a success, Fail at the last timestep of a failure, Every step
@@ -304,6 +306,22 @@ plays it with every joint stiff and records the joint positions, velocities and 
 taxel's Xela reading and temperature and the commands to
 ``<demo_dir>/body_learning/<mode>/<mode>_<time>.npz`` (listed in the tab, not with the
 Demonstration tab's recordings; also saved when stopped), which then counts as explored.
+
+Reward Design tab: the rewards for learning the pen click, in three sub-tabs: Manual (hand-weighted
+terms from the click detector, fingertip forces, slips and the recordings' labels; not
+implemented yet, ``reward_design_plan.md``), Reward2Rank (a progress reward ranked from the
+demonstrations' Sparsh-skin episodes, Rank2Reward) and Coupled Local Global RL (the global and
+local reward models of coupled world models), both learning from the Sparsh-skin episodes'
+``flex_taxel_fk`` forces_local and positions only, the last two with their paper. Each learned reward has
+a Train tab, sending the settings (recordings, epochs, batch size, learning rate, validation
+share, step rate, seed, W&B project and name) as a goal to the ``reward_models``
+package's ``/<method>_train/train`` action (started with the app by
+``launch_record_demonstration.py``, ``reward_models`` argument) and plotting its feedback (progress, loss and validation metric per
+epoch; Cancel keeps the best epoch so far), and a Visualize tab: the runs in
+``<recordings>/reward_models/<method>/``, any of a run's logged metrics (``metrics.jsonl``,
+the same as on W&B) over its steps, the mean reward of each validation recording at the best
+epoch (success / failure; pick one to plot its reward and terms over time) and the reward of
+any recording from ``/<method>_inference/evaluate``.
 
 Settings tab: the folder takes are saved into (``demo_dir``, can be changed while running), the
 command rate, playback ramp and free-finger deadband used while fingers are
@@ -380,10 +398,14 @@ os.environ.pop("QT_QPA_FONTDIR", None)
 import rclpy
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import GetParameters, SetParametersAtomically
+from rclpy.action import ActionClient
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
-from leapxela_sparshskin_msgs.srv import DetectClicks, PlanHandPose, SparshSkinTransform
+from leapxela_sparshskin_msgs.action import TrainReward
+from leapxela_sparshskin_msgs.srv import (
+    DetectClicks, EvaluateReward, PlanHandPose, SamplePlayChunk, SparshSkinTransform,
+)
 from sensor_msgs.msg import Image, JointState
 from std_msgs.msg import Float32MultiArray, Int32, String
 
@@ -436,6 +458,7 @@ from mechanical_pen_data_collection.playback_recording import (
     next_playback_path,
     set_manual_label,
     update_label,
+    write_label,
 )
 from mechanical_pen_data_collection import click_processing, episode_processing, nextcloud_backup
 from mechanical_pen_data_collection import dv3_processing, sparsh_processing
@@ -601,6 +624,8 @@ SAM_LABEL_COLOR = (255, 255, 255)
 SIM_WINDOW_TITLE = "MuJoCo: LEAP Xela"
 # How long (s) after start the GUI looks for that window to bring it to the front.
 SIM_WINDOW_WAIT_S = 30
+# reward_models' learned rewards (Reward Design tab): <method>_train / <method>_inference.
+REWARD_METHODS = ("rank2reward", "coupled_local_global")
 # Median recorded pen box drawn on the live camera.
 RECORDED_POSE_COLOR = (255, 255, 0)
 # Fingertip patch of each finger in ``taxel_fk_util.XELA_FLATTEN_ORDER``.
@@ -1141,6 +1166,20 @@ class LeapStateListener(Node):
             "hand_ik_service", "/hand_ik/plan_to_pose"
         ).value
         self._hand_ik = self.create_client(PlanHandPose, self.hand_ik_service)
+        # play_policy_node's chunks of the Sparsh-skin play policy (Self-play tab).
+        self.play_policy_service = self.declare_parameter(
+            "play_policy_service", "/play_policy_node/sample"
+        ).value
+        self._play_policy = self.create_client(SamplePlayChunk, self.play_policy_service)
+        # reward_models' training actions and inference services, by method (Reward Design tab).
+        self.reward_train = {
+            method: ActionClient(self, TrainReward, f"/{method}_train/train")
+            for method in REWARD_METHODS
+        }
+        self.reward_evaluate = {
+            method: self.create_client(EvaluateReward, f"/{method}_inference/evaluate")
+            for method in REWARD_METHODS
+        }
         # Microphone stream of push_button_pen_click_detection's audio_publisher.
         self.audio_topic = self.declare_parameter("audio_topic", "/audio").value
         self.audio_rate = 48000  # updated from <audio_topic>/info
@@ -1351,16 +1390,40 @@ class LeapStateListener(Node):
         )
         self._call(self._hand_ik, request, convert, done)
 
+    def play_policy_ready(self) -> bool:
+        return self._play_policy.service_is_ready()
+
+    def sample_play_chunk(
+        self, checkpoint: str, baseline: str, eta: float, init_noise_scale: float, done
+    ) -> None:
+        """Asks play_policy_node for one chunk from the hand's newest state; ``done`` gets the
+        (``SamplePlayChunk`` response, its ``chunk`` as (horizon, joints) sim angles) or an
+        exception, on the executor's thread."""
+        def convert(response):
+            if not response.success:
+                raise RuntimeError(f"{self.play_policy_service}: {response.message}")
+            q = np.asarray(response.chunk, float).reshape(
+                int(response.horizon), len(response.joint_names))
+            return response, q
+
+        request = SamplePlayChunk.Request(
+            checkpoint=checkpoint, baseline=baseline, eta=float(eta),
+            init_noise_scale=float(init_noise_scale), seed=-1,
+        )
+        self._call(self._play_policy, request, convert, done)
+
     def sparsh_transform_ready(self) -> bool:
         return self._sparsh_transform.service_is_ready()
 
-    def sparsh_transform(self, recordings_dir: str, baseline_file: str):
+    def sparsh_transform(
+        self, recordings_dir: str, baseline_file: str, freq: float = sparsh_processing.FREQ
+    ):
         """sparsh_skin_transformation's ``~/transform`` of every episode in ``recordings_dir``
-        (into its ``sparsh_skin`` folder) with the baseline of ``baseline_file``; waits for the
-        answer (minutes), so it is not called on the executor's thread. Raises if the service
-        fails."""
+        (into its ``sparsh_skin`` folder) with the baseline of ``baseline_file``, at ``freq``
+        Hz; waits for the answer (minutes), so it is not called on the executor's thread.
+        Raises if the service fails."""
         request = SparshSkinTransform.Request(
-            recordings_dir=recordings_dir, baseline_file=baseline_file
+            recordings_dir=recordings_dir, baseline_file=baseline_file, freq=float(freq)
         )
         answered = threading.Event()
         future = self._sparsh_transform.call_async(request)
@@ -9518,7 +9581,8 @@ class ProcessingTab(DemonstrationTab):
         self.process_reward_btn = QtWidgets.QPushButton("Process reward")
         self.process_reward_btn.setToolTip(
             "Set the rewards of every episode in "
-            f"{sparsh_processing.DEFAULT_OUTPUT_NAME}/ (Sparsh-skin transform): Success at the "
+            f"{sparsh_processing.DEFAULT_OUTPUT_NAME}/ (every rate's folder; Sparsh-skin "
+            "transform): Success at the "
             "last timestep of a success, Fail at the last timestep of a failure, Every step at "
             "every other timestep. The Sparsh-skin transform uses them too."
         )
@@ -9545,8 +9609,9 @@ class ProcessingTab(DemonstrationTab):
         self.sparsh_transform_btn.setToolTip(
             "Preprocess every episode ('episode_start' to 'terminal' of a success / failure) as "
             "Sparsh-skin does, by the sparsh_skin_transformation service, into "
-            f"{sparsh_processing.DEFAULT_OUTPUT_NAME}/ next to the recordings: the LEQ_DV3 "
-            "world model's convert_episodes.py input (episodes already there are kept)"
+            f"{sparsh_processing.DEFAULT_OUTPUT_NAME}/<rate>hz/ next to the recordings (the "
+            "Rate dropdown; other rates' folders are not touched): the LEQ_DV3 world model's "
+            "convert_episodes.py input (episodes already there are kept)"
         )
         self.sparsh_transform_btn.clicked.connect(self._sparsh_transform)
         self.sparsh_baseline_combo = QtWidgets.QComboBox()
@@ -9557,10 +9622,32 @@ class ProcessingTab(DemonstrationTab):
             "written with another baseline are written again"
         )
         self.sparsh_baseline_combo.activated.connect(self._sparsh_baseline_picked)
+        # The step rate of the Sparsh-skin episodes, and what it does to each recorded stream.
+        self._sparsh_rates: dict[str, float] | None = None  # typical recorded rates (Hz)
+        self.sparsh_freq_combo = QtWidgets.QComboBox()
+        for hz in sparsh_processing.FREQ_CHOICES:
+            self.sparsh_freq_combo.addItem(f"{hz:g} Hz", hz)
+        self.sparsh_freq_combo.setToolTip(
+            "Step rate of the Sparsh-skin episodes (saved in "
+            f"{episode_processing.SETTINGS_NAME}). A stream recorded slower than it is "
+            "interpolated (CubicSpline), one recorded faster has its extra samples dropped "
+            "(each step takes the nearest recorded sample); commands are always held. Each "
+            f"rate has its own folder, {sparsh_processing.DEFAULT_OUTPUT_NAME}/<rate>hz/ (and "
+            f"{dv3_processing.DEFAULT_OUTPUT_NAME}/<rate>hz/): only processing at the same rate "
+            "overwrites it."
+        )
+        saved_freq = episode_processing.load_sparsh_freq(self.store.compose_playback_dir)
+        index = self.sparsh_freq_combo.findData(saved_freq or sparsh_processing.FREQ)
+        self.sparsh_freq_combo.setCurrentIndex(max(index, 0))
+        self.sparsh_freq_combo.currentIndexChanged.connect(self._sparsh_freq_picked)
+        self.sparsh_rate_info = QtWidgets.QLabel()
+        self.sparsh_rate_info.setWordWrap(True)
+        self.sparsh_rate_info.setTextFormat(QtCore.Qt.RichText)
         self.dv3_btn = QtWidgets.QPushButton("Process for DreamerV3")
         self.dv3_btn.setToolTip(
-            f"Convert the episodes in {sparsh_processing.DEFAULT_OUTPUT_NAME}/ into DreamerV3 "
-            f"replay chunks in {dv3_processing.DEFAULT_OUTPUT_NAME}/ next to it (as LEQ_DV3's "
+            f"Convert the episodes in {sparsh_processing.DEFAULT_OUTPUT_NAME}/<rate>hz/ (the "
+            f"Rate dropdown) into DreamerV3 replay chunks in "
+            f"{dv3_processing.DEFAULT_OUTPUT_NAME}/<rate>hz/ next to it (as LEQ_DV3's "
             "convert_episodes.py does: actions shifted one step and scaled to [-1, 1], "
             "is_first / is_last / is_terminal), replacing the chunks there; copy them to "
             "LEQ_DV3/data/leap/<task>/ (do not run convert_episodes.py on them)"
@@ -9585,7 +9672,10 @@ class ProcessingTab(DemonstrationTab):
         sparsh_row.addWidget(self.sparsh_transform_btn)
         sparsh_row.addWidget(QtWidgets.QLabel("Baseline:"))
         sparsh_row.addWidget(self.sparsh_baseline_combo, 1)
+        sparsh_row.addWidget(QtWidgets.QLabel("Rate:"))
+        sparsh_row.addWidget(self.sparsh_freq_combo)
         automation_buttons.addLayout(sparsh_row)
+        automation_buttons.addWidget(self.sparsh_rate_info)
         automation_buttons.addWidget(self.dv3_btn)
         automation_buttons.addWidget(self.process_bar)  # under Process for DreamerV3
         automation_buttons.addStretch(1)
@@ -10194,10 +10284,12 @@ class ProcessingTab(DemonstrationTab):
 
     def _process_reward(self) -> None:
         """Sets the rewards of every Sparsh-skin episode (``sparsh_processing.apply_rewards``)."""
+        self._migrate_flat_outputs()
+        folders = list(sparsh_processing.rate_dirs(self.store.compose_playback_dir).values())
         out_dir = os.path.join(
             self.store.compose_playback_dir, sparsh_processing.DEFAULT_OUTPUT_NAME
         )
-        names = [n for n in (os.listdir(out_dir) if os.path.isdir(out_dir) else [])
+        names = [n for folder in folders for n in os.listdir(folder)
                  if n.startswith(sparsh_processing.EPISODE_PREFIX) and n.endswith(".npz")]
         if not names:
             QtWidgets.QMessageBox.information(
@@ -10214,7 +10306,8 @@ class ProcessingTab(DemonstrationTab):
         rewards = self._rewards()
         answer = QtWidgets.QMessageBox.question(
             self, "Process reward",
-            f"Set the rewards of {len(names)} episodes in {out_dir}: {rewards['success']:g} at "
+            f"Set the rewards of {len(names)} episodes in {out_dir} (every rate: "
+            f"{', '.join(os.path.basename(f) for f in folders)}): {rewards['success']:g} at "
             f"the last timestep of a success, {rewards['fail']:g} at the last timestep of a "
             f"failure, {rewards['step']:g} at every other timestep?",
         )
@@ -10228,8 +10321,18 @@ class ProcessingTab(DemonstrationTab):
             self._bar_step(done, total)
             QtWidgets.QApplication.processEvents()  # runs in the GUI thread: draw the bar
 
+        counts = {SUCCESS: 0, FAILURE: 0, "failed": 0}
+        done_before = 0
         try:
-            counts = sparsh_processing.apply_rewards(out_dir, rewards, step)
+            for folder in folders:
+                total = sparsh_processing.count_episodes(folder)
+                part = sparsh_processing.apply_rewards(
+                    folder, rewards,
+                    lambda i, _n, before=done_before: step(before + i, len(names)),
+                )
+                done_before += total
+                for key in counts:
+                    counts[key] += part[key]
         except OSError as e:
             self.process_status.setText(f"Process reward failed: {e}")
         else:
@@ -10246,15 +10349,18 @@ class ProcessingTab(DemonstrationTab):
     def _process_dv3(self) -> None:
         """Converts the Sparsh-skin episodes into DreamerV3 chunks
         (``dv3_processing.write_chunks``)."""
-        sparsh_dir = os.path.join(
-            self.store.compose_playback_dir, sparsh_processing.DEFAULT_OUTPUT_NAME
+        self._migrate_flat_outputs()
+        freq = self._sparsh_freq()
+        sparsh_dir = sparsh_processing.rate_dir(self.store.compose_playback_dir, freq)
+        out_dir = sparsh_processing.rate_dir(
+            self.store.compose_playback_dir, freq, dv3_processing.DEFAULT_OUTPUT_NAME
         )
-        out_dir = os.path.join(self.store.compose_playback_dir, dv3_processing.DEFAULT_OUTPUT_NAME)
         episodes = dv3_processing.episode_files(sparsh_dir)
         if not episodes:
             QtWidgets.QMessageBox.information(
                 self, "Process for DreamerV3",
-                f"No episodes in {sparsh_dir}: run the Sparsh-skin transform first.",
+                f"No {freq:g} Hz episodes in {sparsh_dir}: run the Sparsh-skin transform at "
+                f"{freq:g} Hz first (the Rate dropdown picks the rate).",
             )
             return
         if self._sparsh_thread is not None and self._sparsh_thread.is_alive():
@@ -10264,8 +10370,8 @@ class ProcessingTab(DemonstrationTab):
             return
         answer = QtWidgets.QMessageBox.question(
             self, "Process for DreamerV3",
-            f"Convert {len(episodes)} episodes into DreamerV3 chunks in {out_dir}? The chunks "
-            "there are replaced.",
+            f"Convert the {len(episodes)} {freq:g} Hz episodes into DreamerV3 chunks in "
+            f"{out_dir}? The {freq:g} Hz chunks there are replaced (other rates are kept).",
         )
         if answer != QtWidgets.QMessageBox.Yes:
             return
@@ -10284,14 +10390,16 @@ class ProcessingTab(DemonstrationTab):
             short = manifest[f"shorter_than_{dv3_processing.BATCH_LENGTH}"]
             low, high = manifest["reward_range"] or (0.0, 0.0)
             self.process_status.setText(
-                f"Process for DreamerV3: {len(manifest['written'])} chunks in {out_dir} · "
+                f"Process for DreamerV3 at {freq:g} Hz: {len(manifest['written'])} chunks in "
+                f"{out_dir} · "
                 f"reward {low:g} to {high:g}"
                 + (" (all 0: set the rewards with Process reward)" if low == high == 0 else "")
                 + (f" · {len(manifest['skipped'])} failed (see its manifest.json)"
                    if manifest["skipped"] else "")
                 + (f" · {len(short)} shorter than {dv3_processing.BATCH_LENGTH} steps (no "
                    "training window)" if short else "")
-                + f" · copy them with: cp {out_dir}/*.npz LEQ_DV3/data/leap/<task>/"
+                + f" · copy them with: cp {out_dir}/*.npz LEQ_DV3/data/leap/<task>_"
+                f"{sparsh_processing.rate_folder_name(freq)}/"
             )
         self._bar_end()
         self.dv3_btn.setEnabled(True)
@@ -10461,6 +10569,117 @@ class ProcessingTab(DemonstrationTab):
     def showEvent(self, ev) -> None:
         super().showEvent(ev)
         self._refresh_sparsh_baselines()
+        self._migrate_flat_outputs()
+        if self._sparsh_rates is None:
+            self._refresh_sparsh_rates()
+        else:
+            self._show_sparsh_plan()
+
+    def _migrate_flat_outputs(self) -> None:
+        """Moves Sparsh-skin episodes and DreamerV3 chunks written before the folder per rate
+        into their rate's folder (``sparsh_processing.migrate_flat_output``)."""
+        directory = self.store.compose_playback_dir
+        try:
+            moved = [
+                sparsh_processing.migrate_flat_output(directory),
+                sparsh_processing.migrate_flat_output(
+                    directory, dv3_processing.DEFAULT_OUTPUT_NAME, r"^.*\.npz$"
+                ),
+            ]
+        except OSError as e:
+            self.process_status.setText(f"Could not move the old output into its rate folder: {e}")
+            return
+        moved = [m for m in moved if m]
+        if moved:
+            self.process_status.setText(
+                "Moved the output written before the folder per rate into " + ", ".join(moved)
+            )
+
+    def _sparsh_freq(self) -> float:
+        return float(self.sparsh_freq_combo.currentData() or sparsh_processing.FREQ)
+
+    def _sparsh_freq_picked(self, _index: int) -> None:
+        try:
+            episode_processing.save_sparsh_freq(
+                self.store.compose_playback_dir, self._sparsh_freq()
+            )
+        except OSError as e:
+            self.process_status.setText(f"Could not save the step rate: {e}")
+        self._show_sparsh_plan()
+
+    def _refresh_sparsh_rates(self) -> None:
+        """Measures the typical recorded rate of each stream over the episodes."""
+        paths, _ = sparsh_processing.eligible_episodes(self.store.compose_playback_dir)
+        self._sparsh_rates = sparsh_processing.typical_rates(paths)
+        self._sparsh_rate_count = len(paths)
+        self._show_sparsh_plan()
+
+    def _sparsh_plan_lines(self, freq: float) -> tuple[str, list[str]]:
+        """(summary, a line per stream) of what the transform at ``freq`` does to each
+        stream."""
+        rates = self._sparsh_rates or {}
+        plan = sparsh_processing.resampling_plan(rates, freq)
+        lines = []
+        for key, _, text in sparsh_processing.STREAMS:
+            hz = rates.get(key, 0.0)
+            mode = plan[key]
+            if not hz:
+                how = "not recorded"
+            elif mode == sparsh_processing.INTERPOLATE:
+                how = (f"<b style='color:#1565c0'>interpolate</b> ({hz:.1f} -> {freq:g} Hz)"
+                       if hz < freq else f"<b style='color:#1565c0'>interpolate</b> ({hz:.1f} "
+                       f"Hz ≈ {freq:g} Hz, aligned onto the grid)")
+            elif mode == sparsh_processing.DROP:
+                how = (f"<b style='color:#c62828'>drop</b> data ({hz:.1f} -> {freq:g} Hz, keeps "
+                       f"~1 in {hz / freq:.1f} samples)")
+            elif mode == sparsh_processing.HOLD_DROP:
+                how = (f"<b style='color:#c62828'>drop</b> data ({hz:.1f} -> {freq:g} Hz, the "
+                       "last command at each step)")
+            else:
+                how = (f"hold / repeat ({hz:.1f} -> {freq:g} Hz, the last command at each "
+                       "step)")
+            lines.append(f"{text}: {how}")
+        drops = [k for k, m in plan.items()
+                 if m in (sparsh_processing.DROP, sparsh_processing.HOLD_DROP) and rates.get(k)]
+        ups = [k for k, m in plan.items()
+               if m in (sparsh_processing.INTERPOLATE, sparsh_processing.HOLD_REPEAT)
+               and rates.get(k)]
+        if drops and ups:
+            summary = "drops and interpolates / holds"
+        elif drops:
+            summary = "drops data only"
+        else:
+            summary = "interpolates / holds only (no data dropped)"
+        return summary, lines
+
+    def _show_sparsh_plan(self) -> None:
+        if self._sparsh_rates is None:
+            self.sparsh_rate_info.setText("")
+            return
+        freq = self._sparsh_freq()
+        summary, lines = self._sparsh_plan_lines(freq)
+        count = getattr(self, "_sparsh_rate_count", 0)
+        directory = self.store.compose_playback_dir
+        folder = sparsh_processing.rate_dir(directory, freq)
+        name = sparsh_processing.rate_folder_name(freq)
+        here = sparsh_processing.count_episodes(folder)
+        done = sparsh_processing.rate_dirs(directory)
+        dv3 = sparsh_processing.rate_dirs(directory, dv3_processing.DEFAULT_OUTPUT_NAME)
+        processed = ", ".join(
+            f"<b>{hz:g} Hz</b> ({sparsh_processing.count_episodes(path)} episodes"
+            + (", DV3" if hz in dv3 else "") + ")"
+            for hz, path in done.items()
+        ) or "none"
+        self.sparsh_rate_info.setText(
+            f"At <b>{freq:g} Hz</b> the transform {summary}"
+            f" <span style='color:#757575'>(median rates over {count} episodes; each "
+            "recording is decided on its own rates)</span>:<br>" + "<br>".join(lines)
+            + f"<br>Writes to {sparsh_processing.DEFAULT_OUTPUT_NAME}/{name}/ and "
+            f"{dv3_processing.DEFAULT_OUTPUT_NAME}/{name}/ "
+            + (f"(<b style='color:#c62828'>has {here} episodes: overwritten</b>)" if here
+               else "(new folder)")
+            + f" · processed rates: {processed}"
+        )
 
     def _refresh_sparsh_baselines(self) -> None:
         """Lists the Baseline tab's recordings in the dropdown, the one used picked and tagged."""
@@ -10489,6 +10708,8 @@ class ProcessingTab(DemonstrationTab):
         if self._sparsh_thread is not None and self._sparsh_thread.is_alive():
             return
         self._refresh_sparsh_baselines()
+        self._refresh_sparsh_rates()
+        freq = self._sparsh_freq()
         baseline = self.sparsh_baseline_combo.currentData()
         if not baseline:
             QtWidgets.QMessageBox.warning(
@@ -10513,12 +10734,21 @@ class ProcessingTab(DemonstrationTab):
                 "or failure).",
             )
             return
-        out_dir = os.path.join(directory, sparsh_processing.DEFAULT_OUTPUT_NAME)
+        self._migrate_flat_outputs()
+        out_dir = sparsh_processing.rate_dir(directory, freq)
+        existing = sparsh_processing.count_episodes(out_dir)
         answer = QtWidgets.QMessageBox.question(
             self, "Sparsh-skin transform",
-            f"Preprocess {len(paths)} episodes into {out_dir} with the baseline "
-            f"{os.path.basename(baseline)} ({baseline_list_text(baseline)})? ({len(skipped)} "
-            "recordings have no episode; episodes already there with this baseline are kept.)",
+            f"Preprocess {len(paths)} episodes into {out_dir} at {freq:g} Hz with the "
+            f"baseline {os.path.basename(baseline)} ({baseline_list_text(baseline)})?\n\n"
+            f"At {freq:g} Hz the transform {self._sparsh_plan_lines(freq)[0]}:\n"
+            + "\n".join(re.sub("<[^>]+>", "", line).replace("&gt;", ">")
+                        for line in self._sparsh_plan_lines(freq)[1])
+            + (f"\n\n{out_dir} has {existing} episodes at {freq:g} Hz already: those with this "
+               "baseline are kept, the others overwritten." if existing else
+               f"\n\n{out_dir} is new: no {freq:g} Hz episodes yet.")
+            + "\nThe other rates' folders are not touched."
+            + f"\n\n({len(skipped)} recordings have no episode.)",
         )
         if answer != QtWidgets.QMessageBox.Yes:
             return
@@ -10526,13 +10756,13 @@ class ProcessingTab(DemonstrationTab):
         self._bar_start("Sparsh-skin transform", len(paths), "episodes")
         self.node.on_sparsh_progress = self._on_sparsh_progress
         self.process_status.setText(
-            f"Sparsh-skin transform: {len(paths)} episodes (progress in the "
+            f"Sparsh-skin transform: {len(paths)} episodes at {freq:g} Hz (progress in the "
             "sparsh_skin_transformation log)..."
         )
 
         def run() -> None:
             try:
-                response = self.node.sparsh_transform(directory, baseline)
+                response = self.node.sparsh_transform(directory, baseline, freq)
                 text = f"Sparsh-skin transform: {response.message}"
             except Exception as e:  # noqa: BLE001
                 text = f"Sparsh-skin transform failed: {e}"
@@ -10548,6 +10778,7 @@ class ProcessingTab(DemonstrationTab):
             self._sparsh_signals.progress.emit(f"Sparsh-skin transform: {text}")
 
     def _sparsh_transform_done(self, text: str) -> None:
+        self._show_sparsh_plan()  # the processed rates
         self.node.on_sparsh_progress = None
         self._bar_end()
         self.process_status.setText(text)
@@ -13444,6 +13675,1208 @@ class BodyLearningTab(QtWidgets.QWidget):
             self.hand.set_readings(readings)
 
 
+SELF_PLAY_KEY = "self_play"  # the node's play recording of a self-play segment
+SELF_PLAY_DIR = "self_play"  # <demo_dir>/self_play: the segments (not with the demonstrations)
+SELF_PLAY_TICK_MS = 5  # how often the tab sends the command due (commands are time-indexed)
+# rad/s (sim) a joint's command may move: ~the 99th percentile of the demonstrations' commands
+SELF_PLAY_MAX_SPEED = 1.5
+SELF_PLAY_MAX_S = 60.0  # default segment length limit (ended as a truncated failure)
+SELF_PLAY_ETA = 1.0  # DSP's self-play sampling: stochastic DDIM ...
+SELF_PLAY_INIT_NOISE = 1.1  # ... and a wider initial latent
+
+
+def self_play_dir(demo_dir: str) -> str:
+    return os.path.join(demo_dir, SELF_PLAY_DIR)
+
+
+class SelfPlaySignals(QtCore.QObject):
+    """Answers from the executor thread: (generation, payload | exception)."""
+
+    planned = QtCore.pyqtSignal(object)  # hand_ik path to the start / open pose
+    chunk = QtCore.pyqtSignal(object)  # play_policy_node chunk
+
+
+class SelfPlayTab(QtWidgets.QWidget):
+    """Self-play with a pen: the Sparsh-skin play policy (play_policy repo, ``--dataset
+    leap_sparsh``) runs the hand on its own, goal-free, and every segment is recorded.
+
+    Space steps through a segment: move to a start pose (the first command of a random
+    training episode, from the checkpoint's ``leap_meta.json``; an IK path, not recorded) ->
+    the operator puts the pen in the hand -> Space starts the policy -> Space pauses / resumes
+    (the hand holds). Every ``n_exec`` steps play_policy_node samples a new chunk from the
+    newest Xela + leap_state (with eta / init noise for exploration); the tab streams it at the
+    policy's rate, every joint stiff. S / F end the segment as success / failure, D discards
+    it, Esc holds (pause); the hand then opens (0 on every sim joint) for the pen to be
+    re-seated. A segment is also ended (truncated failure) after the length limit or when the
+    policy cannot be asked (stale streams, no node).
+
+    Safety (nothing else limits the hand's commands): each step is clipped to the range of the
+    commands the training episodes sent (``leap_meta.json`` ``action_min`` / ``action_max``,
+    also the policy's output range; not joint_config.json's sim limits, which the
+    demonstrations exceed on th_ipl / if_pip / mf_pip and which are reversed for the *_rot
+    joints) and to ``SELF_PLAY_MAX_SPEED`` rad/s from the previous command.
+
+    Saved like a Play on hand: ``<demo_dir>/self_play/self_play_<n>.npz`` (PlaybackRecording:
+    commands, joint states, raw Xela, clicks, camera, audio) with a ``.label.json`` holding the
+    label and confirmed ``episode_start`` (first command) / ``terminal`` (end) events, so the
+    Processing tab's Sparsh-skin transform and reward_models' loaders take the folder as it is.
+    "Sim only" sends the commands to the MuJoCo sim instead (a dry run: nothing is saved)."""
+
+    def __init__(self, node: LeapStateListener, create_tab: CreateTab) -> None:
+        super().__init__()
+        self.node = node
+        self.create_tab = create_tab
+        self._to_sim: HardwareToSim | None = None
+        self._rng = np.random.default_rng()
+        self._signals = SelfPlaySignals()
+        self._signals.planned.connect(self._on_planned)
+        self._signals.chunk.connect(self._on_chunk)
+        self._generation = 0  # bumped to drop answers that are no longer wanted
+        # idle -> moving (to start) -> ready -> playing <-> paused -> opening -> idle
+        self._stage = "idle"
+        self._stiff = False
+        self._meta: dict | None = None  # the checkpoint's leap_meta.json
+        self._move: dict | None = None  # IK path streaming: path_hw, dt, start, index, then
+        self._seg: dict | None = None  # the segment: t0, chunks, pauses, last_sim, ...
+        self._chunk: dict | None = None  # q_sim (H, 16 sim_names order), dt, n_exec, start, i
+        self._asking = False  # a chunk request is in flight
+        self._timer = QtCore.QTimer(self)
+        self._timer.setInterval(SELF_PLAY_TICK_MS)
+        self._timer.timeout.connect(self._tick)
+
+        form = QtWidgets.QFormLayout()
+        self.ckpt_edit = QtWidgets.QLineEdit(self._newest_checkpoint())
+        browse = QtWidgets.QPushButton("Browse...")
+        browse.clicked.connect(self._browse)
+        row = QtWidgets.QHBoxLayout()
+        row.addWidget(self.ckpt_edit, 1)
+        row.addWidget(browse)
+        form.addRow("Play policy checkpoint", row)
+        self.baseline_combo = QtWidgets.QComboBox()
+        form.addRow("Xela baseline", self.baseline_combo)
+        self.eta_spin = QtWidgets.QDoubleSpinBox(decimals=2, minimum=0.0, maximum=2.0,
+                                                 singleStep=0.1, value=SELF_PLAY_ETA)
+        self.eta_spin.setToolTip("Stochastic sampling (0 = deterministic DDIM, 1 = DDPM-like)")
+        form.addRow("Sampling eta", self.eta_spin)
+        self.noise_spin = QtWidgets.QDoubleSpinBox(decimals=2, minimum=0.5, maximum=2.0,
+                                                   singleStep=0.05, value=SELF_PLAY_INIT_NOISE)
+        form.addRow("Initial noise scale", self.noise_spin)
+        self.max_speed_spin = QtWidgets.QDoubleSpinBox(decimals=2, minimum=0.1, maximum=6.0,
+                                                       singleStep=0.1, value=SELF_PLAY_MAX_SPEED)
+        self.max_speed_spin.setSuffix(" rad/s")
+        form.addRow("Max joint speed", self.max_speed_spin)
+        self.max_s_spin = QtWidgets.QDoubleSpinBox(decimals=0, minimum=5, maximum=600,
+                                                   singleStep=5, value=SELF_PLAY_MAX_S)
+        self.max_s_spin.setSuffix(" s")
+        form.addRow("Segment length limit", self.max_s_spin)
+        self.sim_check = QtWidgets.QCheckBox("Sim only (commands to the MuJoCo sim, not saved)")
+        form.addRow("", self.sim_check)
+
+        self.stage_label = QtWidgets.QLabel()
+        font = self.stage_label.font()
+        font.setPointSize(font.pointSize() + 4)
+        font.setBold(True)
+        self.stage_label.setFont(font)
+        self.stage_label.setWordWrap(True)
+        self.status = QtWidgets.QLabel()
+        self.status.setWordWrap(True)
+        self.live_label = QtWidgets.QLabel()
+
+        self.go_btn = QtWidgets.QPushButton()
+        self.go_btn.clicked.connect(self._space)
+        self.success_btn = QtWidgets.QPushButton("Success [S]")
+        self.success_btn.clicked.connect(lambda: self._end_segment(SUCCESS))
+        self.failure_btn = QtWidgets.QPushButton("Failure [F]")
+        self.failure_btn.clicked.connect(lambda: self._end_segment(FAILURE))
+        self.discard_btn = QtWidgets.QPushButton("Discard [D]")
+        self.discard_btn.clicked.connect(lambda: self._end_segment(None))
+        self.hold_btn = QtWidgets.QPushButton("Hold [Esc]")
+        self.hold_btn.clicked.connect(self._hold)
+        self.open_btn = QtWidgets.QPushButton("Open hand")
+        self.open_btn.clicked.connect(self._open_hand)
+        buttons = QtWidgets.QHBoxLayout()
+        for b in (self.go_btn, self.success_btn, self.failure_btn, self.discard_btn,
+                  self.hold_btn, self.open_btn):
+            buttons.addWidget(b)
+        for key, slot in (("Space", self._space), ("S", lambda: self.success_btn.click()),
+                          ("F", lambda: self.failure_btn.click()),
+                          ("D", lambda: self.discard_btn.click()), ("Escape", self._hold)):
+            shortcut = QtWidgets.QShortcut(QtGui.QKeySequence(key), self)
+            shortcut.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+            shortcut.activated.connect(slot)
+
+        self.segments = QtWidgets.QListWidget()
+        self.count_label = QtWidgets.QLabel()
+        left = QtWidgets.QVBoxLayout()
+        left.addLayout(form)
+        left.addSpacing(8)
+        left.addWidget(self.stage_label)
+        left.addLayout(buttons)
+        left.addWidget(self.live_label)
+        left.addWidget(self.status)
+        left.addStretch(1)
+        right = QtWidgets.QVBoxLayout()
+        right.addWidget(QtWidgets.QLabel("Saved segments (newest first)"))
+        right.addWidget(self.segments, 1)
+        right.addWidget(self.count_label)
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.addLayout(left, 3)
+        layout.addLayout(right, 2)
+        self.reload()
+        self._set_stage("idle")
+
+    # ---- setup -------------------------------------------------------------------------
+
+    def _newest_checkpoint(self) -> str:
+        root = os.path.join(os.path.dirname(os.path.dirname(self.node.demo_dir)),
+                            "play_policy", "runs", "play_policy")
+        found = sorted((os.path.join(root, d, "ckpt_best.pt") for d in
+                        (os.listdir(root) if os.path.isdir(root) else [])
+                        if os.path.isfile(os.path.join(root, d, "leap_meta.json"))
+                        and os.path.isfile(os.path.join(root, d, "ckpt_best.pt"))),
+                       key=os.path.getmtime, reverse=True)
+        return found[0] if found else ""
+
+    def _browse(self) -> None:
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Play policy checkpoint", os.path.dirname(self.ckpt_edit.text()),
+            "Checkpoints (*.pt)")
+        if path:
+            self.ckpt_edit.setText(path)
+
+    def reload(self) -> None:
+        """Baselines (the checkpoint's first) and the saved segments."""
+        current = self.baseline_combo.currentData()
+        self.baseline_combo.clear()
+        self.baseline_combo.addItem("The checkpoint's (its training episodes')", "")
+        for path in list_baselines(self.node.demo_dir):
+            self.baseline_combo.addItem(os.path.basename(path), path)
+        i = self.baseline_combo.findData(current)
+        self.baseline_combo.setCurrentIndex(max(i, 0))
+        self.segments.clear()
+        paths = list_playbacks(self_play_dir(self.node.demo_dir))
+        total = 0.0
+        for path in paths:
+            label = load_label(path) or {}
+            span = sparsh_processing.episode_span(label)
+            length = span[1] - span[0] if not isinstance(span, str) else 0.0
+            total += length
+            self.segments.addItem(f"{os.path.basename(path)}  {label.get('label', '?')}  "
+                                  f"{length:.1f} s")
+        self.count_label.setText(f"{len(paths)} segments, {total / 60:.1f} min of self-play")
+
+    def _load_meta(self) -> dict | None:
+        path = os.path.join(os.path.dirname(self.ckpt_edit.text()), "leap_meta.json")
+        try:
+            with open(path) as f:
+                meta = json.load(f)
+            meta["start_poses"] = np.asarray(meta["start_poses"], float)
+            names = self._sim_names()
+            if names is None:
+                return None
+            # safety envelope in sim_names order (the commands the training episodes sent)
+            cols = [meta["joint_names"].index(n) for n in names]
+            meta["lo"] = np.asarray(meta["action_min"], float)[cols]
+            meta["hi"] = np.asarray(meta["action_max"], float)[cols]
+            return meta
+        except (OSError, ValueError, KeyError) as e:
+            self.status.setText(f"No leap_meta.json next to the checkpoint ({path}): {e}. "
+                                "Train with python -m play_policy.train --dataset leap_sparsh.")
+            return None
+
+    def _sim_names(self) -> list[str] | None:
+        if self._to_sim is None:
+            try:
+                self._to_sim = HardwareToSim()
+            except Exception as e:  # noqa: BLE001 - shown
+                self.status.setText(f"Could not load the joint conversion: {e}")
+                return None
+        return list(self._to_sim.sim_names)
+
+    def _sim_now(self) -> np.ndarray | None:
+        q = self.node.latest()
+        if q is None or self._sim_names() is None:
+            return None
+        return np.array(self._to_sim(self.node.joint_names, q))
+
+    def _to_hw(self, q_sim: np.ndarray) -> np.ndarray:
+        """Hardware command (``node.joint_names``) of sim angles (``sim_names`` order)."""
+        hw = dict(zip(self._to_sim.sim_names,
+                      self._to_sim.to_hardware(list(self._to_sim.sim_names), q_sim)))
+        return np.array([hw[n] for n in self.node.joint_names])
+
+    def _send(self, q_sim: np.ndarray) -> None:
+        q_hw = self._to_hw(q_sim)
+        if self.sim_check.isChecked():
+            self.node.send_sim_command(self.node.joint_names, q_hw)
+        else:
+            self.node.send_command(q_hw)
+
+    # ---- the stages --------------------------------------------------------------------
+
+    def _space(self) -> None:
+        if self._stage == "idle":
+            self._to_start()
+        elif self._stage == "ready":
+            self._start_segment()
+        elif self._stage == "playing":
+            self._hold()
+        elif self._stage == "paused":
+            self._resume()
+        elif self._stage in ("moving", "opening"):
+            self._stop_move()
+
+    def _to_start(self) -> None:
+        """Stiff joints, then an IK path to a random training start pose."""
+        self._meta = self._load_meta()
+        names = self._sim_names()
+        now = self._sim_now()
+        if self._meta is None or names is None:
+            return
+        if now is None:
+            self.status.setText("No hand state yet: is the hand (leaphand_node) running?")
+            return
+        if not self.sim_check.isChecked() and not self._make_stiff():
+            return
+        k = int(self._rng.integers(len(self._meta["start_poses"])))
+        pose = dict(zip(self._meta["joint_names"], self._meta["start_poses"][k]))
+        goal = np.clip(np.array([pose[n] for n in names]), self._meta["lo"], self._meta["hi"])
+        self._plan("start", now, goal, start_index=k)
+
+    def _open_hand(self) -> None:
+        if self._stage in ("playing", "paused"):
+            return  # end the segment first (S / F / D)
+        names = self._sim_names()
+        now = self._sim_now()
+        if names is None or now is None:
+            return
+        if not self.sim_check.isChecked() and not self._make_stiff():
+            return
+        self._plan("open", now, np.zeros(len(names)))
+
+    def _make_stiff(self) -> bool:
+        if self._stiff:
+            return True
+        if not self.node.set_stiff_joints(list(self.node.joint_names)):
+            self.status.setText(f"The hand node '{self.node.hand_node}' does not answer: its "
+                                "joints cannot be made stiff.")
+            return False
+        self._stiff = True
+        self.create_tab.stiff_joints_set_elsewhere()
+        return True
+
+    def _plan(self, leg: str, start: np.ndarray, goal: np.ndarray, **extra) -> None:
+        if not self.node.hand_ik_ready():
+            self.status.setText(f"hand_ik ({self.node.hand_ik_service}) is not running")
+            return
+        self._generation += 1
+        generation = self._generation
+        self._set_stage("moving" if leg == "start" else "opening",
+                        f"Planning the move to the {leg} pose...")
+        self.node.plan_hand_pose(
+            self._sim_names(), start, goal,
+            lambda result: self._signals.planned.emit((generation, leg, result, extra)))
+
+    def _on_planned(self, answer) -> None:
+        generation, leg, result, extra = answer
+        if generation != self._generation:
+            return
+        if isinstance(result, Exception):
+            self._set_stage("idle", f"Could not plan the move to the {leg} pose")
+            self.status.setText(str(result))
+            return
+        path, dt, _ = result
+        self._move = {"leg": leg, "path": np.asarray(path, float), "dt": max(dt, 1e-3),
+                      "start": time.monotonic(), "index": -1, **extra}
+        self._timer.start()
+
+    def _stop_move(self) -> None:
+        self._move = None
+        self._generation += 1
+        self._timer.stop()
+        self._set_stage("idle", "Move stopped")
+
+    def _start_segment(self) -> None:
+        if not self.node.play_policy_ready():
+            self.status.setText(f"play_policy_node ({self.node.play_policy_service}) is not "
+                                "running (launch with play_policy:=true)")
+            return
+        now = self._sim_now()
+        if now is None:
+            return
+        record = not self.sim_check.isChecked()
+        t0 = self.node.get_clock().now().nanoseconds * 1e-9
+        path = ""
+        if record:
+            directory = self_play_dir(self.node.demo_dir)
+            os.makedirs(directory, exist_ok=True)
+            path = next_playback_path(directory, SELF_PLAY_DIR)
+            self.node.start_play_recording(SELF_PLAY_KEY)
+            self.node.start_play_video(os.path.splitext(path)[0] + ".mp4")
+            self.node.start_play_audio()
+        self._seg = {"t0": t0, "path": path, "record": record, "last_sim": now,
+                     "started": datetime.now().astimezone(), "chunks": [], "pauses": [],
+                     "clipped": 0, "limited": 0, "steps": 0, "first_cmd": None,
+                     "start_index": self._move_start_index}
+        self._chunk = None
+        self._set_stage("playing", "Self-play" + (", recording" if record else " (sim only)"))
+        self._ask()
+        self._timer.start()
+
+    def _hold(self) -> None:
+        if self._stage == "playing":
+            self._seg["pauses"].append([self._now_t(), None])
+            self._set_stage("paused", "Holding (Space resumes; S / F / D end the segment)")
+        elif self._stage in ("moving", "opening"):
+            self._stop_move()
+
+    def _resume(self) -> None:
+        self._seg["pauses"][-1][1] = self._now_t()
+        self._chunk = None  # a fresh chunk from the state now
+        self._set_stage("playing", "Self-play resumed")
+        self._ask()
+
+    def _now_t(self) -> float:
+        return self.node.get_clock().now().nanoseconds * 1e-9 - self._seg["t0"]
+
+    # ---- the policy --------------------------------------------------------------------
+
+    def _ask(self) -> None:
+        if self._asking:
+            return
+        self._asking = True
+        generation = self._generation
+        self.node.sample_play_chunk(
+            self.ckpt_edit.text(), self.baseline_combo.currentData() or "",
+            self.eta_spin.value(), self.noise_spin.value(),
+            lambda result: self._signals.chunk.emit((generation, result)))
+
+    def _on_chunk(self, answer) -> None:
+        generation, result = answer
+        self._asking = False
+        if generation != self._generation or self._stage not in ("playing", "paused"):
+            return
+        if isinstance(result, Exception):
+            self.status.setText(f"No chunk: {result}")
+            if self._stage == "playing":
+                self._hold()
+            return
+        response, q = result
+        names = self._sim_names()
+        cols = [list(response.joint_names).index(n) for n in names]
+        self._seg["chunks"].append({
+            "t": round(self._now_t(), 4), "infer_s": round(float(response.infer_s), 4),
+            "obs_age_s": round(float(response.obs_age_s), 4)})
+        self._seg.setdefault("checkpoint", response.checkpoint)
+        self._seg.setdefault("baseline", response.baseline)
+        if self._stage != "playing":
+            return
+        self._chunk = {"q": q[:, cols], "dt": float(response.dt), "n_exec": int(response.n_exec),
+                       "start": time.monotonic(), "index": -1}
+        self.live_label.setText(
+            f"chunk {len(self._seg['chunks'])}: inference {response.infer_s * 1000:.0f} ms, "
+            f"state age {response.obs_age_s * 1000:.0f} ms")
+
+    def _step_command(self, q_sim: np.ndarray) -> None:
+        """Clip ``q_sim`` to the training command range and the max step from the last
+        command; send it."""
+        seg = self._seg
+        clipped = np.clip(q_sim, self._meta["lo"], self._meta["hi"])
+        seg["clipped"] += int(np.any(clipped != q_sim))
+        step = self.max_speed_spin.value() * self._chunk["dt"]
+        limited = np.clip(clipped, seg["last_sim"] - step, seg["last_sim"] + step)
+        seg["limited"] += int(np.any(limited != clipped))
+        seg["last_sim"] = limited
+        seg["steps"] += 1
+        if seg["first_cmd"] is None:
+            seg["first_cmd"] = self._now_t()
+        self._send(limited)
+
+    def _tick(self) -> None:
+        if self._move is not None:
+            move = self._move
+            i = min(int((time.monotonic() - move["start"]) / move["dt"]), len(move["path"]) - 1)
+            if i != move["index"]:
+                move["index"] = i
+                self._send(move["path"][i])
+            if i == len(move["path"]) - 1:
+                self._move = None
+                self._timer.stop()
+                if move["leg"] == "start":
+                    self._move_start_index = move.get("start_index")
+                    self._set_stage("ready", "At the start pose: put the pen in the hand, "
+                                    "then Space starts self-play")
+                else:
+                    self._set_stage("idle", "Hand open: re-seat the pen, Space for the next "
+                                    "segment")
+            return
+        seg = self._seg
+        if seg is None:
+            self._timer.stop()
+            return
+        if self._stage == "playing" and self._now_t() > self.max_s_spin.value():
+            self._end_segment(FAILURE, truncated=True)
+            return
+        chunk = self._chunk
+        if self._stage != "playing" or chunk is None:
+            return  # holding: the last command stands
+        i = int((time.monotonic() - chunk["start"]) / chunk["dt"])
+        if i >= chunk["n_exec"]:
+            self._chunk = None  # hold the last command until the next chunk
+            self._ask()
+            return
+        if i != chunk["index"]:
+            chunk["index"] = i
+            self._step_command(chunk["q"][i])
+
+    # ---- ending and saving ---------------------------------------------------------------
+
+    def _end_segment(self, label: str | None, truncated: bool = False) -> None:
+        if self._stage not in ("playing", "paused"):
+            return
+        seg, self._seg = self._seg, None
+        self._chunk = None
+        self._generation += 1  # drop a chunk still in flight
+        self._asking = False
+        end_t = self.node.get_clock().now().nanoseconds * 1e-9 - seg["t0"]
+        if seg["pauses"] and seg["pauses"][-1][1] is None:
+            seg["pauses"][-1][1] = end_t
+        if seg["record"]:
+            saved = self._save(seg, label, end_t, truncated)
+        else:
+            saved = "sim only: not saved"
+        self._set_stage("idle", "Segment ended")
+        self._open_hand()  # -> "opening" once planned (stays idle if hand_ik is not up)
+        self.status.setText(f"{saved} · {seg['steps']} steps, {len(seg['chunks'])} chunks, "
+                            f"{seg['clipped']} clipped to limits, {seg['limited']} step-limited")
+
+    def _save(self, seg: dict, label: str | None, end_t: float, truncated: bool) -> str:
+        buffers = self.node.stop_play_recording(SELF_PLAY_KEY) or {}
+        video, video_t = self.node.stop_play_video()
+        audio, audio_first, audio_rate = self.node.stop_play_audio()
+        path, t0 = seg["path"], seg["t0"]
+        cmd = buffers.get("cmd", [])
+        if label is None or len(cmd) < 2 or seg["first_cmd"] is None:
+            if video and os.path.exists(video):
+                os.remove(video)
+            return "Discarded" if label is None else "Too short: not saved"
+        audio_path = ""
+        if len(audio):
+            audio_path = os.path.splitext(path)[0] + ".wav"
+            try:
+                save_wav(audio_path, audio, audio_rate)
+            except OSError:
+                audio_path = ""
+        state, xela = buffers.get("state", []), buffers.get("xela", [])
+        empty16 = np.empty((0, NUM_JOINTS))
+        cmd_t = np.array([c[0] for c in cmd]) - t0
+        rec = PlaybackRecording(
+            path=path, take=seg.get("checkpoint", self.ckpt_edit.text()), finger="hand",
+            joint_names=self.node.joint_names, cols=list(range(NUM_JOINTS)),
+            cmd_t=cmd_t, cmd_q=np.stack([c[1] for c in cmd]),
+            cmd_local=np.full(len(cmd_t), np.nan),
+            state_t=np.array([x[0] for x in state]) - t0 if state else np.empty(0),
+            position=np.stack([x[1] for x in state]) if state else empty16,
+            velocity=np.stack([x[2] for x in state]) if state else empty16,
+            effort=np.stack([x[3] for x in state]) if state else empty16,
+            xela_t=np.array([x[0] for x in xela]) - t0 if xela else np.empty(0),
+            xela=np.stack([x[1] for x in xela]) if xela else np.empty((0, 0, 3), np.float32),
+            xela_baseline=(sparsh_processing.load_baseline(seg["baseline"])
+                           if seg.get("baseline") else np.empty((0, 3))),
+            click_t=np.array(buffers.get("clicks", [])) - t0,
+            video=video, video_t=video_t - t0 if len(video_t) else np.empty(0),
+            audio=audio_path, audio_t0=audio_first - t0 if audio_path else 0.0,
+            audio_rate=audio_rate if audio_path else 0,
+            meta={
+                "source": "self_play",
+                "checkpoint": seg.get("checkpoint", ""),
+                "baseline": seg.get("baseline", ""),
+                "eta": self.eta_spin.value(), "init_noise_scale": self.noise_spin.value(),
+                "max_speed_rad_s": self.max_speed_spin.value(),
+                "start_pose_index": seg.get("start_index"),
+                "started": seg["started"].isoformat(timespec="seconds"),
+                "ended": "truncated" if truncated else (label or "discarded"),
+                "pauses": seg["pauses"], "chunks": seg["chunks"],
+                "clipped_steps": seg["clipped"], "limited_steps": seg["limited"],
+            },
+        )
+        try:
+            rec.save()
+        except Exception as e:  # noqa: BLE001 - shown
+            return f"Could not save {path}: {e}"
+        terminal = {"name": episode_processing.TERMINAL, "t": round(end_t, 4), "params": {}}
+        if truncated:
+            terminal["params"] = {episode_processing.BY_PROCESS_FAILURE: "self-play length limit"}
+        write_label(path, {
+            "label": label, "manual": True, "source": "self_play",
+            "labelled": datetime.now().isoformat(timespec="seconds"),
+            "events": [{"name": episode_processing.EPISODE_START,
+                        "t": round(float(seg["first_cmd"]), 4), "params": {}}, terminal],
+        })
+        self.node.get_logger().info(f"Self-play: saved {path} ({label}, {len(cmd)} commands, "
+                                    f"{len(xela)} Xela readings)")
+        self.reload()
+        return f"Saved {os.path.basename(path)} as {label}" + (" (truncated)" if truncated else "")
+
+    # ---- view ----------------------------------------------------------------------------
+
+    _move_start_index: int | None = None
+
+    def _set_stage(self, stage: str, text: str = "") -> None:
+        self._stage = stage
+        self.stage_label.setText(text or {
+            "idle": "Space: move to a start pose", "ready": "Space: start self-play",
+        }.get(stage, stage))
+        self.go_btn.setText({"idle": "To start pose [Space]", "moving": "Stop [Space]",
+                             "ready": "Start [Space]", "playing": "Pause [Space]",
+                             "paused": "Resume [Space]", "opening": "Stop [Space]"}[stage])
+        running = stage in ("playing", "paused")
+        for b in (self.success_btn, self.failure_btn, self.discard_btn):
+            b.setEnabled(running)
+        self.open_btn.setEnabled(stage in ("idle", "ready"))
+        for w in (self.ckpt_edit, self.baseline_combo, self.sim_check):
+            w.setEnabled(stage in ("idle", "ready"))
+
+    def stop(self) -> None:
+        """Ends a segment (saved as a failure) or a move; the hand holds where it is."""
+        if self._stage in ("playing", "paused"):
+            self._end_segment(FAILURE)
+        self._move = None
+        self._generation += 1
+        self._timer.stop()
+        if self._stage != "idle":
+            self._set_stage("idle", "Stopped")
+
+    def hideEvent(self, event) -> None:  # noqa: N802 - Qt
+        """Leaving the tab stops self-play and makes the hand compliant again."""
+        self.stop()
+        if self._stiff and self.node.set_stiff_joints([]):
+            self._stiff = False
+            self.create_tab.stiff_joints_set_elsewhere()
+        super().hideEvent(event)
+
+    def refresh(self) -> None:
+        if not self.isVisible() or self._stage != "playing" or self._seg is None:
+            return
+        self.live_label.setText(
+            f"{self._now_t():.1f} s · {self._seg['steps']} steps · "
+            f"{len(self._seg['chunks'])} chunks" + (
+                f" · last inference {self._seg['chunks'][-1]['infer_s'] * 1000:.0f} ms"
+                if self._seg["chunks"] else ""))
+
+
+class RewardTrainSignals(QtCore.QObject):
+    """From the executor thread to the Train panel."""
+
+    feedback = QtCore.pyqtSignal(object)  # TrainReward.Feedback
+    done = QtCore.pyqtSignal(object)  # dict: success, message, run_dir, wandb_url, ...
+
+
+class RewardTrainPanel(QtWidgets.QWidget):
+    """Train tab of a learned reward (on the recordings' Sparsh-skin episodes): the run's
+    settings, Train (Cancel while it runs), sent as a goal to reward_models' ``/<method>_train/train`` action; its feedback drives the
+    progress bar and plots the train / validation loss and the validation metric per epoch."""
+
+    trained = QtCore.pyqtSignal(str)  # run folder of a run that finished
+
+    def __init__(self, node: LeapStateListener, store: TakeStore, method: str) -> None:
+        super().__init__()
+        self.node = node
+        self.store = store
+        self.method = method
+        self._goal = None  # ClientGoalHandle while training
+        self._epochs: list[tuple[int, float, float, float]] = []
+        self._signals = RewardTrainSignals()
+        self._signals.feedback.connect(self._on_feedback)
+        self._signals.done.connect(self._on_done)
+
+        self.recordings = QtWidgets.QLineEdit(store.compose_playback_dir)
+        self.recordings.setToolTip("Play on hand recordings to train on (labelled episodes)")
+        browse = QtWidgets.QPushButton("Browse")
+        browse.clicked.connect(self._browse)
+        rec_row = QtWidgets.QHBoxLayout()
+        rec_row.addWidget(self.recordings, 1)
+        rec_row.addWidget(browse)
+        self.output = QtWidgets.QLineEdit()
+        self.output.setPlaceholderText(f"<recordings>/reward_models/{method}")
+        self.epochs = self._spin(1, 100000, 30)
+        self.batch = self._spin(4, 4096, 64)
+        self.lr = QtWidgets.QDoubleSpinBox()
+        self.lr.setDecimals(6)
+        self.lr.setRange(1e-6, 1.0)
+        self.lr.setSingleStep(1e-4)
+        self.lr.setValue(3e-4)
+        self.val_fraction = QtWidgets.QDoubleSpinBox()
+        self.val_fraction.setRange(0.05, 0.9)
+        self.val_fraction.setSingleStep(0.05)
+        self.val_fraction.setValue(0.2)
+        self.step_hz = QtWidgets.QDoubleSpinBox()
+        self.step_hz.setRange(1.0, 100.0)
+        self.step_hz.setDecimals(1)
+        self.step_hz.setSuffix(" Hz")
+        self.step_hz.setValue(25.0)
+        self.step_hz.setToolTip(
+            "The Sparsh-skin episodes (at their own rate, the Processing tab's Rate, 100 Hz by "
+            "default) are taken at this rate: every episode rate / rate steps, and the "
+            "terminal step"
+        )
+        self.episode_hz = QtWidgets.QComboBox()
+        self.episode_hz.setToolTip(
+            "Which Sparsh-skin episodes to train on: those processed at this rate (the "
+            f"Processing tab's Rate, {sparsh_processing.DEFAULT_OUTPUT_NAME}/<rate>hz/). The "
+            "run's name and config record it, to compare runs across rates."
+        )
+        self.recordings.editingFinished.connect(self._refresh_episode_rates)
+        self.seed = self._spin(0, 1000000, 0)
+        self.wandb = QtWidgets.QCheckBox("Log to Weights && Biases")
+        self.wandb.setChecked(True)
+        self.wandb_project = QtWidgets.QLineEdit("reward_models")
+        self.wandb_name = QtWidgets.QLineEdit()
+        self.wandb_name.setPlaceholderText(f"{method}_<rate>hz_<time>")
+        form = QtWidgets.QFormLayout()
+        form.addRow("Recordings", rec_row)
+        form.addRow("Output folder", self.output)
+        form.addRow("Epochs", self.epochs)
+        form.addRow("Batch size", self.batch)
+        form.addRow("Learning rate", self.lr)
+        form.addRow("Validation share", self.val_fraction)
+        form.addRow("Episode rate", self.episode_hz)
+        form.addRow("Step rate", self.step_hz)
+        form.addRow("Seed", self.seed)
+        form.addRow("", self.wandb)
+        form.addRow("W&B project", self.wandb_project)
+        form.addRow("W&B run name", self.wandb_name)
+
+        self.train_btn = QtWidgets.QPushButton("Train")
+        self.train_btn.clicked.connect(self._train_or_cancel)
+        self.progress = QtWidgets.QProgressBar()
+        self.progress.setRange(0, 1000)
+        self.progress.setTextVisible(False)
+        self.status = QtWidgets.QLabel(
+            f"Trains with <code>{method}_train</code> (started by launch_record_demonstration.py)"
+        )
+        self.status.setWordWrap(True)
+        self.link = QtWidgets.QLabel()
+        self.link.setOpenExternalLinks(True)
+        left = QtWidgets.QVBoxLayout()
+        left.addLayout(form)
+        left.addWidget(self.train_btn)
+        left.addWidget(self.progress)
+        left.addWidget(self.status)
+        left.addWidget(self.link)
+        left.addStretch(1)
+        left_w = QtWidgets.QWidget()
+        left_w.setLayout(left)
+        left_w.setMaximumWidth(460)
+
+        self.loss_plot = pg.PlotWidget(title="Loss per epoch")
+        self.loss_plot.addLegend(offset=(5, 5))
+        self.loss_plot.setLabel("bottom", "epoch")
+        self.loss_plot.showGrid(x=True, y=True, alpha=0.3)
+        self.train_curve = self.loss_plot.plot(pen=pg.mkPen((52, 152, 219), width=2), symbol="o",
+                                               symbolSize=5, name="train")
+        self.val_curve = self.loss_plot.plot(pen=pg.mkPen((230, 126, 34), width=2), symbol="o",
+                                             symbolSize=5, name="validation")
+        self.metric_plot = pg.PlotWidget(title="Validation metric")
+        self.metric_plot.setLabel("bottom", "epoch")
+        self.metric_plot.showGrid(x=True, y=True, alpha=0.3)
+        self.metric_curve = self.metric_plot.plot(pen=pg.mkPen((46, 204, 113), width=2),
+                                                  symbol="o", symbolSize=5)
+        plots = QtWidgets.QVBoxLayout()
+        plots.addWidget(self.loss_plot, 1)
+        plots.addWidget(self.metric_plot, 1)
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.addWidget(left_w)
+        layout.addLayout(plots, 1)
+
+    @staticmethod
+    def _spin(low: int, high: int, value: int) -> QtWidgets.QSpinBox:
+        box = QtWidgets.QSpinBox()
+        box.setRange(low, high)
+        box.setValue(value)
+        return box
+
+    def _browse(self) -> None:
+        path = QtWidgets.QFileDialog.getExistingDirectory(
+            self, "Recordings", self.recordings.text()
+        )
+        if path:
+            self.recordings.setText(path)
+            self._refresh_episode_rates()
+
+    def showEvent(self, ev) -> None:
+        super().showEvent(ev)
+        self._refresh_episode_rates()
+
+    def _refresh_episode_rates(self) -> None:
+        """Lists the rates processed for the recordings (their sparsh_skin/<rate>hz/ folders),
+        keeping the one picked."""
+        picked = self.episode_hz.currentData()
+        self.episode_hz.clear()
+        folders = sparsh_processing.rate_dirs(self.recordings.text().strip())
+        for hz, folder in folders.items():
+            self.episode_hz.addItem(
+                f"{hz:g} Hz ({sparsh_processing.count_episodes(folder)} episodes)", hz
+            )
+        if not folders:
+            self.episode_hz.addItem("None processed: run the Sparsh-skin transform", None)
+        index = self.episode_hz.findData(picked)
+        self.episode_hz.setCurrentIndex(index if index >= 0 else 0)
+
+    @property
+    def training(self) -> bool:
+        return self._goal is not None
+
+    def _train_or_cancel(self) -> None:
+        if self._goal is not None:
+            self._goal.cancel_goal_async()
+            self.status.setText("Cancelling after the current step…")
+            return
+        client = self.node.reward_train[self.method]
+        if not client.server_is_ready():
+            self.status.setText(
+                f"<b>{self.method}_train is not running</b> (launch_record_demonstration.py "
+                "starts it unless reward_models:=false)"
+            )
+            return
+        episode_hz = self.episode_hz.currentData()
+        if not episode_hz:
+            self.status.setText(
+                "<b>No Sparsh-skin episodes</b>: run the Processing tab's Sparsh-skin transform "
+                "first (its Rate is the episode rate)"
+            )
+            return
+        goal = TrainReward.Goal(
+            recordings_dir=self.recordings.text().strip(),
+            episode_hz=float(episode_hz),
+            output_dir=self.output.text().strip(),
+            epochs=self.epochs.value(), batch_size=self.batch.value(),
+            learning_rate=float(self.lr.value()), val_fraction=float(self.val_fraction.value()),
+            step_hz=float(self.step_hz.value()),
+            seed=self.seed.value(), wandb=self.wandb.isChecked(),
+            wandb_project=self.wandb_project.text().strip(),
+            wandb_name=self.wandb_name.text().strip(),
+        )
+        self._epochs = []
+        self._redraw()
+        self.progress.setValue(0)
+        self.link.clear()
+        self.status.setText("Sending the goal…")
+        self.train_btn.setText("Cancel")
+        self._goal = True  # until the server accepts it
+        future = client.send_goal_async(
+            goal, feedback_callback=lambda msg: self._signals.feedback.emit(msg.feedback)
+        )
+        future.add_done_callback(self._on_goal_response)
+
+    def _on_goal_response(self, future) -> None:  # executor thread
+        try:
+            handle = future.result()
+        except Exception as e:  # noqa: BLE001
+            self._signals.done.emit({"success": False, "message": f"goal failed: {e}"})
+            return
+        if not handle.accepted:
+            self._signals.done.emit({"success": False,
+                                     "message": "rejected: the node is already training"})
+            return
+        self._goal = handle
+        handle.get_result_async().add_done_callback(self._on_result)
+
+    def _on_result(self, future) -> None:  # executor thread
+        try:
+            r = future.result().result
+            out = {"success": r.success, "message": r.message, "run_dir": r.run_dir,
+                   "wandb_url": r.wandb_url}
+        except Exception as e:  # noqa: BLE001
+            out = {"success": False, "message": str(e)}
+        self._signals.done.emit(out)
+
+    def _on_feedback(self, fb) -> None:
+        self.progress.setValue(int(1000 * fb.progress))
+        self.status.setText(f"<b>{fb.stage}</b> · {fb.status}")
+        if fb.stage == "training" and fb.epoch > 0 and (
+            not self._epochs or fb.epoch > self._epochs[-1][0]
+        ):
+            self._epochs.append((fb.epoch, fb.train_loss, fb.val_loss, fb.val_metric))
+            self.metric_plot.setTitle(f"Validation metric: {fb.val_metric_name}")
+            self._redraw()
+
+    def _redraw(self) -> None:
+        e = np.array(self._epochs, float).reshape(-1, 4)
+        self.train_curve.setData(e[:, 0], e[:, 1])
+        self.val_curve.setData(e[:, 0], np.nan_to_num(e[:, 2]))
+        self.metric_curve.setData(e[:, 0], np.nan_to_num(e[:, 3]))
+
+    def _on_done(self, out: dict) -> None:
+        self._goal = None
+        self.train_btn.setText("Train")
+        ok = out.get("success")
+        if ok:
+            self.progress.setValue(1000)
+        self.status.setText(("<b>Done.</b> " if ok else "<b>Stopped.</b> ") + out.get("message", ""))
+        url = out.get("wandb_url")
+        if url:
+            self.link.setText(f"W&amp;B run: <a href='{url}'>{url}</a>")
+        if out.get("run_dir"):
+            self.trained.emit(out["run_dir"])
+
+
+class RewardEvalSignals(QtCore.QObject):
+    evaluated = QtCore.pyqtSignal(object)  # EvaluateReward.Response or Exception
+
+
+class RewardVisualizePanel(QtWidgets.QWidget):
+    """Visualize tab of a learned reward: pick a training run (``<recordings>/reward_models/
+    <method>/<run>``) to plot any of its logged metrics (``metrics.jsonl``) over the training
+    steps, the mean reward of each validation recording at its best epoch (``eval.json``,
+    success green, failure red; pick one to plot its reward and terms over time), and the
+    reward of any recording computed by reward_models' ``/<method>_inference/evaluate``."""
+
+    _DEFAULT_METRICS = ("train/loss", "val/rank_acc", "val/return_auc_global", "val/return_auc")
+    _TERM_COLORS = ((52, 152, 219), (230, 126, 34), (155, 89, 182), (26, 188, 156))
+
+    def __init__(self, node: LeapStateListener, store: TakeStore, method: str) -> None:
+        super().__init__()
+        self.node = node
+        self.store = store
+        self.method = method
+        self._rows: list[dict] = []
+        self._eval: list[dict] = []
+        self._signals = RewardEvalSignals()
+        self._signals.evaluated.connect(self._on_evaluated)
+
+        self.runs_dir = QtWidgets.QLineEdit(self._default_runs_dir())
+        refresh = QtWidgets.QPushButton("Refresh")
+        refresh.clicked.connect(self.refresh_runs)
+        self.run_combo = QtWidgets.QComboBox()
+        self.run_combo.currentIndexChanged.connect(self._load_run)
+        self.info = QtWidgets.QLabel()
+        self.info.setWordWrap(True)
+        self.info.setOpenExternalLinks(True)
+        self.info.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
+        self.metric_list = QtWidgets.QListWidget()
+        self.metric_list.setToolTip("Metrics logged by the run (also on W&B); tick to plot")
+        self.metric_list.itemChanged.connect(lambda _: self._plot_metrics())
+        self.val_list = QtWidgets.QListWidget()
+        self.val_list.setToolTip("Validation recordings at the best epoch: pick one to plot it")
+        self.val_list.currentRowChanged.connect(self._show_val)
+        self.recording_combo = QtWidgets.QComboBox()
+        self.recording_combo.setEditable(True)
+        eval_btn = QtWidgets.QPushButton("Evaluate")
+        eval_btn.setToolTip(f"Reward of this recording from {method}_inference")
+        eval_btn.clicked.connect(self._evaluate)
+        self.eval_status = QtWidgets.QLabel()
+        self.eval_status.setWordWrap(True)
+
+        left = QtWidgets.QVBoxLayout()
+        row = QtWidgets.QHBoxLayout()
+        row.addWidget(self.runs_dir, 1)
+        row.addWidget(refresh)
+        left.addWidget(QtWidgets.QLabel("Runs folder"))
+        left.addLayout(row)
+        left.addWidget(self.run_combo)
+        left.addWidget(self.info)
+        left.addWidget(QtWidgets.QLabel("Metrics"))
+        left.addWidget(self.metric_list, 2)
+        left.addWidget(QtWidgets.QLabel("Validation recordings"))
+        left.addWidget(self.val_list, 2)
+        left.addWidget(QtWidgets.QLabel("Evaluate a recording"))
+        row = QtWidgets.QHBoxLayout()
+        row.addWidget(self.recording_combo, 1)
+        row.addWidget(eval_btn)
+        left.addLayout(row)
+        left.addWidget(self.eval_status)
+        left_w = QtWidgets.QWidget()
+        left_w.setLayout(left)
+        left_w.setMaximumWidth(460)
+
+        self.metric_plot = pg.PlotWidget(title="Training metrics")
+        self.metric_plot.addLegend(offset=(5, 5))
+        self.metric_plot.setLabel("bottom", "step")
+        self.metric_plot.showGrid(x=True, y=True, alpha=0.3)
+        self.return_plot = pg.PlotWidget(title="Mean reward per validation recording")
+        self.return_plot.setLabel("bottom", "recording")
+        self.return_plot.showGrid(x=True, y=True, alpha=0.3)
+        self.curve_plot = pg.PlotWidget(title="Reward over a recording")
+        self.curve_plot.addLegend(offset=(5, 5))
+        self.curve_plot.setLabel("bottom", "t from episode_start (s)")
+        self.curve_plot.showGrid(x=True, y=True, alpha=0.3)
+        plots = QtWidgets.QVBoxLayout()
+        plots.addWidget(self.metric_plot, 1)
+        plots.addWidget(self.return_plot, 1)
+        plots.addWidget(self.curve_plot, 1)
+        layout = QtWidgets.QHBoxLayout(self)
+        layout.addWidget(left_w)
+        layout.addLayout(plots, 1)
+        self.refresh_runs()
+
+    def _default_runs_dir(self) -> str:
+        return os.path.join(self.store.compose_playback_dir, "reward_models", self.method)
+
+    def refresh_runs(self, select: str | None = None) -> None:
+        runs_dir = self.runs_dir.text().strip()
+        runs = []
+        if os.path.isdir(runs_dir):
+            runs = sorted(
+                (os.path.join(runs_dir, d) for d in os.listdir(runs_dir)
+                 if os.path.isfile(os.path.join(runs_dir, d, "model.pt"))),
+                key=lambda r: os.path.getmtime(os.path.join(r, "model.pt")), reverse=True,
+            )
+        current = select or self.run_combo.currentData()
+        self.run_combo.blockSignals(True)
+        self.run_combo.clear()
+        for run in runs:
+            self.run_combo.addItem(os.path.basename(run), run)
+        index = self.run_combo.findData(current) if current else -1
+        self.run_combo.setCurrentIndex(max(index, 0) if runs else -1)
+        self.run_combo.blockSignals(False)
+        recordings = list_playbacks(self.store.compose_playback_dir)
+        text = self.recording_combo.currentText()
+        self.recording_combo.clear()
+        for path in recordings:
+            label = (load_label(path) or {}).get("label") or "not labelled"
+            self.recording_combo.addItem(f"{os.path.basename(path)} ({label})", path)
+        if text:
+            self.recording_combo.setCurrentIndex(max(self.recording_combo.findText(text), 0))
+        self._load_run()
+
+    def on_trained(self, run_dir: str) -> None:
+        self.runs_dir.setText(os.path.dirname(run_dir))
+        self.refresh_runs(select=run_dir)
+
+    def _load_run(self) -> None:
+        run = self.run_combo.currentData()
+        self._rows, self._eval = [], []
+        config, best_epoch = {}, None
+        if run:
+            try:
+                with open(os.path.join(run, "config.json")) as f:
+                    config = json.load(f)
+            except (OSError, ValueError):
+                pass
+            try:
+                with open(os.path.join(run, "metrics.jsonl")) as f:
+                    self._rows = [json.loads(line) for line in f if line.strip()]
+            except (OSError, ValueError):
+                pass
+            try:
+                with open(os.path.join(run, "eval.json")) as f:
+                    ev = json.load(f)
+                self._eval, best_epoch = ev.get("recordings", []), ev.get("epoch")
+            except (OSError, ValueError):
+                pass
+        self._show_info(run, config, best_epoch)
+        keys = sorted({k for r in self._rows for k in r if k not in ("step", "time", "epoch")})
+        checked = {self.metric_list.item(i).text() for i in range(self.metric_list.count())
+                   if self.metric_list.item(i).checkState() == QtCore.Qt.Checked}
+        checked = checked & set(keys) or set(self._DEFAULT_METRICS) & set(keys)
+        self.metric_list.blockSignals(True)
+        self.metric_list.clear()
+        for key in keys:
+            item = QtWidgets.QListWidgetItem(key)
+            item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
+            item.setCheckState(QtCore.Qt.Checked if key in checked else QtCore.Qt.Unchecked)
+            self.metric_list.addItem(item)
+        self.metric_list.blockSignals(False)
+        self._plot_metrics()
+        self._plot_returns()
+        self.val_list.blockSignals(True)
+        self.val_list.clear()
+        for r in self._eval:
+            self.val_list.addItem(f"{r['name']} ({r['label']}): {np.mean(r['reward']):.3f}")
+        self.val_list.blockSignals(False)
+        self.curve_plot.clear()
+
+    def _show_info(self, run: str | None, config: dict, best_epoch) -> None:
+        if not run:
+            self.info.setText("<i>No trained run in this folder yet (Train tab)</i>")
+            return
+        counts = config.get("counts", {})
+        best = next((r for r in self._rows if r.get("epoch") == best_epoch), {})
+        main = [k for k in self._DEFAULT_METRICS[1:] if k in best]
+        lines = [
+            f"<b>{os.path.basename(run)}</b>",
+            f"{config.get('epochs', '?')} epochs · batch {config.get('batch_size', '?')} · "
+            f"lr {config.get('learning_rate', 0):.2g} · {config.get('step_hz', 0):g} Hz "
+            f"steps of the {config.get('episode_hz', 100.0):g} Hz Sparsh-skin episodes",
+            f"{counts.get('train', '?')} train ({counts.get('train_success', '?')} success) / "
+            f"{counts.get('val', '?')} val ({counts.get('val_success', '?')} success) recordings",
+        ]
+        if best_epoch is not None:
+            lines.append(f"best epoch {best_epoch}" + "".join(
+                f" · {k} {best[k]:.3f}" for k in main
+            ))
+        if config.get("wandb_url"):
+            lines.append(f"<a href='{config['wandb_url']}'>W&amp;B run</a>")
+        self.info.setText("<br>".join(lines))
+
+    def _plot_metrics(self) -> None:
+        self.metric_plot.clear()
+        keys = [self.metric_list.item(i).text() for i in range(self.metric_list.count())
+                if self.metric_list.item(i).checkState() == QtCore.Qt.Checked]
+        for n, key in enumerate(keys):
+            pts = [(r["step"], r[key]) for r in self._rows if key in r]
+            if pts:
+                x, y = np.array(pts, float).T
+                color = pg.intColor(n, hues=max(len(keys), 3))
+                self.metric_plot.plot(x, y, pen=pg.mkPen(color, width=2), symbol="o",
+                                      symbolSize=4, symbolBrush=color, name=key)
+
+    def _plot_returns(self) -> None:
+        self.return_plot.clear()
+        means = {"success": [], "failure": []}
+        for i, r in enumerate(self._eval):
+            means.setdefault(r["label"], []).append((i, float(np.mean(r["reward"]))))
+        for label, color in (("success", (46, 204, 113)), ("failure", (231, 76, 60))):
+            if means[label]:
+                x, y = np.array(means[label]).T
+                self.return_plot.plot(x, y, pen=None, symbol="o", symbolSize=8,
+                                      symbolBrush=color, name=label)
+        parts = [f"{label} mean {np.mean([v for _, v in pts]):.3f} (n={len(pts)})"
+                 for label, pts in means.items() if pts]
+        self.return_plot.setTitle("Mean reward per validation recording" + (
+            ": " + " · ".join(parts) if parts else ""))
+
+    def _plot_curve(self, title: str, t, reward, terms: dict[str, np.ndarray]) -> None:
+        self.curve_plot.clear()
+        self.curve_plot.setTitle(title)
+        self.curve_plot.plot(t, reward, pen=pg.mkPen((255, 255, 255), width=2), name="reward")
+        for n, (name, values) in enumerate(terms.items()):
+            if np.allclose(values, reward):
+                continue
+            color = self._TERM_COLORS[n % len(self._TERM_COLORS)]
+            self.curve_plot.plot(t, values, pen=pg.mkPen(color, width=1.5), name=name)
+
+    def _show_val(self, row: int) -> None:
+        if 0 <= row < len(self._eval):
+            r = self._eval[row]
+            self._plot_curve(f"{r['name']} ({r['label']}), validation",
+                             np.array(r["t"]), np.array(r["reward"]),
+                             {k: np.array(v) for k, v in r.get("terms", {}).items()})
+
+    def _evaluate(self) -> None:
+        client = self.node.reward_evaluate[self.method]
+        if not client.service_is_ready():
+            self.eval_status.setText(
+                f"<b>{self.method}_inference is not running</b> (launch_record_demonstration.py "
+                "starts it unless reward_models:=false)"
+            )
+            return
+        recording = self.recording_combo.currentData() or self.recording_combo.currentText()
+        request = EvaluateReward.Request(run_dir=self.run_combo.currentData() or "",
+                                         recording=recording)
+        self.eval_status.setText(f"Evaluating {os.path.basename(recording)}…")
+
+        def done(future) -> None:  # executor thread
+            try:
+                self._signals.evaluated.emit(future.result())
+            except Exception as e:  # noqa: BLE001
+                self._signals.evaluated.emit(e)
+
+        client.call_async(request).add_done_callback(done)
+
+    def _on_evaluated(self, response) -> None:
+        if isinstance(response, Exception) or not response.success:
+            self.eval_status.setText(f"<b>Failed:</b> {getattr(response, 'message', response)}")
+            return
+        self.eval_status.setText(response.message)
+        t = np.asarray(response.t, float)
+        t -= t[0] if len(t) else 0.0
+        terms = np.asarray(response.terms, float).reshape(len(response.term_names), -1)
+        self._plot_curve(response.message.split(":")[0], t, np.asarray(response.reward, float),
+                         dict(zip(response.term_names, terms)))
+
+
+class RewardDesignTab(QtWidgets.QWidget):
+    """The rewards for learning the pen click, one sub-tab per way of designing them: Manual,
+    Reward2Rank and Coupled Local Global RL (the last two with their paper). The learned ones
+    have a Train tab (``RewardTrainPanel``: reward_models' training action, logged to W&B) and
+    a Visualize tab (``RewardVisualizePanel``: the runs' metrics, validation results and the
+    reward of any recording from reward_models' inference service). Manual is not implemented
+    yet (``reward_design_plan.md``)."""
+
+    _PAGES = (
+        (
+            "Manual",
+            None,
+            "A reward written by hand as a weighted sum of terms from signals the app already "
+            "has: a bonus when the click detector hears the pen click, the Thumb's fingertip "
+            "force against a target, the holding fingers kept in contact with the pen, a "
+            "penalty for each slip and for jerky joint commands, and the success / fail label "
+            "of a Play on hand recording at its end. <i>Not implemented yet: see "
+            "reward_design_plan.md</i>",
+            None,
+        ),
+        (
+            "Reward2Rank",
+            "rank2reward",
+            "A shaped reward learned from the Sparsh-skin episodes (flex_taxel_fk forces_local "
+            "and positions of the 368 taxels): a ranker learns which of two steps of a "
+            "successful recording comes later, so its output measures how far the task has "
+            "progressed; a discriminator between successful and failed steps keeps a policy "
+            "from exploiting it. Reward: log progress + discriminator logit.",
+            "D. Yang, D. Tjia, J. Berg, D. Damen, P. Agrawal, A. Gupta, <i>Rank2Reward: "
+            "Learning Shaped Reward Functions from Passive Video</i>, ICRA 2024. "
+            "<a href='https://rank2reward.github.io/'>https://rank2reward.github.io/</a>",
+        ),
+        (
+            "Coupled Local Global RL",
+            "coupled_local_global",
+            "The reward parts of coupled world models, on the Sparsh-skin episodes "
+            "(forces_local and positions): a global reward head per step trained "
+            "on the labels (demonstration 1, goal 10, failure 0), and a small local recurrent "
+            "model whose reward head follows it and whose one-step dynamics give the gradients "
+            "for first-order policy optimisation (the world models and RL are not here yet).",
+            "J. Amigo, R. Khorrambakht, N. Mansard, L. Righetti, <i>Coupled Local and Global "
+            "World Models for Efficient First Order RL</i>, CoRL 2026. "
+            "<a href='https://arxiv.org/abs/2602.06219'>https://arxiv.org/abs/2602.06219</a>",
+        ),
+    )
+
+    def __init__(self, node: LeapStateListener, store: TakeStore) -> None:
+        super().__init__()
+        self.node = node
+        self.tabs = QtWidgets.QTabWidget()
+        self.train_panels: dict[str, RewardTrainPanel] = {}
+        for title, method, text, reference in self._PAGES:
+            body = None
+            if method:
+                train = RewardTrainPanel(node, store, method)
+                visualize = RewardVisualizePanel(node, store, method)
+                train.trained.connect(visualize.on_trained)
+                self.train_panels[method] = train
+                body = QtWidgets.QTabWidget()
+                body.addTab(train, "Train")
+                body.addTab(visualize, "Visualize")
+            self.tabs.addTab(self._page(text, reference, body), title)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.addWidget(self.tabs)
+
+    @property
+    def training(self) -> list[str]:
+        """The methods with a training run going."""
+        return [m for m, panel in self.train_panels.items() if panel.training]
+
+    @staticmethod
+    def _page(text: str, reference: str | None, body: QtWidgets.QWidget | None) -> QtWidgets.QWidget:
+        page = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(page)
+        about = QtWidgets.QLabel(text)
+        about.setWordWrap(True)
+        layout.addWidget(about)
+        if reference:
+            ref = QtWidgets.QLabel(f"<b>Reference:</b> {reference}")
+            ref.setWordWrap(True)
+            ref.setTextFormat(QtCore.Qt.RichText)
+            ref.setOpenExternalLinks(True)
+            layout.addWidget(ref)
+        if body is not None:
+            layout.addWidget(body, 1)
+        else:
+            layout.addStretch(1)
+        return page
+
+
 class SettingsTab(QtWidgets.QWidget):
     """Playback / compliance values of this GUI (applied immediately) and the compliant
     gains of the hand node (applied with "Apply to hand")."""
@@ -14280,6 +15713,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.analysis_tab = AnalysisTab(node, self.store)
         self.baseline_tab = BaselineTab(node, self.create_tab)
         self.body_tab = BodyLearningTab(node, self.create_tab)
+        self.self_play_tab = SelfPlayTab(node, self.create_tab)
+        self.reward_tab = RewardDesignTab(node, self.store)
         self.settings_tab = SettingsTab(
             node, self.store, settings, touch_settings, press_settings, saved, saved_path,
             avoid_slip,
@@ -14298,6 +15733,8 @@ class MainWindow(QtWidgets.QMainWindow):
         tabs.addTab(self.analysis_tab, "Analysis")
         tabs.addTab(self.baseline_tab, "Baseline")
         tabs.addTab(self.body_tab, "Learning about your own body")
+        tabs.addTab(self.self_play_tab, "Self-play")
+        tabs.addTab(self.reward_tab, "Reward Design")
         tabs.addTab(self.settings_tab, "Settings")
         self.setCentralWidget(tabs)
 
@@ -14308,6 +15745,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._timer.timeout.connect(self.analysis_tab.refresh)
         self._timer.timeout.connect(self.baseline_tab.refresh)
         self._timer.timeout.connect(self.body_tab.refresh)
+        self._timer.timeout.connect(self.self_play_tab.refresh)
         self._timer.start(REFRESH_MS)
         # The MuJoCo window opens before this one and ends up behind it: bring it to the front
         # once it appears (checked every second for SIM_WINDOW_WAIT_S).
@@ -14352,9 +15790,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.edit_tab.refresh_takes()
         self.compose_tab.refresh_takes()
         self.body_tab.reload()
+        self.self_play_tab.reload()
 
     def closeEvent(self, ev) -> None:
         self.body_tab.stop()
+        self.self_play_tab.stop()
         self.compose_tab.stop_hand()
         self.compose_tab.stop_combination_check()
         self.analysis_tab.close_video()

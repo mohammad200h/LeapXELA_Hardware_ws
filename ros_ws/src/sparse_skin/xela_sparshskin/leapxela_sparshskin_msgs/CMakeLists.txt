@@ -7,10 +7,13 @@ find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/ExecuteMotion.action"
+  "action/TrainReward.action"
   "msg/TaxelFrames.msg"
   "srv/DetectClicks.srv"
   "srv/SparshSkinTransform.srv"
   "srv/PlanHandPose.srv"
+  "srv/EvaluateReward.srv"
+  "srv/SamplePlayChunk.srv"
   DEPENDENCIES std_msgs
 )
 
