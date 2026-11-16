@@ -11,6 +11,7 @@ with the app. Pass `reward_models:=false` to leave them out.
 | `rank2reward_train` | `/rank2reward_train/train` | action `leapxela_sparshskin_msgs/action/TrainReward` |
 | `coupled_local_global_train` | `/coupled_local_global_train/train` | action `TrainReward` |
 | `rank2reward_inference` | `/rank2reward_inference/evaluate` | service `leapxela_sparshskin_msgs/srv/EvaluateReward` |
+| `sarm_inference` | `/sarm_inference/evaluate` | service `EvaluateReward` (terms `progress`, `stage`) |
 | `coupled_local_global_inference` | `/coupled_local_global_inference/evaluate` | service `EvaluateReward` |
 
 The nodes cost little while idle. A training node does nothing until it gets a goal, and an
@@ -151,5 +152,5 @@ What gets logged:
 | Training (`job_type: train`, one per Train) | The config and data counts; every train / validation metric per epoch; reward and term curves for up to 6 validation recordings per epoch; summary `best/<metric>`, `best/epoch` |
 | Inference (`job_type: inference`, one per node, started at its first request) | Per evaluation: `inference/return` (mean reward), `inference/final_reward`, `inference/success`; a plot `inference/<recording>` of the reward and its terms; the table `inference/evaluations` (recording, label, run, return) |
 
-`metrics.jsonl` always has the same scalars as W&B, which is what the GUI's Visualize tab
+`metrics.jsonl` always has the same scalars as W&B, which is what the GUI's former Visualize tab
 plots.

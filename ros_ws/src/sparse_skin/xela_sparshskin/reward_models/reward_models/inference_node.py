@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Inference services of the reward models: ``rank2reward_inference`` and
+"""Inference services of the reward models: ``rank2reward_inference``, ``sarm_inference`` and
 ``coupled_local_global_inference``.
 
 Service ``~/evaluate`` (leapxela_sparshskin_msgs/EvaluateReward): the reward of a trained run
@@ -7,8 +7,8 @@ Service ``~/evaluate`` (leapxela_sparshskin_msgs/EvaluateReward): the reward of 
 Sparsh-skin episode (``episode_start`` to ``terminal``, at the run's ``step_hz``), with the reward's terms. The loaded run is kept
 until a newer ``model.pt`` replaces it. Each evaluation is logged to W&B (one ``inference`` run
 per node, started at the first request): the episode's mean reward, its curves and a table
-row (recording, label, run, return). Called by record_demonstration's Reward Design tab
-(Visualize).
+row (recording, label, run, return). Called by record_demonstration's Reward tab (one graph
+per model while a recording plays).
 
 ROS parameters:
   - runs_dir (str, default <ws>/demonstrations/compose_playbacks/reward_models/<method>)
@@ -29,7 +29,7 @@ from leapxela_sparshskin_msgs.srv import EvaluateReward
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
-from reward_models import coupled_local_global, data, rank2reward
+from reward_models import coupled_local_global, data, rank2reward, sarm
 from reward_models.logging_utils import DEFAULT_ENV_FILE, DEFAULT_PROJECT, RunLogger
 from reward_models.train_node import default_recordings_dir
 from reward_models.training import MODEL_NAME, newest_run, resolve_device
@@ -151,3 +151,7 @@ def rank2reward_main(args=None) -> None:
 
 def coupled_local_global_main(args=None) -> None:
     _main(coupled_local_global, args)
+
+
+def sarm_main(args=None) -> None:
+    _main(sarm, args)

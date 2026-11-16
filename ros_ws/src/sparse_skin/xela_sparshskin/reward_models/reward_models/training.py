@@ -7,7 +7,7 @@ A run is a folder ``<output_dir>/<run name>/`` with:
 - ``metrics.jsonl``: every logged scalar (``logging_utils``), also sent to W&B;
 - ``model.pt``: the checkpoint of the best validation epoch (``save_checkpoint``);
 - ``eval.json``: that epoch's per-recording validation results (``label``, ``t``, ``reward``,
-  ``terms``), which the GUI's Visualize tab plots.
+  ``terms``), which compare.py and W&B read.
 """
 
 from __future__ import annotations

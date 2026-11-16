@@ -7,8 +7,8 @@ Action ``~/train`` (leapxela_sparshskin_msgs/TrainReward): trains the node's rew
 on hand recordings of the goal's ``recordings_dir`` (``training.run_training``), publishing feedback (stage, progress,
 epoch, losses, validation metric) after loading and after every epoch, logging to
 ``metrics.jsonl`` and W&B (``logging_utils``, set up as LEQ_DV3). One goal at a time; a cancel
-stops it after the current training step, keeping the best epoch so far. Called by
-record_demonstration's Reward Design tab (Train).
+stops it after the current training step, keeping the best epoch so far. Sent
+by hand (``ros2 action send_goal``); the app's launch no longer starts these nodes.
 
 ROS parameters (used for the goal's zero / empty fields):
   - recordings_dir (str, default <ws>/demonstrations/compose_playbacks)

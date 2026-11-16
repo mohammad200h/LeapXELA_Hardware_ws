@@ -25,6 +25,7 @@ setup(
             "rank2reward_train = reward_models.train_node:rank2reward_main",
             "coupled_local_global_train = reward_models.train_node:coupled_local_global_main",
             "rank2reward_inference = reward_models.inference_node:rank2reward_main",
+            "sarm_inference = reward_models.inference_node:sarm_main",
             "coupled_local_global_inference = reward_models.inference_node:coupled_local_global_main",
             "reward_compare = reward_models.compare:main",
         ],

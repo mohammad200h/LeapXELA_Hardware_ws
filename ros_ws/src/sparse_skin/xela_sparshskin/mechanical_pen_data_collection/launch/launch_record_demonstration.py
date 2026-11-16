@@ -127,8 +127,8 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument(
                 "reward_models",
                 default_value="true",
-                description="Start the reward_models training actions and inference services "
-                "(the Reward Design tab's Train and Visualize)",
+                description="Start the reward_models inference services rank2reward_inference and "
+                "sarm_inference (the Reward tab's graphs)",
             ),
             DeclareLaunchArgument(
                 "play_policy",

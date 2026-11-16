@@ -33,15 +33,10 @@ source install/setup.bash
 ros2 launch mechanical_pen_data_collection launch_record_demonstration.py   # reward_models:=false leaves them out
 ```
 
-Then open **Reward Design → Reward2Rank** (or **Coupled Local Global RL**):
-
-1. **Train:** check the settings and press **Train**. The progress bar and the loss /
-   metric plots update after every epoch. **Cancel** stops the run and keeps its best epoch.
-2. **Visualize:** pick the run. You can then:
-   - read its metrics,
-   - compare the reward of successful and failed validation recordings,
-   - click a recording to see its reward over time,
-   - press **Evaluate** to score any recording.
+Then open the **Reward** tab and pick a processed recording. It plays like the
+Demonstration tab, with a **Rank2Reward** and a **SARM** graph of the trained models'
+predictions in the middle (SARM's grip / press / click stages shaded on its graph and on the
+play bar). Pick another trained run above either graph to compare.
 
 To run only the reward nodes, without the app:
 `ros2 launch reward_models reward_models.launch.py`.
@@ -55,7 +50,7 @@ To run only the reward nodes, without the app:
 | [docs/rank2reward.md](docs/rank2reward.md) | The Rank2Reward networks, losses, reward and validation metrics. |
 | [docs/coupled_local_global.md](docs/coupled_local_global.md) | The global and local reward models, their targets, losses and metrics. |
 | [docs/nodes_and_interfaces.md](docs/nodes_and_interfaces.md) | The action, the service, node parameters, the run folder and W&B logging. |
-| [docs/gui.md](docs/gui.md) | The Train and Visualize tabs, and how to judge whether a run is good. |
+| [docs/gui.md](docs/gui.md) | The Reward tab: playing a recording with the Rank2Reward and SARM predictions. |
 
 ## Package layout
 
@@ -68,12 +63,12 @@ To run only the reward nodes, without the app:
 | [reward_models/coupled_local_global.py](reward_models/coupled_local_global.py) | The Coupled Local Global reward models: `train`, `evaluate`, `Model`. |
 | [reward_models/logging_utils.py](reward_models/logging_utils.py) | `RunLogger`: `metrics.jsonl` and W&B. |
 | [reward_models/train_node.py](reward_models/train_node.py) | The training action servers. |
-| [reward_models/inference_node.py](reward_models/inference_node.py) | The inference services. |
-| [launch/reward_models.launch.py](launch/reward_models.launch.py) | Starts the four nodes. `launch_record_demonstration.py` includes it. |
+| [reward_models/inference_node.py](reward_models/inference_node.py) | The inference services (`rank2reward`, `sarm`, `coupled_local_global`). |
+| [launch/reward_models.launch.py](launch/reward_models.launch.py) | Starts `rank2reward_inference` and `sarm_inference` (`wandb:=true` logs each evaluation). `launch_record_demonstration.py` includes it. |
 
 The interfaces live in `leapxela_sparshskin_msgs`: `action/TrainReward.action` and
-`srv/EvaluateReward.srv`. The GUI side is in `record_demonstration.py` (`RewardDesignTab`,
-`RewardTrainPanel`, `RewardVisualizePanel`). The plan for the parts not built yet, including
+`srv/EvaluateReward.srv`. The GUI side is in `record_demonstration.py` (`RewardTab`,
+`RewardPredictionPlot`). The plan for the parts not built yet, including
 the Manual reward, is in `mechanical_pen_data_collection/reward_design_plan.md`.
 
 ## Requirements

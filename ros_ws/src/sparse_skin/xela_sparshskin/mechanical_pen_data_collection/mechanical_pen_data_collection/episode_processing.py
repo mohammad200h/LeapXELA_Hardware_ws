@@ -88,6 +88,44 @@ def save_rewards(recordings_dir: str, rewards: dict[str, float]) -> None:
         json.dump(data, f, indent=1)
 
 
+# Which rewards Process reward writes into the Sparsh-skin episodes (Processing tab): each one
+# as ``rewards/<source>``, and the primary one as ``rewards`` (what Process for DreamerV3 uses).
+# ``sarm`` is SARM's progress phi (its delta phi_t - phi_{t-1} goes along as ``sarm_delta``).
+REWARD_SOURCES = ("manual", "rank2reward", "sarm")
+REWARD_MODELS_KEY = "reward_sources"
+DEFAULT_REWARD_SOURCES = {"include": ["manual"], "primary": "manual"}
+
+
+def load_reward_sources(recordings_dir: str) -> dict:
+    """{"include": [source, ...], "primary": source} saved for Process reward (the default:
+    the manual reward only)."""
+    try:
+        with open(settings_path(recordings_dir)) as f:
+            saved = json.load(f).get(REWARD_MODELS_KEY) or {}
+    except (OSError, ValueError, AttributeError):
+        saved = {}
+    include = [s for s in REWARD_SOURCES if s in (saved.get("include") or [])]
+    primary = saved.get("primary")
+    if primary not in REWARD_SOURCES:
+        primary = DEFAULT_REWARD_SOURCES["primary"]
+    return {"include": include or list(DEFAULT_REWARD_SOURCES["include"]), "primary": primary}
+
+
+def save_reward_sources(recordings_dir: str, include: list[str], primary: str) -> None:
+    path = settings_path(recordings_dir)
+    try:
+        with open(path) as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        data = {}
+    data[REWARD_MODELS_KEY] = {
+        "include": [s for s in REWARD_SOURCES if s in include], "primary": primary,
+    }
+    os.makedirs(recordings_dir, exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=1)
+
+
 SPARSH_FREQ_KEY = "sparsh_freq_hz"  # the Sparsh-skin transform's step rate (Processing tab)
 
 

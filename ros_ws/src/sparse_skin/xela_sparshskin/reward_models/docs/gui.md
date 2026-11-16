@@ -1,86 +1,75 @@
-# The Reward Design tab
+# The Reward tab
 
 The GUI is in `mechanical_pen_data_collection/record_demonstration.py`:
 
-- `RewardDesignTab` holds the three sub-tabs;
-- `RewardTrainPanel` is the Train tab;
-- `RewardVisualizePanel` is the Visualize tab.
+- `RewardTab` is a `DemonstrationTab` (the same player) with the reward graphs in the middle;
+- `RewardPredictionPlot` is one graph (one per entry of `REWARD_PLOTS`: Rank2Reward, SARM);
+- `stage_segments` turns SARM's predicted stage per step into (start, end, stage) spans.
 
-The GUI node creates the action and service clients at start-up (`LeapStateListener`,
-`reward_train` / `reward_evaluate`, one per method in `REWARD_METHODS`). Replies come back on
-the ROS thread and reach the Qt widgets through signals.
+The GUI node creates one `EvaluateReward` client per method in `REWARD_METHODS`
+(`rank2reward`, `sarm`) at start-up (`LeapStateListener.reward_evaluate`). Replies come back
+on the ROS thread and reach the Qt widgets through `RewardEvalSignals`.
 
-**Reward Design** has three sub-tabs:
-
-- **Manual**: a description only; not built yet;
-- **Reward2Rank**, with **Train** and **Visualize** tabs;
-- **Coupled Local Global RL**, with **Train** and **Visualize** tabs.
-
-Each learned method shows a short description and its paper as a link at the top.
-
-## Train
-
-| Control | What it does |
-| --- | --- |
-| Recordings | The folder to train on. Default: the app's `compose_playbacks`. **Browse** picks another. |
-| Output folder | Where the run goes. Empty means `<recordings>/reward_models/<method>`. |
-| Epochs, Batch size, Learning rate | Training length and optimiser settings. |
-| Validation share | Share of successes and of failures held out (by recording). |
-| Step rate | The Sparsh-skin episodes (100 Hz `forces_local` and `positions`) are taken at this rate, default 25 Hz: every 4th step plus the `terminal` step. Higher is finer but uses more GPU memory (about 11 GB at 100 Hz). |
-| Seed | The same seed gives the same split and the same start. |
-| Log to Weights & Biases, project, run name | W&B settings. Empty name means `<method>_<time>`. |
-| **Train** / **Cancel** | Sends the goal. While it runs the button is Cancel, which stops after the current step and keeps the best epoch. |
-
-While a run goes:
-
-- **The progress bar** fills to 15% while the recordings load, then by epoch.
-- **The status line** shows the stage and, for example, `epoch 4/30 (best, saved)`.
-- **"Loss per epoch"** plots the training loss (blue) and the validation loss (orange).
-- **"Validation metric"** plots the main metric: `val/rank_acc` for Rank2Reward,
-  `val/return_auc_global` for Coupled Local Global.
-- **At the end** it shows the result and a link to the W&B run, and the Visualize tab
-  selects the new run.
-
-If the status says the node is not running, the app was launched with
-`reward_models:=false`, or the node failed to start; its log is in the launch terminal.
-
-## Visualize
+## Layout
 
 | Part | What it shows |
 | --- | --- |
-| Runs folder, **Refresh**, run list | The runs in the folder, newest first. Refresh also reloads the recordings list. |
-| Run summary | Epochs, batch, learning rate, step rate, how many train / validation recordings and successes, the best epoch with its main metrics, and a link to the W&B run. |
-| **Metrics** list and **Training metrics** plot | Every metric the run logged (`metrics.jsonl`). Tick any to plot it over the training steps. The loss and main metric are ticked by default. |
-| **Mean reward per validation recording** | One dot per validation recording at the best epoch (green success, red failure), with the mean of each group in the title. |
-| **Validation recordings** list | The same recordings with their mean reward. Click one to plot its reward over time. |
-| **Evaluate a recording** | Pick any recording in the app's `compose_playbacks` (label shown) and press **Evaluate**. The inference service scores its Sparsh-skin episode with the selected run. A recording without one, or a run from the earlier camera version, gives a message instead. |
-| **Reward over a recording** | The reward (white) and its terms over time from `episode_start`: `progress` / `discriminator` for Rank2Reward, `global` / `local` for Coupled Local Global. A term equal to the reward is not drawn twice. |
+| Left | The Play on hand recordings, with the Demonstration tab's filters, Success / Fail, Delete and Refresh. |
+| Top of the middle | The recording's title, **Play**, the play bar, **Stream to sim** and the audio output, as on the Demonstration tab. SARM's predicted stages are shaded over the play bar; hover for the stage and its time. |
+| **Manual** graph and fields | Success / Fail / Every step (saved in `processing.json`). The graph shows Every step from `episode_start` to `terminal` and the Success or Fail value at `terminal`; it redraws as you edit. |
+| **Rank2Reward** graph | The reward (white), `progress` and `discriminator`. |
+| **SARM** graph | The reward (white, Δφ by default), `progress` φ, and the predicted stages **grip** (blue), **press** (orange) and **click** (green) as shaded regions. |
+| Right | The camera recording with the pen box, and the FK taxels with the recorded Xela readings. |
 
-## Is the run any good?
+The keys are the Demonstration tab's: Space play / pause, Left / Right seek, ] / [ jump to
+the Thumb's first contact and the last part, Up / Down change recording, S / F mark it.
 
-A quick checklist, in this order:
+Above each graph, the **run** list holds every trained run of that method that has a
+`model.pt`:
 
-1. **Did it learn?** Under Training metrics, the training loss falls and the main metric
-   rises over the first epochs. A flat loss usually means the learning rate is too low or
-   there are too few successes.
-2. **Does it generalise?** The validation loss falls with the training loss. If it rises
-   while the training loss keeps falling, the model is overfitting. Use the best epoch
-   (which is the one kept) or more data.
-3. **Does it separate successes from failures?** In **Mean reward per validation
-   recording**, green dots should sit above red ones. `val/return_auc` (Rank2Reward) or
-   `val/return_auc_global` (Coupled) near 1 says the same in one number; 0.5 is no better
-   than chance.
-4. **Is it shaped?** Click a few successful validation recordings. A useful reward rises
-   through the episode. For Rank2Reward, progress should go from about 0 to about 1. For
-   Coupled Local Global, the global reward should be about 1 through a success and jump
-   towards 10 at the click. On failures it should stay low or stall.
-5. **Coupled Local Global only: are local and global coupled?** `val/local_global_corr` near 1
-   and the local curve close to the global one. A low value means the local model's
-   gradients would not follow the reward the rollouts are scored with.
-6. **Try recordings it never saw.** Evaluate a few recordings outside the validation set,
-   including a "no click" and a "kept sliding" failure, and check that their reward stays
-   lower than a success's.
+- the comparison runs `<recordings>/reward_models/comparison/<comparison>/runs/<method>_<sparsh|proprio>_s<seed>`
+  (newest comparison first; `sarm` does not list `sarm_failures`),
+- the runs trained by the train node, `<recordings>/reward_models/<method>/<run>`.
 
-To compare runs, use the same seed and validation share, so they are judged on the same
-validation recordings. Then compare their best-epoch metrics in the run summary or side by
-side in W&B.
+The default is the newest comparison's `<method>_sparsh_s0`. The pick is remembered.
+**Refresh** lists the runs again.
+
+## How a prediction is made
+
+When a recording is picked, or the run changes, the graph sends an `EvaluateReward` request
+(the run folder and the recording) to `/<method>_inference/evaluate`. The node scores the
+recording's Sparsh-skin episode (`episode_start` to `terminal`) and returns the reward and
+its terms per step, at the recording's own times, so the graph lines up with the play bar.
+Each answer is kept for that (run, recording) pair, so going back to a recording is
+instant.
+
+The status line beside the run list says what went wrong otherwise:
+
+- **not running**: the app was launched with `reward_models:=false`, or the node failed to
+  start (its log is in the launch terminal);
+- **no Sparsh-skin episode**: the recording is not processed yet (Processing tab: mark
+  `episode_start` / `terminal`, then run the Sparsh-skin transform).
+
+## Writing the rewards into the episodes
+
+The Processing tab's **Process reward** writes the rewards ticked under **Store** (Manual,
+Rank2Reward, SARM) into every Sparsh-skin episode (`sparsh_skin/<rate>hz/episode_*.npz`):
+
+| Array | What it holds |
+| --- | --- |
+| `rewards/manual` | The Manual fields. |
+| `rewards/rank2reward` | Rank2Reward's reward, interpolated onto the episode's steps. |
+| `rewards/sarm` | SARM's progress φ, interpolated onto the episode's steps. |
+| `rewards/sarm_delta` | φ_t − φ_{t−1} on the episode's own steps (sums to the progress made). |
+| `rewards` | A copy of the **Primary** one (radio buttons), which Process for DreamerV3 puts in the chunks' `reward`. |
+
+The models use the runs picked on this tab, one inference call per recording. The episode's
+metadata records `reward_primary` and `reward_models` (the run of each model). A Sparsh-skin
+transform that rewrites an episode puts the Manual reward back as primary, so run Process
+reward again afterwards.
+
+## Training
+
+The Reward tab only shows predictions. Train with the comparison script
+([compare.py](../reward_models/compare.py)), or start a `<method>_train` node by hand and send
+it a `TrainReward` goal ([nodes_and_interfaces.md](nodes_and_interfaces.md)).

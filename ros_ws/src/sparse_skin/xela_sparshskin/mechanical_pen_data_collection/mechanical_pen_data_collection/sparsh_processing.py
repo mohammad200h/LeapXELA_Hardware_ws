@@ -25,7 +25,9 @@ at each step, ``LEAP_JOINT_ORDER``), ``flex_taxel_fk/forces_local`` (T, 368, 3) 
 preprocessed Xela counts, ``flex_taxel_fk/positions`` (T, 368, 3), ``rewards`` (T,) (the
 ``rewards`` of ``processing.json``, ``episode_rewards``: ``success`` at the last step of a
 success, ``fail`` at the last step of a failure, ``step`` at every other step; Process reward
-sets them again on the episodes written, ``apply_rewards``), and ``metadata_json`` (``terminated_by_env``: a success, or a failure
+sets them again on the episodes written, ``apply_rewards``; the same values also as
+``rewards/manual``; Process reward with reward models ticked adds ``rewards/<source>`` for each
+and puts the primary one in ``rewards``, ``set_reward_sources``), and ``metadata_json`` (``terminated_by_env``: a success, or a failure
 whose ``terminal`` was marked by hand; not one Process failure added; ``baseline``: the
 baseline file, or "recording"; ``rewards``: the values used; ``resampling``: each stream's
 recorded rate and how it was resampled). An episode already written with another baseline or
@@ -309,17 +311,81 @@ def episode_rewards(label: str | None, steps: int, rewards: dict[str, float]) ->
     return out
 
 
+# Each reward of an episode: ``rewards/<source>`` (``set_reward_sources``); the primary one is
+# also ``rewards``, named by the metadata's ``reward_primary``.
+REWARD_PREFIX = "rewards/"
+MANUAL = "manual"
+REWARD_PRIMARY_KEY = "reward_primary"
+
+
 def set_episode_rewards(path: str, rewards: dict[str, float]) -> str | None:
-    """Sets the rewards of an episode file (and its metadata's ``rewards``) to ``rewards``,
-    unless it has them already. Returns its label."""
+    """Sets the manual rewards of an episode file (``rewards/manual`` and its metadata's
+    ``rewards``) to ``rewards``, and ``rewards`` too while the manual one is its primary
+    reward, unless it has them already. Returns its label."""
     with np.load(path) as data:
         arrays = {k: data[k] for k in data.files}
     metadata = json.loads(str(arrays["metadata_json"]))
-    if metadata.get("rewards") != rewards:
-        arrays["rewards"] = episode_rewards(metadata.get("label"), len(arrays["rewards"]), rewards)
+    manual_key = REWARD_PREFIX + MANUAL
+    if metadata.get("rewards") != rewards or manual_key not in arrays:
+        manual = episode_rewards(metadata.get("label"), len(arrays["rewards"]), rewards)
+        arrays[manual_key] = manual
+        if metadata.get(REWARD_PRIMARY_KEY, MANUAL) == MANUAL:
+            arrays["rewards"] = manual
         metadata["rewards"] = dict(rewards)
         arrays["metadata_json"] = np.array(json.dumps(metadata))
         np.savez_compressed(path, **arrays)
+    return metadata.get("label")
+
+
+def episode_grid(metadata: dict) -> np.ndarray:
+    """The time (s, of the recording) of each step of an episode, from its metadata."""
+    return np.linspace(float(metadata["t_start"]), float(metadata["t_end"]),
+                       int(metadata["steps"]))
+
+
+def model_rewards_on_grid(
+    method: str, grid: np.ndarray, t: np.ndarray, reward: np.ndarray, terms: dict[str, np.ndarray],
+) -> dict[str, np.ndarray]:
+    """A reward model's rewards (from reward_models' inference: per step at times ``t``, at
+    the model's own step rate) at the episode's steps ``grid``, as ``rewards/<name>`` arrays:
+    ``rank2reward`` its reward (a value per state: interpolated); ``sarm`` SARM's progress phi
+    (interpolated) and ``sarm_delta`` phi_t - phi_{t-1} on the grid (0 at the first step), so
+    its sum over the episode stays the progress made whatever the step rate."""
+    t = np.asarray(t, np.float64)
+    if method == "sarm":
+        phi = np.interp(grid, t, np.asarray(terms["progress"], np.float64)).astype(np.float32)
+        delta = np.concatenate([[0.0], np.diff(phi)]).astype(np.float32)
+        return {"sarm": phi, "sarm_delta": delta}
+    return {method: np.interp(grid, t, np.asarray(reward, np.float64)).astype(np.float32)}
+
+
+def set_reward_sources(
+    path: str, rewards: dict[str, float], include: list[str],
+    models: dict[str, np.ndarray], primary: str, sources: dict[str, str],
+) -> str | None:
+    """Process reward with reward models: the rewards of an episode file are ``rewards/<name>``
+    of each source in ``include`` (``manual``: ``rewards``' values; the models' arrays from
+    ``model_rewards_on_grid`` in ``models``), the others removed; ``rewards`` is the one of
+    ``primary``. Its metadata gets ``reward_primary`` and ``reward_models`` ({name: the run
+    used}, ``sources``). Returns its label."""
+    with np.load(path) as data:
+        arrays = {k: data[k] for k in data.files if not k.startswith(REWARD_PREFIX)}
+    metadata = json.loads(str(arrays["metadata_json"]))
+    steps = len(arrays["rewards"])
+    if MANUAL in include:
+        arrays[REWARD_PREFIX + MANUAL] = episode_rewards(metadata.get("label"), steps, rewards)
+    for name, values in models.items():
+        if len(values) != steps:
+            raise ValueError(f"{name} has {len(values)} steps, the episode {steps}")
+        arrays[REWARD_PREFIX + name] = np.asarray(values, np.float32)
+    if REWARD_PREFIX + primary not in arrays:
+        raise ValueError(f"no '{primary}' reward for the primary reward")
+    arrays["rewards"] = arrays[REWARD_PREFIX + primary]
+    metadata["rewards"] = dict(rewards)
+    metadata[REWARD_PRIMARY_KEY] = primary
+    metadata["reward_models"] = dict(sources)
+    arrays["metadata_json"] = np.array(json.dumps(metadata))
+    np.savez_compressed(path, **arrays)
     return metadata.get("label")
 
 
@@ -406,6 +472,7 @@ def transform_recording(
         "forces_local": "Sparsh-skin preprocessed Xela counts (outliers 0, baseline subtracted)",
         "baseline": os.path.abspath(baseline_file) if baseline_file else RECORDING_BASELINE,
         "rewards": rewards,
+        REWARD_PRIMARY_KEY: MANUAL,
         "positions": "FK taxel positions (m), hand base frame",
         "actions": "sim joint targets (rad), last command at each step",
     }
@@ -414,6 +481,7 @@ def transform_recording(
         "flex_taxel_fk/forces_local": forces,
         "flex_taxel_fk/positions": positions.astype(np.float32),
         "rewards": episode_rewards(label.get("label"), len(grid), rewards),
+        REWARD_PREFIX + MANUAL: episode_rewards(label.get("label"), len(grid), rewards),
         "metadata_json": np.array(json.dumps(metadata)),
     }
 

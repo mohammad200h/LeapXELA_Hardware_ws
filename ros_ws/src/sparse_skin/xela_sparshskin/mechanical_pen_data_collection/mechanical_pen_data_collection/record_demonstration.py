@@ -212,8 +212,8 @@ Failure + Processed lists the processed failures); each
 entry shows its mark and [processed] when it is. The picked recording plays back, in the
 bottom two thirds of the middle, as on the Demonstration tab (play bar, plots, camera, FK
 taxels, audio, Stream to sim and its keys but S / F; it is marked and deleted on the
-Demonstration tab); the top third is left empty. Under the play bar, the Reward (Process reward's
-values at the play bar's time: Every step from ``episode_start`` to ``terminal``, Success /
+Demonstration tab); the top third is left empty. Under the play bar, the Reward (the Manual
+reward's values, set on the Reward tab, at the play bar's time: Every step from ``episode_start`` to ``terminal``, Success /
 Fail at ``terminal``) and the Contact and Slip lights show the Compose tab's lights at the play bar's time: the slips are the recording's
 ``meta["slips"]``; the contacts
 (``recorded_contacts``) come from the ``maintain_touch_trace`` / ``click_press_trace`` of each
@@ -255,10 +255,15 @@ SparshSkinTransform) to preprocess every episode as Sparsh-skin does (``sparsh_p
 into ``<recordings>/sparsh_skin/<rate>hz/`` (the Rate dropdown; a folder per rate, so only a
 transform at the same rate overwrites them) for the LEQ_DV3 world model; it runs in the
 background.
-Process reward sets the
-rewards of every episode written (and of those the transform writes, ``processing.json``):
-Success at the last timestep of a success, Fail at the last timestep of a failure, Every step
-at every other timestep. The dropdown next to the transform picks the Baseline tab recording whose no-contact baseline every
+Process reward writes the rewards ticked next to it (Store: Manual, Rank2Reward,
+SARM, saved in ``processing.json``) into every episode written (``set_reward_sources``), each as
+``rewards/<name>``: Manual (the Reward tab's fields: Success at the last timestep of a success,
+Fail at the last timestep of a failure, Every step at every other timestep; the transform
+writes it too), Rank2Reward and SARM (progress, and its delta as ``rewards/sarm_delta``) from
+reward_models' inference services with the run picked on the Reward tab, interpolated onto
+the episode's steps, in the background. The Primary radio picks the one also written as
+``rewards``, which Process for DreamerV3 uses (an episode the transform writes again has the
+Manual one until Process reward runs again). The dropdown next to the transform picks the Baseline tab recording whose no-contact baseline every
 episode uses (remembered; the newest until one is picked), tagged ``[Sparsh-skin]`` in the
 dropdown and in the Baseline tab's list (whose Use for Sparsh-skin picks it too).
 Process for DreamerV3 (the progress bar under it follows every Automation run) converts those episodes into DreamerV3 replay
@@ -307,21 +312,19 @@ taxel's Xela reading and temperature and the commands to
 ``<demo_dir>/body_learning/<mode>/<mode>_<time>.npz`` (listed in the tab, not with the
 Demonstration tab's recordings; also saved when stopped), which then counts as explored.
 
-Reward Design tab: the rewards for learning the pen click, in three sub-tabs: Manual (hand-weighted
-terms from the click detector, fingertip forces, slips and the recordings' labels; not
-implemented yet, ``reward_design_plan.md``), Reward2Rank (a progress reward ranked from the
-demonstrations' Sparsh-skin episodes, Rank2Reward) and Coupled Local Global RL (the global and
-local reward models of coupled world models), both learning from the Sparsh-skin episodes'
-``flex_taxel_fk`` forces_local and positions only, the last two with their paper. Each learned reward has
-a Train tab, sending the settings (recordings, epochs, batch size, learning rate, validation
-share, step rate, seed, W&B project and name) as a goal to the ``reward_models``
-package's ``/<method>_train/train`` action (started with the app by
-``launch_record_demonstration.py``, ``reward_models`` argument) and plotting its feedback (progress, loss and validation metric per
-epoch; Cancel keeps the best epoch so far), and a Visualize tab: the runs in
-``<recordings>/reward_models/<method>/``, any of a run's logged metrics (``metrics.jsonl``,
-the same as on W&B) over its steps, the mean reward of each validation recording at the best
-epoch (success / failure; pick one to plot its reward and terms over time) and the reward of
-any recording from ``/<method>_inference/evaluate``.
+Reward tab: plays back the Play on hand recordings like the Demonstration tab (the same list,
+keys, camera, FK taxels, audio and Stream to sim), with the rewards in the middle instead of the
+joints: the Manual reward with its fields above it (Success / Fail / Every step, saved in
+``processing.json`` and used by the Processing tab's Process reward: Every step from
+``episode_start`` to ``terminal``, Success or Fail at ``terminal``), a Rank2Reward graph
+(reward, progress, discriminator) and a SARM graph (progress and reward, its predicted task
+stages grip / press / click shaded on the graph and on the play bar), each for the trained run
+picked above it (the ``reward_models`` runs and the comparison runs
+``<recordings>/reward_models/comparison/*/runs/<method>_<modality>_s<seed>``; default the
+newest comparison's sparsh seed 0; Process reward uses the same runs). They come from the
+``reward_models`` package's ``/rank2reward_inference/evaluate`` and ``/sarm_inference/evaluate``
+services (started with the app by ``launch_record_demonstration.py``, ``reward_models``
+argument) over the recording's Sparsh-skin episode, so only processed recordings have them.
 
 Settings tab: the folder takes are saved into (``demo_dir``, can be changed while running), the
 command rate, playback ramp and free-finger deadband used while fingers are
@@ -398,11 +401,9 @@ os.environ.pop("QT_QPA_FONTDIR", None)
 import rclpy
 from rcl_interfaces.msg import Parameter, ParameterType, ParameterValue
 from rcl_interfaces.srv import GetParameters, SetParametersAtomically
-from rclpy.action import ActionClient
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
-from leapxela_sparshskin_msgs.action import TrainReward
 from leapxela_sparshskin_msgs.srv import (
     DetectClicks, EvaluateReward, PlanHandPose, SamplePlayChunk, SparshSkinTransform,
 )
@@ -624,8 +625,8 @@ SAM_LABEL_COLOR = (255, 255, 255)
 SIM_WINDOW_TITLE = "MuJoCo: LEAP Xela"
 # How long (s) after start the GUI looks for that window to bring it to the front.
 SIM_WINDOW_WAIT_S = 30
-# reward_models' learned rewards (Reward Design tab): <method>_train / <method>_inference.
-REWARD_METHODS = ("rank2reward", "coupled_local_global")
+# reward_models' learned rewards shown on the Reward tab: /<method>_inference/evaluate.
+REWARD_METHODS = ("rank2reward", "sarm")
 # Median recorded pen box drawn on the live camera.
 RECORDED_POSE_COLOR = (255, 255, 0)
 # Fingertip patch of each finger in ``taxel_fk_util.XELA_FLATTEN_ORDER``.
@@ -1171,11 +1172,7 @@ class LeapStateListener(Node):
             "play_policy_service", "/play_policy_node/sample"
         ).value
         self._play_policy = self.create_client(SamplePlayChunk, self.play_policy_service)
-        # reward_models' training actions and inference services, by method (Reward Design tab).
-        self.reward_train = {
-            method: ActionClient(self, TrainReward, f"/{method}_train/train")
-            for method in REWARD_METHODS
-        }
+        # reward_models' inference services, by method (Reward tab).
         self.reward_evaluate = {
             method: self.create_client(EvaluateReward, f"/{method}_inference/evaluate")
             for method in REWARD_METHODS
@@ -1432,6 +1429,24 @@ class LeapStateListener(Node):
         response = future.result()
         if not response.success:
             raise RuntimeError(f"{self.sparsh_transform_service}: {response.message}")
+        return response
+
+    def evaluate_reward(self, method: str, run_dir: str, recording: str,
+                        timeout: float = 300.0):
+        """reward_models' ``/<method>_inference/evaluate`` of ``recording`` with the run
+        ``run_dir``; waits for the answer, so it is not called on the executor's thread.
+        Raises if the service is not running, does not answer in ``timeout`` s or fails."""
+        client = self.reward_evaluate[method]
+        if not client.service_is_ready():
+            raise RuntimeError(f"{method}_inference is not running")
+        answered = threading.Event()
+        future = client.call_async(EvaluateReward.Request(run_dir=run_dir, recording=recording))
+        future.add_done_callback(lambda _: answered.set())
+        if not answered.wait(timeout):
+            raise RuntimeError(f"{method}_inference did not answer in {timeout:g} s")
+        response = future.result()
+        if not response.success:
+            raise RuntimeError(f"{method}: {response.message}")
         return response
 
     def get_hand_params(self, names: list[str], done) -> None:
@@ -9375,7 +9390,12 @@ class ProcessingTab(DemonstrationTab):
         self._click_signals = ClickProcessSignals()
         self._sparsh_thread: threading.Thread | None = None  # Sparsh-skin transform, running
         self._sparsh_signals = ClickProcessSignals()
+        self._reward_thread: threading.Thread | None = None  # Process reward, while it runs
+        self._reward_signals = ClickProcessSignals()
         super().__init__(node, store)
+        self._reward_signals.step.connect(self._bar_step)
+        self._reward_signals.progress.connect(self.process_status.setText)
+        self._reward_signals.done.connect(self._process_reward_done)
         self._click_signals.progress.connect(self.process_status.setText)
         self._click_signals.step.connect(self._bar_step)
         self._click_signals.done.connect(self._process_click_done)
@@ -9580,31 +9600,48 @@ class ProcessingTab(DemonstrationTab):
         self.process_failure_btn.clicked.connect(self._process_failure)
         self.process_reward_btn = QtWidgets.QPushButton("Process reward")
         self.process_reward_btn.setToolTip(
-            "Set the rewards of every episode in "
+            "Write the ticked rewards into every episode in "
             f"{sparsh_processing.DEFAULT_OUTPUT_NAME}/ (every rate's folder; Sparsh-skin "
-            "transform): Success at the "
-            "last timestep of a success, Fail at the last timestep of a failure, Every step at "
-            "every other timestep. The Sparsh-skin transform uses them too."
+            "transform), each as rewards/<name>, and the Primary one as rewards (what Process "
+            "for DreamerV3 uses). Manual: the Reward tab's Success / Fail / Every step. "
+            "Rank2Reward / SARM: the run picked on the Reward tab, from reward_models' "
+            "inference services (SARM: progress, and its delta as rewards/sarm_delta)"
         )
         self.process_reward_btn.clicked.connect(self._process_reward)
-        saved_rewards = episode_processing.load_rewards(self.store.compose_playback_dir)
-        self.reward_spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
+        self._manual_rewards = episode_processing.load_rewards(self.store.compose_playback_dir)
+        sources = episode_processing.load_reward_sources(self.store.compose_playback_dir)
+        self.reward_source_checks: dict[str, QtWidgets.QCheckBox] = {}
+        self.reward_primary_radios: dict[str, QtWidgets.QRadioButton] = {}
+        self._primary_group = QtWidgets.QButtonGroup(self)
         reward_row = QtWidgets.QHBoxLayout()
         reward_row.addWidget(self.process_reward_btn)
-        for key, text, tip in (
-            ("success", "Success:", "Reward at the last timestep of a successful episode"),
-            ("fail", "Fail:", "Reward at the last timestep of a failed episode"),
-            ("step", "Every step:", "Reward at every other timestep"),
-        ):
-            spin = double_spin(
-                -1e6, 1e6, 0.1, 3, "",
-                f"{tip} (saved with the recordings in {episode_processing.SETTINGS_NAME})",
+        reward_row.addWidget(QtWidgets.QLabel("Store:"))
+        for source in episode_processing.REWARD_SOURCES:
+            check = QtWidgets.QCheckBox(REWARD_SOURCE_TEXT[source])
+            check.setChecked(source in sources["include"])
+            check.setToolTip(
+                f"Write the {REWARD_SOURCE_TEXT[source]} reward into the episodes as "
+                f"rewards/{source}" + (" (and rewards/sarm_delta)" if source == "sarm" else "")
             )
-            spin.setValue(saved_rewards[key])
-            spin.valueChanged.connect(lambda _: (self._save_rewards(), self._show_reward()))
-            self.reward_spins[key] = spin
-            reward_row.addWidget(QtWidgets.QLabel(text))
-            reward_row.addWidget(spin)
+            check.toggled.connect(lambda _, src=source: self._reward_sources_changed(src))
+            self.reward_source_checks[source] = check
+            reward_row.addWidget(check)
+        reward_row.addSpacing(12)
+        reward_row.addWidget(QtWidgets.QLabel("Primary:"))
+        for source in episode_processing.REWARD_SOURCES:
+            radio = QtWidgets.QRadioButton(REWARD_SOURCE_TEXT[source])
+            radio.setChecked(source == sources["primary"])
+            radio.setToolTip(
+                f"The episodes' rewards (and the DreamerV3 chunks' reward) are the "
+                f"{REWARD_SOURCE_TEXT[source]} reward" + (" (its progress)" if source == "sarm"
+                                                          else "")
+            )
+            radio.toggled.connect(lambda on: on and self._reward_sources_changed())
+            self._primary_group.addButton(radio)
+            self.reward_primary_radios[source] = radio
+            reward_row.addWidget(radio)
+        reward_row.addStretch(1)
+        self._reward_sources_changed()
         self.sparsh_transform_btn = QtWidgets.QPushButton("Sparsh-skin transform")
         self.sparsh_transform_btn.setToolTip(
             "Preprocess every episode ('episode_start' to 'terminal' of a success / failure) as "
@@ -10098,7 +10135,7 @@ class ProcessingTab(DemonstrationTab):
 
     def _show_reward(self) -> None:
         """The reward at the play bar's time."""
-        if not hasattr(self, "reward_spins"):  # built after the player
+        if not hasattr(self, "_manual_rewards"):  # built after the player
             return
         span = self._reward_span
         if span is None:
@@ -10274,28 +10311,49 @@ class ProcessingTab(DemonstrationTab):
         self.process_bar.setFormat(f"{self._bar_name} finished: %v / %m {self._bar_unit}")
 
     def _rewards(self) -> dict[str, float]:
-        return {key: spin.value() for key, spin in self.reward_spins.items()}
+        """The manual rewards (set on the Reward tab, saved in ``processing.json``)."""
+        return self._manual_rewards
 
-    def _save_rewards(self) -> None:
+    def _reward_sources_changed(self, toggled: str | None = None) -> None:
+        """Keeps one reward ticked and the Primary one among the ticked (only those can be
+        picked), and saves them."""
+        checks, radios = self.reward_source_checks, self.reward_primary_radios
+        ticked = [s for s, check in checks.items() if check.isChecked()]
+        if not ticked and toggled is not None:
+            checks[toggled].blockSignals(True)
+            checks[toggled].setChecked(True)  # at least one reward
+            checks[toggled].blockSignals(False)
+            ticked = [toggled]
+        for source, radio in radios.items():
+            radio.setEnabled(source in ticked)
+        primary = next((s for s, r in radios.items() if r.isChecked()), None)
+        if primary not in ticked:
+            radios[ticked[0]].setChecked(True)  # calls this again
+            return
         try:
-            episode_processing.save_rewards(self.store.compose_playback_dir, self._rewards())
+            episode_processing.save_reward_sources(
+                self.store.compose_playback_dir, ticked, primary
+            )
         except OSError as e:
-            self.process_status.setText(f"Could not save the rewards: {e}")
+            self.process_status.setText(f"Could not save the reward choice: {e}")
 
     def _process_reward(self) -> None:
-        """Sets the rewards of every Sparsh-skin episode (``sparsh_processing.apply_rewards``)."""
+        """Writes the ticked rewards into every Sparsh-skin episode, in the background
+        (``sparsh_processing.set_reward_sources``; the reward models' through
+        ``LeapStateListener.evaluate_reward``, one call per recording and model)."""
         self._migrate_flat_outputs()
         folders = list(sparsh_processing.rate_dirs(self.store.compose_playback_dir).values())
         out_dir = os.path.join(
             self.store.compose_playback_dir, sparsh_processing.DEFAULT_OUTPUT_NAME
         )
-        names = [n for folder in folders for n in os.listdir(folder)
+        paths = [os.path.join(folder, n) for folder in folders
+                 for n in sorted(os.listdir(folder))
                  if n.startswith(sparsh_processing.EPISODE_PREFIX) and n.endswith(".npz")]
-        if not names:
+        if not paths:
             QtWidgets.QMessageBox.information(
                 self, "Process reward",
-                f"No episodes in {out_dir}: run the Sparsh-skin transform first (it uses these "
-                "rewards too).",
+                f"No episodes in {out_dir}: run the Sparsh-skin transform first (it uses the "
+                "manual rewards too).",
             )
             return
         if self._sparsh_thread is not None and self._sparsh_thread.is_alive():
@@ -10303,47 +10361,115 @@ class ProcessingTab(DemonstrationTab):
                 self, "Process reward", "Wait for the Sparsh-skin transform to finish."
             )
             return
-        rewards = self._rewards()
+        self._manual_rewards = episode_processing.load_rewards(self.store.compose_playback_dir)
+        rewards = dict(self._manual_rewards)
+        include = [s for s, c in self.reward_source_checks.items() if c.isChecked()]
+        primary = next(s for s, r in self.reward_primary_radios.items() if r.isChecked())
+        models = [s for s in include if s != sparsh_processing.MANUAL]
+        settings = QtCore.QSettings(PACKAGE_NAME, "record_demonstration")
+        runs = {m: picked_reward_run(self.store, m, settings) for m in models}
+        missing = [REWARD_SOURCE_TEXT[m] for m, run in runs.items() if not run]
+        if missing:
+            QtWidgets.QMessageBox.warning(
+                self, "Process reward", f"No trained run for {', '.join(missing)}."
+            )
+            return
+        down = [f"{m}_inference" for m in models
+                if not self.node.reward_evaluate[m].service_is_ready()]
+        if down:
+            QtWidgets.QMessageBox.warning(
+                self, "Process reward",
+                f"{', '.join(down)} not running (launch_record_demonstration.py starts the "
+                "reward models unless reward_models:=false).",
+            )
+            return
+        lines = []
+        for source in include:
+            if source == sparsh_processing.MANUAL:
+                lines.append(
+                    f"Manual: {rewards['success']:g} at the last timestep of a success, "
+                    f"{rewards['fail']:g} of a failure, {rewards['step']:g} at every other one"
+                )
+            else:
+                lines.append(f"{REWARD_SOURCE_TEXT[source]}: run {runs[source]}")
         answer = QtWidgets.QMessageBox.question(
             self, "Process reward",
-            f"Set the rewards of {len(names)} episodes in {out_dir} (every rate: "
-            f"{', '.join(os.path.basename(f) for f in folders)}): {rewards['success']:g} at "
-            f"the last timestep of a success, {rewards['fail']:g} at the last timestep of a "
-            f"failure, {rewards['step']:g} at every other timestep?",
+            f"Write these rewards into {len(paths)} episodes in {out_dir} (every rate: "
+            f"{', '.join(os.path.basename(f) for f in folders)})?\n\n" + "\n".join(lines)
+            + f"\n\nPrimary (rewards, used by Process for DreamerV3): "
+            f"{REWARD_SOURCE_TEXT[primary]}" + (" progress" if primary == "sarm" else "")
+            + ("\n\nThe reward models run once per recording (a few minutes for all of them)."
+               if models else ""),
         )
         if answer != QtWidgets.QMessageBox.Yes:
             return
-        self._save_rewards()
         self.process_reward_btn.setEnabled(False)
-        self._bar_start("Process reward", len(names), "episodes")
+        self._bar_start("Process reward", len(paths), "episodes")
+        self.process_status.setText(f"Process reward: {len(paths)} episodes…")
+        signals, node = self._reward_signals, self.node
 
-        def step(done: int, total: int) -> None:
-            self._bar_step(done, total)
-            QtWidgets.QApplication.processEvents()  # runs in the GUI thread: draw the bar
-
-        counts = {SUCCESS: 0, FAILURE: 0, "failed": 0}
-        done_before = 0
-        try:
-            for folder in folders:
-                total = sparsh_processing.count_episodes(folder)
-                part = sparsh_processing.apply_rewards(
-                    folder, rewards,
-                    lambda i, _n, before=done_before: step(before + i, len(names)),
-                )
-                done_before += total
-                for key in counts:
-                    counts[key] += part[key]
-        except OSError as e:
-            self.process_status.setText(f"Process reward failed: {e}")
-        else:
-            self.process_status.setText(
-                f"Process reward: {counts[SUCCESS]} successes ({rewards['success']:g} at the "
-                f"end), {counts[FAILURE]} failures ({rewards['fail']:g} at the end), "
-                f"{rewards['step']:g} at every other step"
-                + (f" · {counts['failed']} episodes could not be rewritten"
-                   if counts["failed"] else "")
+        def run() -> None:
+            counts = {SUCCESS: 0, FAILURE: 0, "failed": 0}
+            errors: dict[str, str] = {}
+            answers: dict[tuple[str, str], object] = {}  # (model, recording) -> response
+            for i, path in enumerate(paths, start=1):
+                name = os.path.basename(path)
+                try:
+                    metadata = sparsh_processing.episode_metadata(path)
+                    grid = sparsh_processing.episode_grid(metadata)
+                    arrays: dict[str, np.ndarray] = {}
+                    for model in models:
+                        key = (model, metadata["source"])
+                        if key not in answers:
+                            signals.progress.emit(
+                                f"Process reward: {REWARD_SOURCE_TEXT[model]} of "
+                                f"{os.path.basename(metadata['source'])} ({i}/{len(paths)})"
+                            )
+                            try:
+                                answers[key] = node.evaluate_reward(
+                                    model, runs[model], metadata["source"]
+                                )
+                            except Exception as e:  # noqa: BLE001 - kept for each episode
+                                answers[key] = e
+                        response = answers[key]
+                        if isinstance(response, Exception):
+                            raise response
+                        terms = np.asarray(response.terms, np.float64).reshape(
+                            len(response.term_names), -1
+                        )
+                        arrays.update(sparsh_processing.model_rewards_on_grid(
+                            model, grid, np.asarray(response.t), np.asarray(response.reward),
+                            dict(zip(response.term_names, terms)),
+                        ))
+                    label = sparsh_processing.set_reward_sources(
+                        path, rewards, include, arrays, primary, runs
+                    )
+                    counts[SUCCESS if label == SUCCESS else FAILURE] += 1
+                except Exception as e:  # noqa: BLE001 - one bad episode does not stop it
+                    counts["failed"] += 1
+                    errors[name] = str(e)
+                signals.step.emit(i, len(paths))
+            text = (
+                f"Process reward ({', '.join(REWARD_SOURCE_TEXT[s] for s in include)}; primary "
+                f"{REWARD_SOURCE_TEXT[primary]}): {counts[SUCCESS]} successes, "
+                f"{counts[FAILURE]} failures written"
             )
+            if errors:
+                first = next(iter(errors.items()))
+                text += (f" · {counts['failed']} episodes left as they were (e.g. {first[0]}: "
+                         f"{first[1]})")
+                node.get_logger().warn(
+                    "Process reward: not written: "
+                    + "; ".join(f"{k}: {v}" for k, v in errors.items())
+                )
+            signals.done.emit(text)
+
+        self._reward_thread = threading.Thread(target=run, daemon=True)
+        self._reward_thread.start()
+
+    def _process_reward_done(self, text: str) -> None:
         self._bar_end()
+        self.process_status.setText(text)
         self.process_reward_btn.setEnabled(True)
 
     def _process_dv3(self) -> None:
@@ -10568,6 +10694,9 @@ class ProcessingTab(DemonstrationTab):
 
     def showEvent(self, ev) -> None:
         super().showEvent(ev)
+        # Set on the Reward tab: read again when this tab is shown.
+        self._manual_rewards = episode_processing.load_rewards(self.store.compose_playback_dir)
+        self._show_reward()
         self._refresh_sparsh_baselines()
         self._migrate_flat_outputs()
         if self._sparsh_rates is None:
@@ -14265,616 +14394,409 @@ class SelfPlayTab(QtWidgets.QWidget):
                 if self._seg["chunks"] else ""))
 
 
-class RewardTrainSignals(QtCore.QObject):
-    """From the executor thread to the Train panel."""
-
-    feedback = QtCore.pyqtSignal(object)  # TrainReward.Feedback
-    done = QtCore.pyqtSignal(object)  # dict: success, message, run_dir, wandb_url, ...
-
-
-class RewardTrainPanel(QtWidgets.QWidget):
-    """Train tab of a learned reward (on the recordings' Sparsh-skin episodes): the run's
-    settings, Train (Cancel while it runs), sent as a goal to reward_models' ``/<method>_train/train`` action; its feedback drives the
-    progress bar and plots the train / validation loss and the validation metric per epoch."""
-
-    trained = QtCore.pyqtSignal(str)  # run folder of a run that finished
-
-    def __init__(self, node: LeapStateListener, store: TakeStore, method: str) -> None:
-        super().__init__()
-        self.node = node
-        self.store = store
-        self.method = method
-        self._goal = None  # ClientGoalHandle while training
-        self._epochs: list[tuple[int, float, float, float]] = []
-        self._signals = RewardTrainSignals()
-        self._signals.feedback.connect(self._on_feedback)
-        self._signals.done.connect(self._on_done)
-
-        self.recordings = QtWidgets.QLineEdit(store.compose_playback_dir)
-        self.recordings.setToolTip("Play on hand recordings to train on (labelled episodes)")
-        browse = QtWidgets.QPushButton("Browse")
-        browse.clicked.connect(self._browse)
-        rec_row = QtWidgets.QHBoxLayout()
-        rec_row.addWidget(self.recordings, 1)
-        rec_row.addWidget(browse)
-        self.output = QtWidgets.QLineEdit()
-        self.output.setPlaceholderText(f"<recordings>/reward_models/{method}")
-        self.epochs = self._spin(1, 100000, 30)
-        self.batch = self._spin(4, 4096, 64)
-        self.lr = QtWidgets.QDoubleSpinBox()
-        self.lr.setDecimals(6)
-        self.lr.setRange(1e-6, 1.0)
-        self.lr.setSingleStep(1e-4)
-        self.lr.setValue(3e-4)
-        self.val_fraction = QtWidgets.QDoubleSpinBox()
-        self.val_fraction.setRange(0.05, 0.9)
-        self.val_fraction.setSingleStep(0.05)
-        self.val_fraction.setValue(0.2)
-        self.step_hz = QtWidgets.QDoubleSpinBox()
-        self.step_hz.setRange(1.0, 100.0)
-        self.step_hz.setDecimals(1)
-        self.step_hz.setSuffix(" Hz")
-        self.step_hz.setValue(25.0)
-        self.step_hz.setToolTip(
-            "The Sparsh-skin episodes (at their own rate, the Processing tab's Rate, 100 Hz by "
-            "default) are taken at this rate: every episode rate / rate steps, and the "
-            "terminal step"
-        )
-        self.episode_hz = QtWidgets.QComboBox()
-        self.episode_hz.setToolTip(
-            "Which Sparsh-skin episodes to train on: those processed at this rate (the "
-            f"Processing tab's Rate, {sparsh_processing.DEFAULT_OUTPUT_NAME}/<rate>hz/). The "
-            "run's name and config record it, to compare runs across rates."
-        )
-        self.recordings.editingFinished.connect(self._refresh_episode_rates)
-        self.seed = self._spin(0, 1000000, 0)
-        self.wandb = QtWidgets.QCheckBox("Log to Weights && Biases")
-        self.wandb.setChecked(True)
-        self.wandb_project = QtWidgets.QLineEdit("reward_models")
-        self.wandb_name = QtWidgets.QLineEdit()
-        self.wandb_name.setPlaceholderText(f"{method}_<rate>hz_<time>")
-        form = QtWidgets.QFormLayout()
-        form.addRow("Recordings", rec_row)
-        form.addRow("Output folder", self.output)
-        form.addRow("Epochs", self.epochs)
-        form.addRow("Batch size", self.batch)
-        form.addRow("Learning rate", self.lr)
-        form.addRow("Validation share", self.val_fraction)
-        form.addRow("Episode rate", self.episode_hz)
-        form.addRow("Step rate", self.step_hz)
-        form.addRow("Seed", self.seed)
-        form.addRow("", self.wandb)
-        form.addRow("W&B project", self.wandb_project)
-        form.addRow("W&B run name", self.wandb_name)
-
-        self.train_btn = QtWidgets.QPushButton("Train")
-        self.train_btn.clicked.connect(self._train_or_cancel)
-        self.progress = QtWidgets.QProgressBar()
-        self.progress.setRange(0, 1000)
-        self.progress.setTextVisible(False)
-        self.status = QtWidgets.QLabel(
-            f"Trains with <code>{method}_train</code> (started by launch_record_demonstration.py)"
-        )
-        self.status.setWordWrap(True)
-        self.link = QtWidgets.QLabel()
-        self.link.setOpenExternalLinks(True)
-        left = QtWidgets.QVBoxLayout()
-        left.addLayout(form)
-        left.addWidget(self.train_btn)
-        left.addWidget(self.progress)
-        left.addWidget(self.status)
-        left.addWidget(self.link)
-        left.addStretch(1)
-        left_w = QtWidgets.QWidget()
-        left_w.setLayout(left)
-        left_w.setMaximumWidth(460)
-
-        self.loss_plot = pg.PlotWidget(title="Loss per epoch")
-        self.loss_plot.addLegend(offset=(5, 5))
-        self.loss_plot.setLabel("bottom", "epoch")
-        self.loss_plot.showGrid(x=True, y=True, alpha=0.3)
-        self.train_curve = self.loss_plot.plot(pen=pg.mkPen((52, 152, 219), width=2), symbol="o",
-                                               symbolSize=5, name="train")
-        self.val_curve = self.loss_plot.plot(pen=pg.mkPen((230, 126, 34), width=2), symbol="o",
-                                             symbolSize=5, name="validation")
-        self.metric_plot = pg.PlotWidget(title="Validation metric")
-        self.metric_plot.setLabel("bottom", "epoch")
-        self.metric_plot.showGrid(x=True, y=True, alpha=0.3)
-        self.metric_curve = self.metric_plot.plot(pen=pg.mkPen((46, 204, 113), width=2),
-                                                  symbol="o", symbolSize=5)
-        plots = QtWidgets.QVBoxLayout()
-        plots.addWidget(self.loss_plot, 1)
-        plots.addWidget(self.metric_plot, 1)
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.addWidget(left_w)
-        layout.addLayout(plots, 1)
-
-    @staticmethod
-    def _spin(low: int, high: int, value: int) -> QtWidgets.QSpinBox:
-        box = QtWidgets.QSpinBox()
-        box.setRange(low, high)
-        box.setValue(value)
-        return box
-
-    def _browse(self) -> None:
-        path = QtWidgets.QFileDialog.getExistingDirectory(
-            self, "Recordings", self.recordings.text()
-        )
-        if path:
-            self.recordings.setText(path)
-            self._refresh_episode_rates()
-
-    def showEvent(self, ev) -> None:
-        super().showEvent(ev)
-        self._refresh_episode_rates()
-
-    def _refresh_episode_rates(self) -> None:
-        """Lists the rates processed for the recordings (their sparsh_skin/<rate>hz/ folders),
-        keeping the one picked."""
-        picked = self.episode_hz.currentData()
-        self.episode_hz.clear()
-        folders = sparsh_processing.rate_dirs(self.recordings.text().strip())
-        for hz, folder in folders.items():
-            self.episode_hz.addItem(
-                f"{hz:g} Hz ({sparsh_processing.count_episodes(folder)} episodes)", hz
-            )
-        if not folders:
-            self.episode_hz.addItem("None processed: run the Sparsh-skin transform", None)
-        index = self.episode_hz.findData(picked)
-        self.episode_hz.setCurrentIndex(index if index >= 0 else 0)
-
-    @property
-    def training(self) -> bool:
-        return self._goal is not None
-
-    def _train_or_cancel(self) -> None:
-        if self._goal is not None:
-            self._goal.cancel_goal_async()
-            self.status.setText("Cancelling after the current step…")
-            return
-        client = self.node.reward_train[self.method]
-        if not client.server_is_ready():
-            self.status.setText(
-                f"<b>{self.method}_train is not running</b> (launch_record_demonstration.py "
-                "starts it unless reward_models:=false)"
-            )
-            return
-        episode_hz = self.episode_hz.currentData()
-        if not episode_hz:
-            self.status.setText(
-                "<b>No Sparsh-skin episodes</b>: run the Processing tab's Sparsh-skin transform "
-                "first (its Rate is the episode rate)"
-            )
-            return
-        goal = TrainReward.Goal(
-            recordings_dir=self.recordings.text().strip(),
-            episode_hz=float(episode_hz),
-            output_dir=self.output.text().strip(),
-            epochs=self.epochs.value(), batch_size=self.batch.value(),
-            learning_rate=float(self.lr.value()), val_fraction=float(self.val_fraction.value()),
-            step_hz=float(self.step_hz.value()),
-            seed=self.seed.value(), wandb=self.wandb.isChecked(),
-            wandb_project=self.wandb_project.text().strip(),
-            wandb_name=self.wandb_name.text().strip(),
-        )
-        self._epochs = []
-        self._redraw()
-        self.progress.setValue(0)
-        self.link.clear()
-        self.status.setText("Sending the goal…")
-        self.train_btn.setText("Cancel")
-        self._goal = True  # until the server accepts it
-        future = client.send_goal_async(
-            goal, feedback_callback=lambda msg: self._signals.feedback.emit(msg.feedback)
-        )
-        future.add_done_callback(self._on_goal_response)
-
-    def _on_goal_response(self, future) -> None:  # executor thread
-        try:
-            handle = future.result()
-        except Exception as e:  # noqa: BLE001
-            self._signals.done.emit({"success": False, "message": f"goal failed: {e}"})
-            return
-        if not handle.accepted:
-            self._signals.done.emit({"success": False,
-                                     "message": "rejected: the node is already training"})
-            return
-        self._goal = handle
-        handle.get_result_async().add_done_callback(self._on_result)
-
-    def _on_result(self, future) -> None:  # executor thread
-        try:
-            r = future.result().result
-            out = {"success": r.success, "message": r.message, "run_dir": r.run_dir,
-                   "wandb_url": r.wandb_url}
-        except Exception as e:  # noqa: BLE001
-            out = {"success": False, "message": str(e)}
-        self._signals.done.emit(out)
-
-    def _on_feedback(self, fb) -> None:
-        self.progress.setValue(int(1000 * fb.progress))
-        self.status.setText(f"<b>{fb.stage}</b> · {fb.status}")
-        if fb.stage == "training" and fb.epoch > 0 and (
-            not self._epochs or fb.epoch > self._epochs[-1][0]
-        ):
-            self._epochs.append((fb.epoch, fb.train_loss, fb.val_loss, fb.val_metric))
-            self.metric_plot.setTitle(f"Validation metric: {fb.val_metric_name}")
-            self._redraw()
-
-    def _redraw(self) -> None:
-        e = np.array(self._epochs, float).reshape(-1, 4)
-        self.train_curve.setData(e[:, 0], e[:, 1])
-        self.val_curve.setData(e[:, 0], np.nan_to_num(e[:, 2]))
-        self.metric_curve.setData(e[:, 0], np.nan_to_num(e[:, 3]))
-
-    def _on_done(self, out: dict) -> None:
-        self._goal = None
-        self.train_btn.setText("Train")
-        ok = out.get("success")
-        if ok:
-            self.progress.setValue(1000)
-        self.status.setText(("<b>Done.</b> " if ok else "<b>Stopped.</b> ") + out.get("message", ""))
-        url = out.get("wandb_url")
-        if url:
-            self.link.setText(f"W&amp;B run: <a href='{url}'>{url}</a>")
-        if out.get("run_dir"):
-            self.trained.emit(out["run_dir"])
-
-
 class RewardEvalSignals(QtCore.QObject):
-    evaluated = QtCore.pyqtSignal(object)  # EvaluateReward.Response or Exception
+    """From the executor thread to a Reward tab graph: (run_dir, recording, the
+    EvaluateReward.Response or the Exception)."""
+
+    evaluated = QtCore.pyqtSignal(str, str, object)
 
 
-class RewardVisualizePanel(QtWidgets.QWidget):
-    """Visualize tab of a learned reward: pick a training run (``<recordings>/reward_models/
-    <method>/<run>``) to plot any of its logged metrics (``metrics.jsonl``) over the training
-    steps, the mean reward of each validation recording at its best epoch (``eval.json``,
-    success green, failure red; pick one to plot its reward and terms over time), and the
-    reward of any recording computed by reward_models' ``/<method>_inference/evaluate``."""
+# The Reward tab's graphs: (method, title) of each reward model's ``/<method>_inference``.
+REWARD_PLOTS = (("rank2reward", "Rank2Reward"), ("sarm", "SARM"))
+# reward_models.sarm.STAGE_NAMES (copied: the GUI does not import torch) and their colours.
+SARM_STAGE_NAMES = ("grip", "press", "click")
+SARM_STAGE_COLORS = ("#42a5f5", "#ffa726", "#66bb6a")
+SARM_STAGE_ALPHA = 50  # of the stage regions on the SARM graph
+REWARD_TERM_COLORS = ((52, 152, 219), (230, 126, 34), (155, 89, 182), (26, 188, 156))
+# The rewards Process reward can write (``episode_processing.REWARD_SOURCES``), as shown.
+REWARD_SOURCE_TEXT = {"manual": "Manual", "rank2reward": "Rank2Reward", "sarm": "SARM"}
+# The Manual reward's fields: (key, label, tooltip).
+MANUAL_REWARD_FIELDS = (
+    ("success", "Success:", "Reward at the last timestep of a successful episode"),
+    ("fail", "Fail:", "Reward at the last timestep of a failed episode"),
+    ("step", "Every step:", "Reward at every other timestep"),
+)
 
-    _DEFAULT_METRICS = ("train/loss", "val/rank_acc", "val/return_auc_global", "val/return_auc")
-    _TERM_COLORS = ((52, 152, 219), (230, 126, 34), (155, 89, 182), (26, 188, 156))
 
-    def __init__(self, node: LeapStateListener, store: TakeStore, method: str) -> None:
+def stage_segments(t: np.ndarray, stage: np.ndarray) -> list[tuple[float, float, int]]:
+    """(start, end, stage) of each run of steps with the same predicted SARM stage; a run ends
+    where the next one starts (the last at the last step)."""
+    t, stage = np.asarray(t, float), np.asarray(stage).round().astype(int)
+    if not len(t):
+        return []
+    starts = np.concatenate([[0], np.flatnonzero(np.diff(stage)) + 1])
+    ends = np.concatenate([starts[1:], [len(t) - 1]])
+    return [(float(t[a]), float(t[b]), int(stage[a])) for a, b in zip(starts, ends)]
+
+
+def reward_runs(store: TakeStore, method: str) -> list[tuple[str, str]]:
+    """(name, run_dir) of the trained runs of ``method`` (holding ``model.pt``): the
+    reward_models runs ``<recordings>/reward_models/<method>/<run>`` and the comparison runs
+    ``<recordings>/reward_models/comparison/<comparison>/runs/<method>_<modality>_s<seed>``,
+    newest comparison first, then the newest run first."""
+    root = os.path.join(store.compose_playback_dir, "reward_models")
+    runs: list[tuple[str, str]] = []
+    pattern = re.compile(rf"^{re.escape(method)}_(sparsh|proprio)_s\d+$")
+    comparisons = os.path.join(root, "comparison")
+    if os.path.isdir(comparisons):
+        for comparison in sorted(os.listdir(comparisons), reverse=True):
+            folder = os.path.join(comparisons, comparison, "runs")
+            if not os.path.isdir(folder):
+                continue
+            for name in sorted(os.listdir(folder)):
+                run = os.path.join(folder, name)
+                if pattern.match(name) and os.path.isfile(os.path.join(run, "model.pt")):
+                    runs.append((f"{comparison} / {name}", run))
+    folder = os.path.join(root, method)
+    if os.path.isdir(folder):
+        own = [os.path.join(folder, d) for d in os.listdir(folder)
+               if os.path.isfile(os.path.join(folder, d, "model.pt"))]
+        own.sort(key=lambda r: os.path.getmtime(os.path.join(r, "model.pt")), reverse=True)
+        runs += [(os.path.basename(r), r) for r in own]
+    return runs
+
+
+def reward_run_key(method: str) -> str:
+    """The QSettings key of the run picked on the Reward tab for ``method``."""
+    return f"reward_run_{method}"
+
+
+def picked_reward_run(store: TakeStore, method: str, settings: QtCore.QSettings) -> str | None:
+    """The run of ``method`` the Reward tab uses (and Process reward): the one picked there if
+    it still has a ``model.pt``, else the newest comparison's ``<method>_sparsh_s0``, else the
+    first of ``reward_runs``; None without one."""
+    runs = [run for _, run in reward_runs(store, method)]
+    saved = settings.value(reward_run_key(method), "")
+    if saved in runs:
+        return saved
+    return next((r for r in runs if os.path.basename(r) == f"{method}_sparsh_s0"),
+                runs[0] if runs else None)
+
+
+class ManualRewardPlot(QtWidgets.QWidget):
+    """The Manual reward over the Reward tab's recording, with its fields above it (Success /
+    Fail / Every step, saved with the recordings in ``processing.json``; Process reward on the
+    Processing tab writes them into the episodes): Every step from the recording's confirmed
+    ``episode_start`` to ``terminal``, then Success or Fail (its label) at ``terminal``."""
+
+    def __init__(self, store: TakeStore) -> None:
+        super().__init__()
+        self.store = store
+        self._label: dict | None = None
+        self.spins: dict[str, QtWidgets.QDoubleSpinBox] = {}
+        saved = episode_processing.load_rewards(store.compose_playback_dir)
+        header = QtWidgets.QHBoxLayout()
+        header.addWidget(QtWidgets.QLabel("<b>Manual</b>"))
+        for key, text, tip in MANUAL_REWARD_FIELDS:
+            spin = double_spin(
+                -1e6, 1e6, 0.1, 3, "",
+                f"{tip} (saved with the recordings in {episode_processing.SETTINGS_NAME}; "
+                "Process reward on the Processing tab writes it into the episodes)",
+            )
+            spin.setValue(saved[key])
+            spin.valueChanged.connect(self._changed)
+            self.spins[key] = spin
+            header.addWidget(tip_label(text, spin.toolTip()))
+            header.addWidget(spin)
+        self.status = QtWidgets.QLabel()
+        self.status.setWordWrap(True)
+        header.addWidget(self.status, 1)
+        self.plot = pg.PlotWidget()
+        self.plot.showGrid(x=True, y=True, alpha=0.3)
+        self.plot.setLabel("bottom", "time", "s")
+        self.plot.setLabel("left", "reward")
+        self.plot.getAxis("left").setWidth(60)
+        self.cursor = pg.InfiniteLine(0.0, angle=90, pen=pg.mkPen("w", width=1))
+        self.plot.addItem(self.cursor)
+        self._items: list[pg.GraphicsObject] = []
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(header)
+        layout.addWidget(self.plot, 1)
+
+    def rewards(self) -> dict[str, float]:
+        return {key: spin.value() for key, spin in self.spins.items()}
+
+    def _changed(self, *_) -> None:
+        try:
+            episode_processing.save_rewards(self.store.compose_playback_dir, self.rewards())
+        except OSError as e:
+            self.status.setText(f"<span style='color:#d32f2f'>Could not save: {e}</span>")
+        self._draw()
+
+    def show_recording(self, recording: str | None, duration: float) -> None:
+        self._label = (load_label(recording) or {}) if recording else None
+        self.plot.setXRange(0.0, max(duration, 0.1), padding=0.02)
+        self._draw()
+
+    def _draw(self) -> None:
+        for item in self._items:
+            self.plot.removeItem(item)
+        self._items = []
+        if self._label is None:
+            self.status.setText("Pick a recording")
+            return
+        span = sparsh_processing.episode_span(self._label)
+        if isinstance(span, str):
+            self.status.setText(f"<span style='color:#d32f2f'>No episode: {span}</span>")
+            return
+        start, end = span
+        rewards = self.rewards()
+        success = self._label.get("label") == SUCCESS
+        last = rewards["success"] if success else rewards["fail"]
+        color = COMBO_VALID_COLOR if success else COMBO_COLLIDE_COLOR
+        region = pg.LinearRegionItem((start, end), movable=False,
+                                     brush=pg.mkBrush(255, 255, 255, 20), pen=pg.mkPen(None))
+        region.setZValue(-10)
+        steps = self.plot.plot([start, end], [rewards["step"]] * 2,
+                               pen=pg.mkPen((255, 255, 255), width=2))
+        terminal = self.plot.plot([end], [last], pen=None, symbol="o", symbolSize=10,
+                                  symbolBrush=color)
+        label = pg.TextItem(f"{'success' if success else 'fail'} {last:g}", color=color,
+                            anchor=(1.1, 0.5))
+        label.setPos(end, last)
+        for item in (region, label):
+            self.plot.addItem(item)
+        self._items = [region, steps, terminal, label]
+        self.plot.enableAutoRange(axis="y")
+        self.status.setText(f"episode {start:.1f}-{end:.1f} s")
+
+
+class RewardPredictionPlot(QtWidgets.QWidget):
+    """One reward model's prediction over the Reward tab's recording: the reward and its terms
+    from ``/<method>_inference/evaluate`` for the picked run (its Sparsh-skin episode,
+    ``episode_start`` to ``terminal``, on the recording's time axis), with the play bar's
+    cursor. SARM's predicted stages are shaded (and given to ``stages_changed``)."""
+
+    stages_changed = QtCore.pyqtSignal(list)  # [(start, end, stage)] of the shown prediction
+
+    def __init__(self, node: LeapStateListener, store: TakeStore, method: str, title: str,
+                 settings: QtCore.QSettings) -> None:
         super().__init__()
         self.node = node
         self.store = store
         self.method = method
-        self._rows: list[dict] = []
-        self._eval: list[dict] = []
+        self.title = title
+        self._settings = settings
+        self._recording: str | None = None
+        self._duration = 0.0
+        self._cache: dict[tuple[str, str], object] = {}  # (run_dir, recording) -> response
+        self._regions: list[pg.LinearRegionItem] = []
         self._signals = RewardEvalSignals()
         self._signals.evaluated.connect(self._on_evaluated)
 
-        self.runs_dir = QtWidgets.QLineEdit(self._default_runs_dir())
-        refresh = QtWidgets.QPushButton("Refresh")
-        refresh.clicked.connect(self.refresh_runs)
         self.run_combo = QtWidgets.QComboBox()
-        self.run_combo.currentIndexChanged.connect(self._load_run)
-        self.info = QtWidgets.QLabel()
-        self.info.setWordWrap(True)
-        self.info.setOpenExternalLinks(True)
-        self.info.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
-        self.metric_list = QtWidgets.QListWidget()
-        self.metric_list.setToolTip("Metrics logged by the run (also on W&B); tick to plot")
-        self.metric_list.itemChanged.connect(lambda _: self._plot_metrics())
-        self.val_list = QtWidgets.QListWidget()
-        self.val_list.setToolTip("Validation recordings at the best epoch: pick one to plot it")
-        self.val_list.currentRowChanged.connect(self._show_val)
-        self.recording_combo = QtWidgets.QComboBox()
-        self.recording_combo.setEditable(True)
-        eval_btn = QtWidgets.QPushButton("Evaluate")
-        eval_btn.setToolTip(f"Reward of this recording from {method}_inference")
-        eval_btn.clicked.connect(self._evaluate)
-        self.eval_status = QtWidgets.QLabel()
-        self.eval_status.setWordWrap(True)
-
-        left = QtWidgets.QVBoxLayout()
-        row = QtWidgets.QHBoxLayout()
-        row.addWidget(self.runs_dir, 1)
-        row.addWidget(refresh)
-        left.addWidget(QtWidgets.QLabel("Runs folder"))
-        left.addLayout(row)
-        left.addWidget(self.run_combo)
-        left.addWidget(self.info)
-        left.addWidget(QtWidgets.QLabel("Metrics"))
-        left.addWidget(self.metric_list, 2)
-        left.addWidget(QtWidgets.QLabel("Validation recordings"))
-        left.addWidget(self.val_list, 2)
-        left.addWidget(QtWidgets.QLabel("Evaluate a recording"))
-        row = QtWidgets.QHBoxLayout()
-        row.addWidget(self.recording_combo, 1)
-        row.addWidget(eval_btn)
-        left.addLayout(row)
-        left.addWidget(self.eval_status)
-        left_w = QtWidgets.QWidget()
-        left_w.setLayout(left)
-        left_w.setMaximumWidth(460)
-
-        self.metric_plot = pg.PlotWidget(title="Training metrics")
-        self.metric_plot.addLegend(offset=(5, 5))
-        self.metric_plot.setLabel("bottom", "step")
-        self.metric_plot.showGrid(x=True, y=True, alpha=0.3)
-        self.return_plot = pg.PlotWidget(title="Mean reward per validation recording")
-        self.return_plot.setLabel("bottom", "recording")
-        self.return_plot.showGrid(x=True, y=True, alpha=0.3)
-        self.curve_plot = pg.PlotWidget(title="Reward over a recording")
-        self.curve_plot.addLegend(offset=(5, 5))
-        self.curve_plot.setLabel("bottom", "t from episode_start (s)")
-        self.curve_plot.showGrid(x=True, y=True, alpha=0.3)
-        plots = QtWidgets.QVBoxLayout()
-        plots.addWidget(self.metric_plot, 1)
-        plots.addWidget(self.return_plot, 1)
-        plots.addWidget(self.curve_plot, 1)
-        layout = QtWidgets.QHBoxLayout(self)
-        layout.addWidget(left_w)
-        layout.addLayout(plots, 1)
+        self.run_combo.setToolTip(
+            f"The trained {title} run ({method}_inference evaluates the recording with it)"
+        )
+        self.run_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+        refresh_btn = QtWidgets.QPushButton("Refresh")
+        refresh_btn.setToolTip("List the trained runs again")
+        refresh_btn.clicked.connect(self.refresh_runs)
+        self.status = QtWidgets.QLabel()
+        self.status.setWordWrap(True)
+        header = QtWidgets.QHBoxLayout()
+        header.addWidget(QtWidgets.QLabel(f"<b>{title}</b>"))
+        header.addWidget(self.run_combo)
+        header.addWidget(refresh_btn)
+        header.addWidget(self.status, 1)
+        self.plot = pg.PlotWidget()
+        self.plot.showGrid(x=True, y=True, alpha=0.3)
+        self.plot.addLegend(offset=(-5, 5))  # top right: the stage names are top left
+        self.plot.setLabel("bottom", "time", "s")
+        self.plot.setLabel("left", "reward")
+        self.plot.getAxis("left").setWidth(60)  # the same in every graph: time lines up
+        self.cursor = pg.InfiniteLine(0.0, angle=90, pen=pg.mkPen("w", width=1))
+        self.plot.addItem(self.cursor)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(header)
+        layout.addWidget(self.plot, 1)
         self.refresh_runs()
+        self.run_combo.currentIndexChanged.connect(self._run_changed)
 
-    def _default_runs_dir(self) -> str:
-        return os.path.join(self.store.compose_playback_dir, "reward_models", self.method)
+    def _run_key(self) -> str:
+        return reward_run_key(self.method)
 
-    def refresh_runs(self, select: str | None = None) -> None:
-        runs_dir = self.runs_dir.text().strip()
-        runs = []
-        if os.path.isdir(runs_dir):
-            runs = sorted(
-                (os.path.join(runs_dir, d) for d in os.listdir(runs_dir)
-                 if os.path.isfile(os.path.join(runs_dir, d, "model.pt"))),
-                key=lambda r: os.path.getmtime(os.path.join(r, "model.pt")), reverse=True,
-            )
-        current = select or self.run_combo.currentData()
+    def refresh_runs(self) -> None:
+        """Lists the trained runs, keeping the picked one (else the saved one, else the
+        newest comparison's ``<method>_sparsh_s0``, else the first)."""
+        current = self.run_combo.currentData() or picked_reward_run(
+            self.store, self.method, self._settings
+        )
+        runs = reward_runs(self.store, self.method)
         self.run_combo.blockSignals(True)
         self.run_combo.clear()
-        for run in runs:
-            self.run_combo.addItem(os.path.basename(run), run)
+        for name, run in runs:
+            self.run_combo.addItem(name, run)
+            self.run_combo.setItemData(self.run_combo.count() - 1, run, QtCore.Qt.ToolTipRole)
         index = self.run_combo.findData(current) if current else -1
         self.run_combo.setCurrentIndex(max(index, 0) if runs else -1)
         self.run_combo.blockSignals(False)
-        recordings = list_playbacks(self.store.compose_playback_dir)
-        text = self.recording_combo.currentText()
-        self.recording_combo.clear()
-        for path in recordings:
-            label = (load_label(path) or {}).get("label") or "not labelled"
-            self.recording_combo.addItem(f"{os.path.basename(path)} ({label})", path)
-        if text:
-            self.recording_combo.setCurrentIndex(max(self.recording_combo.findText(text), 0))
-        self._load_run()
+        if not runs:
+            self.status.setText(
+                f"<span style='color:#d32f2f'>No trained {self.title} run in "
+                f"{os.path.join(self.store.compose_playback_dir, 'reward_models')}</span>"
+            )
+        elif self.run_combo.currentData() != current:
+            self._run_changed()
 
-    def on_trained(self, run_dir: str) -> None:
-        self.runs_dir.setText(os.path.dirname(run_dir))
-        self.refresh_runs(select=run_dir)
-
-    def _load_run(self) -> None:
+    def _run_changed(self, *_) -> None:
         run = self.run_combo.currentData()
-        self._rows, self._eval = [], []
-        config, best_epoch = {}, None
         if run:
-            try:
-                with open(os.path.join(run, "config.json")) as f:
-                    config = json.load(f)
-            except (OSError, ValueError):
-                pass
-            try:
-                with open(os.path.join(run, "metrics.jsonl")) as f:
-                    self._rows = [json.loads(line) for line in f if line.strip()]
-            except (OSError, ValueError):
-                pass
-            try:
-                with open(os.path.join(run, "eval.json")) as f:
-                    ev = json.load(f)
-                self._eval, best_epoch = ev.get("recordings", []), ev.get("epoch")
-            except (OSError, ValueError):
-                pass
-        self._show_info(run, config, best_epoch)
-        keys = sorted({k for r in self._rows for k in r if k not in ("step", "time", "epoch")})
-        checked = {self.metric_list.item(i).text() for i in range(self.metric_list.count())
-                   if self.metric_list.item(i).checkState() == QtCore.Qt.Checked}
-        checked = checked & set(keys) or set(self._DEFAULT_METRICS) & set(keys)
-        self.metric_list.blockSignals(True)
-        self.metric_list.clear()
-        for key in keys:
-            item = QtWidgets.QListWidgetItem(key)
-            item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
-            item.setCheckState(QtCore.Qt.Checked if key in checked else QtCore.Qt.Unchecked)
-            self.metric_list.addItem(item)
-        self.metric_list.blockSignals(False)
-        self._plot_metrics()
-        self._plot_returns()
-        self.val_list.blockSignals(True)
-        self.val_list.clear()
-        for r in self._eval:
-            self.val_list.addItem(f"{r['name']} ({r['label']}): {np.mean(r['reward']):.3f}")
-        self.val_list.blockSignals(False)
-        self.curve_plot.clear()
+            self._settings.setValue(self._run_key(), run)
+        self.show_recording(self._recording, self._duration if self._recording else 0.0)
 
-    def _show_info(self, run: str | None, config: dict, best_epoch) -> None:
-        if not run:
-            self.info.setText("<i>No trained run in this folder yet (Train tab)</i>")
+    def show_recording(self, recording: str | None, duration: float) -> None:
+        """Shows the prediction for ``recording`` (None: nothing), asking the inference
+        service for it the first time."""
+        self._recording, self._duration = recording, duration
+        self._clear()
+        self.plot.setXRange(0.0, max(duration, 0.1), padding=0.02)
+        run = self.run_combo.currentData()
+        if recording is None:
+            self.status.setText("Pick a recording")
             return
-        counts = config.get("counts", {})
-        best = next((r for r in self._rows if r.get("epoch") == best_epoch), {})
-        main = [k for k in self._DEFAULT_METRICS[1:] if k in best]
-        lines = [
-            f"<b>{os.path.basename(run)}</b>",
-            f"{config.get('epochs', '?')} epochs · batch {config.get('batch_size', '?')} · "
-            f"lr {config.get('learning_rate', 0):.2g} · {config.get('step_hz', 0):g} Hz "
-            f"steps of the {config.get('episode_hz', 100.0):g} Hz Sparsh-skin episodes",
-            f"{counts.get('train', '?')} train ({counts.get('train_success', '?')} success) / "
-            f"{counts.get('val', '?')} val ({counts.get('val_success', '?')} success) recordings",
-        ]
-        if best_epoch is not None:
-            lines.append(f"best epoch {best_epoch}" + "".join(
-                f" · {k} {best[k]:.3f}" for k in main
-            ))
-        if config.get("wandb_url"):
-            lines.append(f"<a href='{config['wandb_url']}'>W&amp;B run</a>")
-        self.info.setText("<br>".join(lines))
-
-    def _plot_metrics(self) -> None:
-        self.metric_plot.clear()
-        keys = [self.metric_list.item(i).text() for i in range(self.metric_list.count())
-                if self.metric_list.item(i).checkState() == QtCore.Qt.Checked]
-        for n, key in enumerate(keys):
-            pts = [(r["step"], r[key]) for r in self._rows if key in r]
-            if pts:
-                x, y = np.array(pts, float).T
-                color = pg.intColor(n, hues=max(len(keys), 3))
-                self.metric_plot.plot(x, y, pen=pg.mkPen(color, width=2), symbol="o",
-                                      symbolSize=4, symbolBrush=color, name=key)
-
-    def _plot_returns(self) -> None:
-        self.return_plot.clear()
-        means = {"success": [], "failure": []}
-        for i, r in enumerate(self._eval):
-            means.setdefault(r["label"], []).append((i, float(np.mean(r["reward"]))))
-        for label, color in (("success", (46, 204, 113)), ("failure", (231, 76, 60))):
-            if means[label]:
-                x, y = np.array(means[label]).T
-                self.return_plot.plot(x, y, pen=None, symbol="o", symbolSize=8,
-                                      symbolBrush=color, name=label)
-        parts = [f"{label} mean {np.mean([v for _, v in pts]):.3f} (n={len(pts)})"
-                 for label, pts in means.items() if pts]
-        self.return_plot.setTitle("Mean reward per validation recording" + (
-            ": " + " · ".join(parts) if parts else ""))
-
-    def _plot_curve(self, title: str, t, reward, terms: dict[str, np.ndarray]) -> None:
-        self.curve_plot.clear()
-        self.curve_plot.setTitle(title)
-        self.curve_plot.plot(t, reward, pen=pg.mkPen((255, 255, 255), width=2), name="reward")
-        for n, (name, values) in enumerate(terms.items()):
-            if np.allclose(values, reward):
-                continue
-            color = self._TERM_COLORS[n % len(self._TERM_COLORS)]
-            self.curve_plot.plot(t, values, pen=pg.mkPen(color, width=1.5), name=name)
-
-    def _show_val(self, row: int) -> None:
-        if 0 <= row < len(self._eval):
-            r = self._eval[row]
-            self._plot_curve(f"{r['name']} ({r['label']}), validation",
-                             np.array(r["t"]), np.array(r["reward"]),
-                             {k: np.array(v) for k, v in r.get("terms", {}).items()})
-
-    def _evaluate(self) -> None:
+        if not run:
+            self.status.setText(f"<span style='color:#d32f2f'>No trained {self.title} run</span>")
+            return
+        cached = self._cache.get((run, recording))
+        if cached is not None:
+            self._show(cached)
+            return
         client = self.node.reward_evaluate[self.method]
         if not client.service_is_ready():
-            self.eval_status.setText(
-                f"<b>{self.method}_inference is not running</b> (launch_record_demonstration.py "
-                "starts it unless reward_models:=false)"
+            self.status.setText(
+                f"<span style='color:#d32f2f'><b>{self.method}_inference is not running</b> "
+                "(launch_record_demonstration.py starts it unless reward_models:=false)</span>"
             )
             return
-        recording = self.recording_combo.currentData() or self.recording_combo.currentText()
-        request = EvaluateReward.Request(run_dir=self.run_combo.currentData() or "",
-                                         recording=recording)
-        self.eval_status.setText(f"Evaluating {os.path.basename(recording)}…")
+        self.status.setText(f"Evaluating {os.path.basename(recording)}…")
 
         def done(future) -> None:  # executor thread
             try:
-                self._signals.evaluated.emit(future.result())
-            except Exception as e:  # noqa: BLE001
-                self._signals.evaluated.emit(e)
+                self._signals.evaluated.emit(run, recording, future.result())
+            except Exception as e:  # noqa: BLE001 - shown in the status
+                self._signals.evaluated.emit(run, recording, e)
 
-        client.call_async(request).add_done_callback(done)
+        client.call_async(EvaluateReward.Request(run_dir=run, recording=recording)) \
+            .add_done_callback(done)
 
-    def _on_evaluated(self, response) -> None:
-        if isinstance(response, Exception) or not response.success:
-            self.eval_status.setText(f"<b>Failed:</b> {getattr(response, 'message', response)}")
+    def _on_evaluated(self, run: str, recording: str, response) -> None:
+        if isinstance(response, Exception):
+            if (run, recording) == (self.run_combo.currentData(), self._recording):
+                self.status.setText(f"<span style='color:#d32f2f'>Failed: {response}</span>")
             return
-        self.eval_status.setText(response.message)
+        if response.success:
+            self._cache[(run, recording)] = response
+        if (run, recording) == (self.run_combo.currentData(), self._recording):
+            self._show(response)
+
+    def _clear(self) -> None:
+        for item in list(self.plot.listDataItems()):
+            self.plot.removeItem(item)
+        for region in self._regions:
+            self.plot.removeItem(region)
+        self._regions = []
+        if self.plot.plotItem.legend is not None:
+            self.plot.plotItem.legend.clear()
+        self.plot.setTitle(None)
+        self.stages_changed.emit([])
+
+    def _show(self, response) -> None:
+        self._clear()
+        if not response.success:
+            message = response.message
+            if any(word in message for word in
+                   ("Sparsh-skin", "episode", EPISODE_START_EVENT, EPISODE_END_EVENT)):
+                message += (" (process it on the Processing tab: confirmed "
+                            f"'{EPISODE_START_EVENT}' / '{EPISODE_END_EVENT}', then the "
+                            "Sparsh-skin transform)")
+            self.status.setText(f"<span style='color:#d32f2f'>{message}</span>")
+            return
         t = np.asarray(response.t, float)
-        t -= t[0] if len(t) else 0.0
-        terms = np.asarray(response.terms, float).reshape(len(response.term_names), -1)
-        self._plot_curve(response.message.split(":")[0], t, np.asarray(response.reward, float),
-                         dict(zip(response.term_names, terms)))
+        reward = np.asarray(response.reward, float)
+        terms = dict(zip(response.term_names,
+                         np.asarray(response.terms, float).reshape(len(response.term_names), -1)))
+        stage = terms.pop("stage", None)
+        if stage is not None:
+            segments = stage_segments(t, stage)
+            for start, end, k in segments:
+                color = QtGui.QColor(SARM_STAGE_COLORS[k % len(SARM_STAGE_COLORS)])
+                color.setAlpha(SARM_STAGE_ALPHA)
+                region = pg.LinearRegionItem((start, end), movable=False, brush=color,
+                                             pen=pg.mkPen(None))
+                region.setZValue(-10)
+                pg.InfLineLabel(region.lines[0], SARM_STAGE_NAMES[k], position=0.95,
+                                anchors=[(0, 0), (0, 0)],
+                                color=SARM_STAGE_COLORS[k % len(SARM_STAGE_COLORS)])
+                self.plot.addItem(region)
+                self._regions.append(region)
+            self.stages_changed.emit(segments)
+        self.plot.plot(t, reward, pen=pg.mkPen((255, 255, 255), width=2), name="reward")
+        for n, (name, values) in enumerate(terms.items()):
+            if np.allclose(values, reward):
+                continue
+            color = REWARD_TERM_COLORS[n % len(REWARD_TERM_COLORS)]
+            self.plot.plot(t, values, pen=pg.mkPen(color, width=1.5), name=name)
+        self.plot.enableAutoRange(axis="y")
+        self.status.setText(response.message)
 
 
-class RewardDesignTab(QtWidgets.QWidget):
-    """The rewards for learning the pen click, one sub-tab per way of designing them: Manual,
-    Reward2Rank and Coupled Local Global RL (the last two with their paper). The learned ones
-    have a Train tab (``RewardTrainPanel``: reward_models' training action, logged to W&B) and
-    a Visualize tab (``RewardVisualizePanel``: the runs' metrics, validation results and the
-    reward of any recording from reward_models' inference service). Manual is not implemented
-    yet (``reward_design_plan.md``)."""
+class RewardTab(DemonstrationTab):
+    """Plays back the Play on hand recordings like the Demonstration tab (recordings on the
+    left, the camera and FK taxels on the right), with the rewards in the middle instead of the
+    joints: the Manual reward with its fields (``ManualRewardPlot``), then one graph per model
+    in ``REWARD_PLOTS`` (Rank2Reward and SARM, from reward_models' ``/<method>_inference/evaluate`` on the recording's Sparsh-skin
+    episode, so processed recordings only), each with its trained run picked above it. SARM's
+    predicted task stages (grip, press, click) are shaded on its graph and on the play bar."""
 
-    _PAGES = (
-        (
-            "Manual",
-            None,
-            "A reward written by hand as a weighted sum of terms from signals the app already "
-            "has: a bonus when the click detector hears the pen click, the Thumb's fingertip "
-            "force against a target, the holding fingers kept in contact with the pen, a "
-            "penalty for each slip and for jerky joint commands, and the success / fail label "
-            "of a Play on hand recording at its end. <i>Not implemented yet: see "
-            "reward_design_plan.md</i>",
-            None,
-        ),
-        (
-            "Reward2Rank",
-            "rank2reward",
-            "A shaped reward learned from the Sparsh-skin episodes (flex_taxel_fk forces_local "
-            "and positions of the 368 taxels): a ranker learns which of two steps of a "
-            "successful recording comes later, so its output measures how far the task has "
-            "progressed; a discriminator between successful and failed steps keeps a policy "
-            "from exploiting it. Reward: log progress + discriminator logit.",
-            "D. Yang, D. Tjia, J. Berg, D. Damen, P. Agrawal, A. Gupta, <i>Rank2Reward: "
-            "Learning Shaped Reward Functions from Passive Video</i>, ICRA 2024. "
-            "<a href='https://rank2reward.github.io/'>https://rank2reward.github.io/</a>",
-        ),
-        (
-            "Coupled Local Global RL",
-            "coupled_local_global",
-            "The reward parts of coupled world models, on the Sparsh-skin episodes "
-            "(forces_local and positions): a global reward head per step trained "
-            "on the labels (demonstration 1, goal 10, failure 0), and a small local recurrent "
-            "model whose reward head follows it and whose one-step dynamics give the gradients "
-            "for first-order policy optimisation (the world models and RL are not here yet).",
-            "J. Amigo, R. Khorrambakht, N. Mansard, L. Righetti, <i>Coupled Local and Global "
-            "World Models for Efficient First Order RL</i>, CoRL 2026. "
-            "<a href='https://arxiv.org/abs/2602.06219'>https://arxiv.org/abs/2602.06219</a>",
-        ),
-    )
+    def _make_slider(self) -> QtWidgets.QSlider:
+        """The play bar, with SARM's stages shaded over it."""
+        return SpanBookmarkSlider()
 
-    def __init__(self, node: LeapStateListener, store: TakeStore) -> None:
-        super().__init__()
-        self.node = node
-        self.tabs = QtWidgets.QTabWidget()
-        self.train_panels: dict[str, RewardTrainPanel] = {}
-        for title, method, text, reference in self._PAGES:
-            body = None
-            if method:
-                train = RewardTrainPanel(node, store, method)
-                visualize = RewardVisualizePanel(node, store, method)
-                train.trained.connect(visualize.on_trained)
-                self.train_panels[method] = train
-                body = QtWidgets.QTabWidget()
-                body.addTab(train, "Train")
-                body.addTab(visualize, "Visualize")
-            self.tabs.addTab(self._page(text, reference, body), title)
-        layout = QtWidgets.QVBoxLayout(self)
-        layout.addWidget(self.tabs)
+    def _middle_column(self, player: QtWidgets.QWidget) -> QtWidgets.QWidget:
+        """The title and controls, then the reward graphs (the joint plots are hidden)."""
+        self.plots.hide()
+        self.reward_plots: list[RewardPredictionPlot] = []
+        graphs = QtWidgets.QSplitter(QtCore.Qt.Vertical)
+        self.manual_plot = ManualRewardPlot(self.store)
+        self._cursors.append(self.manual_plot.cursor)
+        graphs.addWidget(self.manual_plot)
+        for method, title in REWARD_PLOTS:
+            graph = RewardPredictionPlot(self.node, self.store, method, title, self._settings)
+            self._cursors.append(graph.cursor)
+            if method == "sarm":
+                graph.stages_changed.connect(self._show_stages)
+            graphs.addWidget(graph)
+            self.reward_plots.append(graph)
+        for graph in self.reward_plots:
+            graph.plot.setXLink(self.manual_plot.plot)
+        column = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout(column)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(player)
+        layout.addWidget(graphs, 1)
+        return column
 
-    @property
-    def training(self) -> list[str]:
-        """The methods with a training run going."""
-        return [m for m, panel in self.train_panels.items() if panel.training]
+    def _load(self, path: str | None) -> None:
+        super()._load(path)
+        loaded = path if self.rec is not None else None
+        self.manual_plot.show_recording(loaded, self.duration)
+        for graph in self.reward_plots:
+            graph.show_recording(loaded, self.duration)
 
-    @staticmethod
-    def _page(text: str, reference: str | None, body: QtWidgets.QWidget | None) -> QtWidgets.QWidget:
-        page = QtWidgets.QWidget()
-        layout = QtWidgets.QVBoxLayout(page)
-        about = QtWidgets.QLabel(text)
-        about.setWordWrap(True)
-        layout.addWidget(about)
-        if reference:
-            ref = QtWidgets.QLabel(f"<b>Reference:</b> {reference}")
-            ref.setWordWrap(True)
-            ref.setTextFormat(QtCore.Qt.RichText)
-            ref.setOpenExternalLinks(True)
-            layout.addWidget(ref)
-        if body is not None:
-            layout.addWidget(body, 1)
-        else:
-            layout.addStretch(1)
-        return page
+    def _show_stages(self, segments: list) -> None:
+        """SARM's stages over the play bar (hover for the stage and its time)."""
+        spans = []
+        for start, end, k in segments:
+            name = SARM_STAGE_NAMES[k % len(SARM_STAGE_NAMES)]
+            spans.append((
+                int(round(start * SLIDER_STEPS_PER_SEC)), int(round(end * SLIDER_STEPS_PER_SEC)),
+                QtGui.QColor(SARM_STAGE_COLORS[k % len(SARM_STAGE_COLORS)]),
+                f"SARM stage: {name} ({start:.1f}-{end:.1f} s)",
+            ))
+        self.slider.set_spans(spans)
 
 
 class SettingsTab(QtWidgets.QWidget):
@@ -15714,7 +15636,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.baseline_tab = BaselineTab(node, self.create_tab)
         self.body_tab = BodyLearningTab(node, self.create_tab)
         self.self_play_tab = SelfPlayTab(node, self.create_tab)
-        self.reward_tab = RewardDesignTab(node, self.store)
+        self.reward_tab = RewardTab(node, self.store)
         self.settings_tab = SettingsTab(
             node, self.store, settings, touch_settings, press_settings, saved, saved_path,
             avoid_slip,
@@ -15734,7 +15656,7 @@ class MainWindow(QtWidgets.QMainWindow):
         tabs.addTab(self.baseline_tab, "Baseline")
         tabs.addTab(self.body_tab, "Learning about your own body")
         tabs.addTab(self.self_play_tab, "Self-play")
-        tabs.addTab(self.reward_tab, "Reward Design")
+        tabs.addTab(self.reward_tab, "Reward")
         tabs.addTab(self.settings_tab, "Settings")
         self.setCentralWidget(tabs)
 
@@ -15821,6 +15743,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.compose_tab.close_video()
         self.demo_tab.close_video()
         self.processing_tab.close_video()
+        self.reward_tab.close_video()
         self.settings_tab.stop_backup()
         super().closeEvent(ev)
 

@@ -101,6 +101,7 @@ def test_write_dataset(tmp_path):
     with np.load(os.path.join(out, "episode_th_1_1.npz")) as data:
         assert set(data.files) == {
             "actions", "flex_taxel_fk/forces_local", "flex_taxel_fk/positions", "rewards",
+            "rewards/manual",
             "metadata_json",
         }
     with open(os.path.join(out, sp.STATS_NAME)) as f:
@@ -153,6 +154,50 @@ def test_rewards_from_processing_json_and_process_reward(tmp_path):
     ok, bad = rewards("episode_th_1_1.npz"), rewards("episode_th_1_2.npz")
     assert ok.tolist() == [0.0] * (len(ok) - 1) + [1.0]
     assert bad.tolist() == [0.0] * (len(bad) - 1) + [-1.0]
+
+
+def test_reward_sources(tmp_path):
+    from mechanical_pen_data_collection import episode_processing as ep
+
+    recordings, out = os.path.join(tmp_path, "rec"), os.path.join(tmp_path, "out")
+    os.makedirs(recordings)
+    recording(os.path.join(recordings, "th_1_1.npz"))
+    assert ep.load_reward_sources(recordings) == {"include": ["manual"], "primary": "manual"}
+    ep.save_reward_sources(recordings, ["sarm", "manual", "nope"], "sarm")
+    assert ep.load_reward_sources(recordings) == {"include": ["manual", "sarm"],
+                                                  "primary": "sarm"}
+    manual = {"success": 1.0, "fail": 0.0, "step": 0.0}
+    sp.write_dataset(recordings, out, IdentityToSim())
+    path = os.path.join(out, "episode_th_1_1.npz")
+    with np.load(path) as data:
+        assert np.array_equal(data["rewards"], data["rewards/manual"])
+    meta = sp.episode_metadata(path)
+    grid = sp.episode_grid(meta)
+    assert len(grid) == meta["steps"]
+    # SARM at a slower rate: progress interpolated, its delta taken on the episode's grid.
+    t = np.linspace(grid[0], grid[-1], 5)
+    arrays = sp.model_rewards_on_grid("sarm", grid, t, np.zeros(5),
+                                      {"progress": np.linspace(0, 1, 5), "stage": np.zeros(5)})
+    assert set(arrays) == {"sarm", "sarm_delta"}
+    assert np.isclose(arrays["sarm"][-1], 1.0) and np.isclose(arrays["sarm_delta"].sum(), 1.0)
+    r2r = sp.model_rewards_on_grid("rank2reward", grid, t, np.arange(5.0), {})
+    assert np.isclose(r2r["rank2reward"][-1], 4.0)
+    sp.set_reward_sources(path, manual, ["manual", "sarm"], arrays, "sarm", {"sarm": "run"})
+    with np.load(path) as data:
+        assert {"rewards/manual", "rewards/sarm", "rewards/sarm_delta"} <= set(data.files)
+        assert np.array_equal(data["rewards"], data["rewards/sarm"])
+    meta = sp.episode_metadata(path)
+    assert meta["reward_primary"] == "sarm" and meta["reward_models"] == {"sarm": "run"}
+    # New manual values do not replace a model primary reward.
+    sp.set_episode_rewards(path, {"success": 5.0, "fail": 0.0, "step": 0.0})
+    with np.load(path) as data:
+        assert data["rewards/manual"][-1] == 5.0
+        assert np.array_equal(data["rewards"], arrays["sarm"])
+    # Manual only again: the model rewards go.
+    sp.set_reward_sources(path, manual, ["manual"], {}, "manual", {})
+    with np.load(path) as data:
+        assert not any(k.startswith("rewards/sarm") for k in data.files)
+        assert np.array_equal(data["rewards"], data["rewards/manual"])
 
 
 def test_resample_modes():

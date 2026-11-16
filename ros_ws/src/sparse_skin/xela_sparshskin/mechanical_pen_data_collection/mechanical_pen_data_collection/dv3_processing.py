@@ -12,7 +12,8 @@ Per episode, one chunk:
   ``action[t]`` is taken from ``obs[t]``; the last one is 0), scaled from
   [``ACTION_LOW``, ``ACTION_HIGH``] to [-1, 1] and clipped;
 - ``forces_local``, ``positions``: ``flex_taxel_fk/forces_local`` / ``positions``;
-- ``reward``: ``rewards``, not shifted;
+- ``reward``: ``rewards`` (the primary reward Process reward picked, ``reward_primary`` in the
+  episode's metadata and counted in the manifest), not shifted;
 - ``is_first`` / ``is_last`` on the first / last step, ``is_terminal`` on the last one when the
   episode's ``terminated_by_env``;
 - ``stepid``: the chunk's uuid bytes and the step index;
@@ -132,10 +133,13 @@ def write_chunks(
     written: dict[str, str] = {}
     skipped: dict[str, str] = {}
     steps, short, rewards = [], [], []
+    primaries: dict[str, int] = {}  # each episode's reward_primary (Process reward), counted
     for i, path in enumerate(episodes, start=1):
         episode = os.path.basename(path)
         try:
-            chunk, _ = convert_episode(path)
+            chunk, metadata = convert_episode(path)
+            primary = metadata.get("reward_primary", "manual")
+            primaries[primary] = primaries.get(primary, 0) + 1
             n = len(chunk["action"])
             out = save_chunk(out_dir, chunk, now + datetime.timedelta(seconds=i))
             written[episode] = os.path.basename(out)
@@ -153,6 +157,7 @@ def write_chunks(
         "source": os.path.abspath(sparsh_dir),
         "baseline": source.get("baseline"),
         "rewards": source.get("rewards"),
+        "reward_primary": primaries,  # which reward is ``reward``: {source: episodes}
         "freq": source.get("freq"),
         "action_range": [ACTION_LOW, ACTION_HIGH],
         "written": written,
